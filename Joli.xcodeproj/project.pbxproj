@@ -1,0 +1,599 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		92F379E32363534D005FE2AB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E22363534D005FE2AB /* AppDelegate.swift */; };
+		92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E42363534D005FE2AB /* SceneDelegate.swift */; };
+		92F379E72363534D005FE2AB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E62363534D005FE2AB /* ContentView.swift */; };
+		92F379E92363534F005FE2AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92F379E82363534F005FE2AB /* Assets.xcassets */; };
+		92F379EC2363534F005FE2AB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92F379EB2363534F005FE2AB /* Preview Assets.xcassets */; };
+		92F379EF2363534F005FE2AB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */; };
+		92F379FA2363534F005FE2AB /* JoliTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379F92363534F005FE2AB /* JoliTests.swift */; };
+		92F37A052363534F005FE2AB /* JoliUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F37A042363534F005FE2AB /* JoliUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		92F379F62363534F005FE2AB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 92F379DE2363534D005FE2AB;
+			remoteInfo = Joli;
+		};
+		92F37A012363534F005FE2AB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 92F379DE2363534D005FE2AB;
+			remoteInfo = Joli;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		92F379DF2363534D005FE2AB /* Joli.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Joli.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		92F379E22363534D005FE2AB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		92F379E42363534D005FE2AB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		92F379E62363534D005FE2AB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		92F379E82363534F005FE2AB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		92F379EB2363534F005FE2AB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		92F379EE2363534F005FE2AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		92F379F52363534F005FE2AB /* JoliTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JoliTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		92F379F92363534F005FE2AB /* JoliTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliTests.swift; sourceTree = "<group>"; };
+		92F379FB2363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		92F37A002363534F005FE2AB /* JoliUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JoliUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		92F37A042363534F005FE2AB /* JoliUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliUITests.swift; sourceTree = "<group>"; };
+		92F37A062363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		92F379DC2363534D005FE2AB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92F379F22363534F005FE2AB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92F379FD2363534F005FE2AB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		92F379D62363534D005FE2AB = {
+			isa = PBXGroup;
+			children = (
+				92F379E12363534D005FE2AB /* Joli */,
+				92F379F82363534F005FE2AB /* JoliTests */,
+				92F37A032363534F005FE2AB /* JoliUITests */,
+				92F379E02363534D005FE2AB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		92F379E02363534D005FE2AB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				92F379DF2363534D005FE2AB /* Joli.app */,
+				92F379F52363534F005FE2AB /* JoliTests.xctest */,
+				92F37A002363534F005FE2AB /* JoliUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		92F379E12363534D005FE2AB /* Joli */ = {
+			isa = PBXGroup;
+			children = (
+				92F379E22363534D005FE2AB /* AppDelegate.swift */,
+				92F379E42363534D005FE2AB /* SceneDelegate.swift */,
+				92F379E62363534D005FE2AB /* ContentView.swift */,
+				92F379E82363534F005FE2AB /* Assets.xcassets */,
+				92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */,
+				92F379F02363534F005FE2AB /* Info.plist */,
+				92F379EA2363534F005FE2AB /* Preview Content */,
+			);
+			path = Joli;
+			sourceTree = "<group>";
+		};
+		92F379EA2363534F005FE2AB /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				92F379EB2363534F005FE2AB /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		92F379F82363534F005FE2AB /* JoliTests */ = {
+			isa = PBXGroup;
+			children = (
+				92F379F92363534F005FE2AB /* JoliTests.swift */,
+				92F379FB2363534F005FE2AB /* Info.plist */,
+			);
+			path = JoliTests;
+			sourceTree = "<group>";
+		};
+		92F37A032363534F005FE2AB /* JoliUITests */ = {
+			isa = PBXGroup;
+			children = (
+				92F37A042363534F005FE2AB /* JoliUITests.swift */,
+				92F37A062363534F005FE2AB /* Info.plist */,
+			);
+			path = JoliUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		92F379DE2363534D005FE2AB /* Joli */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92F37A092363534F005FE2AB /* Build configuration list for PBXNativeTarget "Joli" */;
+			buildPhases = (
+				92F379DB2363534D005FE2AB /* Sources */,
+				92F379DC2363534D005FE2AB /* Frameworks */,
+				92F379DD2363534D005FE2AB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Joli;
+			productName = Joli;
+			productReference = 92F379DF2363534D005FE2AB /* Joli.app */;
+			productType = "com.apple.product-type.application";
+		};
+		92F379F42363534F005FE2AB /* JoliTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92F37A0C2363534F005FE2AB /* Build configuration list for PBXNativeTarget "JoliTests" */;
+			buildPhases = (
+				92F379F12363534F005FE2AB /* Sources */,
+				92F379F22363534F005FE2AB /* Frameworks */,
+				92F379F32363534F005FE2AB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				92F379F72363534F005FE2AB /* PBXTargetDependency */,
+			);
+			name = JoliTests;
+			productName = JoliTests;
+			productReference = 92F379F52363534F005FE2AB /* JoliTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		92F379FF2363534F005FE2AB /* JoliUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92F37A0F2363534F005FE2AB /* Build configuration list for PBXNativeTarget "JoliUITests" */;
+			buildPhases = (
+				92F379FC2363534F005FE2AB /* Sources */,
+				92F379FD2363534F005FE2AB /* Frameworks */,
+				92F379FE2363534F005FE2AB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				92F37A022363534F005FE2AB /* PBXTargetDependency */,
+			);
+			name = JoliUITests;
+			productName = JoliUITests;
+			productReference = 92F37A002363534F005FE2AB /* JoliUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		92F379D72363534D005FE2AB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1110;
+				LastUpgradeCheck = 1110;
+				ORGANIZATIONNAME = "Anthony Chinwo";
+				TargetAttributes = {
+					92F379DE2363534D005FE2AB = {
+						CreatedOnToolsVersion = 11.1;
+					};
+					92F379F42363534F005FE2AB = {
+						CreatedOnToolsVersion = 11.1;
+						TestTargetID = 92F379DE2363534D005FE2AB;
+					};
+					92F379FF2363534F005FE2AB = {
+						CreatedOnToolsVersion = 11.1;
+						TestTargetID = 92F379DE2363534D005FE2AB;
+					};
+				};
+			};
+			buildConfigurationList = 92F379DA2363534D005FE2AB /* Build configuration list for PBXProject "Joli" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 92F379D62363534D005FE2AB;
+			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				92F379DE2363534D005FE2AB /* Joli */,
+				92F379F42363534F005FE2AB /* JoliTests */,
+				92F379FF2363534F005FE2AB /* JoliUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		92F379DD2363534D005FE2AB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92F379EF2363534F005FE2AB /* LaunchScreen.storyboard in Resources */,
+				92F379EC2363534F005FE2AB /* Preview Assets.xcassets in Resources */,
+				92F379E92363534F005FE2AB /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92F379F32363534F005FE2AB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92F379FE2363534F005FE2AB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		92F379DB2363534D005FE2AB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92F379E32363534D005FE2AB /* AppDelegate.swift in Sources */,
+				92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */,
+				92F379E72363534D005FE2AB /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92F379F12363534F005FE2AB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92F379FA2363534F005FE2AB /* JoliTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92F379FC2363534F005FE2AB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92F37A052363534F005FE2AB /* JoliUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		92F379F72363534F005FE2AB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 92F379DE2363534D005FE2AB /* Joli */;
+			targetProxy = 92F379F62363534F005FE2AB /* PBXContainerItemProxy */;
+		};
+		92F37A022363534F005FE2AB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 92F379DE2363534D005FE2AB /* Joli */;
+			targetProxy = 92F37A012363534F005FE2AB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				92F379EE2363534F005FE2AB /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		92F37A072363534F005FE2AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		92F37A082363534F005FE2AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		92F37A0A2363534F005FE2AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"Joli/Preview Content\"";
+				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Joli/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.Joli;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		92F37A0B2363534F005FE2AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"Joli/Preview Content\"";
+				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Joli/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.Joli;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		92F37A0D2363534F005FE2AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				INFOPLIST_FILE = JoliTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Joli.app/Joli";
+			};
+			name = Debug;
+		};
+		92F37A0E2363534F005FE2AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				INFOPLIST_FILE = JoliTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Joli.app/Joli";
+			};
+			name = Release;
+		};
+		92F37A102363534F005FE2AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				INFOPLIST_FILE = JoliUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Joli;
+			};
+			name = Debug;
+		};
+		92F37A112363534F005FE2AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				INFOPLIST_FILE = JoliUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Joli;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		92F379DA2363534D005FE2AB /* Build configuration list for PBXProject "Joli" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92F37A072363534F005FE2AB /* Debug */,
+				92F37A082363534F005FE2AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92F37A092363534F005FE2AB /* Build configuration list for PBXNativeTarget "Joli" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92F37A0A2363534F005FE2AB /* Debug */,
+				92F37A0B2363534F005FE2AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92F37A0C2363534F005FE2AB /* Build configuration list for PBXNativeTarget "JoliTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92F37A0D2363534F005FE2AB /* Debug */,
+				92F37A0E2363534F005FE2AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92F37A0F2363534F005FE2AB /* Build configuration list for PBXNativeTarget "JoliUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92F37A102363534F005FE2AB /* Debug */,
+				92F37A112363534F005FE2AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 92F379D72363534D005FE2AB /* Project object */;
+}
