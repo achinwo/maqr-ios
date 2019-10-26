@@ -65,7 +65,7 @@ enum NetworkError: Error {
     case invalidUrlPath(String)
 }
 
-protocol DbModel: Hashable, Codable, Identifiable {
+public protocol DbModel: Hashable, Codable, Identifiable {
     var id: Int? { get set }
     
     var createdAt: Date? { get }
@@ -82,16 +82,17 @@ protocol DbModel: Hashable, Codable, Identifiable {
 extension DbModel {
     
     static func baseUrl() -> URL {
-        return URL(string: "http://localhost:8080/")!
+        return URL(string: "http://192.168.1.213:8080")!//"http://localhost:8080/")!
     }
-    static func fetch<T: Codable>(urlPath: String, dataType: T.Type, on: DispatchQueue?) -> Promise<T> {
+    
+    static func fetch<T: Codable>(urlPath: String, dataType: T.Type, on: DispatchQueue? = nil) -> Promise<T> {
         guard let url = URLComponents(string: urlPath) else {
             return Promise(NetworkError.invalidUrlPath(urlPath))
         }
         return Self.fetch(urlPath: url, dataType: dataType, on: on)
     }
     
-    static func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, on: DispatchQueue?) -> Promise<T> {
+    static func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, on: DispatchQueue? = nil) -> Promise<T> {
         let baseUrl = Self.baseUrl()
         
         guard let url = urlPath.url(relativeTo: baseUrl) else {
@@ -128,52 +129,47 @@ extension DbModel {
         }
     }
     
-    static func className() -> String {
+    public static func className() -> String {
         return String(describing: Self.self)
     }
     
-    static func all(on: DispatchQueue?) -> Promise<[Self]> {
+    public static func all(on: DispatchQueue? = nil) -> Promise<[Self]> {
         return Self.fetch(urlPath: "/api/db/\(Self.className())", dataType: [Self].self, on: on)
     }
     
-    static func findById(id: Int, on: DispatchQueue?) -> Promise<Self> {
+    public static func findById(id: Int, on: DispatchQueue? = nil) -> Promise<Self> {
         return Self.fetch(urlPath: "/api/db/\(Self.className())/\(id)", dataType: Self.self, on: on)
     }
     
 }
 
-struct User: DbModel {
+public struct User: DbModel {
     
-    var id: Int?
+    public var id: Int?
     
-    var createdAt: Date?
-    var updatedAt: Date?
-    var deletedAt: Date?
-    
-    //var createdBy: Int?
-    var updatedBy: Int?
-    var deletedBy: Int?
-    
-    var name: String
-    var email: String
-}
-
-struct Musicroom: DbModel {
-    var id: Int?
-    
-    var createdAt: Date?
-    var updatedAt: Date?
-    var deletedAt: Date?
+    public var createdAt: Date?
+    public var updatedAt: Date?
+    public var deletedAt: Date?
     
     //var createdBy: Int?
-    var updatedBy: Int?
-    var deletedBy: Int?
+    public var updatedBy: Int?
+    public var deletedBy: Int?
     
-    var name: String
+    public var name: String
+    public var email: String
 }
 
-struct Coordinates: Hashable, Codable {
-    var latitude: Double
-    var longitude: Double
+public struct Musicroom: DbModel {
+    public var id: Int?
+    
+    public var createdAt: Date?
+    public var updatedAt: Date?
+    public var deletedAt: Date?
+    
+    //var createdBy: Int?
+    public var updatedBy: Int?
+    public var deletedBy: Int?
+    
+    public var name: String
 }
 
