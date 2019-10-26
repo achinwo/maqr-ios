@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import JoliApi
 
 struct ContentView: View {
     var body: some View {

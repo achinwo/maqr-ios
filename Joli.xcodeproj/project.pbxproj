@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,6 +15,7 @@
 		92F379EF2363534F005FE2AB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */; };
 		92F379FA2363534F005FE2AB /* JoliTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379F92363534F005FE2AB /* JoliTests.swift */; };
 		92F37A052363534F005FE2AB /* JoliUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F37A042363534F005FE2AB /* JoliUITests.swift */; };
+		92F37A1A236458F2005FE2AB /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92F37A19236458F2005FE2AB /* JoliApi */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92F37A1A236458F2005FE2AB /* JoliApi in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +87,7 @@
 				92F379F82363534F005FE2AB /* JoliTests */,
 				92F37A032363534F005FE2AB /* JoliUITests */,
 				92F379E02363534D005FE2AB /* Products */,
+				92F37A18236458F2005FE2AB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -138,6 +141,13 @@
 			path = JoliUITests;
 			sourceTree = "<group>";
 		};
+		92F37A18236458F2005FE2AB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -154,6 +164,9 @@
 			dependencies = (
 			);
 			name = Joli;
+			packageProductDependencies = (
+				92F37A19236458F2005FE2AB /* JoliApi */,
+			);
 			productName = Joli;
 			productReference = 92F379DF2363534D005FE2AB /* Joli.app */;
 			productType = "com.apple.product-type.application";
@@ -596,6 +609,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		92F37A19236458F2005FE2AB /* JoliApi */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = JoliApi;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 92F379D72363534D005FE2AB /* Project object */;
 }
