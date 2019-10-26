@@ -49,6 +49,7 @@
 		92F37A002363534F005FE2AB /* JoliUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JoliUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		92F37A042363534F005FE2AB /* JoliUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliUITests.swift; sourceTree = "<group>"; };
 		92F37A062363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		92F37A172363571C005FE2AB /* JoliApi */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JoliApi; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +80,7 @@
 		92F379D62363534D005FE2AB = {
 			isa = PBXGroup;
 			children = (
+				92F37A172363571C005FE2AB /* JoliApi */,
 				92F379E12363534D005FE2AB /* Joli */,
 				92F379F82363534F005FE2AB /* JoliTests */,
 				92F37A032363534F005FE2AB /* JoliUITests */,
