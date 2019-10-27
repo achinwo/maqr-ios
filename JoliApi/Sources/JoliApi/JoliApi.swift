@@ -8,14 +8,18 @@ func doTest(completionHandler: (() -> Void)?) -> Void {
     //let urlSession = URLSession(configuration: .default)
     //let url = URL(string: "http://localhost:8080/api/db/musicrooms")!
     
-    User.findById(id: 1, on: .global(qos: .background))
-        .then() { (res) in
-            print("response: \(res)")
-            
-        }.always() {
+    Musicroom.findById(id: 1, on: .global(qos: .background))
+        .then() { (res) -> Promise<User?> in
+            debugPrint("response: \(String(describing: res))")
+            return res!.fetchUpdatedBy()
+                
+    }.then(){ user in
+        debugPrint("User: \(String(describing: user))")
+    }
+    .always() {
             completionHandler?()
         }.catch() { error in
-            print("error: \(error.localizedDescription)")
+            debugPrint("error: \(error.localizedDescription)")
         }
     
 //    let task  = urlSession.dataTask(with: url) { (data, resp, error) in
@@ -65,6 +69,52 @@ enum NetworkError: Error {
     case invalidUrlPath(String)
 }
 
+public indirect enum UserOrId: Equatable, Codable, Hashable {
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .user(let user):
+            try container.encode(user)
+        case .id(let id):
+            try container.encode(id)
+        }
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        
+        if let id = try? container.decode(Int.self) {
+            self = .id(id)
+        } else if let user = try? container.decode(User.self){
+            self = .user(user)
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Data must be int or User")
+        }
+    }
+    
+    var id: Int? {
+        switch self {
+        case .user(let user):
+            return user.id
+        case .id(let id):
+            return id
+        }
+    }
+    
+    var user: User? {
+        switch self {
+        case .user(let user):
+            return user
+        default:
+            return nil
+        }
+    }
+    
+    case user(User)
+    case id(Int)
+}
+
 public protocol DbModel: Hashable, Codable, Identifiable {
     var id: Int? { get set }
     
@@ -72,9 +122,9 @@ public protocol DbModel: Hashable, Codable, Identifiable {
     var updatedAt: Date? { get }
     var deletedAt: Date? { get }
     
-    //var createdBy: Int? { get }
-    var updatedBy: Int? { get }
-    var deletedBy: Int? { get }
+    var createdBy: UserOrId? { get }
+    var updatedBy: UserOrId? { get }
+    var deletedBy: UserOrId? { get }
     
     static func all(on: DispatchQueue?) -> Promise<[Self]>
 }
@@ -129,6 +179,14 @@ extension DbModel {
         }
     }
     
+    public func fetchUpdatedBy() -> Promise<User?> {
+        guard let updatedBy = self.updatedBy, let id = updatedBy.id else {
+            return Promise<User?>(nil)
+        }
+        
+        return User.findById(id: id)
+    }
+    
     public static func className() -> String {
         return String(describing: Self.self)
     }
@@ -137,8 +195,8 @@ extension DbModel {
         return Self.fetch(urlPath: "/api/db/\(Self.className())", dataType: [Self].self, on: on)
     }
     
-    public static func findById(id: Int, on: DispatchQueue? = nil) -> Promise<Self> {
-        return Self.fetch(urlPath: "/api/db/\(Self.className())/\(id)", dataType: Self.self, on: on)
+    public static func findById(id: Int, on: DispatchQueue? = nil) -> Promise<Self?> {
+        return Self.fetch(urlPath: "/api/db/\(Self.className())/\(id)", dataType: Self?.self, on: on)
     }
     
 }
@@ -151,9 +209,9 @@ public struct User: DbModel {
     public var updatedAt: Date?
     public var deletedAt: Date?
     
-    //var createdBy: Int?
-    public var updatedBy: Int?
-    public var deletedBy: Int?
+    public var createdBy: UserOrId?
+    public var updatedBy: UserOrId?
+    public var deletedBy: UserOrId?
     
     public var name: String
     public var email: String
@@ -166,9 +224,9 @@ public struct Musicroom: DbModel {
     public var updatedAt: Date?
     public var deletedAt: Date?
     
-    //var createdBy: Int?
-    public var updatedBy: Int?
-    public var deletedBy: Int?
+    public var createdBy: UserOrId?
+    public var updatedBy: UserOrId?
+    public var deletedBy: UserOrId?
     
     public var name: String
 }
