@@ -9,23 +9,23 @@ func doTest(completionHandler: (() -> Void)?) -> Void {
     //debugPrint("names: \(Musicroom(name: "test").propertyValues())")
     
     Musicroom.findById(id: 1, on: .global(qos: .background))
-        .then() { (res) -> Void in
+        .then() { (res) -> Promise<Musicroom?> in
             var r = res!
-            debugPrint("response1: \(String(describing: r))")
-            r.createdAt = nil
+            debugPrint(r)
+            r.name = "Davido Party"
             
             debugPrint("response: \(String(describing: r.$createdAt)) - \(String(describing: r.createdAt))")
-            //return res!
-                
+            return r.save()
+            
     }
-//    .then(){ user in
-//        debugPrint("User: \(String(describing: user))")
-//    }
+    .then(){ room in
+        debugPrint("User: \(String(describing: room))")
+    }
     .always() {
-            completionHandler?()
-        }.catch() { error in
-            print("error: \(error)")
-        }
+        completionHandler?()
+    }.catch() { error in
+        print("error: \(error)")
+    }
     
 }
 
@@ -44,7 +44,7 @@ enum NetworkError: Error {
 }
 
 public indirect enum ObjectOrId<T: IdIdentifiable>: Equatable, Codable, Hashable {
-
+    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
@@ -54,7 +54,7 @@ public indirect enum ObjectOrId<T: IdIdentifiable>: Equatable, Codable, Hashable
             try container.encode(id)
         }
     }
-
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         
@@ -116,18 +116,18 @@ public struct Tracked<T: Codable & Hashable>: Codable, Hashable {
         projectedValue = wrappedValue
     }
     
-//    static func isOptional<T>(_ type: T.Type) -> Bool {
-////        let mirror = Mirror(reflecting: type)
-////        return mirror.displayStyle == .optional
-//        let typeName = String(describing: type)
-//        return typeName.hasPrefix("Optional<")
-//    }
+    //    static func isOptional<T>(_ type: T.Type) -> Bool {
+    ////        let mirror = Mirror(reflecting: type)
+    ////        return mirror.displayStyle == .optional
+    //        let typeName = String(describing: type)
+    //        return typeName.hasPrefix("Optional<")
+    //    }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(currentValue)
     }
-
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         //debugPrint("field: \(String(describing: T.self)), isOptional: \(Tracked.isOptional(T.self))")
@@ -136,7 +136,7 @@ public struct Tracked<T: Codable & Hashable>: Codable, Hashable {
     }
 }
 
-public protocol DbModel: IdIdentifiable {
+public protocol DbModel: IdIdentifiable, CustomStringConvertible {
     
     var createdAt: Date? { get }
     var updatedAt: Date? { get }
@@ -157,17 +157,22 @@ extension DbModel {
         return Mirror(reflecting: self).children.compactMap { $0.label }
     }
     
-//    func propertyValues() {
-//        let mirror = Mirror(reflecting: self)
-//        for (propName, prop) in mirror.children {
-//
-//            debugPrint("name: \(propName), value: \(String(describing: type(of: prop)).starts(with: ""))")
-//        }
-//    }
+    public var description: String {
+        return String(data: try! Self.jsonEncoder(outputFormatting: .prettyPrinted).encode(self), encoding: .utf8)!
+    }
+    
+    //    func propertyValues() {
+    //        let mirror = Mirror(reflecting: self)
+    //        for (propName, prop) in mirror.children {
+    //
+    //            debugPrint("name: \(propName), value: \(String(describing: type(of: prop)).starts(with: ""))")
+    //        }
+    //    }
     
     func save(on: DispatchQueue? = nil) -> Promise<Self?> {
         let suffix = self.id == nil ? "" : "/\(self.id!)"
-        return Self.post(urlPath: "/api/db/\(Self.className())\(suffix)", dataType: Self?.self, payload: self, on: on)
+        let urlComp = URLComponents(string: "/api/db/\(Self.className())\(suffix)")!
+        return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)
     }
     
     static func baseUrl() -> URL {
@@ -175,25 +180,14 @@ extension DbModel {
         return URL(string: "http://localhost:8080/")!
     }
     
-    static func fetch<T: Codable>(method: HttpMethod = .get, urlPath: String, dataType: T.Type, payload: Any? = nil, on: DispatchQueue? = nil) -> Promise<T> {
+    static func fetch<T: Codable>(method: HttpMethod = .get, urlPath: String, dataType: T.Type, on: DispatchQueue? = nil) -> Promise<T> {
         guard let url = URLComponents(string: urlPath) else {
             return Promise(NetworkError.invalidUrlPath(urlPath))
         }
-        return Self.fetch(method: method, urlPath: url, dataType: dataType, on: on)
+        return Self.fetch(urlPath: url, dataType: dataType, on: on)
     }
     
-    static func post<T: Codable>(urlPath: String, dataType: T.Type, payload: Any, on: DispatchQueue? = nil) -> Promise<T> {
-        Self.fetch(method: .post, urlPath: urlPath, dataType: dataType, payload: payload, on: on)
-    }
-    
-    static func fetch<T: Codable>(method: HttpMethod = .get,urlPath: URLComponents, dataType: T.Type, payload: Any? = nil, on: DispatchQueue? = nil) -> Promise<T> {
-        let baseUrl = Self.baseUrl()
-        
-        guard let url = urlPath.url(relativeTo: baseUrl) else {
-            return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
-        }
-        
-        let on = on ?? DispatchQueue.global(qos: .default)
+    static func jsonDecoder() -> JSONDecoder {
         let decoder = JSONDecoder()
         
         let formatter = DateFormatter()
@@ -203,52 +197,81 @@ extension DbModel {
         formatter.locale = Locale(identifier: "en_UK_POSIX")
         
         decoder.dateDecodingStrategy = .formatted(formatter)
+        return decoder
+    }
+    
+    static func jsonEncoder(outputFormatting: JSONEncoder.OutputFormatting = []) -> JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = outputFormatting
+        return encoder
+    }
+    
+    static func post<T: Codable, E: Encodable>(urlPath: URLComponents, dataType: T.Type, payload: E, on: DispatchQueue? = nil) -> Promise<T> {
+        let baseUrl = Self.baseUrl()
+        
+        guard let url = urlPath.url(relativeTo: baseUrl) else {
+            return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
+        }
+        
+        let on = on ?? DispatchQueue.global(qos: .default)
         
         return Promise<T>(on: on) { (resolve, reject) in
-            //URLSession.shared.
-            var  task: URLSessionDataTask
             
-            switch method {
-            case .get:
-                task = URLSession.shared.dataTask(with: url) { (data, resp, error) in
-                    
-                    guard let data = data else {
-                        return reject(error!)
-                    }
-                    
-                    do {
-                        let resp = try decoder.decode(Response<T>.self, from: data)
-                        resolve(resp.data)
-                    } catch {
-                        reject(error)
-                    }
-                    
-                }
-            case .post:
-                
-                guard let payload = payload else {
-                    let error = NetworkError.badRequest("Payload can not be empty for \(method.rawValue) request")
-                    return reject(error)
+            let encoder = Self.jsonEncoder()
+            let jsonData = try encoder.encode(payload)
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = HttpMethod.post.rawValue
+            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
+            
+            //let data = try JSONSerialization.jsonObject(with: jsonData, options: [])
+            let task = URLSession.shared.uploadTask(with: request, from: jsonData) { (data, resp, error) in
+                //Data?, URLResponse?, Error?
+                guard let data = data else {
+                    return reject(error!)
                 }
                 
-                var request = URLRequest(url: url)
-                request.httpMethod = method.rawValue
-                
-                let data = try JSONSerialization.data(withJSONObject: payload, options: [])
-                task = URLSession.shared.uploadTask(with: request, from: data) { (data, resp, error) in
-                    
-                    guard let data = data else {
-                        return reject(error!)
-                    }
-                    
-                    do {
-                        let resp = try decoder.decode(Response<T>.self, from: data)
-                        resolve(resp.data)
-                    } catch {
-                        reject(error)
-                    }
-                    
+                do {
+                    let decoder = Self.jsonDecoder()
+                    let resp = try decoder.decode(Response<T>.self, from: data)
+                    resolve(resp.data)
+                } catch {
+                    reject(error)
                 }
+                
+            }
+            
+            task.resume()
+        }
+    }
+    
+    static func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, on: DispatchQueue? = nil) -> Promise<T> {
+        let baseUrl = Self.baseUrl()
+        
+        guard let url = urlPath.url(relativeTo: baseUrl) else {
+            return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
+        }
+        
+        let on = on ?? DispatchQueue.global(qos: .default)
+        let decoder = Self.jsonDecoder()
+        
+        return Promise<T>(on: on) { (resolve, reject) in
+            
+            let task = URLSession.shared.dataTask(with: url) { (data, resp, error) in
+                
+                guard let data = data else {
+                    return reject(error!)
+                }
+                
+                do {
+                    let resp = try decoder.decode(Response<T>.self, from: data)
+                    resolve(resp.data)
+                } catch {
+                    reject(error)
+                }
+                
             }
             
             task.resume()
