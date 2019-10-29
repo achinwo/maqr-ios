@@ -10,24 +10,32 @@ import Foundation
 import JoliApi
 import SwiftUI
 import Combine
+import JoliApi
 
 class AppState: ObservableObject {
+    
     @Published var musicrooms: [Musicroom] = []
+    @Published var tracksByMusicrooms: [Int: [Track]] = [:]
+    
+    var api = JoliApi()
 
     var didChange = PassthroughSubject<AppState, Never>()
 
-    func fetch() {
+    func fetchMusicrooms() {
         Musicroom.all()
             .then { [weak self] rooms in
                 self?.musicrooms = rooms
         }
-//        service.search(matching: query) { [weak self] result in
-//            DispatchQueue.main.async {
-//                switch result {
-//                case .success(let repos): self?.repos = repos
-//                case .failure: self?.repos = []
-//                }
-//            }
-//        }
+    }
+    
+    func fetchTracks(_ room: Musicroom) {
+        
+        guard let roomId = room.id else {
+            return
+        }
+        
+        room.fetchTracks().then() { [weak self] tracks in
+            self?.tracksByMusicrooms[roomId] = tracks
+        }
     }
 }

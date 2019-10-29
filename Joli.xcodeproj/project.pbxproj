@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B0716E2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
-		92B071702364F8D40070EC73 /* MusicroomRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716F2364F8D40070EC73 /* MusicroomRow.swift */; };
-		92B071712364F8D40070EC73 /* MusicroomRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716F2364F8D40070EC73 /* MusicroomRow.swift */; };
 		92B071732364F8FB0070EC73 /* MusicroomDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071722364F8FB0070EC73 /* MusicroomDetail.swift */; };
 		92B071742364F8FB0070EC73 /* MusicroomDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071722364F8FB0070EC73 /* MusicroomDetail.swift */; };
 		92B071762364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
@@ -44,7 +42,6 @@
 
 /* Begin PBXFileReference section */
 		92B0716C2364F8A80070EC73 /* MusicroomList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
-		92B0716F2364F8D40070EC73 /* MusicroomRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomRow.swift; sourceTree = "<group>"; };
 		92B071722364F8FB0070EC73 /* MusicroomDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomDetail.swift; sourceTree = "<group>"; };
 		92B071752364FA2D0070EC73 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		92F379DF2363534D005FE2AB /* Joli.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Joli.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -121,7 +118,6 @@
 				92F379F02363534F005FE2AB /* Info.plist */,
 				92F379EA2363534F005FE2AB /* Preview Content */,
 				92B0716C2364F8A80070EC73 /* MusicroomList.swift */,
-				92B0716F2364F8D40070EC73 /* MusicroomRow.swift */,
 				92B071722364F8FB0070EC73 /* MusicroomDetail.swift */,
 				92B071752364FA2D0070EC73 /* AppState.swift */,
 			);
@@ -300,7 +296,6 @@
 				92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */,
 				92B071762364FA2D0070EC73 /* AppState.swift in Sources */,
 				92B071732364F8FB0070EC73 /* MusicroomDetail.swift in Sources */,
-				92B071702364F8D40070EC73 /* MusicroomRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,7 +315,6 @@
 				92B071772364FA2D0070EC73 /* AppState.swift in Sources */,
 				92B071742364F8FB0070EC73 /* MusicroomDetail.swift in Sources */,
 				92F37A052363534F005FE2AB /* JoliUITests.swift in Sources */,
-				92B071712364F8D40070EC73 /* MusicroomRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

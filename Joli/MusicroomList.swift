@@ -9,17 +9,22 @@
 import SwiftUI
 
 struct MusicroomList: View {
+    
     @EnvironmentObject var appState: AppState
     
     var body: some View {
         NavigationView {
             List(appState.musicrooms) { room in
                 NavigationLink(destination: MusicroomDetail(room: room)) {
-                    MusicroomRow(room: room)
-                }
+                    HStack {
+                        Text(verbatim: room.name)
+                        Spacer()
+                    }
+                }.onAppear() { self.appState.fetchTracks(room) }
             }
             .navigationBarTitle(Text("Music Rooms"))
-        }.onAppear() { self.appState.fetch() }
+        }.onAppear() { self.appState.fetchMusicrooms() }
+        //.colorScheme(.dark)
     }
 }
 

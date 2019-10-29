@@ -10,11 +10,11 @@ final class JoliApiTests: XCTestCase {
         // results.
         let expectation = self.expectation(description: "running async test")
         
-        doTest() {
+        let j = JoliApi()
+        
+        JoliApi.doTest() {
             expectation.fulfill()
         }
-        
-        
         
         wait(for: [expectation], timeout: 2)
         
