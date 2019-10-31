@@ -8,21 +8,6 @@
 import Foundation
 import Promises
 
-struct Response<T: Codable>: Codable {
-    let data: T
-}
-
-enum NetworkError: Error {
-    case invalidUrl(URLComponents, URL)
-    case invalidUrlPath(String)
-    case badRequest(String)
-}
-
-enum HttpMethod: String {
-    case get = "GET"
-    case post = "POST"
-}
-
 public protocol IdIdentifiable: Codable, Hashable, Identifiable {
     var id: Int? { get set }
 }
@@ -124,6 +109,8 @@ public protocol DbModel: IdIdentifiable, CustomStringConvertible {
     static func all(on: DispatchQueue?) -> Promise<[Self]>
 }
 
+private var BASE_URL: URL?
+
 extension DbModel {
     
     func propertyNames() -> [String] {
@@ -148,9 +135,11 @@ extension DbModel {
         return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)
     }
     
-    static func baseUrl() -> URL {
-        return URL(string: "http://192.168.1.173:8080")!
-        //return URL(string: "http://localhost:8080/")!
+    static var baseUrl: URL {
+        get { BASE_URL ?? URL(string: "http://192.168.1.173:8080")! }
+        set {
+            BASE_URL = newValue
+        }
     }
     
     static func fetch<T: Codable>(method: HttpMethod = .get, urlPath: String, dataType: T.Type, on: DispatchQueue? = nil) -> Promise<T> {
@@ -170,6 +159,7 @@ extension DbModel {
         formatter.locale = Locale(identifier: "en_UK_POSIX")
         
         decoder.dateDecodingStrategy = .formatted(formatter)
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
         return decoder
     }
     
@@ -181,7 +171,6 @@ extension DbModel {
     }
     
     static func post<T: Codable, E: Encodable>(urlPath: URLComponents, dataType: T.Type, payload: E, on: DispatchQueue? = nil) -> Promise<T> {
-        let baseUrl = Self.baseUrl()
         
         guard let url = urlPath.url(relativeTo: baseUrl) else {
             return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
@@ -221,7 +210,6 @@ extension DbModel {
     }
     
     static func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, on: DispatchQueue? = nil) -> Promise<T> {
-        let baseUrl = Self.baseUrl()
         
         guard let url = urlPath.url(relativeTo: baseUrl) else {
             return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
@@ -313,7 +301,7 @@ public struct Musicroom: DbModel {
         }
         
         let urlPath = URLComponents(string: "/get_room_tracks")!
-        return Musicroom.post(urlPath: urlPath, dataType: [Track].self, payload: ["roomId": id], on: on)
+        return Self.post(urlPath: urlPath, dataType: [Track].self, payload: ["roomId": id], on: on)
     }
 }
 
@@ -333,9 +321,9 @@ public struct Track: DbModel {
     public var thumbnailUrl: String
     public var artistName: String
     
-    public func play(on: DispatchQueue? = nil) -> Promise<Track> {
-        let deviceId = "764cec96ce3d400916aac96e10ece041079ab1f5"
+    public func play(deviceId: String?, on: DispatchQueue? = nil) -> Promise<Track> {
+        let deviceId = deviceId ?? "764cec96ce3d400916aac96e10ece041079ab1f5"
         let urlPath = URLComponents(string: "/api/spotify/play?trackId=spotify:track:\(self.trackId)&deviceId=\(deviceId)")!
-        return Track.post(urlPath: urlPath, dataType: Track.self, payload: self, on: on)
+        return Self.post(urlPath: urlPath, dataType: Self.self, payload: self, on: on)
     }
 }
