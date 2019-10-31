@@ -21,16 +21,17 @@ extension WebSocketMessage {
     
 }
 
-class WebSocketTest: NSObject {
+public class WebSocketClient: NSObject {
     
-    typealias MessageCallback = (Result<URLSessionWebSocketTask.Message, Error>) -> Void
+    public typealias MessageCallback = (Result<URLSessionWebSocketTask.Message, Error>) -> Void
     
     var session: URLSession!
     var task: URLSessionWebSocketTask!
     var onMessage: MessageCallback?
     var connected = false
-
-    init(url: URL, onMessage: MessageCallback? = nil) {
+    //var queue: OperationQueue = DispatchQueue.global(qos: .background)
+    
+    public init(url: URL, onMessage: MessageCallback? = nil) {
         super.init()
         self.session = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue.main)
         self.task = self.session.webSocketTask(with: url)
@@ -73,15 +74,15 @@ class WebSocketTest: NSObject {
     }
 }
 
-extension WebSocketTest: URLSessionWebSocketDelegate {
+extension WebSocketClient: URLSessionWebSocketDelegate {
     
-    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         print("Connected!")
         self.connected = true
         OperationQueue.main.addOperation(self.receive)
     }
 
-    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         print("Disconnected! \(String(data: reason!, encoding: .utf8)!)")
         self.connected = false
     }
@@ -106,7 +107,7 @@ public enum SpotifyDeviceType: String, Codable {
     case unknown = "Unknown"
 }
 
-extension Result {
+public extension Result {
     var success: Success? {
         switch self {
         case .success(let success):
@@ -126,7 +127,7 @@ extension Result {
     }
 }
 
-extension Result where Success == URLSessionWebSocketTask.Message {
+public extension Result where Success == URLSessionWebSocketTask.Message {
     
     var successTuple: (string: String?, data: Data?) {
         switch self {
@@ -157,6 +158,7 @@ extension Result where Success == URLSessionWebSocketTask.Message {
 public struct JoliApi {
     public var text = "Hello, World!"
     public var user: User?
+    public var wsClient: WebSocketClient
     
     public struct SpotifyDevice: Codable, Identifiable, Hashable {
         public let id: String
@@ -169,7 +171,28 @@ public struct JoliApi {
     }
     
     public init(){
-        
+        let httpUrl = Musicroom.baseUrl.appendingPathComponent("/ws")
+        let url = URL(string: httpUrl.absoluteString.replacingOccurrences(of: "http:", with: "ws:"))!
+        print("connecting to ws: \(url)")
+        self.wsClient = WebSocketClient(url: url)
+        self.wsClient.connect()
+    }
+    
+    public func subscribe(subject: String, onMessage: @escaping WebSocketClient.MessageCallback){
+        self.wsClient.onMessage = onMessage
+        let topic = "/subscribe?subject=\(subject)"
+        self.wsClient.send(topic: topic) { error in
+            guard let error = error else { return }
+            print("[wsSubscribe] error: \(error)")
+        }
+    }
+    
+    public func unsubscribe(subject: String){
+        let topic = "/unsubscribe?subject=\(subject)"
+        self.wsClient.send(topic: topic) { error in
+            guard let error = error else { return }
+            print("[wsUnsubscribe] error: \(error)")
+        }
     }
     
     public func fetchSpotifyDevices(on: DispatchQueue? = nil) -> Promise<[SpotifyDevice]> {
@@ -195,7 +218,7 @@ public struct JoliApi {
 //            print("Websocket: \(error)")
 //        }
         
-        let webSocketTest = WebSocketTest(url: url) { result in
+        let webSocketTest = WebSocketClient(url: url) { result in
             guard let resp = result.successString else {
                 print("[onmessage] error: \(result.error!)")
                 return

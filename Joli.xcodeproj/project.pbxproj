@@ -10,13 +10,13 @@
 		92061A84236B0175007FC6F1 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92061A83236B0175007FC6F1 /* Extensions.swift */; };
 		925E5C702369D85900D95AB7 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925E5C6E2369D85900D95AB7 /* MapView.swift */; };
 		925E5C712369D85900D95AB7 /* CircleImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925E5C6F2369D85900D95AB7 /* CircleImage.swift */; };
-		925E5C73236A742100D95AB7 /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
-		925E5C74236A742100D95AB7 /* SpotifyiOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B0716E2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B071762364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
 		92B071772364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
 		92B071792365035A0070EC73 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92B071782365035A0070EC73 /* JoliApi */; };
+		92F11767236B8AC500F85A82 /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
+		92F11768236B8AC500F85A82 /* SpotifyiOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		92F379E32363534D005FE2AB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E22363534D005FE2AB /* AppDelegate.swift */; };
 		92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E42363534D005FE2AB /* SceneDelegate.swift */; };
 		92F379E92363534F005FE2AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92F379E82363534F005FE2AB /* Assets.xcassets */; };
@@ -44,13 +44,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		925E5C75236A742100D95AB7 /* Embed Frameworks */ = {
+		92F11769236B8AC500F85A82 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				925E5C74236A742100D95AB7 /* SpotifyiOS.framework in Embed Frameworks */,
+				92F11768236B8AC500F85A82 /* SpotifyiOS.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -87,7 +87,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				92B071792365035A0070EC73 /* JoliApi in Frameworks */,
-				925E5C73236A742100D95AB7 /* SpotifyiOS.framework in Frameworks */,
+				92F11767236B8AC500F85A82 /* SpotifyiOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -201,7 +201,7 @@
 				92F379DB2363534D005FE2AB /* Sources */,
 				92F379DC2363534D005FE2AB /* Frameworks */,
 				92F379DD2363534D005FE2AB /* Resources */,
-				925E5C75236A742100D95AB7 /* Embed Frameworks */,
+				92F11769236B8AC500F85A82 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -499,6 +499,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Joli/Preview Content\"";
 				DEVELOPMENT_TEAM = KG87ZUCP4X;
@@ -515,6 +516,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.Joli;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Joli-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -525,6 +527,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Joli/Preview Content\"";
 				DEVELOPMENT_TEAM = KG87ZUCP4X;
@@ -541,6 +544,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.Joli;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Joli-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

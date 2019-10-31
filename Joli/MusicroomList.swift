@@ -80,6 +80,8 @@ struct MusicroomDetail: View {
 
     var body: some View {
         VStack(alignment: .leading) {
+//            Slider(value: 20, in: -100...100, step: 0.1)
+//            Text("Now Playing...")
             
             Picker(selection: self.$selectedSpotifyDeviceIdx, label: Text("Devices")) {
                 ForEach(self.spotifyDevices) { device in
@@ -87,20 +89,29 @@ struct MusicroomDetail: View {
                 }
             }.pickerStyle(SegmentedPickerStyle())
                 .onAppear(perform: onAppear)
+                .onDisappear(perform: onDisappear)
             
                 //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
             
             List(tracks) { track in
                 TrackView(track: track, spotifyDevice: self.spotifyDevice)//.background(Color.pink)
                 Spacer()
-            }.onTapGesture() { print("tapped: \(self.selectedSpotifyDeviceIdx)") }
+            }
         }
         //.navigationBarTitle(Text(verbatim: room.name), displayMode: .inline)
     }
     
+    func onDisappear(){
+        print("Disappeared!!")
+        self.appState.api.unsubscribe(subject: "PLAYER_STATE_NOW_PLAYING")
+    }
+    
     func onAppear() {
-        print("Appeared!!")
+        print("Appeared - 2!!")
         
+        self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
+            print("\(result)")
+        }
         
         appState.api.fetchSpotifyDevices(on: DispatchQueue.main)
             .then() { devices in
