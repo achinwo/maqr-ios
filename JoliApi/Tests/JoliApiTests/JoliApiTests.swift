@@ -14,7 +14,7 @@ final class JoliApiTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 2)
+        wait(for: [expectation], timeout: 60)
         
         XCTAssertEqual(JoliApi().text, "Hello, World!")
     }

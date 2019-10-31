@@ -53,6 +53,9 @@ struct TrackView: View {
         }
     }
 }
+class Abc: SPTConfiguration{
+    
+}
 
 struct MusicroomDetail: View {
     @EnvironmentObject var appState: AppState
