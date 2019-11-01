@@ -27,8 +27,8 @@ public class WebSocketClient: NSObject {
     
     var session: URLSession!
     var task: URLSessionWebSocketTask!
-    var onMessage: MessageCallback?
-    var connected = false
+    public var onMessage: MessageCallback?
+    public var connected = false
     //var queue: OperationQueue = DispatchQueue.global(qos: .background)
     
     public init(url: URL, onMessage: MessageCallback? = nil) {
@@ -175,7 +175,7 @@ public struct JoliApi {
         let url = URL(string: httpUrl.absoluteString.replacingOccurrences(of: "http:", with: "ws:"))!
         print("connecting to ws: \(url)")
         self.wsClient = WebSocketClient(url: url)
-        self.wsClient.connect()
+        //self.wsClient.connect()
     }
     
     public func subscribe(subject: String, onMessage: @escaping WebSocketClient.MessageCallback){
@@ -227,18 +227,18 @@ public struct JoliApi {
             print("response: \(resp)")
         }
         
-        webSocketTest.connect()
-        webSocketTest.send(topic: "/subscribe") { error in
-            guard let error = error else {
-                return
-            }
-            print("error sending message!")
-        }
-//
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
-            webSocketTest.disconnect()
-            completionHandler?()
-        }
+//        webSocketTest.connect()
+//        webSocketTest.send(topic: "/subscribe") { error in
+//            guard let error = error else {
+//                return
+//            }
+//            print("error sending message! \(error)")
+//        }
+////
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
+//            webSocketTest.disconnect()
+//            completionHandler?()
+//        }
         
 //        let json = """
 //{"data":{"devices":[{"id":"27e695c3138d67b3f21ed35119d93dbd1351d1e9","is_active":false,"is_private_session":false,"is_restricted":false,"name":"Influence The Music","type":"Computer","volume_percent":100},{"id":"37c249a0aaf5473db8292b2f30ef1e83f4b08cc1","is_active":false,"is_private_session":false,"is_restricted":false,"name":"Devialet Phantom","type":"Speaker","volume_percent":34},{"id":"764cec96ce3d400916aac96e10ece041079ab1f5","is_active":false,"is_private_session":false,"is_restricted":false,"name":"Anthony’s MacBook Pro","type":"Computer","volume_percent":100}]},"headers":{},"status":200}
@@ -260,24 +260,24 @@ public struct JoliApi {
 //            //completionHandler?()
 //        }
         
-//        Musicroom.findById(id: 1, on: .global(qos: .background))
-//        .then() { (res) -> Promise<[Track]> in
-//            var r = res!
-//            //debugPrint(r)
-//            r.name = "Davido Party"
-//
-//            //debugPrint("response: \(String(describing: r.$createdAt)) - \(String(describing: r.createdAt))")
-//            return r.fetchTracks()
-//
-//        }
-//        .then(){ res in
-//            //print("Result: \(res)")
-//        }
-//        .always() {
-//            //completionHandler?()
-//        }.catch() { error in
-//            print("error: \(error)")
-//        }
+        Musicroom.findById(id: 1, on: .global(qos: .background))
+        .then() { (res) -> Promise<[Track]> in
+            var r = res!
+            //debugPrint(r)
+            r.name = "Davido Party"
+
+            debugPrint("response: \(String(describing: r.$createdAt)) - \(String(describing: r.createdAt))")
+            return r.fetchTracks()
+
+        }
+        .then(){ res in
+            //print("Result: \(res)")
+        }
+        .always() {
+            completionHandler?()
+        }.catch() { error in
+            print("error: \(error)")
+        }
         
     }
 }

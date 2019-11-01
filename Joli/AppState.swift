@@ -23,8 +23,8 @@ class AppState: ObservableObject {
     var didChange = PassthroughSubject<AppState, Never>()
 
     func fetchMusicrooms() {
-        Musicroom.all()
-            .then { [weak self] rooms in
+        Musicroom.all(on: .global(qos: .background))
+            .then(on: .main) { [weak self] rooms in
                 self?.musicrooms = rooms
         }
     }

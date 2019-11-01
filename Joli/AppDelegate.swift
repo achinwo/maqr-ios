@@ -11,11 +11,21 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
+    
+    var appState = AppState()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
         return true
+    }
+    
+    func applicationDidBecomeActive(_ application: UIApplication){
+        appState.api.wsClient.connect()
+    }
+
+    func applicationWillResignActive(_ application: UIApplication){
+        appState.api.wsClient.disconnect()
     }
 
     // MARK: UISceneSession Lifecycle

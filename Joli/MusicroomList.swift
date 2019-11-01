@@ -53,14 +53,14 @@ struct TrackView: View {
         }
     }
 }
-class Abc: SPTConfiguration{
-    
-}
+
 
 struct MusicroomDetail: View {
     @EnvironmentObject var appState: AppState
     
+    @State var nowPlayingPosition = 0.0
     @State var selectedSpotifyDeviceIdx: Int?
+    @State var nowPlaying: String?
     
     var spotifyDevice: JoliApi.SpotifyDevice? {
         guard let selectedSpotifyDeviceIdx = selectedSpotifyDeviceIdx else { return nil }
@@ -80,8 +80,11 @@ struct MusicroomDetail: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-//            Slider(value: 20, in: -100...100, step: 0.1)
-//            Text("Now Playing...")
+            
+            Text(self.nowPlaying != nil ? "Now Playing...\(self.nowPlaying!)" : "").padding()
+            Slider(value: self.$nowPlayingPosition, in: 0...100, step: 1)
+            .disabled(self.nowPlaying == nil)
+                .padding()
             
             Picker(selection: self.$selectedSpotifyDeviceIdx, label: Text("Devices")) {
                 ForEach(self.spotifyDevices) { device in
@@ -106,17 +109,54 @@ struct MusicroomDetail: View {
         self.appState.api.unsubscribe(subject: "PLAYER_STATE_NOW_PLAYING")
     }
     
+    static func jsonStringToDict(text: String) -> [String:AnyObject]? {
+        if let data = text.data(using: .utf8) {
+            do {
+                return try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject]
+            } catch let error {
+                print(error)
+            }
+        }
+        return nil
+    }
+    
     func onAppear() {
         print("Appeared - 2!!")
+        if !appState.api.wsClient.connected {
+            appState.api.wsClient.connect()
+        }
         
         self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
-            print("\(result)")
+            
+            guard let json = result.successString, let jsonDict = Self.jsonStringToDict(text: json) else {
+                print("failed to  deserialise result: \(result)")
+                return
+            }
+            
+            let data = jsonDict["data"] as? [String: AnyObject]
+            let item = data?["item"] as? [String: AnyObject]
+            //?["name"]
+            //print("\(String(describing: item?["name"]))")//duration_ms
+            self.nowPlaying = item?["name"] as? String
+            
+            guard let duration = item?["duration_ms"] as? Double, let progress = data?["progress_ms"] as? Double else {
+                return
+            }
+            print("duration: \(duration), progress: \(progress)")
+            
+            self.nowPlayingPosition = (progress / duration) * 100
         }
         
         appState.api.fetchSpotifyDevices(on: DispatchQueue.main)
             .then() { devices in
                 print("Devices: \(devices)")
                 self.spotifyDevices = devices
+                
+                if self.selectedSpotifyDeviceIdx != nil {
+                    return
+                }
+                
+                self.selectedSpotifyDeviceIdx = devices.firstIndex() { $0.isActive }
         }
     }
 }
