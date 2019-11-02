@@ -1,93 +1,6 @@
 import Foundation
 import Promises
-
-
-
-struct WebSocketMessage: Encodable {
-    let topic: String
-    let body = ["subject": "PLAYER_STATE_NOW_PLAYING"]
-}
-
-extension WebSocketMessage {
-    
-    func jsonString() -> String {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = .prettyPrinted
-        let jsonData = try! encoder.encode(self)
-        
-        return  String(data: jsonData, encoding: .utf8)!
-    }
-    
-}
-
-public class WebSocketClient: NSObject {
-    
-    public typealias MessageCallback = (Result<URLSessionWebSocketTask.Message, Error>) -> Void
-    
-    var session: URLSession!
-    var task: URLSessionWebSocketTask!
-    public var onMessage: MessageCallback?
-    public var connected = false
-    //var queue: OperationQueue = DispatchQueue.global(qos: .background)
-    
-    public init(url: URL, onMessage: MessageCallback? = nil) {
-        super.init()
-        self.session = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue.main)
-        self.task = self.session.webSocketTask(with: url)
-        self.onMessage = onMessage
-    }
-
-    public func send(topic: String, payload: Encodable? = nil, completionHandler: ((Error?) -> Void)?){
-        let msg = WebSocketMessage(topic: topic)
-        
-        let message = URLSessionWebSocketTask.Message.string(msg.jsonString())
-        self.task.send(message) { error in
-            completionHandler?(error)
-        }
-    }
-    
-    public func receive(){
-        self.task.receive() { result in
-            //print("[result] \(result)")
-            
-            defer {
-                self.onMessage?(result)
-            }
-            
-            guard self.connected else {
-                print("[receive] aborting...")
-                return
-            }
-            
-            print("[receive] scheduling next receive cycle...")
-            OperationQueue.main.addOperation(self.receive)
-        }
-    }
-    
-    public func connect() {
-        self.task.resume()
-    }
-
-    public func disconnect() {
-        self.task.cancel(with: .goingAway, reason: "I cancelled".data(using: .utf8))
-    }
-}
-
-extension WebSocketClient: URLSessionWebSocketDelegate {
-    
-    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
-        print("Connected!")
-        self.connected = true
-        OperationQueue.main.addOperation(self.receive)
-    }
-
-    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
-        print("Disconnected! \(String(data: reason!, encoding: .utf8)!)")
-        self.connected = false
-    }
-    
-}
+import Combine
 
 public enum SpotifyDeviceType: String, Codable {
     /// https://developer.spotify.com/documentation/web-api/reference/player/get-a-users-available-devices/#device-types
@@ -107,58 +20,29 @@ public enum SpotifyDeviceType: String, Codable {
     case unknown = "Unknown"
 }
 
-public extension Result {
-    var success: Success? {
-        switch self {
-        case .success(let success):
-            return success
-        default:
-            return nil
-        }
-    }
-    
-    var error: Failure? {
-        switch self {
-        case .failure(let error):
-            return error
-        default:
-            return nil
-        }
-    }
+public struct TrackInfo {
+    public var track: Track?
+    public var info: Json?
 }
 
-public extension Result where Success == URLSessionWebSocketTask.Message {
+public class JoliApi: ObservableObject {
     
-    var successTuple: (string: String?, data: Data?) {
-        switch self {
-        case .success(let success):
-            switch success {
-            case .string(let val):
-                return (string: val, data: nil)
-            case .data(let data):
-                return (string: nil, data: data)
-            @unknown default:
-                fatalError()
-            }
-        default:
-            return (string: nil, data: nil)
+    @Published var currentPlaying: TrackInfo?
+    @Published var currentPlayingTrack: Track?
+    
+    public func playTrack(_ track: Track, deviceId: String?) -> Promise<Result<TrackInfo, Error>>{
+        return track.play(deviceId: deviceId)
+            .then() { track -> Result<TrackInfo, Error> in
+                return Result<TrackInfo, Error>.success(TrackInfo(track: track, info: [:]))
         }
     }
     
-    var successString: String? {
-        return successTuple.string
-    }
-    
-    var successData: Data? {
-        return successTuple.data
-    }
-    
-}
-
-public struct JoliApi {
     public var text = "Hello, World!"
     public var user: User?
     public var wsClient: WebSocketClient
+
+    public var subjects: Set<String> = []
+    public var baseUrl: (ws: URL, http: URL)
     
     public struct SpotifyDevice: Codable, Identifiable, Hashable {
         public let id: String
@@ -171,33 +55,54 @@ public struct JoliApi {
     }
     
     public init(){
-        let httpUrl = Musicroom.baseUrl.appendingPathComponent("/ws")
-        let url = URL(string: httpUrl.absoluteString.replacingOccurrences(of: "http:", with: "ws:"))!
-        print("connecting to ws: \(url)")
+        self.baseUrl = Musicroom.baseUrl
+        let url = baseUrl.ws.appendingPathComponent("/ws")
         self.wsClient = WebSocketClient(url: url)
+        
         //self.wsClient.connect()
+        self.wsClient.connectionHandler = { connected in
+            print("JoliApi: connected=\(connected)")
+            guard connected, let onMessage = self.wsClient.onMessage else {
+                return
+            }
+            
+            for subject in self.subjects  {
+                self.subscribe(subject: subject, onMessage: onMessage)
+            }
+        }
     }
     
     public func subscribe(subject: String, onMessage: @escaping WebSocketClient.MessageCallback){
         self.wsClient.onMessage = onMessage
         let topic = "/subscribe?subject=\(subject)"
         self.wsClient.send(topic: topic) { error in
-            guard let error = error else { return }
-            print("[wsSubscribe] error: \(error)")
+            if let error = error {
+                print("[wsSubscribe] error: \(error)")
+                return
+            }
+            
+            print("[JoliApi#subscribe] subject=\(subject)")
+            self.subjects.insert(subject)
         }
     }
     
     public func unsubscribe(subject: String){
         let topic = "/unsubscribe?subject=\(subject)"
         self.wsClient.send(topic: topic) { error in
-            guard let error = error else { return }
-            print("[wsUnsubscribe] error: \(error)")
+            if let error = error {
+                print("[wsUnsubscribe] error: \(error)")
+                return
+            }
+            
+            print("[JoliApi#unsubscribe] subject=\(subject)")
+            self.subjects.remove(subject)
         }
     }
     
-    public func fetchSpotifyDevices(on: DispatchQueue? = nil) -> Promise<[SpotifyDevice]> {
+    public func fetchSpotifyDevices(baseUrl optBaseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[SpotifyDevice]> {
         let on = on ?? DispatchQueue.main
-        return Musicroom.fetch(urlPath: "/api/spotify/devices", dataType: [String: [SpotifyDevice]].self, on: on)
+        let baseUrl = optBaseUrl ?? self.baseUrl.http
+        return HttpMethod.get.fetch(urlPath: "/api/spotify/devices", dataType: [String: [SpotifyDevice]].self, baseUrl: baseUrl, on: on)
             .then(on: on) { (dict) -> [SpotifyDevice] in
                 guard let devices = dict["devices"] else {
                     throw NetworkError.badResponse("expected key \"devices\" in response: \(dict)")
@@ -286,3 +191,4 @@ public struct JoliApi {
 
 //}
 //class  Sp:  SPT
+

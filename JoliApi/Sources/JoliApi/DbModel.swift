@@ -12,6 +12,38 @@ public protocol IdIdentifiable: Codable, Hashable, Identifiable {
     var id: Int? { get set }
 }
 
+//protocol Trackable: Codable, Hashable {
+//    associatedtype Value: Codable, Hashable
+//}
+//
+//@propertyWrapper
+//public struct TrackedValue: Trackable {
+//    typealias Value = <#type#>
+//
+//
+//
+//    private var currentValue: Value
+//
+//    public var wrappedValue: Value {
+//        get { return currentValue }
+//        set {
+//            currentValue = newValue
+//        }
+//    }
+//
+//    public func encode(to encoder: Encoder) throws {
+//        var container = encoder.singleValueContainer()
+//        try container.encode(currentValue)
+//    }
+//
+//    public init(from decoder: Decoder) throws {
+//        let container = try decoder.singleValueContainer()
+//        //debugPrint("field: \(String(describing: T.self)), isOptional: \(Tracked.isOptional(T.self))")
+//
+//        self.init(wrappedValue: try? container.decode(T.self))
+//    }
+//}
+
 @propertyWrapper
 public struct Tracked<T: Codable & Hashable>: Codable, Hashable {
     
@@ -29,13 +61,6 @@ public struct Tracked<T: Codable & Hashable>: Codable, Hashable {
         currentValue = wrappedValue
         projectedValue = wrappedValue
     }
-    
-    //    static func isOptional<T>(_ type: T.Type) -> Bool {
-    //        let mirror = Mirror(reflecting: type)
-    //        return mirror.displayStyle == .optional
-    //        let typeName = String(describing: type)
-    //        return typeName.hasPrefix("Optional<")
-    //    }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
@@ -106,7 +131,7 @@ public protocol DbModel: IdIdentifiable, CustomStringConvertible {
     var updatedBy: ObjectOrId<User>? { get }
     var deletedBy: ObjectOrId<User>? { get }
     
-    static func all(on: DispatchQueue?) -> Promise<[Self]>
+    static func all(baseUrl: URL?, on: DispatchQueue?) -> Promise<[Self]>
 }
 
 private var BASE_URL: URL?
@@ -129,24 +154,22 @@ extension DbModel {
     //        }
     //    }
     
-    func save(on: DispatchQueue? = nil) -> Promise<Self?> {
+    func save(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
         let suffix = self.id == nil ? "" : "/\(self.id!)"
         let urlComp = URLComponents(string: "/api/db/\(Self.className())\(suffix)")!
-        return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)
+        //return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)
+        return HttpMethod.post.fetch(urlPath: urlComp, dataType: Self?.self, payload: self, baseUrl: baseUrl, on: on)
     }
     
-    static var baseUrl: URL {
-        get { BASE_URL ?? URL(string: "http://192.168.1.173:8080")! }
+    //192.168.1.132
+    static var baseUrl: (ws: URL, http: URL) {
+//        get { (http:BASE_URL ?? URL(string: "http://192.168.1.132:8080")!,
+//        ws:URL(string: "ws://192.168.1.132:8080")!)}
+        get { (http:BASE_URL ?? URL(string: "http://192.168.1.173:8080")!,
+               ws:URL(string: "ws://192.168.1.173:8080")!)}
         set {
-            BASE_URL = newValue
+            BASE_URL = newValue.http
         }
-    }
-    
-    static func fetch<T: Codable>(method: HttpMethod = .get, urlPath: String, dataType: T.Type, on: DispatchQueue? = nil) -> Promise<T> {
-        guard let url = URLComponents(string: urlPath) else {
-            return Promise(NetworkError.invalidUrlPath(urlPath))
-        }
-        return Self.fetch(urlPath: url, dataType: dataType, on: on)
     }
     
     static func jsonDecoder() -> JSONDecoder {
@@ -170,75 +193,6 @@ extension DbModel {
         return encoder
     }
     
-    static func post<T: Codable, E: Encodable>(urlPath: URLComponents, dataType: T.Type, payload: E, on: DispatchQueue? = nil) -> Promise<T> {
-        
-        guard let url = urlPath.url(relativeTo: baseUrl) else {
-            return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
-        }
-        
-        let on = on ?? DispatchQueue.global(qos: .default)
-        
-        return Promise<T>(on: on) { (resolve, reject) in
-            
-            let encoder = Self.jsonEncoder()
-            let jsonData = try encoder.encode(payload)
-            
-            var request = URLRequest(url: url)
-            request.httpMethod = HttpMethod.post.rawValue
-            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
-            
-            //let data = try JSONSerialization.jsonObject(with: jsonData, options: [])
-            let task = URLSession.shared.uploadTask(with: request, from: jsonData) { (data, resp, error) in
-                //Data?, URLResponse?, Error?
-                guard let data = data else {
-                    return reject(error!)
-                }
-                
-                do {
-                    let decoder = Self.jsonDecoder()
-                    let resp = try decoder.decode(Response<T>.self, from: data)
-                    resolve(resp.data)
-                } catch {
-                    reject(error)
-                }
-                
-            }
-            
-            task.resume()
-        }
-    }
-    
-    static func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, on: DispatchQueue? = nil) -> Promise<T> {
-        
-        guard let url = urlPath.url(relativeTo: baseUrl) else {
-            return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
-        }
-        
-        let on = on ?? DispatchQueue.global(qos: .default)
-        let decoder = Self.jsonDecoder()
-        
-        return Promise<T>(on: on) { (resolve, reject) in
-            
-            let task = URLSession.shared.dataTask(with: url) { (data, resp, error) in
-                
-                guard let data = data else {
-                    return reject(error!)
-                }
-                
-                do {
-                    let resp = try decoder.decode(Response<T>.self, from: data)
-                    resolve(resp.data)
-                } catch {
-                    reject(error)
-                }
-                
-            }
-            
-            task.resume()
-        }
-    }
-    
     public func fetchUpdatedBy() -> Promise<User?> {
         guard let updatedBy = self.updatedBy, let id = updatedBy.id else {
             return Promise<User?>(nil)
@@ -251,12 +205,12 @@ extension DbModel {
         return String(describing: Self.self)
     }
     
-    public static func all(on: DispatchQueue? = nil) -> Promise<[Self]> {
-        return Self.fetch(urlPath: "/api/db/\(Self.className())", dataType: [Self].self, on: on)
+    public static func all(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[Self]> {
+        return HttpMethod.get.fetch(urlPath: "/api/db/\(Self.className())", dataType: [Self].self, baseUrl: baseUrl, on: on)
     }
     
-    public static func findById(id: Int, on: DispatchQueue? = nil) -> Promise<Self?> {
-        return Self.fetch(urlPath: "/api/db/\(Self.className())/\(id)", dataType: Self?.self, on: on)
+    public static func findById(id: Int, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
+        return HttpMethod.get.fetch(urlPath: "/api/db/\(Self.className())/\(id)", dataType: Self?.self, baseUrl: baseUrl, on: on)
     }
     
 }
@@ -295,17 +249,18 @@ public struct Musicroom: DbModel {
     // get users
     // get tracks
     
-    public func fetchTracks(on: DispatchQueue? = nil) -> Promise<[Track]> {
+    public func fetchTracks(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[Track]> {
         guard let id = self.id else {
             return Promise([])
         }
-        
         let urlPath = URLComponents(string: "/get_room_tracks")!
-        return Self.post(urlPath: urlPath, dataType: [Track].self, payload: ["roomId": id], on: on)
+        return HttpMethod.post.fetch(urlPath: urlPath, dataType: [Track].self, payload: ["roomId": id], baseUrl: baseUrl, on: on)
     }
+    
 }
 
 public struct Track: DbModel {
+    
     @Tracked<Int> public var id: Int?
     
     @Tracked<Date> public var createdAt: Date?
@@ -321,9 +276,15 @@ public struct Track: DbModel {
     public var thumbnailUrl: String
     public var artistName: String
     
-    public func play(deviceId: String?, on: DispatchQueue? = nil) -> Promise<Track> {
-        let deviceId = deviceId ?? "764cec96ce3d400916aac96e10ece041079ab1f5"
-        let urlPath = URLComponents(string: "/api/spotify/play?trackId=spotify:track:\(self.trackId)&deviceId=\(deviceId)")!
-        return Self.post(urlPath: urlPath, dataType: Self.self, payload: self, on: on)
+    @discardableResult
+    public func play(deviceId: String?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Track> {
+        
+        var urlPath = URLComponents(string: "/api/spotify/play")!
+        urlPath.percentEncodedQueryItems = [
+            URLQueryItem(name: "trackId", value: "spotify:track:\(self.trackId)"),
+            URLQueryItem(name: "deviceId", value: deviceId)
+        ]
+        
+        return HttpMethod.post.fetch(urlPath: urlPath, dataType: Self.self, payload: self, baseUrl: baseUrl, on: on)
     }
 }

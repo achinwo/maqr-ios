@@ -21,10 +21,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationDidBecomeActive(_ application: UIApplication){
+        print("[AppDelegate] App is active")
         appState.api.wsClient.connect()
     }
 
     func applicationWillResignActive(_ application: UIApplication){
+        print("[AppDelegate] App is inactive")
         appState.api.wsClient.disconnect()
     }
 

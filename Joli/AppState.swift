@@ -11,16 +11,50 @@ import JoliApi
 import SwiftUI
 import Combine
 import JoliApi
-//import SpotifyiOS
+import Promises
+
 
 class AppState: ObservableObject {
     
     @Published var musicrooms: [Musicroom] = []
     @Published var tracksByMusicrooms: [Int: [Track]] = [:]
+    @Published var imagesByUrl: [String: Image] = [:]
+    @Published var currentPlaying: TrackInfo?
     
     var api = JoliApi()
 
     var didChange = PassthroughSubject<AppState, Never>()
+    
+    @discardableResult
+    func fetchedImage(url: String) -> Promise<Image?> {
+        
+        if let cached = imagesByUrl[url] {
+            return Promise<Image?>(cached)
+        }
+        
+        guard let urlObj = URL(string: url) else {
+            return Promise<Image?>(nil)
+        }
+        
+        return Promise {  (resolve, reject) in
+            
+            let task: URLSessionDataTask = URLSession.shared.dataTask(with: urlObj) { (data, resp, error) in
+                guard let data = data, let img = UIImage(data: data) else {
+                    print("failed to load \(url)")
+                    return reject(error!)
+                }
+                
+                let image = Image(uiImage: img)
+                
+                DispatchQueue.main.async {
+                    self.imagesByUrl[url] = image
+                }
+                
+                resolve(image)
+            }
+            task.resume()
+        }
+    }
 
     func fetchMusicrooms() {
         Musicroom.all(on: .global(qos: .background))

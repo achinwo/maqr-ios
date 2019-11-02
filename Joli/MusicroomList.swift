@@ -10,7 +10,7 @@ import SwiftUI
 import JoliApi
 
 struct TrackView: View {
-    
+    @EnvironmentObject var appState: AppState
     var track: Track
 
     @State var image: Image?
@@ -36,24 +36,28 @@ struct TrackView: View {
         }
         .onAppear(){
             
-            guard let url = URL(string: self.track.thumbnailUrl) else {
-                print("failed to load \(self.track.thumbnailUrl)")
-                return
+            self.appState.fetchedImage(url: self.track.thumbnailUrl)
+                .then() { (image: Image?) in
+                    self.image = image
             }
-            
-            let task: URLSessionDataTask = URLSession.shared.dataTask(with: url) { (data, resp, error) in
-                guard let data = data, let img = UIImage(data: data) else {
-                    print("failed to load \(self.track.thumbnailUrl)")
-                    return
-                }
-                
-                self.image = Image(uiImage: img)
-            }
-            task.resume()
         }
     }
 }
 
+//extension MPVolumeView {
+//    var volumeSlider: UISlider? {
+//        showsRouteButton = false
+//        showsVolumeSlider = false
+//        isHidden = true
+//        for subview in subviews where subview is UISlider {
+//            let slider =  subview as! UISlider
+//            slider.isContinuous = false
+//            slider.value = AVAudioSession.sharedInstance().outputVolume
+//            return slider
+//        }
+//        return nil
+//    }
+//}
 
 struct MusicroomDetail: View {
     @EnvironmentObject var appState: AppState
@@ -81,7 +85,9 @@ struct MusicroomDetail: View {
     var body: some View {
         VStack(alignment: .leading) {
             
-            Text(self.nowPlaying != nil ? "Now Playing...\(self.nowPlaying!)" : "").padding()
+            Text(self.nowPlaying != nil ? "Now Playing...\(self.nowPlaying!)" : "")
+                .font(.title)
+                .padding()
             Slider(value: self.$nowPlayingPosition, in: 0...100, step: 1)
             .disabled(self.nowPlaying == nil)
                 .padding()
@@ -176,9 +182,15 @@ struct MusicroomList: View {
         NavigationView {
             List(appState.musicrooms) { room in
                 NavigationLink(destination: MusicroomDetail(room: room)) {
-                    HStack {
-                        Text(verbatim: room.name)
-                        Spacer()
+                    VStack{
+                        ImageStore.shared.image(name: "party-people")
+                            //.border(Rectangle())
+                            //.frame(width: .infinity, height: nil, alignment: .center)
+                        HStack {
+                            Spacer()
+                            Text(verbatim: room.name).font(.title)
+                            Spacer()
+                        }
                     }
                 }.onAppear() { self.appState.fetchTracks(room) }
             }
@@ -188,8 +200,44 @@ struct MusicroomList: View {
     }
 }
 
+
+public final class ImageStore {
+    typealias _ImageDictionary = [String: CGImage]
+    fileprivate var images: _ImageDictionary = [:]
+
+    fileprivate static var scale = 2
+    
+    public static var shared = ImageStore()
+    
+    public func image(name: String) -> Image {
+        let index = _guaranteeImage(name: name)
+        
+        return Image(images.values[index], scale: CGFloat(ImageStore.scale), label: Text(verbatim: name))
+    }
+
+    public static func loadImage(name: String) -> CGImage {
+        guard
+            let url = Bundle.main.url(forResource: name, withExtension: "jpg"),
+            let imageSource = CGImageSourceCreateWithURL(url as NSURL, nil),
+            let image = CGImageSourceCreateImageAtIndex(imageSource, 0, nil)
+        else {
+            fatalError("Couldn't load image \(name).jpg from main bundle.")
+        }
+        return image
+    }
+    
+    fileprivate func _guaranteeImage(name: String) -> _ImageDictionary.Index {
+        if let index = images.index(forKey: name) { return index }
+        
+        images[name] = ImageStore.loadImage(name: name)
+        return images.index(forKey: name)!
+    }
+}
+
+
 struct MusicroomList_Previews: PreviewProvider {
     static var previews: some View {
         MusicroomList()
     }
 }
+
