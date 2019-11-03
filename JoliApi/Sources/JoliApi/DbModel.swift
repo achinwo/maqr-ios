@@ -8,6 +8,10 @@
 import Foundation
 import Promises
 
+extension Promise {
+    
+}
+
 public protocol IdIdentifiable: Codable, Hashable, Identifiable {
     var id: Int? { get set }
 }
@@ -18,7 +22,7 @@ public protocol IdIdentifiable: Codable, Hashable, Identifiable {
 //
 //@propertyWrapper
 //public struct TrackedValue: Trackable {
-//    typealias Value = <#type#>
+//    typealias Value =
 //
 //
 //
@@ -121,7 +125,7 @@ public indirect enum ObjectOrId<T: IdIdentifiable>: Equatable, Codable, Hashable
     case id(Int)
 }
 
-public protocol DbModel: IdIdentifiable, CustomStringConvertible {
+public protocol DbModel: IdIdentifiable, CustomStringConvertible, DataConvertible {
     
     var createdAt: Date? { get }
     var updatedAt: Date? { get }
@@ -143,7 +147,8 @@ extension DbModel {
     }
     
     public var description: String {
-        return String(data: try! Self.jsonEncoder(outputFormatting: .prettyPrinted).encode(self), encoding: .utf8)!
+        let desc = String(data: try! Self.jsonEncoder(outputFormatting: .prettyPrinted).encode(self), encoding: .utf8)!
+        return "\(Self.className())(\(desc))"
     }
     
     //    func propertyValues() {
@@ -156,9 +161,13 @@ extension DbModel {
     
     func save(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
         let suffix = self.id == nil ? "" : "/\(self.id!)"
-        let urlComp = URLComponents(string: "/api/db/\(Self.className())\(suffix)")!
+        let urlComp = "/api/db/\(Self.className())\(suffix)"
         //return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)
-        return HttpMethod.post.fetch(urlPath: urlComp, dataType: Self?.self, payload: self, baseUrl: baseUrl, on: on)
+        return HttpMethod.post.fetch(urlString: urlComp,
+                                     dataType: Self?.self,
+                                     payload: self,
+                                     baseUrl: baseUrl,
+                                     on: on)
     }
     
     //192.168.1.132
@@ -206,11 +215,12 @@ extension DbModel {
     }
     
     public static func all(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[Self]> {
-        return HttpMethod.get.fetch(urlPath: "/api/db/\(Self.className())", dataType: [Self].self, baseUrl: baseUrl, on: on)
+        return HttpMethod.get.fetch(urlString: "/api/db/\(Self.className())", dataType: [Self].self, baseUrl: baseUrl, on: on)
     }
     
     public static func findById(id: Int, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
-        return HttpMethod.get.fetch(urlPath: "/api/db/\(Self.className())/\(id)", dataType: Self?.self, baseUrl: baseUrl, on: on)
+        return HttpMethod.get.fetch(urlString: "/api/db/\(Self.className())/\(id)",
+            dataType: Self?.self, baseUrl: baseUrl, on: on)
     }
     
 }
@@ -253,8 +263,11 @@ public struct Musicroom: DbModel {
         guard let id = self.id else {
             return Promise([])
         }
-        let urlPath = URLComponents(string: "/get_room_tracks")!
-        return HttpMethod.post.fetch(urlPath: urlPath, dataType: [Track].self, payload: ["roomId": id], baseUrl: baseUrl, on: on)
+        let urlPath = "/get_room_tracks"
+        return HttpMethod.post.fetch(urlString: urlPath,
+                                     dataType: [Track].self,
+                                     payload: ["roomId": id],
+                                     baseUrl: baseUrl, on: on)
     }
     
 }

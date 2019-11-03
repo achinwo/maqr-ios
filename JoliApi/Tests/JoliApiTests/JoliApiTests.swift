@@ -1,5 +1,6 @@
 import XCTest
 @testable import JoliApi
+@testable import Promises
 
 @available(OSX 10.12, *)
 final class JoliApiTests: XCTestCase {
@@ -8,15 +9,15 @@ final class JoliApiTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        let expectation = self.expectation(description: "running async test")
+        //let expectation = self.expectation(description: "running async test")
         
-        JoliApi.doTest() {
-            expectation.fulfill()
-        }
+        JoliApi.doTest()
         
-        wait(for: [expectation], timeout: 2)
+        //wait(for: [expectation], timeout: 2)
         
-        XCTAssertEqual(JoliApi().text, "Hello, World!")
+        XCTAssert(waitForPromises(timeout: 2))
+        
+        XCTAssertEqual(1, 1)
     }
 
     static var allTests = [

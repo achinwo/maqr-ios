@@ -37,7 +37,25 @@ public class JoliApi: ObservableObject {
         }
     }
     
-    public var text = "Hello, World!"
+//    public func setVolume(_ volume: Int, deviceId: String, on: DispatchQueue? = nil) -> Promise<Json>{
+//        let payload: Json = ["deviceId": deviceId,
+//                             "volume": volume]
+//
+////        return HttpMethod.post.fetch(urlPath: urlPath,
+////                                     dataType: Self.self,
+////                                     payload: self,
+////                                     baseUrl: baseUrl,
+////                                     on: on)
+//        let dataType = Json.self
+//        let urlPath = "/api/spotify/volume"
+//
+//        return HttpMethod.post.fetch(urlPath: urlPath,
+//                                     dataType: dataType,
+//                                     payload: payload,
+//                                     baseUrl: self.baseUrl.http,
+//                                     on: on)
+//    }
+
     public var user: User?
     public var wsClient: WebSocketClient
 
@@ -102,7 +120,7 @@ public class JoliApi: ObservableObject {
     public func fetchSpotifyDevices(baseUrl optBaseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[SpotifyDevice]> {
         let on = on ?? DispatchQueue.main
         let baseUrl = optBaseUrl ?? self.baseUrl.http
-        return HttpMethod.get.fetch(urlPath: "/api/spotify/devices", dataType: [String: [SpotifyDevice]].self, baseUrl: baseUrl, on: on)
+        return HttpMethod.get.fetch(urlString: "/api/spotify/devices", dataType: [String: [SpotifyDevice]].self, baseUrl: baseUrl, on: on)
             .then(on: on) { (dict) -> [SpotifyDevice] in
                 guard let devices = dict["devices"] else {
                     throw NetworkError.badResponse("expected key \"devices\" in response: \(dict)")
@@ -111,7 +129,8 @@ public class JoliApi: ObservableObject {
         }
     }
     
-    public static func doTest(completionHandler: (() -> Void)?) -> Void {
+    @discardableResult
+    public static func doTest() -> some Promise<Any?> {
         //let urlSession = URLSession(configuration: .default)
         //let url = URL(string: "http://localhost:8080/api/db/musicrooms")!
         //debugPrint("names: \(Musicroom(name: "test").propertyValues())")
@@ -123,14 +142,14 @@ public class JoliApi: ObservableObject {
 //            print("Websocket: \(error)")
 //        }
         
-        let webSocketTest = WebSocketClient(url: url) { result in
-            guard let resp = result.successString else {
-                print("[onmessage] error: \(result.error!)")
-                return
-            }
-            
-            print("response: \(resp)")
-        }
+//        let webSocketTest = WebSocketClient(url: url) { result in
+//            guard let resp = result.successString else {
+//                print("[onmessage] error: \(result.error!)")
+//                return
+//            }
+//
+//            print("response: \(resp)")
+//        }
         
 //        webSocketTest.connect()
 //        webSocketTest.send(topic: "/subscribe") { error in
@@ -165,24 +184,23 @@ public class JoliApi: ObservableObject {
 //            //completionHandler?()
 //        }
         
-        Musicroom.findById(id: 1, on: .global(qos: .background))
+        return Musicroom.findById(id: 1, on: .global(qos: .background))
         .then() { (res) -> Promise<[Track]> in
             var r = res!
-            //debugPrint(r)
-            r.name = "Davido Party"
+            debugPrint(r)
+            //r.name = "Davido Party"
 
             debugPrint("response: \(String(describing: r.$createdAt)) - \(String(describing: r.createdAt))")
             return r.fetchTracks()
-
         }
-        .then(){ res in
-            //print("Result: \(res)")
-        }
-        .always() {
-            completionHandler?()
-        }.catch() { error in
-            print("error: \(error)")
-        }
+//        .then(){ res in
+//            //print("Result: \(res)")
+//        }
+//        .always() {
+//            completionHandler?()
+//        }.catch() { error in
+//            print("error: \(error)")
+//        }
         
     }
 }

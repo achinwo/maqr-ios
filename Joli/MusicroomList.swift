@@ -8,6 +8,7 @@
 
 import SwiftUI
 import JoliApi
+import AVKit
 
 struct TrackView: View {
     @EnvironmentObject var appState: AppState
@@ -128,6 +129,8 @@ struct MusicroomDetail: View {
     
     func onAppear() {
         print("Appeared - 2!!")
+        //AVAudioSession.sharedInstance()
+        
         if !appState.api.wsClient.connected {
             appState.api.wsClient.connect()
         }
