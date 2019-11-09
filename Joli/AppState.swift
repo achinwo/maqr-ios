@@ -65,7 +65,7 @@ class AppState: ObservableObject {
     
     func fetchTracks(_ room: Musicroom) {
         
-        guard let roomId = room.id else {
+        guard let roomId = room.id?.int else {
             return
         }
         

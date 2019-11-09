@@ -68,8 +68,14 @@ public class WebSocketClient: NSObject {
                 self.onMessage?(result)
             }
             
+            if case let Result.failure(error) = result {
+                print("[receive] error response aborting...\(error)")
+                self.connect()
+                return
+            }
+            
             guard self.connected else {
-                print("[receive] aborting...")
+                print("[receive] disconected aborting...")
                 return
             }
             

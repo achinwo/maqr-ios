@@ -11,10 +11,56 @@ import Promises
 extension Promise {
     
 }
+//
+//extension String: Identifiable {
+//    var id: ObjectOrId<String> { .obj(self) }
+//}
+//
+//typealias StringOrInt = ObjectOrId<String>
+
+public enum StringOrInt: Codable, Hashable {
+    case string(String)
+    case int(Int)
+    
+    public var  int: Int? {
+        guard case let .int(int) = self else { return nil }
+        return int
+    }
+    
+    public var  string: String? {
+        guard case let .string(val) = self else { return nil }
+        return val
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .string(let obj):
+            try container.encode(obj)
+        case .int(let id):
+            try container.encode(id)
+        }
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        
+        if let id = try? container.decode(Int.self) {
+            self = .int(id)
+        } else if let obj = try? container.decode(String.self){
+            self = .string(obj)
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Data must be int or string")
+        }
+    }
+}
+
 
 public protocol IdIdentifiable: Codable, Hashable, Identifiable {
-    var id: Int? { get set }
+    var id: StringOrInt? { get set }
 }
+
+
 
 //protocol Trackable: Codable, Hashable {
 //    associatedtype Value: Codable, Hashable
@@ -103,12 +149,12 @@ public indirect enum ObjectOrId<T: IdIdentifiable>: Equatable, Codable, Hashable
         }
     }
     
-    var id: Int? {
+    var id: StringOrInt? {
         switch self {
         case .obj(let obj):
             return obj.id
         case .id(let id):
-            return id
+            return .int(id)
         }
     }
     
@@ -172,8 +218,8 @@ extension DbModel {
     
     //192.168.1.132
     static var baseUrl: (ws: URL, http: URL) {
-//        get { (http:BASE_URL ?? URL(string: "http://192.168.1.132:8080")!,
-//        ws:URL(string: "ws://192.168.1.132:8080")!)}
+//        get { (http:BASE_URL ?? URL(string: "http://172.20.10.2:8080")!,
+//        ws:URL(string: "ws://172.20.10.2:8080")!)}
         get { (http:BASE_URL ?? URL(string: "http://192.168.1.173:8080")!,
                ws:URL(string: "ws://192.168.1.173:8080")!)}
         set {
@@ -192,6 +238,7 @@ extension DbModel {
         
         decoder.dateDecodingStrategy = .formatted(formatter)
         decoder.keyDecodingStrategy = .convertFromSnakeCase
+        
         return decoder
     }
     
@@ -203,7 +250,7 @@ extension DbModel {
     }
     
     public func fetchUpdatedBy() -> Promise<User?> {
-        guard let updatedBy = self.updatedBy, let id = updatedBy.id else {
+        guard let updatedBy = self.updatedBy, let id = updatedBy.id?.int else {
             return Promise<User?>(nil)
         }
         
@@ -227,7 +274,7 @@ extension DbModel {
 
 public struct User: DbModel {
     
-    @Tracked<Int> public var id: Int?
+    @Tracked<StringOrInt> public var id: StringOrInt?
     
     @Tracked<Date> public var createdAt: Date?
     @Tracked<Date> public var updatedAt: Date?
@@ -244,15 +291,15 @@ public struct User: DbModel {
 }
 
 public struct Musicroom: DbModel {
-    @Tracked<Int> public var id: Int?
+    @Tracked<StringOrInt> public var id: StringOrInt?
     
-    @Tracked<Date> public var createdAt: Date?
-    @Tracked<Date> public var updatedAt: Date?
-    @Tracked<Date> public var deletedAt: Date?
+    @Tracked<Date> public var createdAt: Date? = nil
+    @Tracked<Date> public var updatedAt: Date? = nil
+    @Tracked<Date> public var deletedAt: Date? = nil
     
-    @Tracked<ObjectOrId<User>> public var createdBy: ObjectOrId<User>?
-    @Tracked<ObjectOrId<User>> public var updatedBy: ObjectOrId<User>?
-    @Tracked<ObjectOrId<User>> public var deletedBy: ObjectOrId<User>?
+    @Tracked<ObjectOrId<User>> public var createdBy: ObjectOrId<User>? = nil
+    @Tracked<ObjectOrId<User>> public var updatedBy: ObjectOrId<User>? = nil
+    @Tracked<ObjectOrId<User>> public var deletedBy: ObjectOrId<User>? = nil
     
     public var name: String
     
@@ -274,20 +321,32 @@ public struct Musicroom: DbModel {
 
 public struct Track: DbModel {
     
-    @Tracked<Int> public var id: Int?
+    @Tracked<StringOrInt> public var id: StringOrInt?
     
-    @Tracked<Date> public var createdAt: Date?
-    @Tracked<Date> public var updatedAt: Date?
-    @Tracked<Date> public var deletedAt: Date?
+    @Tracked<Date> public var createdAt: Date? = nil
+    @Tracked<Date> public var updatedAt: Date? = nil
+    @Tracked<Date> public var deletedAt: Date? = nil
     
-    @Tracked<ObjectOrId<User>> public var createdBy: ObjectOrId<User>?
-    @Tracked<ObjectOrId<User>> public var updatedBy: ObjectOrId<User>?
-    @Tracked<ObjectOrId<User>> public var deletedBy: ObjectOrId<User>?
+    @Tracked<ObjectOrId<User>> public var createdBy: ObjectOrId<User>? = nil
+    @Tracked<ObjectOrId<User>> public var updatedBy: ObjectOrId<User>? = nil
+    @Tracked<ObjectOrId<User>> public var deletedBy: ObjectOrId<User>? = nil
     
-    public var title: String
-    public var trackId: String
-    public var thumbnailUrl: String
-    public var artistName: String
+    public var title: String? = nil
+    public var trackId: String? = nil
+    public var thumbnailUrl: String? = nil
+    public var artistName: String? = nil
+    
+    public var durationMs: Int?
+    public var explicit: Bool?
+    public var href: String?
+    
+    public var isLocal: Bool?
+    public var name: String?
+    public var popularity: Int?
+    public var previewUrl: String?
+    public var trackNumber: Int?
+    public var type: String?
+    public var uri: String?
     
     @discardableResult
     public func play(deviceId: String?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Track> {

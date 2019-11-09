@@ -10,40 +10,6 @@ import SwiftUI
 import JoliApi
 import AVKit
 
-struct TrackView: View {
-    @EnvironmentObject var appState: AppState
-    var track: Track
-
-    @State var image: Image?
-    var spotifyDevice: JoliApi.SpotifyDevice?
-    
-    
-    var body: some View {
-        HStack(alignment: .top) {
-            
-            CircleImage(image: image).padding()
-
-            VStack(alignment: .leading) {
-                Text(track.title)
-                .font(.title)
-                
-                Text("By \(track.artistName)")
-                    .font(.subheadline)
-            }
-        }
-        .onTapGesture {
-            print("currect device: \(String(describing: self.spotifyDevice))")
-            self.track.play(deviceId: self.spotifyDevice?.id)
-        }
-        .onAppear(){
-            
-            self.appState.fetchedImage(url: self.track.thumbnailUrl)
-                .then() { (image: Image?) in
-                    self.image = image
-            }
-        }
-    }
-}
 
 //extension MPVolumeView {
 //    var volumeSlider: UISlider? {
@@ -60,8 +26,45 @@ struct TrackView: View {
 //    }
 //}
 
-struct MusicroomDetail: View {
+struct PlayQueueView: View {
+    var body: some View {
+        VStack(alignment: .leading) {
+            
+            Text(self.nowPlaying != nil ? "Now Playing...\(self.nowPlaying!)" : "")
+                .font(.title)
+                .padding()
+            Slider(value: self.$nowPlayingPosition, in: 0...100, step: 1)
+                .disabled(self.nowPlaying == nil)
+                .padding()
+            
+            Picker(selection: self.$selectedSpotifyDeviceIdx, label: Text("Devices")) {
+                ForEach(self.spotifyDevices) { device in
+                    Text(device.name).tag(self.spotifyDevices.firstIndex(of: device))
+                }
+            }.pickerStyle(SegmentedPickerStyle())
+                .onAppear(perform: onAppear)
+                .onDisappear(perform: onDisappear)
+            
+            //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
+            
+            List(tracks) { track in
+                TrackView(track: track, spotifyDevice: self.spotifyDevice)//.background(Color.pink)
+                Spacer()
+            }
+        }
+    }
+    
     @EnvironmentObject var appState: AppState
+    
+    var room: Musicroom
+    
+    var tracks: [Track] {
+        guard let id = room.id?.int else {
+            return []
+        }
+        
+        return appState.tracksByMusicrooms[id] ?? []
+    }
     
     @State var nowPlayingPosition = 0.0
     @State var selectedSpotifyDeviceIdx: Int?
@@ -73,43 +76,7 @@ struct MusicroomDetail: View {
     }
     @State var spotifyDevices: [JoliApi.SpotifyDevice] = []
     
-    var room: Musicroom
     
-    var tracks: [Track] {
-        guard let id = room.id else {
-            return []
-        }
-        
-        return appState.tracksByMusicrooms[id] ?? []
-    }
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            
-            Text(self.nowPlaying != nil ? "Now Playing...\(self.nowPlaying!)" : "")
-                .font(.title)
-                .padding()
-            Slider(value: self.$nowPlayingPosition, in: 0...100, step: 1)
-            .disabled(self.nowPlaying == nil)
-                .padding()
-            
-            Picker(selection: self.$selectedSpotifyDeviceIdx, label: Text("Devices")) {
-                ForEach(self.spotifyDevices) { device in
-                    Text(device.name).tag(self.spotifyDevices.firstIndex(of: device))
-                }
-            }.pickerStyle(SegmentedPickerStyle())
-                .onAppear(perform: onAppear)
-                .onDisappear(perform: onDisappear)
-            
-                //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
-            
-            List(tracks) { track in
-                TrackView(track: track, spotifyDevice: self.spotifyDevice)//.background(Color.pink)
-                Spacer()
-            }
-        }
-        //.navigationBarTitle(Text(verbatim: room.name), displayMode: .inline)
-    }
     
     func onDisappear(){
         print("Disappeared!!")
@@ -166,8 +133,115 @@ struct MusicroomDetail: View {
                 }
                 
                 self.selectedSpotifyDeviceIdx = devices.firstIndex() { $0.isActive }
+                
+                //                guard let sel = self.selectedSpotifyDeviceIdx else {
+                //                    return
+                //                }
+                
+                //let volume = Float(devices[sel].volumePercent) / 100
+                //AVAudioSession.sharedInstance().setValue(volume, forKeyPath: "outputVolume")
         }
     }
+    
+}
+
+struct MusicLibraryView: View {
+    @EnvironmentObject var appState: AppState
+    var body: some View {
+        //        Picker(selection: self.$selectedSpotifyDeviceIdx, label: Text("Devices")) {
+        //            ForEach(self.spotifyDevices) { device in
+        //                Text(device.name).tag(self.spotifyDevices.firstIndex(of: device))
+        //            }
+        //        }.pickerStyle(SegmentedPickerStyle())
+        
+        NavigationView {
+            Text("Music Library")
+        }
+        .navigationBarItems(trailing: NavigationLink(destination: TrackSearchView()) {
+            Text("Search")
+        })
+    }
+}
+
+struct ActivityView: View {
+    
+    @EnvironmentObject var appState: AppState
+    
+    var body: some View {
+        //        Picker(selection: self.$selectedSpotifyDeviceIdx, label: Text("Devices")) {
+        //            ForEach(self.spotifyDevices) { device in
+        //                Text(device.name).tag(self.spotifyDevices.firstIndex(of: device))
+        //            }
+        //        }.pickerStyle(SegmentedPickerStyle())
+        Text("Activity")
+            .onAppear() {
+                
+                self.appState.api.subscribe(subject: "") { result in
+                    print("Activity: \(result)")
+                }
+        }
+    }
+}
+
+struct MusicroomDetail: View {
+    @EnvironmentObject var appState: AppState
+    
+    var room: Musicroom
+    @Environment(\.presentationMode) var presentationMode
+    @State var selectedTabIdx = 1
+    
+    var body: some View {
+        TabView(selection: self.$selectedTabIdx) {
+            MusicLibraryView()
+                .tabItem {
+                    //Image(systemName: "2.circle")
+                    Text("Music Library").font(.largeTitle)
+            }.tag(0)
+            
+            
+            PlayQueueView(room: self.room)
+                .tabItem {
+                    //Image(systemName: "1.circle")
+                    Text("Playing")
+            }.tag(1)
+            
+            ActivityView()
+                .tabItem {
+                    //Image(systemName: "2.circle")
+                    Text("Activity")
+            }.tag(2)
+        }.font(.largeTitle)
+            .accentColor(.orange)
+            .navigationBarBackButtonHidden(true)
+            .navigationBarItems(leading:
+                Button(action: {
+                    self.presentationMode.wrappedValue.dismiss()
+                }) {
+                    HStack {
+                        Text("Joli").accentColor(.orange).font(.title)
+                    }
+                }, trailing:
+                Button(action: {
+                    self.isSearching = true
+                }) {
+                    Text("Search")
+                }.sheet(isPresented: self.$isSearching){
+                    TrackSearchView().environmentObject(self.appState)
+            })
+        //            .navigationBarItems(trailing:
+        //                Button(action: {
+        //                    self.isSearching = true
+        //                }) {
+        //                  Text("Search")
+        //                }.sheet(isPresented: self.$isSearching){
+        //                    TrackSearchView()
+        //                }
+        //            )
+        
+        //.navigationBarTitle(Text(verbatim: room.name), displayMode: .inline)
+    }
+    
+    @State var isSearching = false
 }
 
 //struct MusicroomDetail_Previews: PreviewProvider {
@@ -176,10 +250,14 @@ struct MusicroomDetail: View {
 //    }
 //}
 
+extension View {
+    
+}
 
 struct MusicroomList: View {
     
     @EnvironmentObject var appState: AppState
+    @State var showingDetail = false
     
     var body: some View {
         NavigationView {
@@ -187,8 +265,9 @@ struct MusicroomList: View {
                 NavigationLink(destination: MusicroomDetail(room: room)) {
                     VStack{
                         ImageStore.shared.image(name: "party-people")
-                            //.border(Rectangle())
-                            //.frame(width: .infinity, height: nil, alignment: .center)
+                            .cornerRadius(100)
+                        //.border(Rectangle())
+                        //.frame(width: .infinity, height: nil, alignment: .center)
                         HStack {
                             Spacer()
                             Text(verbatim: room.name).font(.title)
@@ -198,49 +277,17 @@ struct MusicroomList: View {
                 }.onAppear() { self.appState.fetchTracks(room) }
             }
             .navigationBarTitle(Text("Joli"))
-        }.onAppear() { self.appState.fetchMusicrooms() }
+            
+        }.onAppear() {
+            self.appState.fetchMusicrooms()
+        }
         //.colorScheme(.dark)
     }
 }
 
-
-public final class ImageStore {
-    typealias _ImageDictionary = [String: CGImage]
-    fileprivate var images: _ImageDictionary = [:]
-
-    fileprivate static var scale = 2
-    
-    public static var shared = ImageStore()
-    
-    public func image(name: String) -> Image {
-        let index = _guaranteeImage(name: name)
-        
-        return Image(images.values[index], scale: CGFloat(ImageStore.scale), label: Text(verbatim: name))
-    }
-
-    public static func loadImage(name: String) -> CGImage {
-        guard
-            let url = Bundle.main.url(forResource: name, withExtension: "jpg"),
-            let imageSource = CGImageSourceCreateWithURL(url as NSURL, nil),
-            let image = CGImageSourceCreateImageAtIndex(imageSource, 0, nil)
-        else {
-            fatalError("Couldn't load image \(name).jpg from main bundle.")
-        }
-        return image
-    }
-    
-    fileprivate func _guaranteeImage(name: String) -> _ImageDictionary.Index {
-        if let index = images.index(forKey: name) { return index }
-        
-        images[name] = ImageStore.loadImage(name: name)
-        return images.index(forKey: name)!
-    }
-}
-
-
-struct MusicroomList_Previews: PreviewProvider {
-    static var previews: some View {
-        MusicroomList()
-    }
-}
-
+//struct MusicroomList_Previews: PreviewProvider {
+//    static var previews: some View {
+//        MusicroomList()
+//    }
+//}
+//

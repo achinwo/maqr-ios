@@ -25,6 +25,8 @@ public struct TrackInfo {
     public var info: Json?
 }
 
+public typealias Json2 = [String: AnyObject]
+
 public class JoliApi: ObservableObject {
     
     @Published var currentPlaying: TrackInfo?
@@ -37,24 +39,64 @@ public class JoliApi: ObservableObject {
         }
     }
     
-//    public func setVolume(_ volume: Int, deviceId: String, on: DispatchQueue? = nil) -> Promise<Json>{
-//        let payload: Json = ["deviceId": deviceId,
-//                             "volume": volume]
-//
-////        return HttpMethod.post.fetch(urlPath: urlPath,
-////                                     dataType: Self.self,
-////                                     payload: self,
-////                                     baseUrl: baseUrl,
-////                                     on: on)
-//        let dataType = Json.self
-//        let urlPath = "/api/spotify/volume"
-//
+    public func searchTracks(q: String) -> Promise<[Track]> {
+        return HttpMethod.get.fetch(urlString: "/api/spotify/search?q=\(q)", dataType: [Track].self)
+    }
+    
+    public class func post(urlPath: URLComponents, payload: Json2, baseUrl: URL? = nil, on: DispatchQueue? = nil) ->  Promise<Json2> {
+        
+        let queue = on ?? DispatchQueue.global(qos: .default)
+        let baseUrl = baseUrl ?? Track.baseUrl.http
+        
+        guard let url = urlPath.url(relativeTo: baseUrl) else {
+            return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
+        }
+        
+        return Promise<Json2>(on: queue) { (resolve, reject) in
+            
+            let callback = { (data: Data?, resp: URLResponse?, error: Error?) -> Void in
+                
+                guard let data = data else {
+                    return reject(error!)
+                }
+                
+                do {
+
+                    let respObj = try JSONSerialization.jsonObject(with: data, options: [])
+                    
+                    resolve(respObj as! Json2)
+                } catch {
+                    reject(error)
+                }
+            }
+            
+            guard let payloadData = try? JSONSerialization.data(withJSONObject: payload, options: []) else {
+                return reject(NetworkError.badRequest("bad paylod for post request: \(String(describing: payload))"))
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = HttpMethod.post.rawValue
+            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
+            
+            let task: URLSessionTask = URLSession.shared.uploadTask(with: request, from: payloadData, completionHandler: callback)
+            task.resume()
+        }
+    }
+    
+    public func setVolume(_ volume: Int, deviceId: String, on: DispatchQueue? = nil) -> Promise<Json2>{
+        let payload: Json2 = ["deviceId": deviceId as AnyObject,
+                             "volume": volume as AnyObject]
+
 //        return HttpMethod.post.fetch(urlPath: urlPath,
-//                                     dataType: dataType,
-//                                     payload: payload,
-//                                     baseUrl: self.baseUrl.http,
+//                                     dataType: Self.self,
+//                                     payload: self,
+//                                     baseUrl: baseUrl,
 //                                     on: on)
-//    }
+        let urlPath = URLComponents(string: "/api/spotify/volume")!
+
+        return Self.post(urlPath: urlPath, payload: payload, on: on)
+    }
 
     public var user: User?
     public var wsClient: WebSocketClient
@@ -183,6 +225,12 @@ public class JoliApi: ObservableObject {
 //        .always {
 //            //completionHandler?()
 //        }
+        let api = JoliApi()
+        api.fetchSpotifyDevices().then { print($0) }
+        return api.searchTracks(q: "killin")
+            .then() { print($0) }
+            .catch() { error in print(error) }
+        
         
         return Musicroom.findById(id: 1, on: .global(qos: .background))
         .then() { (res) -> Promise<[Track]> in
