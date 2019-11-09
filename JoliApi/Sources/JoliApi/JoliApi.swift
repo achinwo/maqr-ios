@@ -39,8 +39,14 @@ public class JoliApi: ObservableObject {
         }
     }
     
-    public func searchTracks(q: String) -> Promise<[Track]> {
-        return HttpMethod.get.fetch(urlString: "/api/spotify/search?q=\(q)", dataType: [Track].self)
+    public func searchTracks(q: String, limit: Int = 10) -> Promise<[Track]> {
+        var pathComp = URLComponents(string: "/api/spotify/search")!
+        pathComp.queryItems = [
+            URLQueryItem(name: "q", value: q),
+            URLQueryItem(name: "limit", value: limit.description)
+        ]
+        
+        return HttpMethod.get.fetch(urlPath: pathComp, dataType: [Track].self, payload: nil)
     }
     
     public class func post(urlPath: URLComponents, payload: Json2, baseUrl: URL? = nil, on: DispatchQueue? = nil) ->  Promise<Json2> {

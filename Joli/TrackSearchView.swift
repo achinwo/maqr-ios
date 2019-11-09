@@ -15,7 +15,9 @@ struct TrackView: View {
     var track: Track
     
     @State var image: Image?
-    var spotifyDevice: JoliApi.SpotifyDevice?
+    var spotifyDevice: JoliApi.SpotifyDevice? {
+        return self.appState.spotifyDevice
+    }
     
     
     var body: some View {
@@ -45,9 +47,25 @@ struct TrackView: View {
     }
 }
 
+struct SearchField: View {
+    
+    @EnvironmentObject var appState: AppState
+    @State private var showCancelButton: Bool = false
+    
+    var body: some View {
+
+        TextField("search", text: self.$appState.searchText, onEditingChanged: { (isEditing:Bool) -> Void in
+            self.showCancelButton = true
+            print("[TrackSearchView] cancel: \(self.showCancelButton)")
+        }) { () -> Void in
+            print("onCommit")
+        }//.foregroundColor(.primary)
+    }
+    
+}
+
 struct TrackSearchView: View {
     @State var tracks: [Track] = []
-    @State private var searchText = ""
     @State private var showCancelButton: Bool = false
     
     @EnvironmentObject var appState: AppState
@@ -57,39 +75,40 @@ struct TrackSearchView: View {
             HStack {
                 Image(systemName: "magnifyingglass")
                 
-                TextField("search", text: $searchText, onEditingChanged: { isEditing in
+                TextField("search", text: self.$appState.searchText, onEditingChanged: { (isEditing:Bool) -> Void in
                     self.showCancelButton = true
-                }, onCommit: {
+                    print("[TrackSearchView] cancel: \(self.showCancelButton)")
+                    
+                }) { () -> Void in
                     print("onCommit")
-                })
-                    .foregroundColor(.primary)
-                
-                Button(action: {
-                    self.searchText = ""
+                }.foregroundColor(.primary)
+
+                Button(action: { () -> Void in
+                    self.appState.searchText = ""
+                    print("[TrackSearchView] cancel: \(self.appState.searchText)")
                 }) {
-                    Image(systemName: "xmark.circle.fill").opacity(searchText == "" ? 0 : 1)
+                    Image(systemName: "xmark.circle.fill").opacity(self.appState.searchText == "" ? 0.0 : 1.0)
                 }
             }
             .padding(EdgeInsets(top: 8, leading: 6, bottom: 8, trailing: 6))
             .foregroundColor(.secondary)
             .background(Color(.secondarySystemBackground))
             .cornerRadius(10.0)
-                                .onAppear(){
-                                    print("changed: \(self.searchText)")
-                                    
-                                    
-                                    self.appState.api.searchTracks(q: "killin")
-                                        .then() { tracks in
-                                            
-                                            self.tracks = tracks
-                                            print("tracks: \(tracks)")
-                                        }
-                                }
+            .onAppear(){
+                print("changed: \(self.appState.searchText)")
+
+//                self.appState.api.searchTracks(q: "killin")
+//                    .then() { tracks in
+//
+//                        self.tracks = tracks
+//                        print("tracks: \(tracks)")
+//                }
+            }
             
             if showCancelButton  {
                 Button("Cancel") {
                     UIApplication.shared.endEditing(true) // this must be placed before the other commands here
-                    self.searchText = ""
+                    self.appState.searchText = ""
                     self.showCancelButton = false
                 }
                 .foregroundColor(Color(.systemBlue))
@@ -106,8 +125,8 @@ struct TrackSearchView: View {
                 
                 List {
                     // Filtered list of names
-                    ForEach(self.tracks) {
-                        track in TrackView(track: track)
+                    ForEach(self.appState.trackSearchResult) { (track: Track) in
+                        TrackView(track: track)
                     }
                 }
                 .navigationBarTitle(Text("Search"))
@@ -115,6 +134,7 @@ struct TrackSearchView: View {
             }
         }.onAppear(){
             print("Thing appeared")
+            
         }
     }
 }

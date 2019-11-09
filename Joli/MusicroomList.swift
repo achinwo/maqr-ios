@@ -37,9 +37,9 @@ struct PlayQueueView: View {
                 .disabled(self.nowPlaying == nil)
                 .padding()
             
-            Picker(selection: self.$selectedSpotifyDeviceIdx, label: Text("Devices")) {
-                ForEach(self.spotifyDevices) { device in
-                    Text(device.name).tag(self.spotifyDevices.firstIndex(of: device))
+            Picker(selection: self.$appState.selectedSpotifyDeviceIdx, label: Text("Devices")) {
+                ForEach(self.appState.spotifyDevices) { device in
+                    Text(device.name).tag(self.appState.spotifyDevices.firstIndex(of: device))
                 }
             }.pickerStyle(SegmentedPickerStyle())
                 .onAppear(perform: onAppear)
@@ -48,7 +48,7 @@ struct PlayQueueView: View {
             //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
             
             List(tracks) { track in
-                TrackView(track: track, spotifyDevice: self.spotifyDevice)//.background(Color.pink)
+                TrackView(track: track)//.background(Color.pink)
                 Spacer()
             }
         }
@@ -67,16 +67,7 @@ struct PlayQueueView: View {
     }
     
     @State var nowPlayingPosition = 0.0
-    @State var selectedSpotifyDeviceIdx: Int?
     @State var nowPlaying: String?
-    
-    var spotifyDevice: JoliApi.SpotifyDevice? {
-        guard let selectedSpotifyDeviceIdx = selectedSpotifyDeviceIdx else { return nil }
-        return spotifyDevices[selectedSpotifyDeviceIdx]
-    }
-    @State var spotifyDevices: [JoliApi.SpotifyDevice] = []
-    
-    
     
     func onDisappear(){
         print("Disappeared!!")
@@ -123,24 +114,7 @@ struct PlayQueueView: View {
             self.nowPlayingPosition = (progress / duration) * 100
         }
         
-        appState.api.fetchSpotifyDevices(on: DispatchQueue.main)
-            .then() { devices in
-                print("Devices: \(devices)")
-                self.spotifyDevices = devices
-                
-                if self.selectedSpotifyDeviceIdx != nil {
-                    return
-                }
-                
-                self.selectedSpotifyDeviceIdx = devices.firstIndex() { $0.isActive }
-                
-                //                guard let sel = self.selectedSpotifyDeviceIdx else {
-                //                    return
-                //                }
-                
-                //let volume = Float(devices[sel].volumePercent) / 100
-                //AVAudioSession.sharedInstance().setValue(volume, forKeyPath: "outputVolume")
-        }
+        appState.fetchSpotifyDevices()
     }
     
 }

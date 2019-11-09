@@ -352,10 +352,13 @@ public struct Track: DbModel {
     public func play(deviceId: String?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Track> {
         
         var urlPath = URLComponents(string: "/api/spotify/play")!
-        urlPath.percentEncodedQueryItems = [
-            URLQueryItem(name: "trackId", value: "spotify:track:\(self.trackId)"),
-            URLQueryItem(name: "deviceId", value: deviceId)
+        urlPath.queryItems = [
+            URLQueryItem(name: "trackId", value: self.uri ?? "spotify:track:\(self.trackId!)"),
         ]
+        
+        if let deviceId = deviceId {
+            urlPath.queryItems!.append(URLQueryItem(name: "deviceId", value: deviceId))
+        }
         
         return HttpMethod.post.fetch(urlPath: urlPath, dataType: Self.self, payload: self, baseUrl: baseUrl, on: on)
     }
