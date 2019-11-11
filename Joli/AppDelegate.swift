@@ -56,21 +56,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
-        //NotificationCenter.default.addObserver(self, selector: Selector(("volumeDidChange:")), name: NSNotification.Name(rawValue: "AVSystemController_SystemVolumeDidChangeNotification"), object: nil)
-        
-        do {
-            try audioSession.setActive(true)
-            startObservingVolumeChanges()
-        } catch {
-            print("Failed to activate audio session")
-        }
         return true
     }
     
     func applicationDidBecomeActive(_ application: UIApplication){
         print("[AppDelegate] App is active")
         appState.api.wsClient.connect()
+        
     }
 
     func applicationWillResignActive(_ application: UIApplication){

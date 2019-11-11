@@ -11,6 +11,10 @@
 		925E5C702369D85900D95AB7 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925E5C6E2369D85900D95AB7 /* MapView.swift */; };
 		925E5C712369D85900D95AB7 /* CircleImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925E5C6F2369D85900D95AB7 /* CircleImage.swift */; };
 		925FC09523775BB100A8A72C /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09423775BB100A8A72C /* SignInView.swift */; };
+		925FC097237777E600A8A72C /* PlayQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC096237777E600A8A72C /* PlayQueueView.swift */; };
+		925FC0992377793100A8A72C /* african_giant_cover.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 925FC0982377793100A8A72C /* african_giant_cover.jpg */; };
+		925FC09B23777A0A00A8A72C /* MusicroomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09A23777A0A00A8A72C /* MusicroomView.swift */; };
+		925FC09D2378B81100A8A72C /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09C2378B81100A8A72C /* TrackView.swift */; };
 		928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F6EB923761F7700FAC911 /* TrackSearchView.swift */; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B0716E2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
@@ -67,6 +71,10 @@
 		925E5C72236A742100D95AB7 /* SpotifyiOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SpotifyiOS.framework; sourceTree = "<group>"; };
 		925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Joli-Bridging-Header.h"; sourceTree = "<group>"; };
 		925FC09423775BB100A8A72C /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		925FC096237777E600A8A72C /* PlayQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayQueueView.swift; sourceTree = "<group>"; };
+		925FC0982377793100A8A72C /* african_giant_cover.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = african_giant_cover.jpg; sourceTree = "<group>"; };
+		925FC09A23777A0A00A8A72C /* MusicroomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomView.swift; sourceTree = "<group>"; };
+		925FC09C2378B81100A8A72C /* TrackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
 		928F6EB923761F7700FAC911 /* TrackSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSearchView.swift; sourceTree = "<group>"; };
 		92B0716C2364F8A80070EC73 /* MusicroomList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
 		92B071752364FA2D0070EC73 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -120,6 +128,9 @@
 				925E5C6F2369D85900D95AB7 /* CircleImage.swift */,
 				925E5C6E2369D85900D95AB7 /* MapView.swift */,
 				925FC09423775BB100A8A72C /* SignInView.swift */,
+				925FC096237777E600A8A72C /* PlayQueueView.swift */,
+				925FC09A23777A0A00A8A72C /* MusicroomView.swift */,
+				925FC09C2378B81100A8A72C /* TrackView.swift */,
 			);
 			name = "Supporting Views";
 			sourceTree = "<group>";
@@ -127,6 +138,7 @@
 		92D90BE8236C88B800EAAD31 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				925FC0982377793100A8A72C /* african_giant_cover.jpg */,
 				92D90BE9236C890B00EAAD31 /* party-people.jpg */,
 			);
 			path = Resources;
@@ -319,6 +331,7 @@
 				92F379EF2363534F005FE2AB /* LaunchScreen.storyboard in Resources */,
 				92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */,
 				92F379EC2363534F005FE2AB /* Preview Assets.xcassets in Resources */,
+				925FC0992377793100A8A72C /* african_giant_cover.jpg in Resources */,
 				92F379E92363534F005FE2AB /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -346,12 +359,15 @@
 			files = (
 				925FC09523775BB100A8A72C /* SignInView.swift in Sources */,
 				92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */,
+				925FC09B23777A0A00A8A72C /* MusicroomView.swift in Sources */,
+				925FC097237777E600A8A72C /* PlayQueueView.swift in Sources */,
 				92F379E32363534D005FE2AB /* AppDelegate.swift in Sources */,
 				928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */,
 				925E5C702369D85900D95AB7 /* MapView.swift in Sources */,
 				92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */,
 				92B071762364FA2D0070EC73 /* AppState.swift in Sources */,
 				925E5C712369D85900D95AB7 /* CircleImage.swift in Sources */,
+				925FC09D2378B81100A8A72C /* TrackView.swift in Sources */,
 				92061A84236B0175007FC6F1 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

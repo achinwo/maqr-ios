@@ -53,12 +53,12 @@ class AppState: ObservableObject {
 //        $selectedSpotifyDeviceIdx
 //        .map { input -> Future<[Track], Never> in
 //            return Future<[Track], Never>() { promise in
-//                
+//
 //                guard !input.trimmingCharacters(in: [" "]).isEmpty else {
 //                    promise(.success([]))
 //                    return
 //                }
-//                
+//
 //                self.api.searchTracks(q: input)
 //                    .then() { promise(.success($0)) }
 //                    .catch() { print("[AppState] trackSearchResult: \($0)") }
@@ -79,6 +79,7 @@ class AppState: ObservableObject {
     
     @Published var spotifyDevices: [JoliApi.SpotifyDevice] = []
     @Published var selectedSpotifyDeviceIdx: Int? = nil
+    @Published var activeRoom: Musicroom? = nil
     
     public var spotifyDevice: JoliApi.SpotifyDevice? {
         guard let selectedSpotifyDeviceIdx = selectedSpotifyDeviceIdx else { return nil }

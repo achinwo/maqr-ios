@@ -10,115 +10,6 @@ import SwiftUI
 import JoliApi
 import AVKit
 
-
-//extension MPVolumeView {
-//    var volumeSlider: UISlider? {
-//        showsRouteButton = false
-//        showsVolumeSlider = false
-//        isHidden = true
-//        for subview in subviews where subview is UISlider {
-//            let slider =  subview as! UISlider
-//            slider.isContinuous = false
-//            slider.value = AVAudioSession.sharedInstance().outputVolume
-//            return slider
-//        }
-//        return nil
-//    }
-//}
-
-struct PlayQueueView: View {
-    var body: some View {
-        VStack(alignment: .leading) {
-            
-            Text(self.nowPlaying != nil ? "Now Playing...\(self.nowPlaying!)" : "")
-                .font(.title)
-                .padding()
-            Slider(value: self.$nowPlayingPosition, in: 0...100, step: 1)
-                .disabled(self.nowPlaying == nil)
-                .padding()
-            
-            Picker(selection: self.$appState.selectedSpotifyDeviceIdx, label: Text("Devices")) {
-                ForEach(self.appState.spotifyDevices) { device in
-                    Text(device.name).tag(self.appState.spotifyDevices.firstIndex(of: device))
-                }
-            }.pickerStyle(SegmentedPickerStyle())
-                .onAppear(perform: onAppear)
-                .onDisappear(perform: onDisappear)
-            
-            //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
-            
-            List(tracks) { track in
-                TrackView(track: track)//.background(Color.pink)
-                Spacer()
-            }
-        }
-    }
-    
-    @EnvironmentObject var appState: AppState
-    
-    var room: Musicroom
-    
-    var tracks: [Track] {
-        guard let id = room.id?.int else {
-            return []
-        }
-        
-        return appState.tracksByMusicrooms[id] ?? []
-    }
-    
-    @State var nowPlayingPosition = 0.0
-    @State var nowPlaying: String?
-    
-    func onDisappear(){
-        print("Disappeared!!")
-        self.appState.api.unsubscribe(subject: "PLAYER_STATE_NOW_PLAYING")
-    }
-    
-    static func jsonStringToDict(text: String) -> [String:AnyObject]? {
-        if let data = text.data(using: .utf8) {
-            do {
-                return try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject]
-            } catch let error {
-                print(error)
-            }
-        }
-        return nil
-    }
-    
-    func onAppear() {
-        print("Appeared - 2!!")
-        //AVAudioSession.sharedInstance()
-        
-        if !appState.api.wsClient.connected {
-            appState.api.wsClient.connect()
-        }
-        
-        self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
-            
-            guard let json = result.successString, let jsonDict = Self.jsonStringToDict(text: json) else {
-                print("failed to  deserialise result: \(result)")
-                return
-            }
-            
-            let data = jsonDict["data"] as? [String: AnyObject]
-            let item = data?["item"] as? [String: AnyObject]
-            //?["name"]
-            //print("\(String(describing: item?["name"]))")//duration_ms
-            self.nowPlaying = item?["name"] as? String
-            
-            guard let duration = item?["duration_ms"] as? Double, let progress = data?["progress_ms"] as? Double else {
-                return
-            }
-            print("duration: \(duration), progress: \(progress)")
-            
-            self.nowPlayingPosition = (progress / duration) * 100
-        }
-        
-        appState.fetchSpotifyDevices()
-    }
-    
-}
-
 struct MusicLibraryView: View {
     @EnvironmentObject var appState: AppState
     var body: some View {
@@ -128,12 +19,7 @@ struct MusicLibraryView: View {
         //            }
         //        }.pickerStyle(SegmentedPickerStyle())
         
-        NavigationView {
-            Text("Music Library")
-        }
-        .navigationBarItems(trailing: NavigationLink(destination: TrackSearchView()) {
-            Text("Search")
-        })
+        TrackSearchView()
     }
 }
 
@@ -157,67 +43,6 @@ struct ActivityView: View {
     }
 }
 
-struct MusicroomDetail: View {
-    @EnvironmentObject var appState: AppState
-    
-    var room: Musicroom
-    @Environment(\.presentationMode) var presentationMode
-    @State var selectedTabIdx = 1
-    
-    var body: some View {
-        TabView(selection: self.$selectedTabIdx) {
-            MusicLibraryView()
-                .tabItem {
-                    //Image(systemName: "2.circle")
-                    Text("Music Library").font(.largeTitle)
-            }.tag(0)
-            
-            
-            PlayQueueView(room: self.room)
-                .tabItem {
-                    //Image(systemName: "1.circle")
-                    Text("Playing")
-            }.tag(1)
-            
-            ActivityView()
-                .tabItem {
-                    //Image(systemName: "2.circle")
-                    Text("Activity")
-            }.tag(2)
-        }.font(.largeTitle)
-            .accentColor(.orange)
-            .navigationBarBackButtonHidden(true)
-            .navigationBarItems(leading:
-                Button(action: {
-                    self.presentationMode.wrappedValue.dismiss()
-                }) {
-                    HStack {
-                        Text("Joli").accentColor(.orange).font(.title)
-                    }
-                }, trailing:
-                Button(action: {
-                    self.isSearching = true
-                }) {
-                    Text("Search")
-                }.sheet(isPresented: self.$isSearching){
-                    TrackSearchView().environmentObject(self.appState)
-            })
-        //            .navigationBarItems(trailing:
-        //                Button(action: {
-        //                    self.isSearching = true
-        //                }) {
-        //                  Text("Search")
-        //                }.sheet(isPresented: self.$isSearching){
-        //                    TrackSearchView()
-        //                }
-        //            )
-        
-        //.navigationBarTitle(Text(verbatim: room.name), displayMode: .inline)
-    }
-    
-    @State var isSearching = false
-}
-
 //struct MusicroomDetail_Previews: PreviewProvider {
 //    static var previews: some View {
 //        MusicroomDetail()
@@ -236,7 +61,7 @@ struct MusicroomList: View {
     var body: some View {
         NavigationView {
             List(appState.musicrooms) { room in
-                NavigationLink(destination: MusicroomDetail(room: room)) {
+                NavigationLink(destination: MusicroomView(room: room)) {
                     VStack{
                         ImageStore.shared.image(name: "party-people")
                             .cornerRadius(100)
@@ -250,7 +75,7 @@ struct MusicroomList: View {
                     }
                 }.onAppear() { self.appState.fetchTracks(room) }
             }
-            .navigationBarTitle(Text("Joli"))
+            .navigationBarTitle(Text("Joli"), displayMode: .inline)
             
         }.onAppear() {
             self.appState.fetchMusicrooms()

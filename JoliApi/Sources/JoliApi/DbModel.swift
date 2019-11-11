@@ -303,6 +303,21 @@ public struct Musicroom: DbModel {
     
     public var name: String
     
+    
+    
+    @discardableResult
+    public func addTrack(_ track: Track) -> Promise<Json2> {
+        guard let id = self.id?.int else {
+            return Promise<Json2>([:])
+        }
+        let urlPath = URLComponents(string: "/add_room_track")!
+        let data = try! Self.jsonEncoder(outputFormatting: .prettyPrinted).encode(track)
+        let payloadData = try! JSONSerialization.jsonObject(with: data, options: [])
+        
+        return JoliApi.post(urlPath: urlPath, payload: ["roomId": id as AnyObject,
+                                                        "track": payloadData as AnyObject])
+    }
+    
     // get users
     // get tracks
     

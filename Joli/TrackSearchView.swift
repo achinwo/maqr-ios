@@ -9,44 +9,6 @@
 import SwiftUI
 import JoliApi
 
-
-struct TrackView: View {
-    @EnvironmentObject var appState: AppState
-    var track: Track
-    
-    @State var image: Image?
-    var spotifyDevice: JoliApi.SpotifyDevice? {
-        return self.appState.spotifyDevice
-    }
-    
-    
-    var body: some View {
-        HStack(alignment: VerticalAlignment.top) {
-            
-            CircleImage(image: image).padding()
-            
-            VStack(alignment: .leading) {
-                Text(track.title ?? track.name!)
-                    .font(.title)
-                
-                Text("By \(track.artistName ?? "None")")
-                    .font(.subheadline)
-            }
-        }
-        .onTapGesture {
-            print("currect device: \(String(describing: self.spotifyDevice))")
-            self.track.play(deviceId: self.spotifyDevice?.id)
-        }
-        .onAppear(){
-            
-            self.appState.fetchedImage(url: self.track.thumbnailUrl!)
-                .then() { (image: Image?) in
-                    self.image = image
-            }
-        }
-    }
-}
-
 struct SearchField: View {
     
     @EnvironmentObject var appState: AppState
@@ -77,7 +39,6 @@ struct TrackSearchView: View {
                 
                 TextField("search", text: self.$appState.searchText, onEditingChanged: { (isEditing:Bool) -> Void in
                     self.showCancelButton = true
-                    print("[TrackSearchView] cancel: \(self.showCancelButton)")
                     
                 }) { () -> Void in
                     print("onCommit")
@@ -94,6 +55,7 @@ struct TrackSearchView: View {
             .foregroundColor(.secondary)
             .background(Color(.secondarySystemBackground))
             .cornerRadius(10.0)
+            .font(.subheadline)
             .onAppear(){
                 print("changed: \(self.appState.searchText)")
 
@@ -112,6 +74,7 @@ struct TrackSearchView: View {
                     self.showCancelButton = false
                 }
                 .foregroundColor(Color(.systemBlue))
+                .font(.subheadline)
             }
         }
         .padding(.horizontal)
@@ -119,9 +82,8 @@ struct TrackSearchView: View {
     }
     
     var body: some View {
-        NavigationView {
-            VStack {
-                self.searchControl()
+         VStack {
+                self.searchControl().padding()
                 
                 List {
                     // Filtered list of names
@@ -129,12 +91,8 @@ struct TrackSearchView: View {
                         TrackView(track: track)
                     }
                 }
-                .navigationBarTitle(Text("Search"))
+                .navigationBarTitle(Text("Search"), displayMode: .large)
                 .resignKeyboardOnDragGesture()
-            }
-        }.onAppear(){
-            print("Thing appeared")
-            
         }
     }
 }
@@ -150,12 +108,15 @@ extension UIApplication {
 }
 
 struct ResignKeyboardOnDragGesture: ViewModifier {
+    
     var gesture = DragGesture().onChanged{_ in
         UIApplication.shared.endEditing(true)
     }
+    
     func body(content: Content) -> some View {
         content.gesture(gesture)
     }
+    
 }
 
 extension View {

@@ -90,6 +90,7 @@ public class JoliApi: ObservableObject {
         }
     }
     
+    @discardableResult
     public func setVolume(_ volume: Int, deviceId: String, on: DispatchQueue? = nil) -> Promise<Json2>{
         let payload: Json2 = ["deviceId": deviceId as AnyObject,
                              "volume": volume as AnyObject]

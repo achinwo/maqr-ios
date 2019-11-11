@@ -16,6 +16,8 @@ extension JoliApi {
     
 }
 
+typealias Renderable = View
+
 
 public final class ImageStore {
     typealias _ImageDictionary = [String: CGImage]

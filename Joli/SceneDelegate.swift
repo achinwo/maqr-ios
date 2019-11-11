@@ -15,6 +15,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var appState: AppState {
         (UIApplication.shared.delegate as! AppDelegate).appState
     }
+    var appDelegate: AppDelegate {
+        (UIApplication.shared.delegate as! AppDelegate)
+    }
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
@@ -60,6 +63,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to undo the changes made on entering the background.
         print("[SceneDelegate] App is active")
         appState.api.wsClient.connect()
+        
+        do {
+            try appDelegate.audioSession.setActive(true)
+            appDelegate.startObservingVolumeChanges()
+        } catch {
+            print("Failed to activate audio session")
+        }
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
