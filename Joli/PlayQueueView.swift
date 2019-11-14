@@ -16,39 +16,44 @@ struct PlayQueueView: View {
     @State var albumArtUrl: String?
     
     var body: some View {
-        VStack(alignment: .leading) {
-            
-            VStack(alignment: .leading){
-                Text(self.nowPlaying != nil ? "Now Playing...\(self.nowPlaying!)" : "")
-                    .font(.title)
+        GeometryReader() { geometry in
+            VStack(alignment: .leading) {
                 
-                    //.font(self.albumArtUrl == nil ? Color.black : Color.white)
-                    .padding()
-                Slider(value: self.$nowPlayingPosition, in: 0...100, step: 1)
-                    .disabled(self.nowPlaying == nil)
-                    //.padding().background(Color.pink)
-                
-                Picker(selection: self.$appState.selectedSpotifyDeviceIdx, label: Text("Devices")) {
-                    ForEach(self.appState.spotifyDevices) { device in
-                        Text(device.name).tag(self.appState.spotifyDevices.firstIndex(of: device))
+                VStack(alignment: .leading){
+                    Text(self.nowPlaying != nil ? "Now Playing...\(self.nowPlaying!)" : "")
+                        .font(.title)
+                    
                         //.font(self.albumArtUrl == nil ? Color.black : Color.white)
+                        .padding()
+                    Slider(value: self.$nowPlayingPosition, in: 0...100, step: 1)
+                        .disabled(self.nowPlaying == nil)
+                        //.padding().background(Color.pink)
+                    
+                    Picker(selection: self.$appState.selectedSpotifyDeviceIdx, label: Text("Devices")) {
+                        ForEach(self.appState.spotifyDevices) { device in
+                            Text(device.name).tag(self.appState.spotifyDevices.firstIndex(of: device))
+                            //.font(self.albumArtUrl == nil ? Color.black : Color.white)
+                        }
+                    }.pickerStyle(SegmentedPickerStyle())
+                        .onAppear(perform: self.onAppear)
+                        .onDisappear(perform: self.onDisappear)
+                    }.padding()
+                    .frame(minWidth: geometry.size.width, idealWidth: geometry.size.width, maxWidth: geometry.size.width, minHeight: geometry.size.height / 6, idealHeight: geometry.size.height / 4, maxHeight: geometry.size.height / 4, alignment: .top)
+                    
+                .background(self.albumArt?.resizable().aspectRatio(contentMode: ContentMode.fill))
+                
+                //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
+                List {
+                    ForEach(self.tracks) { track in
+                        TrackView(track: track)//.background(Color.pink)
                     }
-                }.pickerStyle(SegmentedPickerStyle())
-                    .onAppear(perform: onAppear)
-                    .onDisappear(perform: onDisappear)
-                }.padding()
-            .background(self.albumArt?.resizable().aspectRatio(contentMode: ContentMode.fill))
-            
-            //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
-            List {
-                ForEach(tracks) { track in
-                    TrackView(track: track)//.background(Color.pink)
+                    .onDelete(perform: self.delete)
+                
                 }
-                .onDelete(perform: delete)
-            
+                
             }
-            
         }
+        
     }
     
     func delete(at offsets: IndexSet) {
@@ -110,7 +115,7 @@ struct PlayQueueView: View {
             let data = jsonDict["data"] as? [String: AnyObject]
             let item = data?["item"] as? [String: AnyObject]
             //?["name"]
-            print("\(String(describing: item?["name"]))")//duration_ms
+            //print("\(String(describing: item?["name"]))")//duration_ms
             
             //print("\(String(describing: item?["album"]))")
             

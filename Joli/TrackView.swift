@@ -25,7 +25,7 @@ struct TrackView: View {
             .font(.footnote)
                 .foregroundColor(Color.red)
             .cornerRadius(2)
-            .overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
                // .font(.subheadline)
                 //.border(.red)
         } else {
@@ -44,7 +44,7 @@ struct TrackView: View {
             
             VStack(alignment: .leading) {
                 Text(track.title ?? track.name!)
-                    .font(.title)
+                    .font(.headline).lineLimit(2)
                 
                 HStack {
                     

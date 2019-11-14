@@ -8,6 +8,18 @@
 
 import UIKit
 import SwiftUI
+import MediaPlayer
+
+extension MPVolumeView {
+    static func setVolume(_ volume: Float) {
+        let volumeView = MPVolumeView()
+        let slider = volumeView.subviews.first(where: { $0 is UISlider }) as? UISlider
+
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.01) {
+            slider?.value = volume
+        }
+    }
+}
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -26,7 +38,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         //let env: EnvironmentObject<AppState> = EnvironmentObject();
-        let contentView = MusicroomList().environmentObject(appState)
+        let contentView = AppView().environmentObject(appState)
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
@@ -56,6 +68,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillResignActive(_ scene: UIScene) {
         // Called when the scene will move from an active state to an inactive state.
         // This may occur due to temporary interruptions (ex. an incoming phone call).
+        print("[SceneDelegate] sceneWillResignActive")
+        appDelegate.stopObservingVolumeChanges()
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
@@ -67,8 +81,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         do {
             try appDelegate.audioSession.setActive(true)
             appDelegate.startObservingVolumeChanges()
+            
+            guard let deviceVolume = appState.spotifyDevice?.volumePercent else { return }
+            
+            MPVolumeView.setVolume(Float(deviceVolume) / 100.0)
         } catch {
-            print("Failed to activate audio session")
+            print("[SceneDelegate] Failed to activate audio session")
         }
     }
 

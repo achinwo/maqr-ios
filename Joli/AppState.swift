@@ -23,7 +23,7 @@ class AppState: ObservableObject {
     //@Published var tracks: [Track] = []
     @Published var searchText: String = ""
     
-    var api = JoliApi()
+    var api = JoliApi(baseUrl: .home)
     
     private var cancellableSet: Set<AnyCancellable> = []
     @Published public var trackSearchResult: [Track] = []

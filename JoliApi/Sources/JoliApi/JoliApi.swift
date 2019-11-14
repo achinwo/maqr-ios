@@ -26,6 +26,36 @@ public struct TrackInfo {
 }
 
 public typealias Json2 = [String: AnyObject]
+//get { (http:BASE_URL ?? URL(string: "http://192.168.1.173:8080")!,
+//               ws:URL(string: "ws://192.168.1.173:8080")!)}
+public enum BaseUrl: RawRepresentable {
+    
+    case home
+    case mobileHotspot
+    case host(String)
+    case custom((http: URL, ws: URL))
+    
+    public var rawValue: (http: URL, ws: URL) {
+        switch self {
+        case .home:
+            return (http: URL(string: "http://192.168.1.173:8080")!, ws: URL(string: "ws://192.168.1.173:8080")!)
+        case .mobileHotspot:
+            return (http: URL(string: "http://172.20.10.2:8080")!, ws: URL(string: "ws://172.20.10.2:8080")!)
+        case .host(let urlString):
+            return (http: URL(string: "http://\(urlString)")!, ws: URL(string: "ws://\(urlString)")!)
+        case .custom(let urls):
+            return urls
+        }
+    }
+    
+    public init?(rawValue: String) {
+        self = .host(rawValue)
+    }
+    
+    public init?(rawValue: (http: URL, ws: URL)) {
+        self = .custom(rawValue)
+    }
+}
 
 public class JoliApi: ObservableObject {
     
@@ -109,7 +139,7 @@ public class JoliApi: ObservableObject {
     public var wsClient: WebSocketClient
 
     public var subjects: Set<String> = []
-    public var baseUrl: (ws: URL, http: URL)
+    public var baseUrl: BaseUrl
     
     public struct SpotifyDevice: Codable, Identifiable, Hashable {
         public let id: String
@@ -121,10 +151,13 @@ public class JoliApi: ObservableObject {
         public let volumePercent: Int
     }
     
-    public init(){
-        self.baseUrl = Musicroom.baseUrl
-        let url = baseUrl.ws.appendingPathComponent("/ws")
+    public init(baseUrl: BaseUrl = .home){
+        self.baseUrl = baseUrl
+        let url = baseUrl.rawValue.ws.appendingPathComponent("/ws")
         self.wsClient = WebSocketClient(url: url)
+        
+        //(ws: URL, http: URL)
+        BASE_URL = baseUrl.rawValue
         
         //self.wsClient.connect()
         self.wsClient.connectionHandler = { connected in
@@ -168,7 +201,7 @@ public class JoliApi: ObservableObject {
     
     public func fetchSpotifyDevices(baseUrl optBaseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[SpotifyDevice]> {
         let on = on ?? DispatchQueue.main
-        let baseUrl = optBaseUrl ?? self.baseUrl.http
+        let baseUrl = optBaseUrl ?? self.baseUrl.rawValue.http
         return HttpMethod.get.fetch(urlString: "/api/spotify/devices", dataType: [String: [SpotifyDevice]].self, baseUrl: baseUrl, on: on)
             .then(on: on) { (dict) -> [SpotifyDevice] in
                 guard let devices = dict["devices"] else {
@@ -183,7 +216,7 @@ public class JoliApi: ObservableObject {
         //let urlSession = URLSession(configuration: .default)
         //let url = URL(string: "http://localhost:8080/api/db/musicrooms")!
         //debugPrint("names: \(Musicroom(name: "test").propertyValues())")
-        let url = URL(string: "ws://localhost:8080/ws")!
+        BASE_URL = BaseUrl.home.rawValue
 //        let task = URLSession.shared.webSocketTask(with: )
 //        task.resume()
 //

@@ -13,12 +13,6 @@ import AVKit
 struct MusicLibraryView: View {
     @EnvironmentObject var appState: AppState
     var body: some View {
-        //        Picker(selection: self.$selectedSpotifyDeviceIdx, label: Text("Devices")) {
-        //            ForEach(self.spotifyDevices) { device in
-        //                Text(device.name).tag(self.spotifyDevices.firstIndex(of: device))
-        //            }
-        //        }.pickerStyle(SegmentedPickerStyle())
-        
         TrackSearchView()
     }
 }
@@ -28,29 +22,14 @@ struct ActivityView: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        //        Picker(selection: self.$selectedSpotifyDeviceIdx, label: Text("Devices")) {
-        //            ForEach(self.spotifyDevices) { device in
-        //                Text(device.name).tag(self.spotifyDevices.firstIndex(of: device))
-        //            }
-        //        }.pickerStyle(SegmentedPickerStyle())
         Text("Activity")
             .onAppear() {
                 
-                self.appState.api.subscribe(subject: "") { result in
+                self.appState.api.subscribe(subject: "activity_feed") { result in
                     print("Activity: \(result)")
                 }
         }
     }
-}
-
-//struct MusicroomDetail_Previews: PreviewProvider {
-//    static var previews: some View {
-//        MusicroomDetail()
-//    }
-//}
-
-extension View {
-    
 }
 
 struct MusicroomList: View {
@@ -58,31 +37,44 @@ struct MusicroomList: View {
     @EnvironmentObject var appState: AppState
     @State var showingDetail = false
     
+    init() {
+        // To remove all separators including the actual ones:
+        UITableView.appearance().separatorStyle = .none
+    }
+    
     var body: some View {
-        NavigationView {
+        //NavigationView {
             List(appState.musicrooms) { room in
                 NavigationLink(destination: MusicroomView(room: room)) {
-                    VStack{
-                        ImageStore.shared.image(name: "party-people")
-                            .cornerRadius(100)
-                        //.border(Rectangle())
-                        //.frame(width: .infinity, height: nil, alignment: .center)
-                        HStack {
-                            Spacer()
-                            Text(verbatim: room.name).font(.title)
-                            Spacer()
+
+                    ZStack(alignment: .bottomTrailing) {
+                        VStack {
+                            ImageStore.shared.image(name: "party-people")
+                                .cornerRadius(100)
+                            //.border(Rectangle())
+                            //.frame(width: .infinity, height: nil, alignment: .center)
+                            HStack {
+                                Spacer()
+                                Text(verbatim: room.name).font(.title)
+                                Spacer()
+                            }
                         }
+                        //Text("Home").background(Color.red)
+                        
                     }
                 }.onAppear() { self.appState.fetchTracks(room) }
             }
-            .navigationBarTitle(Text("Joli"), displayMode: .inline)
+    
+            .navigationBarTitle(Text("Joli"), displayMode: .large)
             
-        }.onAppear() {
+    //    }
+    .onAppear() {
             self.appState.fetchMusicrooms()
         }
         //.colorScheme(.dark)
     }
 }
+
 
 //struct MusicroomList_Previews: PreviewProvider {
 //    static var previews: some View {

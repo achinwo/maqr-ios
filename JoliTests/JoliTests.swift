@@ -8,6 +8,7 @@
 
 import XCTest
 @testable import Joli
+@testable import JoliApi
 
 class JoliTests: XCTestCase {
 

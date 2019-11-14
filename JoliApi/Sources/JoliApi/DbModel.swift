@@ -184,7 +184,7 @@ public protocol DbModel: IdIdentifiable, CustomStringConvertible, DataConvertibl
     static func all(baseUrl: URL?, on: DispatchQueue?) -> Promise<[Self]>
 }
 
-private var BASE_URL: URL?
+public var BASE_URL: (ws: URL, http: URL)!
 
 extension DbModel {
     
@@ -218,12 +218,11 @@ extension DbModel {
     
     //192.168.1.132
     static var baseUrl: (ws: URL, http: URL) {
-//        get { (http:BASE_URL ?? URL(string: "http://172.20.10.2:8080")!,
-//        ws:URL(string: "ws://172.20.10.2:8080")!)}
-        get { (http:BASE_URL ?? URL(string: "http://192.168.1.173:8080")!,
-               ws:URL(string: "ws://192.168.1.173:8080")!)}
+        get { BASE_URL }
+//        get { (http:BASE_URL ?? URL(string: "http://192.168.1.173:8080")!,
+//               ws:URL(string: "ws://192.168.1.173:8080")!)}
         set {
-            BASE_URL = newValue.http
+            BASE_URL = newValue
         }
     }
     

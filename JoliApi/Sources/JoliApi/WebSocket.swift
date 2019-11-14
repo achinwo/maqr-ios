@@ -27,6 +27,10 @@ extension WebSocketMessage {
     
 }
 
+public enum ConnectionState {
+    case reconnecting(Int)
+    case stopped
+}
 
 public class WebSocketClient: NSObject {
     
@@ -35,6 +39,9 @@ public class WebSocketClient: NSObject {
     var session: URLSession!
     var task: URLSessionWebSocketTask!
     public var onMessage: MessageCallback?
+    
+    public var connectionState = ConnectionState.stopped
+    
     public var connected = false {
         didSet {
             self.connectionHandler?(connected)
@@ -70,7 +77,7 @@ public class WebSocketClient: NSObject {
             
             if case let Result.failure(error) = result {
                 print("[receive] error response aborting...\(error)")
-                self.connect()
+                self.scheduleReconnect()
                 return
             }
             
@@ -87,10 +94,21 @@ public class WebSocketClient: NSObject {
     var connectionHandler: ((Bool) -> Void)?
     
     public func connect(connectionHandler: ((Bool) -> Void)? = nil) {
-        if task != nil {
-            disconnect()
+        switch connectionState {
+        case .stopped:
+            connectionState = .reconnecting(0)
+        case .reconnecting(let count) where count > 0:
+            return
+        default:
+            break
         }
         
+        startTask(connectionHandler: connectionHandler)
+    }
+    
+    private func startTask(timeout: Double = 10, connectionHandler: ((Bool) -> Void)? = nil){
+        var req = URLRequest(url: url)
+        req.timeoutInterval = timeout
         self.task = self.session.webSocketTask(with: url)
         
         if let connectionHandler = connectionHandler {
@@ -101,22 +119,72 @@ public class WebSocketClient: NSObject {
     }
 
     public func disconnect() {
-        self.task.cancel(with: .goingAway, reason: "I cancelled".data(using: .utf8))
+        connectionState = .stopped
+        self.task.cancel(with: .normalClosure, reason: nil)
+    }
+    
+    var taskScheduled = false
+    
+    private func scheduleReconnect(){
+        print("[connectionState] \(connectionState)")
+        
+        switch connectionState {
+        case .reconnecting(let retryCount):
+            let nextCount = retryCount + 1
+            print("[WebSocketClient] reconnecting: \(nextCount)")
+            connectionState = .reconnecting(nextCount)
+            
+            guard !taskScheduled else {return}
+            
+            taskScheduled = true
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now().advanced(by: .seconds(retryCount * 5))) {
+                //self.cancelTask()
+                self.task?.cancel(with: .noStatusReceived, reason: "attempting reconnect".data(using: .utf8))
+                self.startTask(timeout: Double(nextCount * 5))
+                self.taskScheduled = false
+            }
+        default:
+            return
+        }
     }
     
 }
 
 extension WebSocketClient: URLSessionWebSocketDelegate {
     
+    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?){
+        print("Errored!")
+        self.connected = false
+        scheduleReconnect()
+    }
+    
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         print("Connected!")
         self.connected = true
+        
+        switch connectionState {
+        case .reconnecting(_):
+            connectionState = .reconnecting(0)
+        default:
+            break
+        }
+        
         OperationQueue.main.addOperation(self.receive)
     }
 
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
-        print("Disconnected! \(String(data: reason!, encoding: .utf8)!)")
+        
+        if let reason = reason {
+            print("Disconnected! \(closeCode) - \(String(data: reason, encoding: .utf8)!)")
+
+        }else{
+            print("Disconnected! \(closeCode)")
+
+        }
+        
         self.connected = false
+        
+        scheduleReconnect()
     }
     
 }

@@ -15,6 +15,7 @@
 		925FC0992377793100A8A72C /* african_giant_cover.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 925FC0982377793100A8A72C /* african_giant_cover.jpg */; };
 		925FC09B23777A0A00A8A72C /* MusicroomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09A23777A0A00A8A72C /* MusicroomView.swift */; };
 		925FC09D2378B81100A8A72C /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09C2378B81100A8A72C /* TrackView.swift */; };
+		925FC09F2379FE5900A8A72C /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09E2379FE5900A8A72C /* AppView.swift */; };
 		928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F6EB923761F7700FAC911 /* TrackSearchView.swift */; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B0716E2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
@@ -75,6 +76,7 @@
 		925FC0982377793100A8A72C /* african_giant_cover.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = african_giant_cover.jpg; sourceTree = "<group>"; };
 		925FC09A23777A0A00A8A72C /* MusicroomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomView.swift; sourceTree = "<group>"; };
 		925FC09C2378B81100A8A72C /* TrackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
+		925FC09E2379FE5900A8A72C /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		928F6EB923761F7700FAC911 /* TrackSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSearchView.swift; sourceTree = "<group>"; };
 		92B0716C2364F8A80070EC73 /* MusicroomList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
 		92B071752364FA2D0070EC73 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 				92B071752364FA2D0070EC73 /* AppState.swift */,
 				92061A83236B0175007FC6F1 /* Extensions.swift */,
 				928F6EB923761F7700FAC911 /* TrackSearchView.swift */,
+				925FC09E2379FE5900A8A72C /* AppView.swift */,
 			);
 			path = Joli;
 			sourceTree = "<group>";
@@ -357,6 +360,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				925FC09F2379FE5900A8A72C /* AppView.swift in Sources */,
 				925FC09523775BB100A8A72C /* SignInView.swift in Sources */,
 				92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */,
 				925FC09B23777A0A00A8A72C /* MusicroomView.swift in Sources */,

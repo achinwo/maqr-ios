@@ -37,7 +37,8 @@ struct MusicroomView: View {
             }.tag(2)
         }.font(.largeTitle)
             .accentColor(.orange)
-            .navigationBarBackButtonHidden(true)
+            //.navigationBarHidden(true)
+            //.navigationBarBackButtonHidden(true)
             .navigationBarItems(leading:
                 Button(action: {
                     self.presentationMode.wrappedValue.dismiss()
@@ -46,14 +47,14 @@ struct MusicroomView: View {
                         Text("Joli").accentColor(.orange).font(.title)
                     }
                 }
-//                                ,trailing:
+  //                              ,trailing:
 //                Button(action: {
 //                    self.isSearching = true
 //                }) {
 //                    Text("Search")
 //                }.sheet(isPresented: self.$isSearching){
 //                    TrackSearchView().environmentObject(self.appState)
-//            }
+     //       }
         ).onAppear() {
             self.appState.activeRoom = self.room
         }
