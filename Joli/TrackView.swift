@@ -78,7 +78,22 @@ struct TrackView: View {
         //.background(Color.yellow)
         .onTapGesture {
             print("currect device: \(String(describing: self.spotifyDevice))")
-            self.track.play(deviceId: self.spotifyDevice?.id)
+            
+            if let uri = self.track.uri {
+
+                self.appState.spotifyRemote.authorizeAndPlayURI(uri)
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() +  1.5) {
+                       //self.appState.spotifyRemote.connectionParameters.accessToken = SessionManager.session?.accessToken
+                    
+                       self.appState.spotifyRemote.connect()
+                    
+                   }
+            }else{
+
+                self.track.play(deviceId: self.spotifyDevice?.id)
+            }
+            
         }
         .onAppear(){
             

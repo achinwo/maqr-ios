@@ -23,6 +23,15 @@ class AppState: ObservableObject {
     //@Published var tracks: [Track] = []
     @Published var searchText: String = ""
     
+    var sceneDelegate: SceneDelegate {
+        return UIApplication.shared.connectedScenes.first?.delegate as! SceneDelegate
+    }
+    
+    var spotifyRemote: SPTAppRemote {
+        return sceneDelegate.appRemote
+    }
+    
+    
     var api = JoliApi(baseUrl: .home)
     
     private var cancellableSet: Set<AnyCancellable> = []

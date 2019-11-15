@@ -21,7 +21,7 @@ extension MPVolumeView {
     }
 }
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate {
 
     var window: UIWindow?
     var appState: AppState {
@@ -29,6 +29,71 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     var appDelegate: AppDelegate {
         (UIApplication.shared.delegate as! AppDelegate)
+    }
+    
+    let SpotifyClientID = "e3966e30011d4895997ce89c797de5a5"
+    let SpotifyRedirectURL = URL(string: "spotify-ios-quick-start://spotify-login-callback")!
+
+    lazy var configuration = SPTConfiguration(
+      clientID: SpotifyClientID,
+      redirectURL: SpotifyRedirectURL
+    )
+    
+    let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
+    
+    func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
+      print("Spotify connected!")
+        let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
+        self.appRemote.authorizeAndPlayURI(playURI)
+        
+        self.appRemote.playerAPI?.delegate = self
+        self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
+          if let error = error {
+            debugPrint(error.localizedDescription)
+          }
+        })
+    }
+    
+    func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
+      print("disconnected")
+    }
+    func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
+        print("failed: \(String(describing: error))")
+    }
+    func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
+      print("player state changed")
+        debugPrint("Track name: %@", playerState.track.name)
+    }
+    
+    lazy var appRemote: SPTAppRemote = {
+      let appRemote = SPTAppRemote(configuration: self.configuration, logLevel: .debug)
+      appRemote.connectionParameters.accessToken = self.accessToken
+      appRemote.delegate = self
+      return appRemote
+    }()
+    
+    static private let kAccessTokenKey = "access-token-key"
+    
+    var accessToken = UserDefaults.standard.string(forKey: kAccessTokenKey) {
+        didSet {
+            let defaults = UserDefaults.standard
+            defaults.set(accessToken, forKey: SceneDelegate.kAccessTokenKey)
+        }
+    }
+    
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else {
+            return
+        }
+
+        let parameters = appRemote.authorizationParameters(from: url);
+
+        if let access_token = parameters?[SPTAppRemoteAccessTokenKey] {
+            appRemote.connectionParameters.accessToken = access_token
+            self.accessToken = access_token
+        } else if let error_description = parameters?[SPTAppRemoteErrorDescriptionKey] {
+            print("Spotify error:", error_description)
+        }
     }
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -58,11 +123,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         appState.api.wsClient.disconnect()
     }
 
+    
+    
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
         
         //appState.api.wsClient.connect()
+        if let _ = self.appRemote.connectionParameters.accessToken {
+          self.appRemote.connect()
+        }
+        
+        //connect()
+    }
+    
+    func connect() {
+      self.appRemote.authorizeAndPlayURI(self.playURI)
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
@@ -70,6 +146,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This may occur due to temporary interruptions (ex. an incoming phone call).
         print("[SceneDelegate] sceneWillResignActive")
         appDelegate.stopObservingVolumeChanges()
+        
+        if self.appRemote.isConnected {
+          self.appRemote.disconnect()
+        }
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {

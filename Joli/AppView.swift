@@ -62,8 +62,12 @@ struct AppView: View {
 
                             }
                         })  {
-                            Image(systemName: "close")
+                            Image(systemName: "xmark")
                             Text("Sign In")
+                        }
+                        , trailing:
+                        Button(action: { self.appState.sceneDelegate.connect() })  {
+                            Text("Spotify")
                         }
                     )
                 }
@@ -80,7 +84,7 @@ struct AppView: View {
 
                         }
                     })  {
-                        Image(systemName: "close")
+                        Image(systemName: "xmark")
                         Text("Close")
                     }.padding()
                     VStack {
