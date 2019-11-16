@@ -38,11 +38,11 @@ public enum BaseUrl: RawRepresentable {
     public var rawValue: (http: URL, ws: URL) {
         switch self {
         case .home:
-            return (http: URL(string: "http://192.168.1.173:8080")!, ws: URL(string: "ws://192.168.1.173:8080")!)
+            return (http: URL(string: "https://192.168.1.173:8080")!, ws: URL(string: "wss://192.168.1.173:8080")!)
         case .mobileHotspot:
-            return (http: URL(string: "http://172.20.10.2:8080")!, ws: URL(string: "ws://172.20.10.2:8080")!)
+            return (http: URL(string: "https://172.20.10.2:8080")!, ws: URL(string: "wss://172.20.10.2:8080")!)
         case .host(let urlString):
-            return (http: URL(string: "http://\(urlString)")!, ws: URL(string: "ws://\(urlString)")!)
+            return (http: URL(string: "https://\(urlString)")!, ws: URL(string: "wss://\(urlString)")!)
         case .custom(let urls):
             return urls
         }
@@ -115,7 +115,9 @@ public class JoliApi: ObservableObject {
             request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
             request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
             
-            let task: URLSessionTask = URLSession.shared.uploadTask(with: request, from: payloadData, completionHandler: callback)
+            
+            
+            let task: URLSessionTask = JoliApi.sharedUrlSession.uploadTask(with: request, from: payloadData, completionHandler: callback)
             task.resume()
         }
     }
@@ -266,16 +268,28 @@ public class JoliApi: ObservableObject {
 //            //completionHandler?()
 //        }
         let api = JoliApi()
-        api.fetchSpotifyDevices().then { print($0) }
-        return api.searchTracks(q: "killin")
-            .then() { print($0) }
-            .catch() { error in print(error) }
+//        api.fetchSpotifyDevices().then { print($0) }
+//        return api.searchTracks(q: "killin")
+//            .then() { print($0) }
+//            .catch() { error in print(error) }
         
+        let m = Mirror(reflecting: Musicroom.self)
+        
+        for c in m.children {
+            print("child: \(c)")
+        }
         
         return Musicroom.findById(id: 1, on: .global(qos: .background))
         .then() { (res) -> Promise<[Track]> in
             var r = res!
-            debugPrint(r)
+            //debugPrint(r)
+            
+            let m = Mirror(reflecting: r)
+            
+            for c in m.children {
+                print("child: \(c)")
+            }
+            
             //r.name = "Davido Party"
 
             debugPrint("response: \(String(describing: r.$createdAt)) - \(String(describing: r.createdAt))")
@@ -291,6 +305,42 @@ public class JoliApi: ObservableObject {
 //        }
         
     }
+    
+    static let sharedUrlSessionDelegate = HttpsHook()
+    
+    static let sharedUrlSession = URLSession.init(configuration: URLSessionConfiguration.default,
+                                                  delegate: JoliApi.sharedUrlSessionDelegate, delegateQueue: .main)
+    
+}
+
+public class HttpsHook: NSObject, URLSessionDelegate {
+    
+    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+
+        let trustedHostArray = [
+            BaseUrl.home.rawValue.http.host!,
+            BaseUrl.mobileHotspot.rawValue.http.host!,
+        ]
+
+        print("[HttpsHook] trusted: \(trustedHostArray) - \(challenge.protectionSpace.authenticationMethod)")
+//        if Utils.getEnviroment() == Constants.Environment.Production.rawValue {
+//            trustedHostArray = Constants.TRUSTED_HOSTS.Production
+//        } else {
+//            trustedHostArray = Constants.TRUSTED_HOSTS.Develop
+//        }
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              trustedHostArray.contains(challenge.protectionSpace.host) else {
+            return
+        }
+
+        print("[HttpsHook] protectionSpace: \(challenge.protectionSpace) - \(challenge.protectionSpace.host)")
+        let credential = URLCredential(trust: challenge.protectionSpace.serverTrust!)
+        //print("[HttpsHook] replacing: \(credential)")
+
+        challenge.sender?.use(credential, for: challenge)
+        completionHandler(URLSession.AuthChallengeDisposition.useCredential, credential)
+    }
+    
 }
 
 //class Abc: SPTConfiguration{

@@ -206,9 +206,9 @@ enum HttpMethod: String {
                     request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
                     request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
                     
-                    task = URLSession.shared.uploadTask(with: request, from: payloadData, completionHandler: callback)
+                    task = JoliApi.sharedUrlSession.uploadTask(with: request, from: payloadData, completionHandler: callback)
                 case .get:
-                    task = URLSession.shared.dataTask(with: url, completionHandler: callback)
+                    task = JoliApi.sharedUrlSession.dataTask(with: url, completionHandler: callback)
             }
             task.resume()
         }

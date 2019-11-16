@@ -94,8 +94,13 @@ public protocol IdIdentifiable: Codable, Hashable, Identifiable {
 //    }
 //}
 
+protocol Trackable {
+    
+}
+
+
 @propertyWrapper
-public struct Tracked<T: Codable & Hashable>: Codable, Hashable {
+public struct Tracked<T: Codable & Hashable>: Trackable, Codable, Hashable {
     
     public var projectedValue: T?
     private var currentValue: T?
@@ -362,6 +367,10 @@ public struct Track: DbModel {
     public var type: String?
     public var uri: String?
     
+}
+
+extension Track {
+    
     @discardableResult
     public func play(deviceId: String?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Track> {
         
@@ -376,4 +385,5 @@ public struct Track: DbModel {
         
         return HttpMethod.post.fetch(urlPath: urlPath, dataType: Self.self, payload: self, baseUrl: baseUrl, on: on)
     }
+    
 }

@@ -32,7 +32,7 @@ public enum ConnectionState {
     case stopped
 }
 
-public class WebSocketClient: NSObject {
+public class WebSocketClient: HttpsHook {
     
     public typealias MessageCallback = (Result<URLSessionWebSocketTask.Message, Error>) -> Void
     
