@@ -12,6 +12,9 @@ import SwiftUI
 import Combine
 import Promises
 
+enum FetchError: Error {
+    case cancelled
+}
 
 class AppState: ObservableObject {
     
@@ -37,11 +40,25 @@ class AppState: ObservableObject {
     private var cancellableSet: Set<AnyCancellable> = []
     @Published public var trackSearchResult: [Track] = []
     
+    var currentSearchFuture: Promise<Any>?
+    
     var trackSearchResultPublisher: AnyPublisher<[Track], Never> {
         $searchText
-        .debounce(for: 0.3, scheduler: RunLoop.main)
         .removeDuplicates()
+        .debounce(for: 0.3, scheduler: RunLoop.main)
         .map { input -> Future<[Track], Never> in
+//
+//            if let existing = self.currentSearchFuture {
+//                existing
+//            }
+//            for cancel in self.cancellableSet {
+//                cancel.cancel()
+//            }
+            
+            if let curr = self.currentSearchFuture{
+                curr.reject(FetchError.cancelled)
+            }
+            
             return Future<[Track], Never>() { promise in
                 
                 guard !input.trimmingCharacters(in: [" "]).isEmpty else {
@@ -49,9 +66,10 @@ class AppState: ObservableObject {
                     return
                 }
                 
-                self.api.searchTracks(q: input)
+                self.currentSearchFuture = self.api.searchTracks(q: input)
                     .then() { promise(.success($0)) }
                     .catch() { print("[AppState] trackSearchResult: \($0)") }
+                
             }
         }
         .switchToLatest()
@@ -84,6 +102,21 @@ class AppState: ObservableObject {
         .receive(on: RunLoop.main)
         .assign(to: \.trackSearchResult, on: self)
         .store(in: &cancellableSet)
+        
+        //let u = DZRUser.init()
+        
+//        let cancellableSink = remoteDataPublisher
+//        .sink(receiveCompletion: { completion in
+//                print(".sink() received the completion", String(describing: completion))
+//                switch completion {
+//                    case .finished:
+//                        break
+//                    case .failure(let anError):
+//                        print("received error: ", anError)
+//                }
+//        }, receiveValue: { someValue in
+//            self.trackSearchResult = someValue
+//        })
     }
     
     @Published var spotifyDevices: [JoliApi.SpotifyDevice] = []

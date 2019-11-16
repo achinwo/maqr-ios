@@ -21,7 +21,15 @@ extension MPVolumeView {
     }
 }
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate {
+class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate, SPTSessionManagerDelegate {
+    
+    func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
+        print("Spotify: created session \(session)")
+    }
+    
+    func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
+        print("Spotify: session failure \(error)")
+    }
 
     var window: UIWindow?
     var appState: AppState {
@@ -41,35 +49,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
     
     let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
     
-    func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
-      print("Spotify connected!")
-        let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
-        self.appRemote.authorizeAndPlayURI(playURI)
-        
-        self.appRemote.playerAPI?.delegate = self
-        self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
-          if let error = error {
-            debugPrint(error.localizedDescription)
-          }
-        })
-    }
-    
-    func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
-      print("disconnected")
-    }
-    func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
-        print("failed: \(String(describing: error))")
-    }
-    func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
-      print("player state changed")
-        debugPrint("Track name: %@", playerState.track.name)
-    }
-    
     lazy var appRemote: SPTAppRemote = {
       let appRemote = SPTAppRemote(configuration: self.configuration, logLevel: .debug)
       appRemote.connectionParameters.accessToken = self.accessToken
       appRemote.delegate = self
       return appRemote
+    }()
+    
+    lazy var spotifySessionManager = {
+        return SPTSessionManager(configuration: configuration, delegate: self)
+    }()
+    
+    lazy var isSpotifyAppInstalled = {
+        return spotifySessionManager.isSpotifyAppInstalled
     }()
     
     static private let kAccessTokenKey = "access-token-key"
@@ -79,6 +71,32 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
             let defaults = UserDefaults.standard
             defaults.set(accessToken, forKey: SceneDelegate.kAccessTokenKey)
         }
+    }
+    
+    func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
+      print("Spotify connected!")
+        //let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
+        //self.appRemote.authorizeAndPlayURI(playURI)
+        
+        self.appRemote.playerAPI?.delegate = self
+        self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
+          if let error = error {
+            print("Spotify: playstae subsrcibe error: \(error)")
+            debugPrint(error.localizedDescription)
+          }
+        })
+    }
+    
+    func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
+      print("Spotify: disconnected \(String(describing: error))")
+    }
+    func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
+        print("Spotify: failed: \(String(describing: error))")
+    }
+    func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
+      print("player state changed")
+        
+        debugPrint("Track name: \(playerState.track.name) - \(playerState.contextTitle)")
     }
     
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
@@ -105,6 +123,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         //let env: EnvironmentObject<AppState> = EnvironmentObject();
         let contentView = AppView().environmentObject(appState)
 
+        print("Spootify app installed: \(spotifySessionManager.isSpotifyAppInstalled)")
+        
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
@@ -145,7 +165,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         // Called when the scene will move from an active state to an inactive state.
         // This may occur due to temporary interruptions (ex. an incoming phone call).
         print("[SceneDelegate] sceneWillResignActive")
-        appDelegate.stopObservingVolumeChanges()
+        //appDelegate.stopObservingVolumeChanges()
         
         if self.appRemote.isConnected {
           self.appRemote.disconnect()
@@ -158,16 +178,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         print("[SceneDelegate] App is active")
         appState.api.wsClient.connect()
         
-        do {
-            try appDelegate.audioSession.setActive(true)
-            appDelegate.startObservingVolumeChanges()
-            
-            guard let deviceVolume = appState.spotifyDevice?.volumePercent else { return }
-            
-            MPVolumeView.setVolume(Float(deviceVolume) / 100.0)
-        } catch {
-            print("[SceneDelegate] Failed to activate audio session")
-        }
+//        do {
+//            try appDelegate.audioSession.setActive(true)
+//            appDelegate.startObservingVolumeChanges()
+//
+//            guard let deviceVolume = appState.spotifyDevice?.volumePercent else { return }
+//
+//            MPVolumeView.setVolume(Float(deviceVolume) / 100.0)
+//            print("[SceneDelegate] App is active - setting volume to \(Float(deviceVolume) / 100.0)")
+//        } catch {
+//            print("[SceneDelegate] Failed to activate audio session")
+//        }
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {

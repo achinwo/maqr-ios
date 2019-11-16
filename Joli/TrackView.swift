@@ -40,7 +40,7 @@ struct TrackView: View {
     var body: some View {
         HStack(alignment: .center) {
             
-            CircleImage(image: image).padding()
+            CircleImage(image: image)//.background(Color.blue)
             
             VStack(alignment: .leading) {
                 Text(track.title ?? track.name!)
@@ -77,18 +77,24 @@ struct TrackView: View {
         }
         //.background(Color.yellow)
         .onTapGesture {
-            print("currect device: \(String(describing: self.spotifyDevice))")
+            print("currect device: \(String(describing: self.spotifyDevice))\nuri: \(String(describing: self.track.uri))")
             
             if let uri = self.track.uri {
 
-                self.appState.spotifyRemote.authorizeAndPlayURI(uri)
+                guard self.appState.spotifyRemote.isConnected else {
+                    print("[Track#play] spotify not connected")
+                    self.appState.spotifyRemote.authorizeAndPlayURI(uri)
+                    return
+                }
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() +  1.5) {
-                       //self.appState.spotifyRemote.connectionParameters.accessToken = SessionManager.session?.accessToken
+                self.appState.spotifyRemote.playerAPI?.play(uri){ info, error in
                     
-                       self.appState.spotifyRemote.connect()
-                    
-                   }
+                    print("[Track#play] \(String(describing: info)) - \(String(describing: error))")
+                }//authorizeAndPlayURI(uri)
+                
+                self.appState.spotifyRemote.playerAPI?.subscribe() { (info, error) in
+                    print("[Track#subscribe] \(String(describing: info)) - \(String(describing: error))")
+                }
             }else{
 
                 self.track.play(deviceId: self.spotifyDevice?.id)

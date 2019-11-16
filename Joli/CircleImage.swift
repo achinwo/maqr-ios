@@ -11,17 +11,13 @@ struct CircleImage: View {
     var image: Image?
 
     var body: some View {
-        if let img = self.image {
-            return img
-            .clipShape(Circle())
-            .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                .overlay(Circle().stroke(Color.secondary, lineWidth: 1))
-        } else {
-            return Image(systemName: "exclamationmark.icloud")
-            .clipShape(Circle())
-            .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                .overlay(Circle().stroke(Color.secondary, lineWidth: 1))
-        }
+        
+        let img = self.image ?? Image(systemName: "exclamationmark.icloud")
+        
+        return img
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                    //.overlay(Circle().stroke(Color.secondary, lineWidth: 1))
         
     }
 }
