@@ -7,16 +7,66 @@
 //
 
 import SwiftUI
+import JoliApi
 
+typealias Size = ()
+
+struct ViewOffset {
+    
+    var x: CGFloat?
+    var y: CGFloat?
+    
+    func computedSize(geometry: GeometryProxy) -> CGSize {
+        return CGSize(width: x ?? geometry.size.width, height: y ?? geometry.size.height)
+    }
+    
+}
+
+extension DbModel {
+    var view: some View {
+        GeometryReader(){ geometry in
+            self.makeView(geometry)
+        }
+    }
+    
+    func makeView(_ geom: GeometryProxy) -> some View {
+        return Text("View: \(Self.className())")
+    }
+}
+
+struct DbModelView<T: DbModel>: View {
+    
+    var item: T
+    
+    init(of: T){
+        item = of
+    }
+    
+    var body: some View {
+        self.item.view
+    }
+    
+}
+
+extension Track {
+    
+    func makeView(_ geom: GeometryProxy) -> some View {
+        return TrackView(track: self)
+    }
+    
+}
 
 struct AppView: View {
     @EnvironmentObject var appState: AppState
-    @State var settingsViewOffset = CGSize(width: 0, height: 0)
+    
+    @State var settingsViewOffset: ViewOffset = ViewOffset(x: nil, y: 0)
+    @State var settingsViewOffsetSize = CGSize(width: 0, height: 0)
     @State var mainViewOffset = CGSize(width: 0, height: 0)
     @State var activityIdx = 0
     
+    
+    
     var body: some View {
-
         
         GeometryReader(){ geometry in
             ZStack(alignment: .bottomTrailing) {
@@ -38,37 +88,38 @@ struct AppView: View {
                 
                 NavigationView {
                     MusicroomList()
-                    .navigationBarItems(trailing:
-                        Button(action: {
-                            if self.settingsViewOffset.width == 0 {
-                                self.settingsViewOffset = CGSize(width: geometry.size.width, height: 0)
-
-                            }else{
-                                self.settingsViewOffset = CGSize(width: 0, height: 0)
-
+                        .navigationBarItems(leading:
+                            Button(action: {
+                                if self.mainViewOffset.height == 0 {
+                                    self.mainViewOffset = CGSize(width: 0, height: geometry.size.height)
+                                    
+                                }else{
+                                    self.mainViewOffset = CGSize(width: 0, height: 0)
+                                    
+                                }
+                            })  {
+                                Image(systemName: "xmark")
+                                Text("Sign In")
+                            }, trailing:
+                            Button(action: {
+                                if self.settingsViewOffset.x == geometry.size.width {
+                                    self.settingsViewOffset = ViewOffset(x: geometry.size.width, y: 0)
+                                }else{
+                                    self.settingsViewOffset = ViewOffset(x: nil, y: 0)
+                                    
+                                }
+                                self.settingsViewOffsetSize = self.settingsViewOffset.computedSize(geometry: geometry)
+                                
+                            })  {
+                                Image(systemName: "gear")
+                                    .onTapGesture {
+                                        print("Settings tapped")
+                                }.padding()
                             }
-                        })  {
-                            Image(systemName: "xmark")
-                            Text("Settings")
-                        }
-                    )
-                    .navigationBarItems(leading:
-                        Button(action: {
-                            if self.mainViewOffset.height == 0 {
-                                self.mainViewOffset = CGSize(width: 0, height: geometry.size.height)
-
-                            }else{
-                                self.mainViewOffset = CGSize(width: 0, height: 0)
-
-                            }
-                        })  {
-                            Image(systemName: "xmark")
-                            Text("Sign In")
-                        }
-                        , trailing:
-                        Button(action: { self.appState.sceneDelegate.connect() })  {
-                            Text("Spotify")
-                        }
+//                        , trailing:
+//                        Button(action: { self.appState.sceneDelegate.connect() })  {
+//                            Text("Spotify")
+//                        }
                     )
                 }
                 .animation(.linear(duration: 0.3))
@@ -76,13 +127,13 @@ struct AppView: View {
                 
                 VStack {
                     Button(action: {
-                        if self.settingsViewOffset.width == 0 {
-                            self.settingsViewOffset = CGSize(width: geometry.size.width, height: 0)
-
+                        if self.settingsViewOffset.x == nil {
+                            self.settingsViewOffset = ViewOffset(x: geometry.size.width, y: 0)
                         }else{
-                            self.settingsViewOffset = CGSize(width: 0, height: 0)
+                            self.settingsViewOffset = ViewOffset(x: nil, y: 0)
 
                         }
+                        self.settingsViewOffsetSize = self.settingsViewOffset.computedSize(geometry: geometry)
                     })  {
                         Image(systemName: "xmark")
                         Text("Close")
@@ -96,7 +147,7 @@ struct AppView: View {
                    // .blur(radius: 80)
                 .background(Color.yellow)
                     .animation(.easeInOut(duration: 0.25))
-                    .offset(self.settingsViewOffset)
+                    .offset(self.settingsViewOffsetSize)
                 
             }
             

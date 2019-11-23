@@ -30,15 +30,18 @@ public typealias Json2 = [String: AnyObject]
 //               ws:URL(string: "ws://192.168.1.173:8080")!)}
 public enum BaseUrl: RawRepresentable {
     
-    case home
+    case homeLaptop
+    case homeDesktop
     case mobileHotspot
     case host(String)
     case custom((http: URL, ws: URL))
     
     public var rawValue: (http: URL, ws: URL) {
         switch self {
-        case .home:
+        case .homeLaptop:
             return (http: URL(string: "https://192.168.1.173:8080")!, ws: URL(string: "wss://192.168.1.173:8080")!)
+        case .homeDesktop:
+            return (http: URL(string: "https://192.168.1.188:8080")!, ws: URL(string: "wss://192.168.1.188:8080")!)
         case .mobileHotspot:
             return (http: URL(string: "https://172.20.10.2:8080")!, ws: URL(string: "wss://172.20.10.2:8080")!)
         case .host(let urlString):
@@ -153,7 +156,7 @@ public class JoliApi: ObservableObject {
         public let volumePercent: Int
     }
     
-    public init(baseUrl: BaseUrl = .home){
+    public init(baseUrl: BaseUrl = .homeLaptop){
         self.baseUrl = baseUrl
         let url = baseUrl.rawValue.ws.appendingPathComponent("/ws")
         self.wsClient = WebSocketClient(url: url)
@@ -218,7 +221,7 @@ public class JoliApi: ObservableObject {
         //let urlSession = URLSession(configuration: .default)
         //let url = URL(string: "http://localhost:8080/api/db/musicrooms")!
         //debugPrint("names: \(Musicroom(name: "test").propertyValues())")
-        BASE_URL = BaseUrl.home.rawValue
+        BASE_URL = BaseUrl.homeLaptop.rawValue
 //        let task = URLSession.shared.webSocketTask(with: )
 //        task.resume()
 //
@@ -318,7 +321,8 @@ public class HttpsHook: NSObject, URLSessionDelegate {
     public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
 
         let trustedHostArray = [
-            BaseUrl.home.rawValue.http.host!,
+            BaseUrl.homeLaptop.rawValue.http.host!,
+            BaseUrl.homeDesktop.rawValue.http.host!,
             BaseUrl.mobileHotspot.rawValue.http.host!,
         ]
 

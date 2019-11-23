@@ -9,7 +9,6 @@
 import SwiftUI
 import JoliApi
 
-
 struct PlayQueueView: View {
     
     @State var albumArt: Image?
@@ -27,6 +26,7 @@ struct PlayQueueView: View {
                         .padding()
                     Slider(value: self.$nowPlayingPosition, in: 0...100, step: 1)
                         .disabled(self.nowPlaying == nil)
+                        .allowsHitTesting(false)
                         //.padding().background(Color.pink)
                     
                     Picker(selection: self.$appState.selectedSpotifyDeviceIdx, label: Text("Devices")) {
@@ -48,7 +48,6 @@ struct PlayQueueView: View {
                         TrackView(track: track)//.background(Color.pink)
                     }
                     .onDelete(perform: self.delete)
-                
                 }
                 
             }
