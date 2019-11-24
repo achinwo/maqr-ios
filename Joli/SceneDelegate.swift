@@ -35,6 +35,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
     var appState: AppState {
         (UIApplication.shared.delegate as! AppDelegate).appState
     }
+    
     var appDelegate: AppDelegate {
         (UIApplication.shared.delegate as! AppDelegate)
     }

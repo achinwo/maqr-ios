@@ -8,6 +8,36 @@
 
 import UIKit
 import AVKit
+import JoliApi
+
+func log(_ items: Any...){
+    print(items)
+}
+
+enum AppEnvironment: String {
+    
+    static var CACHED_ENV_CONFIG: [String: AnyObject] = [:]
+    
+    case local
+    case development
+    case production
+    
+    var baseUrl: JoliApi.BaseUrl {
+        switch self {
+        case .local:
+            guard let host: String = (AppEnvironment.CACHED_ENV_CONFIG["host"] as? [String: AnyObject])?["local"] as? String else {
+                let defaultLocalUrl = JoliApi.BaseUrl.homeLaptop
+                log("[AppEnvironment] using default: \(defaultLocalUrl)")
+                return defaultLocalUrl
+            }
+            return .host(host)
+        case .development:
+            return .host("dev.jolimc.com")
+        case .production:
+            return .host("jolimc.com")
+        }
+    }
+}
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,13 +48,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let debug = false
     #endif
     
-    var appState = AppState()
+    var appState: AppState!
     var audioSession = AVAudioSession.sharedInstance()
     
     private struct Observation {
         static let VolumeKey = "outputVolume"
         static var Context = 0
-
     }
 
     func startObservingVolumeChanges() {
@@ -68,6 +97,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
+    
+    var env: AppEnvironment {
+        
+        get {
+
+            guard self.debug else {
+                return .production
+            }
+            
+            let json = AppEnvironment.CACHED_ENV_CONFIG
+            return AppEnvironment(rawValue: json["env"] as? String ?? AppEnvironment.local.rawValue) ?? .development
+        }
+        
+        set {
+            AppEnvironment.CACHED_ENV_CONFIG["env"] = newValue.rawValue as AnyObject
+        }
+        
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        do {
@@ -82,25 +129,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        } catch {
 //            print("Failed to activate audio session")
 //        }
-        print("[AppDelegate] application started")
         
-//        if debug {
-//            //gai.logger.logLevel = GAILogLevel.Verbose
-//            print("[Debug mode] force resetting feedback info, current state = \(feedbackConfig)")
-//            feedbackConfig = (nil, Date(), .later)
-//
-//            if let filePath = Bundle.main.path(forResource: "environment_config", ofType: "json"), let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)),
-//                let json:[String:AnyObject] = (NSString(data:data, encoding: String.Encoding.utf8.rawValue) as? String)?.parseJsonString {
-//                print("[Debug mode] env config: \(json)")
-//
-//                config = json
-//
-//                let envConfig:String? = json["env"] as? String ?? "local"
-//                env = envConfig == "local" ? .Local : (envConfig == "development" ? .Development : (envConfig == "live" ? .Live : .Local))
-//            }
-//        }else{
-//            env = .Live
-//        }
+        if debug, let filePath = Bundle.main.path(forResource: "env", ofType: "json"),
+            let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)),
+            let json: [String: AnyObject] = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: AnyObject] {
+            print("[Debug mode] env config: \(json)")
+
+            AppEnvironment.CACHED_ENV_CONFIG.merge(json) { (_, new) in new }
+        }
+        
+        print("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl)")
+        
+        self.appState = AppState(baseUrl: env.baseUrl)
         
         return true
     }

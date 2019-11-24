@@ -28,42 +28,44 @@ public struct TrackInfo {
 public typealias Json2 = [String: AnyObject]
 //get { (http:BASE_URL ?? URL(string: "http://192.168.1.173:8080")!,
 //               ws:URL(string: "ws://192.168.1.173:8080")!)}
-public enum BaseUrl: RawRepresentable {
-    
-    case homeLaptop
-    case homeDesktop
-    case mobileHotspot
-    case host(String)
-    case custom((http: URL, ws: URL))
-    
-    public var rawValue: (http: URL, ws: URL) {
-        switch self {
-        case .homeLaptop:
-            return (http: URL(string: "https://192.168.1.173:8080")!, ws: URL(string: "wss://192.168.1.173:8080")!)
-        case .homeDesktop:
-            return (http: URL(string: "https://192.168.1.188:8080")!, ws: URL(string: "wss://192.168.1.188:8080")!)
-        case .mobileHotspot:
-            return (http: URL(string: "https://172.20.10.2:8080")!, ws: URL(string: "wss://172.20.10.2:8080")!)
-        case .host(let urlString):
-            return (http: URL(string: "https://\(urlString)")!, ws: URL(string: "wss://\(urlString)")!)
-        case .custom(let urls):
-            return urls
-        }
-    }
-    
-    public init?(rawValue: String) {
-        self = .host(rawValue)
-    }
-    
-    public init?(rawValue: (http: URL, ws: URL)) {
-        self = .custom(rawValue)
-    }
-}
+
 
 public class JoliApi: ObservableObject {
     
     @Published var currentPlaying: TrackInfo?
     @Published var currentPlayingTrack: Track?
+    
+    public enum BaseUrl: RawRepresentable {
+        
+        case homeLaptop
+        case homeDesktop
+        case mobileHotspot
+        case host(String)
+        case custom((http: URL, ws: URL))
+        
+        public var rawValue: (http: URL, ws: URL) {
+            switch self {
+            case .homeLaptop:
+                return (http: URL(string: "https://192.168.1.173:8080")!, ws: URL(string: "wss://192.168.1.173:8080")!)
+            case .homeDesktop:
+                return (http: URL(string: "https://192.168.1.188:8080")!, ws: URL(string: "wss://192.168.1.188:8080")!)
+            case .mobileHotspot:
+                return (http: URL(string: "https://172.20.10.2:8080")!, ws: URL(string: "wss://172.20.10.2:8080")!)
+            case .host(let urlString):
+                return (http: URL(string: "https://\(urlString)")!, ws: URL(string: "wss://\(urlString)")!)
+            case .custom(let urls):
+                return urls
+            }
+        }
+        
+        public init?(rawValue: String) {
+            self = .host(rawValue)
+        }
+        
+        public init?(rawValue: (http: URL, ws: URL)) {
+            self = .custom(rawValue)
+        }
+    }
     
     public func playTrack(_ track: Track, deviceId: String?) -> Promise<Result<TrackInfo, Error>>{
         return track.play(deviceId: deviceId)
@@ -320,10 +322,10 @@ public class HttpsHook: NSObject, URLSessionDelegate {
     
     public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
 
-        let trustedHostArray = [
-            BaseUrl.homeLaptop.rawValue.http.host!,
-            BaseUrl.homeDesktop.rawValue.http.host!,
-            BaseUrl.mobileHotspot.rawValue.http.host!,
+        let trustedHostArray: [String] = [
+            JoliApi.BaseUrl.homeLaptop.rawValue.http.host!,
+            JoliApi.BaseUrl.homeDesktop.rawValue.http.host!,
+            JoliApi.BaseUrl.mobileHotspot.rawValue.http.host!,
         ]
 
         print("[HttpsHook] trusted: \(trustedHostArray) - \(challenge.protectionSpace.authenticationMethod)")

@@ -30,12 +30,19 @@ class AppState: ObservableObject {
         return UIApplication.shared.connectedScenes.first?.delegate as! SceneDelegate
     }
     
+    var env: AppEnvironment {
+        return self.sceneDelegate.appDelegate.env
+    }
+    
     var spotifyRemote: SPTAppRemote {
         return sceneDelegate.appRemote
     }
     
+    let baseUrl: JoliApi.BaseUrl
     
-    var api = JoliApi(baseUrl: .homeDesktop)
+    lazy var api: JoliApi = {
+        JoliApi(baseUrl: self.baseUrl)
+    }()
     
     private var cancellableSet: Set<AnyCancellable> = []
     @Published public var trackSearchResult: [Track] = []
@@ -97,7 +104,9 @@ class AppState: ObservableObject {
 
     var didChange = PassthroughSubject<AppState, Never>()
     
-    init() {
+    init(baseUrl: JoliApi.BaseUrl) {
+        self.baseUrl = baseUrl
+        
         trackSearchResultPublisher
         .receive(on: RunLoop.main)
         .assign(to: \.trackSearchResult, on: self)
