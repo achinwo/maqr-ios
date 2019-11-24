@@ -12,6 +12,11 @@ import AVKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
+    #if DEBUG
+    let debug = true
+    #else
+    let debug = false
+    #endif
     
     var appState = AppState()
     var audioSession = AVAudioSession.sharedInstance()
@@ -77,6 +82,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        } catch {
 //            print("Failed to activate audio session")
 //        }
+        print("[AppDelegate] application started")
+        
+//        if debug {
+//            //gai.logger.logLevel = GAILogLevel.Verbose
+//            print("[Debug mode] force resetting feedback info, current state = \(feedbackConfig)")
+//            feedbackConfig = (nil, Date(), .later)
+//
+//            if let filePath = Bundle.main.path(forResource: "environment_config", ofType: "json"), let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)),
+//                let json:[String:AnyObject] = (NSString(data:data, encoding: String.Encoding.utf8.rawValue) as? String)?.parseJsonString {
+//                print("[Debug mode] env config: \(json)")
+//
+//                config = json
+//
+//                let envConfig:String? = json["env"] as? String ?? "local"
+//                env = envConfig == "local" ? .Local : (envConfig == "development" ? .Development : (envConfig == "live" ? .Live : .Local))
+//            }
+//        }else{
+//            env = .Live
+//        }
+        
         return true
     }
     

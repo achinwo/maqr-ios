@@ -16,8 +16,6 @@
 		925FC09B23777A0A00A8A72C /* MusicroomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09A23777A0A00A8A72C /* MusicroomView.swift */; };
 		925FC09D2378B81100A8A72C /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09C2378B81100A8A72C /* TrackView.swift */; };
 		925FC09F2379FE5900A8A72C /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09E2379FE5900A8A72C /* AppView.swift */; };
-		925FC0A1237E2DF800A8A72C /* DeezerSDK in Resources */ = {isa = PBXBuildFile; fileRef = 925FC0A0237E2DF700A8A72C /* DeezerSDK */; };
-		925FC0A3237E302E00A8A72C /* deezer.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 925FC0A2237E302D00A8A72C /* deezer.xcconfig */; };
 		928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F6EB923761F7700FAC911 /* TrackSearchView.swift */; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B0716E2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
@@ -27,6 +25,7 @@
 		92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92D90BE9236C890B00EAAD31 /* party-people.jpg */; };
 		92E67209236BC511003AC55F /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		92E6720A236BC511003AC55F /* SpotifyiOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		92F35AF2238A0AAB0081E30A /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 92F35AF1238A0AAB0081E30A /* env.json */; };
 		92F379E32363534D005FE2AB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E22363534D005FE2AB /* AppDelegate.swift */; };
 		92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E42363534D005FE2AB /* SceneDelegate.swift */; };
 		92F379E92363534F005FE2AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92F379E82363534F005FE2AB /* Assets.xcassets */; };
@@ -90,11 +89,11 @@
 		925FC09C2378B81100A8A72C /* TrackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
 		925FC09E2379FE5900A8A72C /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		925FC0A0237E2DF700A8A72C /* DeezerSDK */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DeezerSDK; sourceTree = "<group>"; };
-		925FC0A2237E302D00A8A72C /* deezer.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = deezer.xcconfig; sourceTree = "<group>"; };
 		928F6EB923761F7700FAC911 /* TrackSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSearchView.swift; sourceTree = "<group>"; };
 		92B0716C2364F8A80070EC73 /* MusicroomList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
 		92B071752364FA2D0070EC73 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		92D90BE9236C890B00EAAD31 /* party-people.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "party-people.jpg"; sourceTree = "<group>"; };
+		92F35AF1238A0AAB0081E30A /* env.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = env.json; sourceTree = "<group>"; };
 		92F379DF2363534D005FE2AB /* Joli.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Joli.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92F379E22363534D005FE2AB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		92F379E42363534D005FE2AB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -163,7 +162,7 @@
 		92F379D62363534D005FE2AB = {
 			isa = PBXGroup;
 			children = (
-				925FC0A2237E302D00A8A72C /* deezer.xcconfig */,
+				92F35AF1238A0AAB0081E30A /* env.json */,
 				925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */,
 				92F37A172363571C005FE2AB /* JoliApi */,
 				92F379E12363534D005FE2AB /* Joli */,
@@ -350,11 +349,10 @@
 			files = (
 				92F379EF2363534F005FE2AB /* LaunchScreen.storyboard in Resources */,
 				92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */,
-				925FC0A1237E2DF800A8A72C /* DeezerSDK in Resources */,
-				925FC0A3237E302E00A8A72C /* deezer.xcconfig in Resources */,
 				92F379EC2363534F005FE2AB /* Preview Assets.xcassets in Resources */,
 				925FC0992377793100A8A72C /* african_giant_cover.jpg in Resources */,
 				92F379E92363534F005FE2AB /* Assets.xcassets in Resources */,
+				92F35AF2238A0AAB0081E30A /* env.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -574,7 +572,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "DeezerSDK/**";
+				LIBRARY_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = (
 					"-all_load",
 					"-ObjC",
@@ -609,7 +607,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "DeezerSDK/**";
+				LIBRARY_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = (
 					"-all_load",
 					"-ObjC",

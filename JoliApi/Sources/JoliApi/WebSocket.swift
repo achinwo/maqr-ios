@@ -37,7 +37,7 @@ public class WebSocketClient: HttpsHook {
     public typealias MessageCallback = (Result<URLSessionWebSocketTask.Message, Error>) -> Void
     
     var session: URLSession!
-    var task: URLSessionWebSocketTask!
+    var task: URLSessionWebSocketTask?
     public var onMessage: MessageCallback?
     
     public var connectionState = ConnectionState.stopped
@@ -62,13 +62,13 @@ public class WebSocketClient: HttpsHook {
         let msg = WebSocketMessage(topic: topic)
         
         let message = URLSessionWebSocketTask.Message.string(msg.jsonString())
-        self.task.send(message) { error in
+        self.task?.send(message) { error in
             completionHandler?(error)
         }
     }
     
     public func receive(){
-        self.task.receive() { result in
+        self.task?.receive() { result in
             //print("[result] \(result)")
             
             defer {
@@ -77,7 +77,7 @@ public class WebSocketClient: HttpsHook {
             
             if case let Result.failure(error) = result {
                 print("[receive] error response aborting...\(error)")
-                self.scheduleReconnect()
+                self.scheduleReconnect() // MARK: - Schedule Reconnect
                 return
             }
             
@@ -107,6 +107,11 @@ public class WebSocketClient: HttpsHook {
     }
     
     private func startTask(timeout: Double = 10, connectionHandler: ((Bool) -> Void)? = nil){
+        
+        if let task = self.task {
+            task.cancel(with: .goingAway, reason: "Initailizing new connection".data(using: .utf8))
+        }
+        
         var req = URLRequest(url: url)
         req.timeoutInterval = timeout
         self.task = self.session.webSocketTask(with: url)
@@ -115,12 +120,12 @@ public class WebSocketClient: HttpsHook {
             self.connectionHandler = connectionHandler
         }
         
-        self.task.resume()
+        self.task!.resume()
     }
 
     public func disconnect() {
         connectionState = .stopped
-        self.task.cancel(with: .normalClosure, reason: nil)
+        self.task?.cancel(with: .normalClosure, reason: nil)
     }
     
     var taskScheduled = false
@@ -139,6 +144,9 @@ public class WebSocketClient: HttpsHook {
             taskScheduled = true
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now().advanced(by: .seconds(retryCount * 5))) {
                 //self.cancelTask()
+                
+                guard self.connected else { return }
+                
                 self.task?.cancel(with: .noStatusReceived, reason: "attempting reconnect".data(using: .utf8))
                 self.startTask(timeout: Double(nextCount * 5))
                 self.taskScheduled = false
@@ -155,11 +163,11 @@ extension WebSocketClient: URLSessionWebSocketDelegate {
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?){
         print("Errored!")
         self.connected = false
-        scheduleReconnect()
+        scheduleReconnect() // MARK: - Schedule Reconnect
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
-        print("Connected!")
+        print("Connected! - \(String(describing: `protocol`))")
         self.connected = true
         
         switch connectionState {
@@ -184,7 +192,7 @@ extension WebSocketClient: URLSessionWebSocketDelegate {
         
         self.connected = false
         
-        scheduleReconnect()
+        scheduleReconnect() // MARK: - Schedule Reconnect
     }
     
 }
