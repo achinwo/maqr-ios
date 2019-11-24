@@ -82,7 +82,7 @@ struct PlayQueueView: View {
     
     func onDisappear(){
         print("Disappeared!!")
-        self.appState.api.unsubscribe(subject: "PLAYER_STATE_NOW_PLAYING")
+        //self.appState.api.unsubscribe(subject: "PLAYER_STATE_NOW_PLAYING")
     }
     
     static func jsonStringToDict(text: String) -> [String:AnyObject]? {

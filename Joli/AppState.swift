@@ -12,6 +12,7 @@ import SwiftUI
 import Combine
 import Promises
 
+
 enum FetchError: Error {
     case cancelled
 }
@@ -104,6 +105,19 @@ class AppState: ObservableObject {
 
     var didChange = PassthroughSubject<AppState, Never>()
     
+    var nowPlayingSubject = CurrentValueSubject<[String: AnyObject]?, Never>(nil)
+    
+    static func jsonStringToDict(text: String) -> [String:AnyObject]? {
+        if let data = text.data(using: .utf8) {
+            do {
+                return try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject]
+            } catch let error {
+                print(error)
+            }
+        }
+        return nil
+    }
+    
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
         
@@ -111,6 +125,34 @@ class AppState: ObservableObject {
         .receive(on: RunLoop.main)
         .assign(to: \.trackSearchResult, on: self)
         .store(in: &cancellableSet)
+        
+        nowPlayingSubject
+            .sink() { result in
+                log("[AppState] result: \(String(describing: result))")
+            }
+            .store(in: &cancellableSet)
+        
+//        self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
+//
+//            guard let json = result.successString, let jsonDict = Self.jsonStringToDict(text: json) else {
+//                print("failed to  deserialise result: \(result)")
+//                return
+//            }
+//
+//            let data = jsonDict["data"] as? [String: AnyObject]
+//            let item = data?["item"] as? [String: AnyObject]
+//            
+//            log("[PLAYER_STATE_NOW_PLAYING] \(String(describing: item))")
+//
+//            self.appState.nowPlayingSubject.send(item)
+//
+//        }
+        
+//            .sink(receiveCompletion: { completion in print("Completion: \(completion)") }) { track in
+//                print("[AppState] track: \(String(describing: track))")
+//            }
+        
+        
         
         //let u = DZRUser.init()
         
