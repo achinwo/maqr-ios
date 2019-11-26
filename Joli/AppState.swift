@@ -22,7 +22,10 @@ class AppState: ObservableObject {
     @Published var musicrooms: [Musicroom] = []
     @Published var tracksByMusicrooms: [Int: [Track]] = [:]
     @Published var imagesByUrl: [String: Image] = [:]
-    @Published var currentPlaying: TrackInfo?
+    
+    @Published var currentlyPlayingTrack: Track?
+    @Published var currentlyPlayingImage: Image?
+    @Published var currentlyPlayingProgress: Int?
     
     //@Published var tracks: [Track] = []
     @Published var searchText: String = ""
@@ -31,7 +34,7 @@ class AppState: ObservableObject {
         return UIApplication.shared.connectedScenes.first?.delegate as! SceneDelegate
     }
     
-    var env: AppEnvironment {
+    var env: JoliApi.Environment {
         return self.sceneDelegate.appDelegate.env
     }
     
@@ -76,7 +79,7 @@ class AppState: ObservableObject {
                 
                 self.currentSearchFuture = self.api.searchTracks(q: input)
                     .then() { promise(.success($0)) }
-                    .catch() { print("[AppState] trackSearchResult: \($0)") }
+                    .catch() { logger.debug("[AppState] trackSearchResult: \($0)") }
                 
             }
         }
@@ -96,7 +99,7 @@ class AppState: ObservableObject {
 //
 //                self.api.searchTracks(q: input)
 //                    .then() { promise(.success($0)) }
-//                    .catch() { print("[AppState] trackSearchResult: \($0)") }
+//                    .catch() { logger.debug("[AppState] trackSearchResult: \($0)") }
 //            }
 //        }
 //        .switchToLatest()
@@ -112,12 +115,13 @@ class AppState: ObservableObject {
             do {
                 return try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject]
             } catch let error {
-                print(error)
+                logger.debug(error)
             }
         }
         return nil
     }
     
+    // MARK: - initialize
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
         
@@ -128,14 +132,14 @@ class AppState: ObservableObject {
         
         nowPlayingSubject
             .sink() { result in
-                log("[AppState] result: \(String(describing: result))")
+                logger.debug("[AppState] result: \(String(describing: result))")
             }
             .store(in: &cancellableSet)
         
 //        self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
 //
 //            guard let json = result.successString, let jsonDict = Self.jsonStringToDict(text: json) else {
-//                print("failed to  deserialise result: \(result)")
+//                logger.debug("failed to  deserialise result: \(result)")
 //                return
 //            }
 //
@@ -148,8 +152,8 @@ class AppState: ObservableObject {
 //
 //        }
         
-//            .sink(receiveCompletion: { completion in print("Completion: \(completion)") }) { track in
-//                print("[AppState] track: \(String(describing: track))")
+//            .sink(receiveCompletion: { completion in logger.debug("Completion: \(completion)") }) { track in
+//                logger.debug("[AppState] track: \(String(describing: track))")
 //            }
         
         
@@ -158,12 +162,12 @@ class AppState: ObservableObject {
         
 //        let cancellableSink = remoteDataPublisher
 //        .sink(receiveCompletion: { completion in
-//                print(".sink() received the completion", String(describing: completion))
+//                logger.debug(".sink() received the completion", String(describing: completion))
 //                switch completion {
 //                    case .finished:
 //                        break
 //                    case .failure(let anError):
-//                        print("received error: ", anError)
+//                        logger.debug("received error: ", anError)
 //                }
 //        }, receiveValue: { someValue in
 //            self.trackSearchResult = someValue
@@ -182,7 +186,7 @@ class AppState: ObservableObject {
     func fetchSpotifyDevices() {
         api.fetchSpotifyDevices(on: DispatchQueue.main)
             .then() { devices in
-                print("Devices: \(devices)")
+                logger.debug("Devices: \(devices)")
                 self.spotifyDevices = devices
                 
                 if self.selectedSpotifyDeviceIdx != nil || devices.isEmpty {
@@ -208,7 +212,7 @@ class AppState: ObservableObject {
             
             let task: URLSessionDataTask = URLSession.shared.dataTask(with: urlObj) { (data, resp, error) in
                 guard let data = data, let img = UIImage(data: data) else {
-                    print("failed to load \(url)")
+                    logger.debug("failed to load \(url)")
                     return reject(error!)
                 }
                 

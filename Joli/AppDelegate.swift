@@ -9,35 +9,9 @@
 import UIKit
 import AVKit
 import JoliApi
+import SwiftyBeaver
 
-func log(_ items: Any...){
-    print(items)
-}
-
-enum AppEnvironment: String {
-    
-    static var CACHED_ENV_CONFIG: [String: AnyObject] = [:]
-    
-    case local
-    case development
-    case production
-    
-    var baseUrl: JoliApi.BaseUrl {
-        switch self {
-        case .local:
-            guard let host: String = (AppEnvironment.CACHED_ENV_CONFIG["host"] as? [String: AnyObject])?["local"] as? String else {
-                let defaultLocalUrl = JoliApi.BaseUrl.homeLaptop
-                log("[AppEnvironment] using default: \(defaultLocalUrl)")
-                return defaultLocalUrl
-            }
-            return .host(host)
-        case .development:
-            return .host("dev.jolimc.com")
-        case .production:
-            return .host("jolimc.com")
-        }
-    }
-}
+let logger = JoliApi.getLogger()
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -57,13 +31,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func startObservingVolumeChanges() {
-        print("[AppDelegate#startObservingVolumeChanges]")
+        logger.debug("[AppDelegate#startObservingVolumeChanges]")
         audioSession.addObserver(self, forKeyPath: Observation.VolumeKey, options: [.initial, .new], context: &Observation.Context)
         //self.observeValue(forKeyPath: Observation.VolumeKey, of: audioSession, change: nil, context: &Observation.Context)
     }
     
     func stopObservingVolumeChanges() {
-        print("[AppDelegate#stopObservingVolumeChanges]")
+        logger.debug("[AppDelegate#stopObservingVolumeChanges]")
         audioSession.removeObserver(self, forKeyPath: Observation.VolumeKey, context: &Observation.Context)
     }
 
@@ -73,7 +47,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 // `volume` contains the new system output volume...
                 return
             }
-            print("Volume: \(volume)")
+            logger.debug("Volume: \(volume)")
             
             let computedVolume = Int(volume * 100)
             
@@ -98,7 +72,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    var env: AppEnvironment {
+    var env: JoliApi.Environment {
         
         get {
 
@@ -106,12 +80,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return .production
             }
             
-            let json = AppEnvironment.CACHED_ENV_CONFIG
-            return AppEnvironment(rawValue: json["env"] as? String ?? AppEnvironment.local.rawValue) ?? .development
+            let json = JoliApi.Environment.CACHED_ENV_CONFIG
+            return JoliApi.Environment(rawValue: json["env"] as? String ?? JoliApi.Environment.local.rawValue) ?? .development
         }
         
         set {
-            AppEnvironment.CACHED_ENV_CONFIG["env"] = newValue.rawValue as AnyObject
+            JoliApi.Environment.CACHED_ENV_CONFIG["env"] = newValue.rawValue as AnyObject
         }
         
     }
@@ -120,25 +94,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        do {
 //            try audioSession.setCategory(AVAudioSession.Category.playback)
 //        } catch {
-//            print("Setting category to AVAudioSessionCategoryPlayback failed.")
+//            logger.debug("Setting category to AVAudioSessionCategoryPlayback failed.")
 //        }
         
 //        do {
 //            try audioSession.setActive(true)
 //            startObservingVolumeChanges()
 //        } catch {
-//            print("Failed to activate audio session")
+//            logger.debug("Failed to activate audio session")
 //        }
+        
+        let cloud = SBPlatformDestination(appID: "Qxn1Mn", appSecret: "21jhvbtglMuzJhilb6m97owddeQdbjkq", encryptionKey: "xVDA8e89pdb7AuxldgYsNuezdqlHriko") // to cloud
+        
+        logger.addDestination(cloud)
         
         if debug, let filePath = Bundle.main.path(forResource: "env", ofType: "json"),
             let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)),
             let json: [String: AnyObject] = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: AnyObject] {
-            print("[Debug mode] env config: \(json)")
+            logger.debug("[Debug mode] env config: \(json)")
 
-            AppEnvironment.CACHED_ENV_CONFIG.merge(json) { (_, new) in new }
+            JoliApi.Environment.CACHED_ENV_CONFIG.merge(json) { (_, new) in new }
         }
         
-        print("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl)")
+        logger.debug("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl)")
         
         self.appState = AppState(baseUrl: env.baseUrl)
         
@@ -146,13 +124,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationDidBecomeActive(_ application: UIApplication){
-        print("[AppDelegate] App is active")
+        logger.debug("[AppDelegate] App is active")
         appState.api.wsClient.connect()
         
     }
 
     func applicationWillResignActive(_ application: UIApplication){
-        print("[AppDelegate] App is inactive")
+        logger.debug("[AppDelegate] App is inactive")
         appState.api.wsClient.disconnect()
         stopObservingVolumeChanges()
     }

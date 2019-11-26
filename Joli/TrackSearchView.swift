@@ -18,9 +18,9 @@ struct SearchField: View {
 
         TextField("search", text: self.$appState.searchText, onEditingChanged: { (isEditing:Bool) -> Void in
             self.showCancelButton = true
-            print("[TrackSearchView] cancel: \(self.showCancelButton)")
+            logger.debug("[TrackSearchView] cancel: \(self.showCancelButton)")
         }) { () -> Void in
-            print("onCommit")
+            logger.debug("onCommit")
         }//.foregroundColor(.primary)
     }
     
@@ -41,12 +41,12 @@ struct TrackSearchView: View {
                     self.showCancelButton = true
                     
                 }) { () -> Void in
-                    print("onCommit")
+                    logger.debug("onCommit")
                 }.foregroundColor(.primary)
 
                 Button(action: { () -> Void in
                     self.appState.searchText = ""
-                    print("[TrackSearchView] cancel: \(self.appState.searchText)")
+                    logger.debug("[TrackSearchView] cancel: \(self.appState.searchText)")
                 }) {
                     Image(systemName: "xmark.circle.fill").opacity(self.appState.searchText == "" ? 0.0 : 1.0)
                 }
@@ -57,13 +57,13 @@ struct TrackSearchView: View {
             .cornerRadius(10.0)
             .font(.subheadline)
             .onAppear(){
-                print("changed: \(self.appState.searchText)")
+                logger.debug("changed: \(self.appState.searchText)")
 
 //                self.appState.api.searchTracks(q: "killin")
 //                    .then() { tracks in
 //
 //                        self.tracks = tracks
-//                        print("tracks: \(tracks)")
+//                        logger.debug("tracks: \(tracks)")
 //                }
             }
             

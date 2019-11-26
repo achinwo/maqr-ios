@@ -14,6 +14,22 @@ struct PlayQueueView: View {
     @State var albumArt: Image?
     @State var albumArtUrl: String?
     
+    
+    @EnvironmentObject var appState: AppState
+    
+    var room: Musicroom
+    
+    var tracks: [Track] {
+        guard let id = room.id?.int else {
+            return []
+        }
+        
+        return appState.tracksByMusicrooms[id] ?? []
+    }
+    
+    @State var nowPlayingPosition = 0.0
+    @State var nowPlaying: String?
+    
     var body: some View {
         GeometryReader() { geometry in
             VStack(alignment: .leading) {
@@ -59,29 +75,14 @@ struct PlayQueueView: View {
         guard let id = room.id?.int else {
             return
         }
-        print("[PlayQueueView] offsets: \(offsets)")
+        logger.debug("[PlayQueueView] offsets: \(offsets)")
         for idx in offsets {
             appState.tracksByMusicrooms[id]?.remove(at: idx)
         }
     }
     
-    @EnvironmentObject var appState: AppState
-    
-    var room: Musicroom
-    
-    var tracks: [Track] {
-        guard let id = room.id?.int else {
-            return []
-        }
-        
-        return appState.tracksByMusicrooms[id] ?? []
-    }
-    
-    @State var nowPlayingPosition = 0.0
-    @State var nowPlaying: String?
-    
     func onDisappear(){
-        print("Disappeared!!")
+        logger.debug("Disappeared!!")
         //self.appState.api.unsubscribe(subject: "PLAYER_STATE_NOW_PLAYING")
     }
     
@@ -90,14 +91,14 @@ struct PlayQueueView: View {
             do {
                 return try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject]
             } catch let error {
-                print(error)
+                logger.debug(error)
             }
         }
         return nil
     }
     
     func onAppear() {
-        print("Appeared - 2!!")
+        logger.debug("Appeared - 2!!")
         //AVAudioSession.sharedInstance()
         
         if !appState.api.wsClient.connected {
@@ -107,21 +108,21 @@ struct PlayQueueView: View {
         self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
             
             guard let json = result.successString, let jsonDict = Self.jsonStringToDict(text: json) else {
-                print("failed to  deserialise result: \(result)")
+                logger.debug("failed to  deserialise result: \(result)")
                 return
             }
             
             let data = jsonDict["data"] as? [String: AnyObject]
             let item = data?["item"] as? [String: AnyObject]
             //?["name"]
-            //print("\(String(describing: item?["name"]))")//duration_ms
+            //logger.debug("\(String(describing: item?["name"]))")//duration_ms
             
-            //print("\(String(describing: item?["album"]))")
+            //logger.debug("\(String(describing: item?["album"]))")
             
             self.nowPlaying = item?["name"] as? String
             
-            if let album = item?["album"] as? Json2,
-                let img = (album["images"] as? [Json2])?[1],
+            if let album = item?["album"] as? Json,
+                let img = (album["images"] as? [Json])?[1],
                 let artUrl = img["url"] as? String,
                 self.albumArtUrl == nil || (self.albumArtUrl != nil && artUrl != self.albumArtUrl) {
                 
@@ -135,7 +136,7 @@ struct PlayQueueView: View {
             guard let duration = item?["duration_ms"] as? Double, let progress = data?["progress_ms"] as? Double else {
                 return
             }
-            print("duration: \(duration), progress: \(progress)")
+            logger.debug("duration: \(duration), progress: \(progress)")
             
             self.nowPlayingPosition = (progress / duration) * 100
         }

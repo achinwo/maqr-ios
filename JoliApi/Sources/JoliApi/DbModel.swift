@@ -310,9 +310,9 @@ public struct Musicroom: DbModel {
     
     
     @discardableResult
-    public func addTrack(_ track: Track) -> Promise<Json2> {
+    public func addTrack(_ track: Track) -> Promise<Json> {
         guard let id = self.id?.int else {
-            return Promise<Json2>([:])
+            return Promise<Json>([:])
         }
         let urlPath = URLComponents(string: "/add_room_track")!
         let data = try! Self.jsonEncoder(outputFormatting: .prettyPrinted).encode(track)
@@ -370,6 +370,46 @@ public struct Track: DbModel {
 }
 
 extension Track {
+    
+    public static func fromCurrentlyPlayingObject(_ json: Json) -> Track? {
+        
+        guard let item = json["item"] as? Json, let name = item["name"] as? String, let id = item["id"] as? String else {
+            return nil
+        }
+        
+        guard let artist: Json = (item["artists"] as? [Json])?[0], let artistName: String = artist["name"] as? String else {
+            return nil
+        }
+        
+        var thumbnailUrl: String? = nil
+        
+        if let album = item["album"] as? Json,
+            let img = (album["images"] as? [Json])?[1],
+            let artUrl = img["url"] as? String {
+            thumbnailUrl = artUrl
+        }
+        
+        return Track(
+            id: .string(id),
+            
+            title: name,
+            trackId: id,
+            thumbnailUrl: thumbnailUrl,
+            artistName: artistName,
+            
+            durationMs: item["duration_ms"] as? Int,
+            explicit: item["explicit"] as? Bool,
+            href: item["href"] as? String,
+            
+            isLocal: item["is_local"] as? Bool,
+            name: name,
+            popularity: item["popularity"] as? Int,
+            previewUrl: item["preview_url"] as? String,
+            trackNumber: item["track_number"] as? Int,
+            type: item["type"] as? String,
+            uri: item["uri"] as? String
+        )
+    }
     
     @discardableResult
     public func play(deviceId: String?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Track> {

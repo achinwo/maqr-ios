@@ -77,23 +77,23 @@ struct TrackView: View {
         }
         //.background(Color.yellow)
         .onTapGesture {
-            print("currect device: \(String(describing: self.spotifyDevice))\nuri: \(String(describing: self.track.uri))")
+            logger.debug("currect device: \(String(describing: self.spotifyDevice))\nuri: \(String(describing: self.track.uri))")
             
             if let uri = self.track.uri {
 
                 guard self.appState.spotifyRemote.isConnected else {
-                    print("[Track#play] spotify not connected")
+                    logger.debug("[Track#play] spotify not connected")
                     self.appState.spotifyRemote.authorizeAndPlayURI(uri)
                     return
                 }
                 
                 self.appState.spotifyRemote.playerAPI?.play(uri){ info, error in
                     
-                    print("[Track#play] \(String(describing: info)) - \(String(describing: error))")
+                    logger.debug("[Track#play] \(String(describing: info)) - \(String(describing: error))")
                 }//authorizeAndPlayURI(uri)
                 
                 self.appState.spotifyRemote.playerAPI?.subscribe() { (info, error) in
-                    print("[Track#subscribe] \(String(describing: info)) - \(String(describing: error))")
+                    logger.debug("[Track#subscribe] \(String(describing: info)) - \(String(describing: error))")
                 }
             }else{
 

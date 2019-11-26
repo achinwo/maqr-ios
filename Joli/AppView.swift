@@ -113,7 +113,7 @@ struct AppView: View {
                             })  {
                                 Image(systemName: "gear")
                                     .onTapGesture {
-                                        print("Settings tapped")
+                                        logger.debug("Settings tapped")
                                 }.padding()
                             }
 //                        , trailing:

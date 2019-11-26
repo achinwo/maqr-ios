@@ -18,6 +18,8 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/google/promises.git", from: "1.2.8"),
+        .package(url: "https://github.com/kylef/JSONSchema.swift.git", from: "0.5.0"),
+        .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", .upToNextMajor(from: "1.7.0")),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -31,7 +33,7 @@ let package = Package(
 //        ]),
         .target(
             name: "JoliApi",
-            dependencies: ["Promises"]
+            dependencies: ["Promises", "JSONSchema", "SwiftyBeaver"]
         ),
         .testTarget(
             name: "JoliApiTests",

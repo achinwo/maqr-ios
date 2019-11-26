@@ -8,9 +8,6 @@
 import Foundation
 import Promises
 
-public typealias Json = [String: Codable]
-
-//
 
 public protocol DataConvertible {
     func toData() throws -> Data?
@@ -41,22 +38,6 @@ extension DataConvertible where Self: Encodable {
     public func toData() throws -> Data? {
         return try Self.jsonEncoder.encode(self)
     }
-    
-}
-
-extension DataConvertible where Self == Json {
-    
-    public func toData() throws -> Data? {
-        return try JSONSerialization.data(withJSONObject: self, options: [])
-    }
-    
-    public static func fromData(_ data: Data) throws -> Self? {
-        return try JSONSerialization.jsonObject(with: data, options: []) as? Self
-    }
-    
-}
-
-extension Decodable where Self == Json {
     
 }
 
