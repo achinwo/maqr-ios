@@ -17,6 +17,34 @@ enum FetchError: Error {
     case cancelled
 }
 
+struct KeyboardAwareModifier: ViewModifier {
+    @State private var keyboardHeight: CGFloat = 0
+
+    private var keyboardHeightPublisher: AnyPublisher<CGFloat, Never> {
+        Publishers.Merge(
+            NotificationCenter.default
+                .publisher(for: UIResponder.keyboardWillShowNotification)
+                .compactMap { $0.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect }
+                .map { $0.height },
+            NotificationCenter.default
+                .publisher(for: UIResponder.keyboardWillHideNotification)
+                .map { _ in CGFloat(0) }
+        ).eraseToAnyPublisher()
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.bottom, keyboardHeight)
+            .onReceive(keyboardHeightPublisher) { self.keyboardHeight = $0 }
+    }
+}
+
+extension View {
+    func keyboardAwarePadding() -> some View {
+        ModifiedContent(content: self, modifier: KeyboardAwareModifier())
+    }
+}
+
 class AppState: ObservableObject {
     
     @Published var musicrooms: [Musicroom] = []
@@ -29,7 +57,6 @@ class AppState: ObservableObject {
     
     @Published var isSettingsPresented = false
     
-    //@Published var tracks: [Track] = []
     @Published var searchText: String = ""
     
     var sceneDelegate: SceneDelegate {
@@ -60,13 +87,6 @@ class AppState: ObservableObject {
         .removeDuplicates()
         .debounce(for: 0.3, scheduler: RunLoop.main)
         .map { input -> Future<[Track], Never> in
-//
-//            if let existing = self.currentSearchFuture {
-//                existing
-//            }
-//            for cancel in self.cancellableSet {
-//                cancel.cancel()
-//            }
             
             if let curr = self.currentSearchFuture{
                 curr.reject(FetchError.cancelled)
@@ -123,8 +143,6 @@ class AppState: ObservableObject {
         return nil
     }
     
-    @Published var keyboardVisibilityInfo: [AnyHashable: Any]? = nil
-    
     // MARK: - initialize
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
@@ -139,20 +157,6 @@ class AppState: ObservableObject {
                 logger.debug("[AppState] result: \(String(describing: result))")
             }
             .store(in: &cancellableSet)
-        
-        NotificationCenter.default.publisher(for: UIApplication.keyboardWillShowNotification)
-            .sink(){ notif in
-                //logger.debug("[Keyboard] \(String(describing: notif.))")
-                self.keyboardVisibilityInfo  = notif.userInfo
-            }
-            .store(in: &cancellableSet)
-        
-        NotificationCenter.default.publisher(for: UIApplication.keyboardWillHideNotification)
-        .sink(){ notif in
-            logger.debug("[Keyboard-hide] \(String(describing: notif))")
-            self.keyboardVisibilityInfo = nil
-        }
-        .store(in: &cancellableSet)
         
 //        self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
 //
@@ -173,23 +177,6 @@ class AppState: ObservableObject {
 //            .sink(receiveCompletion: { completion in logger.debug("Completion: \(completion)") }) { track in
 //                logger.debug("[AppState] track: \(String(describing: track))")
 //            }
-        
-        
-        
-        //let u = DZRUser.init()
-        
-//        let cancellableSink = remoteDataPublisher
-//        .sink(receiveCompletion: { completion in
-//                logger.debug(".sink() received the completion", String(describing: completion))
-//                switch completion {
-//                    case .finished:
-//                        break
-//                    case .failure(let anError):
-//                        logger.debug("received error: ", anError)
-//                }
-//        }, receiveValue: { someValue in
-//            self.trackSearchResult = someValue
-//        })
     }
     
     @Published var spotifyDevices: [JoliApi.SpotifyDevice] = []

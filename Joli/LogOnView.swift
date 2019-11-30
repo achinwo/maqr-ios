@@ -9,6 +9,7 @@
 import SwiftUI
 import JoliApi
 
+// MARK: - SignUpView
 struct SignUpView: View {
     
     @Environment(\.presentationMode) var presentation
@@ -59,6 +60,7 @@ extension View where Self == ActivityIndicator {
     }
 }
 
+// MARK: - SignInView
 struct SignInView: View {
     
     @EnvironmentObject var appState: AppState
@@ -142,6 +144,7 @@ struct SignInView: View {
     
 }
 
+// MARK: - LogOnView
 struct LogOnView: View {
     
     @Environment(\.presentationMode) var presentationMode
@@ -186,8 +189,10 @@ struct LogOnView: View {
                 
                 if self.activityIdx == 0 {
                     SignInView().environmentObject(LoginViewModel())
+                    .keyboardAwarePadding()
                 } else {
                     SignUpView()
+                    .keyboardAwarePadding()
                 }
             }
             .animation(.spring()).offset(x: 0, y: self.appState.keyboardVisibilityInfo == nil ? 0 : geometry.size.height / 3 * -1)

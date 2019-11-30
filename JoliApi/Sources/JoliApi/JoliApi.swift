@@ -361,7 +361,6 @@ public class HttpsHook: NSObject, URLSessionDelegate {
             JoliApi.BaseUrl.homeDesktop.rawValue.http.host!,
             JoliApi.BaseUrl.mobileHotspot.rawValue.http.host!,
             JoliApi.BaseUrl.localhost.rawValue.http.host!,
-            "192.168.1.213",
         ]
 
         logger.debug("[HttpsHook] trusted: \(trustedHostArray) - \(challenge.protectionSpace.authenticationMethod)")

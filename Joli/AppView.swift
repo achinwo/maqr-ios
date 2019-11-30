@@ -69,7 +69,7 @@ struct AppView: View {
     
     var body: some View {
         let settingsOffsetWidth: CGFloat? = appState.isSettingsPresented ? 0 : nil
-        logger.debug("[AppView] \(appState)")
+        
         return GeometryReader(){ geometry in
             ZStack(alignment: .bottomTrailing) {
                 
