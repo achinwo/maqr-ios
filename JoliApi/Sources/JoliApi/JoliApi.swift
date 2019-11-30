@@ -95,9 +95,11 @@ public class JoliApi: ObservableObject {
         case dev
         case prod
         
+        case localhost
         case homeLaptop
         case homeDesktop
         case mobileHotspot
+        
         case host(String)
         case custom((http: URL, ws: URL))
         
@@ -107,12 +109,14 @@ public class JoliApi: ObservableObject {
                 return (http: URL(string: "https://dev.jolimc.com")!, ws: URL(string: "wss://dev.jolimc.com")!)
             case .prod:
                 return (http: URL(string: "https://jolimc.com")!, ws: URL(string: "wss://jolimc.com")!)
+            case .localhost:
+                return (http: URL(string: "https://localhost:8080")!, ws: URL(string: "wss://localhost:8080")!)
             case .homeLaptop:
                 return (http: URL(string: "https://192.168.1.173:8080")!, ws: URL(string: "wss://192.168.1.173:8080")!)
             case .homeDesktop:
                 return (http: URL(string: "https://192.168.1.188:8080")!, ws: URL(string: "wss://192.168.1.188:8080")!)
             case .mobileHotspot:
-                return (http: URL(string: "https://172.20.10.2:8080")!, ws: URL(string: "wss://172.20.10.2:8080")!)
+                return (http: URL(string: "https://172.20.10.7:8080")!, ws: URL(string: "wss://172.20.10.7:8080")!)
             case .host(let urlString):
                 return (http: URL(string: "https://\(urlString)")!, ws: URL(string: "wss://\(urlString)")!)
             case .custom(let urls):
@@ -135,6 +139,16 @@ public class JoliApi: ObservableObject {
                 return Result<TrackInfo, Error>.success(TrackInfo(track: track, info: [:]))
         }
     }
+    
+    typealias AuthPair = (session: Session, user: User)
+    
+//    public func authenticate(token: String) -> Promise<AuthPair?> {
+//
+//    }
+//
+//    public func authenticate(email: String, password: String) -> Promise<AuthPair?> {
+//
+//    }
     
     public func searchTracks(q: String, limit: Int = 10) -> Promise<[Track]> {
         var pathComp = URLComponents(string: "/api/spotify/search")!
@@ -282,6 +296,7 @@ public class JoliApi: ObservableObject {
         }
     }
     
+    // MARK: - Test
     @discardableResult
     public static func doTest() -> some Promise<Any?> {
         JoliApi.initLogger()
@@ -290,25 +305,18 @@ public class JoliApi: ObservableObject {
         //let url = URL(string: "http://localhost:8080/api/db/musicrooms")!
         //debugPrint("names: \(Musicroom(name: "test").propertyValues())")
         BASE_URL = BaseUrl.homeDesktop.rawValue
+        let url: BaseUrl = .host("localhost:8080")
 
-        let api = JoliApi(baseUrl: .homeDesktop)
+        let api = JoliApi(baseUrl: .mobileHotspot)
         
 //        api.fetchSpotifyDevices().then { print($0) }
 //        return api.searchTracks(q: "killin")
 //            .then() { print($0) }
 //            .catch() { error in print(error) }
-        
-        let json: [String: AnyObject] = try! JSONSerialization.jsonObject(with: DATA.data(using: .utf8)!, options: []) as! [String: AnyObject]
-        
-        let track = Track.fromCurrentlyPlayingObject(json)
-        
-        //let m = Mirror(reflecting: Musicroom.self)
-        
-//        for c in m.children {
-//            print("child: \(c)")
-//        }
-        
-        logger.debug("Track: \(track)")
+        return Session.fromCredentials(email: "hawa@gmail.net", password: "Password@", baseUrl: url.rawValue.http)
+            .then() { res in
+                logger.debug("[RESP] \(res)")
+            }
         
         return Musicroom.findById(id: 1, on: .global(qos: .background))
         .then() { (res) -> Promise<[Track]> in
@@ -352,6 +360,8 @@ public class HttpsHook: NSObject, URLSessionDelegate {
             JoliApi.BaseUrl.homeLaptop.rawValue.http.host!,
             JoliApi.BaseUrl.homeDesktop.rawValue.http.host!,
             JoliApi.BaseUrl.mobileHotspot.rawValue.http.host!,
+            JoliApi.BaseUrl.localhost.rawValue.http.host!,
+            "192.168.1.213",
         ]
 
         logger.debug("[HttpsHook] trusted: \(trustedHostArray) - \(challenge.protectionSpace.authenticationMethod)")

@@ -57,6 +57,7 @@ extension Track {
 }
 
 struct AppView: View {
+    
     @EnvironmentObject var appState: AppState
     
     @State var settingsViewOffset: ViewOffset = ViewOffset(x: nil, y: 0)
@@ -64,90 +65,49 @@ struct AppView: View {
     @State var mainViewOffset = CGSize(width: 0, height: 0)
     @State var activityIdx = 0
     
-    
+    @State var isLogonViewPresented = false
     
     var body: some View {
-        
-        GeometryReader(){ geometry in
+        let settingsOffsetWidth: CGFloat? = appState.isSettingsPresented ? 0 : nil
+        logger.debug("[AppView] \(appState)")
+        return GeometryReader(){ geometry in
             ZStack(alignment: .bottomTrailing) {
                 
-                NavigationView {
-                    VStack(alignment: .leading) {
-                        Picker(selection: self.$activityIdx, label: Text("Select Activity")) {
-                            ForEach(0...1, id: \.self) { i in
-                                Text(["Sign In", "Sign Up"][i]).tag(i).font(.largeTitle)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                        Text("Sign In/Sign Up")
-                    }.navigationBarTitle("Account", displayMode: .large)
-                        .background(Color.blue)
-                }
-                .edgesIgnoringSafeArea(.bottom)
-                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+//                NavigationView {
+//                    LogOnView().environmentObject(self.appState)
+//                }
+//                //.edgesIgnoringSafeArea(.bottom)
+//                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
                 
                 NavigationView {
                     MusicroomList()
+                        .sheet(isPresented: self.$isLogonViewPresented) {
+                            NavigationView {
+                                LogOnView() { cancelled in
+                                    logger.debug("[LogOnView] view dismissed")
+                                }
+                            }.environmentObject(self.appState)
+                        }
                         .navigationBarItems(leading:
                             Button(action: {
-                                if self.mainViewOffset.height == 0 {
-                                    self.mainViewOffset = CGSize(width: 0, height: geometry.size.height)
-                                    
-                                }else{
-                                    self.mainViewOffset = CGSize(width: 0, height: 0)
-                                    
-                                }
+                                self.isLogonViewPresented = true
+                                
                             })  {
-                                Image(systemName: "xmark")
                                 Text("Sign In")
                             }, trailing:
                             Button(action: {
-                                if self.settingsViewOffset.x == geometry.size.width {
-                                    self.settingsViewOffset = ViewOffset(x: geometry.size.width, y: 0)
-                                }else{
-                                    self.settingsViewOffset = ViewOffset(x: nil, y: 0)
-                                    
-                                }
-                                self.settingsViewOffsetSize = self.settingsViewOffset.computedSize(geometry: geometry)
-                                
-                            })  {
+                                self.appState.isSettingsPresented.toggle()
+                            }) {
                                 Image(systemName: "gear")
-                                    .onTapGesture {
-                                        logger.debug("Settings tapped")
-                                }.padding()
+                                    .padding()
                             }
-//                        , trailing:
-//                        Button(action: { self.appState.sceneDelegate.connect() })  {
-//                            Text("Spotify")
-//                        }
                     )
                 }
-                .animation(.linear(duration: 0.3))
-                .offset(self.mainViewOffset)
+                .animation(.spring())
                 
-                VStack {
-                    Button(action: {
-                        if self.settingsViewOffset.x == nil {
-                            self.settingsViewOffset = ViewOffset(x: geometry.size.width, y: 0)
-                        }else{
-                            self.settingsViewOffset = ViewOffset(x: nil, y: 0)
-
-                        }
-                        self.settingsViewOffsetSize = self.settingsViewOffset.computedSize(geometry: geometry)
-                    })  {
-                        Image(systemName: "xmark")
-                        Text("Close")
-                    }.padding()
-                    VStack {
-
-                        Text("Home").background(Color.red)
-                    }//.frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
-                }.frame(width: geometry.size.width, height: geometry.size.height, alignment: .topTrailing)
-                //.frame(width: 800, height: 1600, alignment: .center)
-                   // .blur(radius: 80)
-                .background(Color.yellow)
-                    .animation(.easeInOut(duration: 0.25))
-                    .offset(self.settingsViewOffsetSize)
+                SettingsView()
+                    .animation(.spring())
+                    .offset(CGSize(width: settingsOffsetWidth ?? geometry.size.width, height: 0))
                 
             }
             

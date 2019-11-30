@@ -294,6 +294,24 @@ public struct User: DbModel {
     // get musicrooms
 }
 
+public struct Session: DbModel {
+    
+    @Tracked<StringOrInt> public var id: StringOrInt?
+    
+    @Tracked<Date> public var createdAt: Date?
+    @Tracked<Date> public var updatedAt: Date?
+    @Tracked<Date> public var deletedAt: Date?
+    
+    @Tracked<ObjectOrId<User>> public var createdBy: ObjectOrId<User>?
+    @Tracked<ObjectOrId<User>> public var updatedBy: ObjectOrId<User>?
+    @Tracked<ObjectOrId<User>> public var deletedBy: ObjectOrId<User>?
+    
+    public static func fromCredentials(email: String, password: String, baseUrl: URL?, on: DispatchQueue? = nil) -> Promise<Json> {
+        let url = URLComponents(string: "/signin")!
+        return JoliApi.post(urlPath: url, payload: ["email": email as AnyObject, "password": password as AnyObject], baseUrl: baseUrl, on: on)
+    }
+}
+
 public struct Musicroom: DbModel {
     @Tracked<StringOrInt> public var id: StringOrInt?
     

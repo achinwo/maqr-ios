@@ -27,6 +27,8 @@ class AppState: ObservableObject {
     @Published var currentlyPlayingImage: Image?
     @Published var currentlyPlayingProgress: Int?
     
+    @Published var isSettingsPresented = false
+    
     //@Published var tracks: [Track] = []
     @Published var searchText: String = ""
     
@@ -121,6 +123,8 @@ class AppState: ObservableObject {
         return nil
     }
     
+    @Published var keyboardVisibilityInfo: [AnyHashable: Any]? = nil
+    
     // MARK: - initialize
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
@@ -135,6 +139,20 @@ class AppState: ObservableObject {
                 logger.debug("[AppState] result: \(String(describing: result))")
             }
             .store(in: &cancellableSet)
+        
+        NotificationCenter.default.publisher(for: UIApplication.keyboardWillShowNotification)
+            .sink(){ notif in
+                //logger.debug("[Keyboard] \(String(describing: notif.))")
+                self.keyboardVisibilityInfo  = notif.userInfo
+            }
+            .store(in: &cancellableSet)
+        
+        NotificationCenter.default.publisher(for: UIApplication.keyboardWillHideNotification)
+        .sink(){ notif in
+            logger.debug("[Keyboard-hide] \(String(describing: notif))")
+            self.keyboardVisibilityInfo = nil
+        }
+        .store(in: &cancellableSet)
         
 //        self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
 //

@@ -35,40 +35,21 @@ struct MusicroomView: View {
                     //Image(systemName: "2.circle")
                     Text("Activity")
             }.tag(2)
-        }.font(.largeTitle)
-            .accentColor(.orange)
-            //.navigationBarHidden(true)
-            //.navigationBarBackButtonHidden(true)
-            .navigationBarItems(leading:
-                Button(action: {
-                    self.presentationMode.wrappedValue.dismiss()
-                }) {
-                    HStack {
-                        Text("Joli").accentColor(.orange).font(.title)
-                    }
-                }
-  //                              ,trailing:
-//                Button(action: {
-//                    self.isSearching = true
-//                }) {
-//                    Text("Search")
-//                }.sheet(isPresented: self.$isSearching){
-//                    TrackSearchView().environmentObject(self.appState)
-     //       }
-        ).onAppear() {
+        }
+        .font(.largeTitle)
+        .accentColor(.orange)
+        .onAppear() {
             self.appState.activeRoom = self.room
         }
-        //            .navigationBarItems(trailing:
-        //                Button(action: {
-        //                    self.isSearching = true
-        //                }) {
-        //                  Text("Search")
-        //                }.sheet(isPresented: self.$isSearching){
-        //                    TrackSearchView()
-        //                }
-        //            )
-        
-        //.navigationBarTitle(Text(verbatim: room.name), displayMode: .inline)
+        .navigationBarItems(trailing:
+            Button(action: {
+                self.appState.isSettingsPresented.toggle()
+            }) {
+                Image(systemName: "gear")
+                    .padding()
+            }
+        )
+        .navigationBarTitle(Text(verbatim: room.name), displayMode: .inline)
     }
     
     @State var isSearching = false
