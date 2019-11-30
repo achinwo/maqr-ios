@@ -22,7 +22,6 @@ public enum SpotifyDeviceType: String, Codable {
     case unknown = "Unknown"
 }
 
-public typealias Json = [String: AnyObject]
 
 public struct TrackInfo {
     public var track: Track?
@@ -33,6 +32,11 @@ public struct TrackInfo {
 //               ws:URL(string: "ws://192.168.1.173:8080")!)}
 
 private let logger = SwiftyBeaver.self
+
+public struct AuthPair: Codable {
+    public var session: Session
+    public var user: User
+}
 
 public class JoliApi: ObservableObject {
     
@@ -139,16 +143,10 @@ public class JoliApi: ObservableObject {
                 return Result<TrackInfo, Error>.success(TrackInfo(track: track, info: [:]))
         }
     }
-    
-    typealias AuthPair = (session: Session, user: User)
-    
-//    public func authenticate(token: String) -> Promise<AuthPair?> {
-//
-//    }
-//
-//    public func authenticate(email: String, password: String) -> Promise<AuthPair?> {
-//
-//    }
+
+    public func authenticate(email: String, password: String, on: DispatchQueue? = nil) -> Promise<AuthPair?> {
+        return Session.fromCredentials(email: email, password: password, baseUrl: self.baseUrl.rawValue.http, on: on)
+    }
     
     public func searchTracks(q: String, limit: Int = 10) -> Promise<[Track]> {
         var pathComp = URLComponents(string: "/api/spotify/search")!
@@ -316,7 +314,9 @@ public class JoliApi: ObservableObject {
         return Session.fromCredentials(email: "hawa@gmail.net", password: "Password@", baseUrl: url.rawValue.http)
             .then() { res in
                 logger.debug("[RESP] \(res)")
-            }
+        }.catch() { error in
+            logger.debug("[ERROR] \(error)")
+        }
         
         return Musicroom.findById(id: 1, on: .global(qos: .background))
         .then() { (res) -> Promise<[Track]> in

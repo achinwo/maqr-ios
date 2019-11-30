@@ -9,108 +9,11 @@ import Foundation
 import Promises
 
 
-public protocol DataConvertible {
-    func toData() throws -> Data?
-    static func fromData(_ data: Data) throws -> Self?
-}
-
-extension DataConvertible {
-    
-    static var jsonEncoder: JSONEncoder {
-        return Musicroom.jsonEncoder()
-    }
-    
-    static var jsonDecoder: JSONDecoder {
-        return Musicroom.jsonDecoder()
-    }
-}
-
-extension DataConvertible where Self: Decodable {
-    
-    public static func fromData(_ data: Data) throws -> Self? {
-        return try Self.jsonDecoder.decode(Self.self, from: data)
-    }
-    
-}
-
-extension DataConvertible where Self: Encodable {
-    
-    public func toData() throws -> Data? {
-        return try Self.jsonEncoder.encode(self)
-    }
-    
-}
-
-extension Dictionary: DataConvertible where Key == String, Value: Codable {
-    
-}
-
-
-extension Array: DataConvertible where Element: Codable {
-    
-}
-
-extension Optional: DataConvertible where Wrapped: Codable {
-    
-}
-
-//Optional<Json>
-
-//extension DataConvertible where Self == Json {
-//
-//    public func toData() throws -> Data? {
-//        return try JSONSerialization.data(withJSONObject: self, options: [])
-//    }
-//
-//    public func fromData(_ data: Data) throws -> Self? {
-//        return try JSONSerialization.jsonObject(with: data, options: []) as? Self
-//    }
-//
-//}
-
 public struct Response<T: Codable>: Codable {
-    
-//
-//
-//    public static func fromData(_ data: Data) throws -> Response<T>? {
-//        return try JSONSerialization.jsonObject(with: data, options: []) as? Self
-//    }
-//
-//    public func toData() throws -> Data? {
-//        return try JSONSerialization.data(withJSONObject: self, options: [])
-////      return try Musicroom.jsonEncoder().encode(self)
-//    }
-//
-//    public static func fromData(_ data: Data) throws -> Response<T>? where T == DbModel {
-//        return try Musicroom.jsonDecoder().decode(Self.self, from: data)
-//    }
-//
-//    public func toData() throws -> Data? where T == DbModel {
-//        return try Musicroom.jsonEncoder().encode(self)
-//    }
-    
+
     public let data: T
     
 }
-
-extension Response: DataConvertible {
-    
-}
-
-//
-//extension Response: DataConvertible {
-//
-//    public func toData() throws -> Data? {
-//        let encoder = Musicroom.jsonEncoder()
-//        return try encoder.encode(self)
-//    }
-//
-//    public func fromData(_ data: Data) throws -> Self? {
-//        let decoder = Musicroom.jsonDecoder()
-//        return try decoder.decode(Self.self, from: data)
-//    }
-//
-//}
 
 public enum NetworkError: Error {
     case invalidUrl(URLComponents, URL)
@@ -120,16 +23,41 @@ public enum NetworkError: Error {
     case deserialization(String)
 }
 
+public typealias Json = [String: AnyObject]
+
+extension Json {
+    
+    public func toData(writingOptions: JSONSerialization.WritingOptions = []) throws -> Data {
+        return try JSONSerialization.data(withJSONObject: self, options: writingOptions)
+    }
+    
+}
+
+public enum HttpBody {
+    case json(Json)
+    case dbModel(DataConvertible)
+    
+    public func toData() throws -> Data {
+        switch self {
+        case .json(let json):
+            return try json.toData()
+        case .dbModel(let model):
+            return try model.toData(outputFormatting: [])
+        }
+    }
+}
+
 enum HttpMethod: String {
+    
     case get = "GET"
     case post = "POST"
     
-    func fetch<T: DataConvertible & Codable>(urlString: String, dataType: T.Type, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<T> {
+    func fetch<T: Codable>(urlString: String, dataType: T.Type, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         let baseUrl = baseUrl ?? Track.baseUrl.http
         return self.fetch(urlString: urlString, dataType: dataType, payload: nil, baseUrl: baseUrl, on: on)
     }
     
-    func fetch<T: DataConvertible & Codable>(urlString: String, dataType: T.Type, payload: DataConvertible?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<T> {
+    func fetch<T: Codable>(urlString: String, dataType: T.Type, payload: HttpBody?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         guard let url = URLComponents(string: urlString) else {
             return Promise(NetworkError.invalidUrlPath(urlString))
         }
@@ -138,7 +66,7 @@ enum HttpMethod: String {
         return self.fetch(urlPath: url, dataType: dataType, payload: payload, baseUrl: baseUrl, on: on)
     }
     
-    func fetch<T: DataConvertible & Codable>(urlPath: URLComponents, dataType: T.Type, payload: DataConvertible?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<T> {
+    func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, payload: HttpBody?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         let baseUrl = baseUrl ?? Track.baseUrl.http
         
         guard let url = urlPath.url(relativeTo: baseUrl) else {
@@ -148,7 +76,7 @@ enum HttpMethod: String {
         return self.fetch(url: url, dataType: dataType, payload: payload, on: on)
     }
     
-    func fetch<T: DataConvertible & Codable>(url: URL, dataType: T.Type, payload: DataConvertible?, on: DispatchQueue? = nil) -> Promise<T> {
+    func fetch<T: Codable>(url: URL, dataType: T.Type, payload: HttpBody?, on: DispatchQueue? = nil) -> Promise<T> {
         
         let queue = on ?? DispatchQueue.global(qos: .default)
         
@@ -161,13 +89,7 @@ enum HttpMethod: String {
                 }
                 
                 do {
-                    //let resp = try Musicroom.jsonDecoder().decode(Response<T>.self, from: data)
-                    //let resp = try Response<T>.fromData(data) //.fromData(data)
-
-                    guard let respObj = try Response<T>.fromData(data) else {
-                        return reject(NetworkError.deserialization("Failed to deserialize data: \(data)"))
-                    }
-                    
+                    let respObj = try Musicroom.jsonDecoder().decode(Response<T>.self, from: data)
                     resolve(respObj.data)
                 } catch {
                     reject(error)
@@ -179,7 +101,7 @@ enum HttpMethod: String {
                 case .post:
                     
                     guard let payloadData = try? payload?.toData() else {
-                        return reject(NetworkError.badRequest("bad paylod for post request: \(String(describing: payload))"))
+                        return reject(NetworkError.badRequest("bad payload for post request: \(String(describing: payload))"))
                     }
                     
                     var request = URLRequest(url: url)

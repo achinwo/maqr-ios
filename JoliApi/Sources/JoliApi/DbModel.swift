@@ -176,6 +176,10 @@ public indirect enum ObjectOrId<T: IdIdentifiable>: Equatable, Codable, Hashable
     case id(Int)
 }
 
+public protocol DataConvertible {
+    func toData(outputFormatting: JSONEncoder.OutputFormatting?) throws -> Data
+}
+
 public protocol DbModel: IdIdentifiable, CustomStringConvertible, DataConvertible {
     
     var createdAt: Date? { get }
@@ -193,22 +197,24 @@ public var BASE_URL: (ws: URL, http: URL)!
 
 extension DbModel {
     
+    public func toData(outputFormatting: JSONEncoder.OutputFormatting? = nil) throws -> Data {
+        return try Self.jsonEncoder(outputFormatting: outputFormatting ?? []).encode(self)
+    }
+    
     func propertyNames() -> [String] {
         return Mirror(reflecting: self).children.compactMap { $0.label }
     }
     
     public var description: String {
-        let desc = String(data: try! Self.jsonEncoder(outputFormatting: .prettyPrinted).encode(self), encoding: .utf8)!
+        var desc: String
+        do {
+            let data = try self.toData()
+            desc = String(data: data, encoding: .utf8)!
+        } catch {
+            desc = "<Error: \(error.localizedDescription)>"
+        }
         return "\(Self.className())(\(desc))"
     }
-    
-    //    func propertyValues() {
-    //        let mirror = Mirror(reflecting: self)
-    //        for (propName, prop) in mirror.children {
-    //
-    //            debugPrint("name: \(propName), value: \(String(describing: type(of: prop)).starts(with: ""))")
-    //        }
-    //    }
     
     func save(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
         let suffix = self.id == nil ? "" : "/\(self.id!)"
@@ -216,7 +222,7 @@ extension DbModel {
         //return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)
         return HttpMethod.post.fetch(urlString: urlComp,
                                      dataType: Self?.self,
-                                     payload: self,
+                                     payload: .dbModel(self),
                                      baseUrl: baseUrl,
                                      on: on)
     }
@@ -306,9 +312,11 @@ public struct Session: DbModel {
     @Tracked<ObjectOrId<User>> public var updatedBy: ObjectOrId<User>?
     @Tracked<ObjectOrId<User>> public var deletedBy: ObjectOrId<User>?
     
-    public static func fromCredentials(email: String, password: String, baseUrl: URL?, on: DispatchQueue? = nil) -> Promise<Json> {
+    public static func fromCredentials(email: String, password: String, baseUrl: URL?, on: DispatchQueue? = nil) -> Promise<AuthPair?> {
         let url = URLComponents(string: "/signin")!
-        return JoliApi.post(urlPath: url, payload: ["email": email as AnyObject, "password": password as AnyObject], baseUrl: baseUrl, on: on)
+        return HttpMethod.post.fetch(urlPath: url, dataType: AuthPair?.self,
+                                     payload: .json(["email": email as AnyObject, "password": password as AnyObject]),
+                                     baseUrl: baseUrl, on: on)
     }
 }
 
@@ -328,7 +336,7 @@ public struct Musicroom: DbModel {
     
     
     @discardableResult
-    public func addTrack(_ track: Track) -> Promise<Json> {
+    public func addTrack(_ track: Track, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Json> {
         guard let id = self.id?.int else {
             return Promise<Json>([:])
         }
@@ -337,7 +345,8 @@ public struct Musicroom: DbModel {
         let payloadData = try! JSONSerialization.jsonObject(with: data, options: [])
         
         return JoliApi.post(urlPath: urlPath, payload: ["roomId": id as AnyObject,
-                                                        "track": payloadData as AnyObject])
+                                                        "track": payloadData as AnyObject],
+                            baseUrl: baseUrl, on: on)
     }
     
     // get users
@@ -350,7 +359,7 @@ public struct Musicroom: DbModel {
         let urlPath = "/get_room_tracks"
         return HttpMethod.post.fetch(urlString: urlPath,
                                      dataType: [Track].self,
-                                     payload: ["roomId": id],
+                                     payload: .json(["roomId": id as AnyObject]),
                                      baseUrl: baseUrl, on: on)
     }
     
@@ -441,7 +450,7 @@ extension Track {
             urlPath.queryItems!.append(URLQueryItem(name: "deviceId", value: deviceId))
         }
         
-        return HttpMethod.post.fetch(urlPath: urlPath, dataType: Self.self, payload: self, baseUrl: baseUrl, on: on)
+        return HttpMethod.post.fetch(urlPath: urlPath, dataType: Self.self, payload: .dbModel(self), baseUrl: baseUrl, on: on)
     }
     
 }
