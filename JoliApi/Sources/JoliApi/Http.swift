@@ -76,10 +76,10 @@ enum HttpMethod: String {
         return self.fetch(url: url, dataType: dataType, payload: payload, on: on)
     }
     
-    func fetch<T: Codable>(url: URL, dataType: T.Type, payload: HttpBody?, on: DispatchQueue? = nil) -> Promise<T> {
+    func fetch<T: Codable>(url: URL, dataType: T.Type, payload: HttpBody? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         
         let queue = on ?? DispatchQueue.global(qos: .default)
-        
+        //debugPrint("[fetch] \(url) - \(payload)")
         return Promise<T>(on: queue) { (resolve, reject) in
             
             let callback = { (data: Data?, resp: URLResponse?, error: Error?) -> Void in

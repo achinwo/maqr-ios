@@ -180,6 +180,7 @@ public protocol DataConvertible {
     func toData(outputFormatting: JSONEncoder.OutputFormatting?) throws -> Data
 }
 
+// MARK: - DbModel
 public protocol DbModel: IdIdentifiable, CustomStringConvertible, DataConvertible {
     
     var createdAt: Date? { get }
@@ -282,6 +283,7 @@ extension DbModel {
     
 }
 
+// MARK: - User
 public struct User: DbModel {
     
     @Tracked<StringOrInt> public var id: StringOrInt?
@@ -300,6 +302,7 @@ public struct User: DbModel {
     // get musicrooms
 }
 
+// MARK: - Session
 public struct Session: DbModel {
     
     @Tracked<StringOrInt> public var id: StringOrInt?
@@ -312,14 +315,26 @@ public struct Session: DbModel {
     @Tracked<ObjectOrId<User>> public var updatedBy: ObjectOrId<User>?
     @Tracked<ObjectOrId<User>> public var deletedBy: ObjectOrId<User>?
     
-    public static func fromCredentials(email: String, password: String, baseUrl: URL?, on: DispatchQueue? = nil) -> Promise<AuthPair?> {
+    public var userId: Int
+    public var token: String
+    
+    public static func fromCredentials(email: String, password: String, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Auth?> {
         let url = URLComponents(string: "/signin")!
-        return HttpMethod.post.fetch(urlPath: url, dataType: AuthPair?.self,
+        return HttpMethod.post.fetch(urlPath: url, dataType: Auth?.self,
                                      payload: .json(["email": email as AnyObject, "password": password as AnyObject]),
                                      baseUrl: baseUrl, on: on)
     }
+    
+    public static func fromCredentials(token: String, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Auth?> {
+        let url = URLComponents(string: "/signin")!
+        return HttpMethod.post.fetch(urlPath: url, dataType: Auth?.self,
+                                     payload: .json(["token": token as AnyObject]),
+                                     baseUrl: baseUrl, on: on)
+    }
+    
 }
 
+// MARK: - Musicroom
 public struct Musicroom: DbModel {
     @Tracked<StringOrInt> public var id: StringOrInt?
     
@@ -353,7 +368,7 @@ public struct Musicroom: DbModel {
     // get tracks
     
     public func fetchTracks(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[Track]> {
-        guard let id = self.id else {
+        guard let id = self.id?.int else {
             return Promise([])
         }
         let urlPath = "/get_room_tracks"
@@ -365,6 +380,7 @@ public struct Musicroom: DbModel {
     
 }
 
+// MARK: - Track
 public struct Track: DbModel {
     
     @Tracked<StringOrInt> public var id: StringOrInt?

@@ -99,7 +99,8 @@ struct PlayQueueView: View {
     
     func onAppear() {
         logger.debug("Appeared - 2!!")
-        //AVAudioSession.sharedInstance()
+        
+        //self.appState.api.
         
         if !appState.api.wsClient.connected {
             appState.api.wsClient.connect()

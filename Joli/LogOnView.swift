@@ -67,7 +67,10 @@ struct SignInView: View {
     @EnvironmentObject var loginViewModel: LoginViewModel
     @State var submissionInProgress = false
     
-    init(){
+    var presentationMode: Binding<PresentationMode>?
+    
+    init(presentationMode: Binding<PresentationMode>? = nil){
+        self.presentationMode = presentationMode
     }
     
     var body: some View {
@@ -138,7 +141,16 @@ struct SignInView: View {
     
     func submit() {
         self.submissionInProgress = true
-        loginViewModel.performLogin()
+        //loginViewModel.performLogin()
+        
+        appState.api.authenticate(email:loginViewModel.email, password: loginViewModel.password)
+            .then() { auth in
+                self.appState.auth = auth
+                logger.debug("[LogOnView] got auth: \(String(describing: auth))")
+                self.presentationMode?.wrappedValue.dismiss()
+        }.always(){
+            self.submissionInProgress = false
+        }
         
     }
     
@@ -188,14 +200,15 @@ struct LogOnView: View {
                 .padding()
                 
                 if self.activityIdx == 0 {
-                    SignInView().environmentObject(LoginViewModel())
+                    SignInView(presentationMode: self.presentationMode).environmentObject(LoginViewModel())
                     .keyboardAwarePadding()
                 } else {
                     SignUpView()
                     .keyboardAwarePadding()
                 }
             }
-            .animation(.spring()).offset(x: 0, y: self.appState.keyboardVisibilityInfo == nil ? 0 : geometry.size.height / 3 * -1)
+            .animation(.spring())
+            .offset(x: 0, y: self.appState.keyboardHeight == 0 ? 0 : geometry.size.height / 3 * -1)
             .gesture(gesture)
             .navigationBarTitle("Account", displayMode: .large)
             .navigationBarItems(trailing: Button(action: {

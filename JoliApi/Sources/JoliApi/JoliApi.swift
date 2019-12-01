@@ -28,20 +28,20 @@ public struct TrackInfo {
     public var info: Json?
 }
 
-//get { (http:BASE_URL ?? URL(string: "http://192.168.1.173:8080")!,
-//               ws:URL(string: "ws://192.168.1.173:8080")!)}
+internal let logger = SwiftyBeaver.self
 
-private let logger = SwiftyBeaver.self
-
-public struct AuthPair: Codable {
+public struct Auth: Codable {
     public var session: Session
     public var user: User
 }
 
+// MARK: - JoliApi
 public class JoliApi: ObservableObject {
     
-    @Published var currentPlaying: TrackInfo?
-    @Published var currentPlayingTrack: Track?
+    @Published public var currentPlaying: TrackInfo?
+    @Published public var currentPlayingTrack: Track?
+    
+    @Published public var auth: Auth?
     
     private static var loggerInitialized = false
 
@@ -53,7 +53,7 @@ public class JoliApi: ObservableObject {
         //let cloud = SBPlatformDestination(appID: "foo", appSecret: "bar", encryptionKey: "123") // to cloud
         
         // use custom format and set console output to short time, log level & message
-        console.format = "$DHH:mm:ss$d $L $M"
+        //console.format = "$DHH:mm:ss$d $T $N:$l $L: $M"
         // or use this for JSON output: console.format = "$J"
 
         // add the destinations to SwiftyBeaver
@@ -69,6 +69,7 @@ public class JoliApi: ObservableObject {
         return logger.self
     }
 
+    // MARK: - Environment
     public enum Environment: String {
         
         public static var CACHED_ENV_CONFIG: [String: AnyObject] = [:]
@@ -144,8 +145,20 @@ public class JoliApi: ObservableObject {
         }
     }
 
-    public func authenticate(email: String, password: String, on: DispatchQueue? = nil) -> Promise<AuthPair?> {
+    public func authenticate(email: String, password: String, on: DispatchQueue? = nil) -> Promise<Auth?> {
         return Session.fromCredentials(email: email, password: password, baseUrl: self.baseUrl.rawValue.http, on: on)
+            .then() { auth -> Auth? in
+                self.auth = auth
+                return auth
+            }
+    }
+    
+    public func authenticate(token: String, on: DispatchQueue? = nil) -> Promise<Auth?> {
+        return Session.fromCredentials(token: token, baseUrl: self.baseUrl.rawValue.http, on: on)
+            .then() { auth -> Auth? in
+                self.auth = auth
+                return auth
+            }
     }
     
     public func searchTracks(q: String, limit: Int = 10) -> Promise<[Track]> {
@@ -232,6 +245,7 @@ public class JoliApi: ObservableObject {
         public let volumePercent: Int
     }
     
+    // MARK: - init
     public init(baseUrl: BaseUrl = .homeLaptop){
         JoliApi.initLogger()
         
@@ -307,41 +321,48 @@ public class JoliApi: ObservableObject {
 
         let api = JoliApi(baseUrl: .mobileHotspot)
         
+        let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imhhd2FAZ21haWwubmV0IiwiY3JlYXRlZEF0IjoiMjAxOS0xMi0wMVQwMDowOToyNy4yOTVaIiwiZXhwaXJlc0luIjoiaGF3YUBnbWFpbC5uZXQifQ.yqjreKSyzkG3VrVV9_7cAtOfBe6c50iGUOyieTBZN7g"
+        return api.authenticate(token: token)
+            .then(){ res in
+                logger.debug("[AUTH] \(res)")
+            }
 //        api.fetchSpotifyDevices().then { print($0) }
 //        return api.searchTracks(q: "killin")
 //            .then() { print($0) }
 //            .catch() { error in print(error) }
-        return Session.fromCredentials(email: "hawa@gmail.net", password: "Password@", baseUrl: url.rawValue.http)
-            .then() { res in
-                logger.debug("[RESP] \(res)")
-        }.catch() { error in
-            logger.debug("[ERROR] \(error)")
+//        return Session.fromCredentials(email: "hawa@gmail.net", password: "Password@", baseUrl: url.rawValue.http)
+//            .then() { res in
+//                logger.debug("[RESP] \(res)")
+//        }.catch() { error in
+//            logger.debug("[ERROR] \(error)")
+//        }
+        
+        return Musicroom.all(baseUrl: url.rawValue.http, on: .global(qos: .background))
+            .then() { rooms in
+                logger.debug("[rooms] \(rooms)")
+        }.catch() { err in
+            logger.error("[Musicroom] \(err)")
         }
         
-        return Musicroom.findById(id: 1, on: .global(qos: .background))
+        return Musicroom.findById(id: 1, baseUrl: url.rawValue.http, on: .global(qos: .background))
         .then() { (res) -> Promise<[Track]> in
             var r = res!
-            //debugPrint(r)
+            debugPrint(r)
             
-            let m = Mirror(reflecting: r)
-            
-            for c in m.children {
-                logger.debug("child: \(c)")
-            }
+//            let m = Mirror(reflecting: r)
+//
+//            for c in m.children {
+//                logger.debug("child: \(c)")
+//            }
             
             //r.name = "Davido Party"
 
             debugPrint("response: \(String(describing: r.$createdAt)) - \(String(describing: r.createdAt))")
-            return r.fetchTracks()
+            return Promise([])//r.fetchTracks()
         }
-//        .then(){ res in
-//            //print("Result: \(res)")
-//        }
-//        .always() {
-//            completionHandler?()
-//        }.catch() { error in
-//            logger.debug("error: \(error)")
-//        }
+        .catch() { error in
+            logger.debug("error: \(error)")
+        }
         
     }
     

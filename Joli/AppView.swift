@@ -66,9 +66,18 @@ struct AppView: View {
     @State var activityIdx = 0
     
     @State var isLogonViewPresented = false
+    @State var isLogoutAlertPresented = false
     
     var body: some View {
         let settingsOffsetWidth: CGFloat? = appState.isSettingsPresented ? 0 : nil
+        
+        let logonButtonAction = {
+            if self.appState.auth == nil {
+                self.isLogonViewPresented = true
+            } else {
+                self.isLogoutAlertPresented = true
+            }
+        }
         
         return GeometryReader(){ geometry in
             ZStack(alignment: .bottomTrailing) {
@@ -89,12 +98,18 @@ struct AppView: View {
                             }.environmentObject(self.appState)
                         }
                         .navigationBarItems(leading:
-                            Button(action: {
-                                self.isLogonViewPresented = true
-                                
-                            })  {
-                                Text("Sign In")
-                            }, trailing:
+                            Button(action: logonButtonAction) {
+                                Text("\(self.appState.auth == nil ? "Sign In" : self.appState.auth!.user.name)")
+                            }.alert(isPresented: self.$isLogoutAlertPresented) {
+                                Alert(title: Text("Sign out?").font(.title),
+                                      message: Text("\(self.appState.auth!.user.name)").font(.subheadline),
+                                      primaryButton: .cancel(),
+                                      secondaryButton: .destructive(Text("Yes")) {
+                                        self.appState.api.auth = nil
+                                    }
+                                )
+                            }
+                            , trailing:
                             Button(action: {
                                 self.appState.isSettingsPresented.toggle()
                             }) {

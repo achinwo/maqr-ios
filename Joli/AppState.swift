@@ -18,34 +18,66 @@ enum FetchError: Error {
 }
 
 struct KeyboardAwareModifier: ViewModifier {
+    
     @State private var keyboardHeight: CGFloat = 0
-
-    private var keyboardHeightPublisher: AnyPublisher<CGFloat, Never> {
-        Publishers.Merge(
-            NotificationCenter.default
-                .publisher(for: UIResponder.keyboardWillShowNotification)
-                .compactMap { $0.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect }
-                .map { $0.height },
-            NotificationCenter.default
-                .publisher(for: UIResponder.keyboardWillHideNotification)
-                .map { _ in CGFloat(0) }
-        ).eraseToAnyPublisher()
-    }
 
     func body(content: Content) -> some View {
         content
             .padding(.bottom, keyboardHeight)
-            .onReceive(keyboardHeightPublisher) { self.keyboardHeight = $0 }
+            .onReceive(AppState.keyboardHeightPublisher) { self.keyboardHeight = $0 }
     }
 }
 
 extension View {
+    
     func keyboardAwarePadding() -> some View {
         ModifiedContent(content: self, modifier: KeyboardAwareModifier())
     }
 }
 
+@propertyWrapper
+struct UserDefault<T: Codable> {
+    
+    enum Key: String {
+        case authToken
+    }
+    
+    let key: Key
+    let defaultValue: T
+    
+    init(_ key: Key, defaultValue: T) {
+        self.key = key
+        self.defaultValue = defaultValue
+    }
+
+    var wrappedValue: T {
+        get {
+            let data = UserDefaults.standard.data(forKey: key.rawValue)
+            let value = data.flatMap { try? JSONDecoder().decode(T.self, from: $0) }
+            return value ?? defaultValue
+        }
+        set {
+            let data = try? JSONEncoder().encode(newValue)
+            UserDefaults.standard.set(data, forKey: key.rawValue)
+        }
+    }
+}
+
+final class UserSettings: ObservableObject {
+
+    var objectWillChange = PassthroughSubject<UserSettings, Never>()
+
+    @UserDefault(.authToken, defaultValue: nil)
+    var authToken: String? {
+        willSet {
+            objectWillChange.send(self)
+        }
+    }
+}
+
 class AppState: ObservableObject {
+    
+    @Published var userSettings = UserSettings()
     
     @Published var musicrooms: [Musicroom] = []
     @Published var tracksByMusicrooms: [Int: [Track]] = [:]
@@ -81,6 +113,21 @@ class AppState: ObservableObject {
     @Published public var trackSearchResult: [Track] = []
     
     var currentSearchFuture: Promise<Any>?
+    
+    @Published var keyboardHeight: CGFloat = 0
+    
+    static var keyboardHeightPublisher: AnyPublisher<CGFloat, Never> = {
+        logger.info("[AppState] init keyboardHeightPublisher")
+        return Publishers.Merge(
+            NotificationCenter.default
+                .publisher(for: UIResponder.keyboardWillShowNotification)
+                .compactMap { $0.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect }
+                .map { $0.height },
+            NotificationCenter.default
+                .publisher(for: UIResponder.keyboardWillHideNotification)
+                .map { _ in CGFloat(0) }
+        ).eraseToAnyPublisher()
+    }()
     
     var trackSearchResultPublisher: AnyPublisher<[Track], Never> {
         $searchText
@@ -132,6 +179,8 @@ class AppState: ObservableObject {
     
     var nowPlayingSubject = CurrentValueSubject<[String: AnyObject]?, Never>(nil)
     
+    @Published var auth: Auth?
+    
     static func jsonStringToDict(text: String) -> [String:AnyObject]? {
         if let data = text.data(using: .utf8) {
             do {
@@ -151,6 +200,25 @@ class AppState: ObservableObject {
         .receive(on: RunLoop.main)
         .assign(to: \.trackSearchResult, on: self)
         .store(in: &cancellableSet)
+        
+        AppState.keyboardHeightPublisher
+        .receive(on: RunLoop.main)
+        .assign(to: \.keyboardHeight, on: self)
+        .store(in: &cancellableSet)
+        
+        self.api.$auth
+            .receive(on: RunLoop.main)
+            //.assign(to: \.auth, on: self)
+            .sink { auth in
+                self.auth = auth
+                self.userSettings.authToken = auth?.session.token
+            }
+            .store(in: &cancellableSet)
+        
+        if let authToken = self.userSettings.authToken {
+            logger.info("[AppState] authenticating with token: \(authToken)")
+            self.api.authenticate(token: authToken)
+        }
         
         nowPlayingSubject
             .sink() { result in
@@ -234,7 +302,7 @@ class AppState: ObservableObject {
     }
 
     func fetchMusicrooms() {
-        Musicroom.all(on: .global(qos: .background))
+        Musicroom.all(baseUrl: api.baseUrl.rawValue.http, on: .global(qos: .background))
             .then(on: .main) { [weak self] rooms in
                 self?.musicrooms = rooms
         }
@@ -246,7 +314,7 @@ class AppState: ObservableObject {
             return
         }
         
-        room.fetchTracks().then() { [weak self] tracks in
+        room.fetchTracks(baseUrl: api.baseUrl.rawValue.http).then() { [weak self] tracks in
             self?.tracksByMusicrooms[roomId] = tracks
         }
     }
