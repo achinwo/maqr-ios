@@ -67,15 +67,7 @@ struct TrackView: View {
                 Text("Add to Queue")
                 Image(systemName: "plus")
             }
-
-//            Button(action: {
-//                // enable geolocation
-//            }) {
-//                Text("Detect Location")
-//                Image(systemName: "location.circle")
-//            }
         }
-        //.background(Color.yellow)
         .onTapGesture {
             logger.debug("currect device: \(String(describing: self.spotifyDevice))\nuri: \(String(describing: self.track.uri))")
             
@@ -97,7 +89,7 @@ struct TrackView: View {
                 }
             }else{
 
-                self.track.play(deviceId: self.spotifyDevice?.id)
+                self.track.play(deviceId: self.spotifyDevice?.id, urlSession: self.appState.api.urlSession)
             }
             
         }

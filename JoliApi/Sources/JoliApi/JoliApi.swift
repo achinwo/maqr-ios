@@ -139,22 +139,24 @@ public class JoliApi: ObservableObject {
     }
     
     public func playTrack(_ track: Track, deviceId: String?) -> Promise<Result<TrackInfo, Error>>{
-        return track.play(deviceId: deviceId)
+        return track.play(deviceId: deviceId, urlSession: self.urlSession)
             .then() { track -> Result<TrackInfo, Error> in
                 return Result<TrackInfo, Error>.success(TrackInfo(track: track, info: [:]))
         }
     }
 
-    public func authenticate(email: String, password: String, on: DispatchQueue? = nil) -> Promise<Auth?> {
-        return Session.fromCredentials(email: email, password: password, baseUrl: self.baseUrl.rawValue.http, on: on)
+    @discardableResult
+    public func authenticate(email: String, password: String, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Auth?> {
+        return Session.fromCredentials(email: email, password: password, baseUrl: self.baseUrl.rawValue.http, urlSession: urlSession ?? JoliApi.sharedUrlSession, on: on)
             .then() { auth -> Auth? in
                 self.auth = auth
                 return auth
             }
     }
     
-    public func authenticate(token: String, on: DispatchQueue? = nil) -> Promise<Auth?> {
-        return Session.fromCredentials(token: token, baseUrl: self.baseUrl.rawValue.http, on: on)
+    @discardableResult
+    public func authenticate(token: String, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Auth?> {
+        return Session.fromCredentials(token: token, baseUrl: self.baseUrl.rawValue.http, urlSession: urlSession ?? JoliApi.sharedUrlSession, on: on)
             .then() { auth -> Auth? in
                 self.auth = auth
                 return auth
@@ -168,10 +170,10 @@ public class JoliApi: ObservableObject {
             URLQueryItem(name: "limit", value: limit.description)
         ]
         
-        return HttpMethod.get.fetch(urlPath: pathComp, dataType: [Track].self, payload: nil)
+        return HttpMethod.get.fetch(urlPath: pathComp, dataType: [Track].self, payload: nil, urlSession: self.urlSession)
     }
     
-    public class func post(urlPath: URLComponents, payload: Json, baseUrl: URL? = nil, on: DispatchQueue? = nil) ->  Promise<Json> {
+    public class func fetchJson(urlPath: URLComponents, payload: Json, httpMethod: HttpMethod = .get, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) ->  Promise<Json> {
         
         let queue = on ?? DispatchQueue.global(qos: .default)
         let baseUrl = baseUrl ?? Track.baseUrl.http
@@ -202,14 +204,22 @@ public class JoliApi: ObservableObject {
                 return reject(NetworkError.badRequest("bad paylod for post request: \(String(describing: payload))"))
             }
             
+            let urlSession = urlSession ?? JoliApi.sharedUrlSession
+            
             var request = URLRequest(url: url)
-            request.httpMethod = HttpMethod.post.rawValue
+            request.httpMethod = httpMethod.rawValue
             request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
             request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
             
+            let task: URLSessionTask
             
+            switch httpMethod {
+            case .post:
+                task = urlSession.uploadTask(with: request, from: payloadData, completionHandler: callback)
+            case .get:
+                task = urlSession.dataTask(with: request, completionHandler: callback)
+            }
             
-            let task: URLSessionTask = JoliApi.sharedUrlSession.uploadTask(with: request, from: payloadData, completionHandler: callback)
             task.resume()
         }
     }
@@ -226,7 +236,7 @@ public class JoliApi: ObservableObject {
 //                                     on: on)
         let urlPath = URLComponents(string: "/api/spotify/volume")!
 
-        return Self.post(urlPath: urlPath, payload: payload, on: on)
+        return Self.fetchJson(urlPath: urlPath, payload: payload, urlSession: self.urlSession, on: on)
     }
 
     public var user: User?
@@ -234,6 +244,15 @@ public class JoliApi: ObservableObject {
 
     public var subjects: Set<String> = []
     public var baseUrl: BaseUrl
+    
+    private var cancellableSet: Set<AnyCancellable> = []
+    
+    public var urlSessionConfiguration: URLSessionConfiguration {
+        didSet {
+            urlSession = JoliApi.sharedUrlSession.updated(configuration: self.urlSessionConfiguration)
+        }
+    }
+    public var urlSession: URLSession = JoliApi.sharedUrlSession
     
     public struct SpotifyDevice: Codable, Identifiable, Hashable {
         public let id: String
@@ -246,8 +265,9 @@ public class JoliApi: ObservableObject {
     }
     
     // MARK: - init
-    public init(baseUrl: BaseUrl = .homeLaptop){
+    public init(baseUrl: BaseUrl = .localhost){
         JoliApi.initLogger()
+        self.urlSessionConfiguration = JoliApi.sharedUrlSession.configuration
         
         self.baseUrl = baseUrl
         let url = baseUrl.rawValue.ws.appendingPathComponent("/ws")
@@ -255,6 +275,26 @@ public class JoliApi: ObservableObject {
         
         //(ws: URL, http: URL)
         BASE_URL = baseUrl.rawValue
+        
+        self.$auth
+            .receive(on: RunLoop.main)
+            .sink() { auth in
+                
+                let config = URLSessionConfiguration.default
+                var headers = config.httpAdditionalHeaders ?? [:]
+                
+                if let auth = auth {
+                    headers["X-SESSION-ID"] = auth.session.token
+                } else {
+                    headers.removeValue(forKey: "X-SESSION-ID")
+                }
+                
+                config.httpAdditionalHeaders = headers
+                self.urlSessionConfiguration = config
+                logger.debug("[JoliApi] updated headers: \(headers)")
+            }
+            .store(in: &cancellableSet)
+            
         
         //self.wsClient.connect()
         self.wsClient.connectionHandler = { connected in
@@ -272,7 +312,8 @@ public class JoliApi: ObservableObject {
     public func subscribe(subject: String, onMessage: @escaping WebSocketClient.MessageCallback){
         self.wsClient.onMessage = onMessage
         let topic = "/subscribe?subject=\(subject)"
-        self.wsClient.send(topic: topic) { error in
+        let headers = self.urlSessionConfiguration.httpAdditionalHeaders as? HttpMethod.Headers
+        self.wsClient.send(topic: topic, headers: headers) { error in
             if let error = error {
                 logger.debug("[wsSubscribe] error: \(error)")
                 return
@@ -285,7 +326,8 @@ public class JoliApi: ObservableObject {
     
     public func unsubscribe(subject: String){
         let topic = "/unsubscribe?subject=\(subject)"
-        self.wsClient.send(topic: topic) { error in
+        let headers = self.urlSessionConfiguration.httpAdditionalHeaders as? HttpMethod.Headers
+        self.wsClient.send(topic: topic, headers: headers) { error in
             if let error = error {
                 logger.debug("[wsUnsubscribe] error: \(error)")
                 return
@@ -296,10 +338,10 @@ public class JoliApi: ObservableObject {
         }
     }
     
-    public func fetchSpotifyDevices(baseUrl optBaseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[SpotifyDevice]> {
+    public func fetchSpotifyDevices(baseUrl optBaseUrl: URL? = nil, urlSession: HttpMethod.Headers? = nil, on: DispatchQueue? = nil) -> Promise<[SpotifyDevice]> {
         let on = on ?? DispatchQueue.main
         let baseUrl = optBaseUrl ?? self.baseUrl.rawValue.http
-        return HttpMethod.get.fetch(urlString: "/api/spotify/devices", dataType: [String: [SpotifyDevice]].self, baseUrl: baseUrl, on: on)
+        return HttpMethod.get.fetch(urlString: "/api/spotify/devices", dataType: [String: [SpotifyDevice]].self, baseUrl: baseUrl, urlSession: self.urlSession, on: on)
             .then(on: on) { (dict) -> [SpotifyDevice] in
                 guard let devices = dict["devices"] else {
                     throw NetworkError.badResponse("expected key \"devices\" in response: \(dict)")
@@ -316,16 +358,22 @@ public class JoliApi: ObservableObject {
         //let urlSession = URLSession(configuration: .default)
         //let url = URL(string: "http://localhost:8080/api/db/musicrooms")!
         //debugPrint("names: \(Musicroom(name: "test").propertyValues())")
-        BASE_URL = BaseUrl.homeDesktop.rawValue
-        let url: BaseUrl = .host("localhost:8080")
+        let api = JoliApi(baseUrl: .localhost)
+        let url: BaseUrl = api.baseUrl
 
-        let api = JoliApi(baseUrl: .mobileHotspot)
+        
+        //JoliApi.sharedUrlSession.configuration = JoliApi.sharedUrlSession.configuration
         
         let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imhhd2FAZ21haWwubmV0IiwiY3JlYXRlZEF0IjoiMjAxOS0xMi0wMVQwMDowOToyNy4yOTVaIiwiZXhwaXJlc0luIjoiaGF3YUBnbWFpbC5uZXQifQ.yqjreKSyzkG3VrVV9_7cAtOfBe6c50iGUOyieTBZN7g"
         return api.authenticate(token: token)
-            .then(){ res in
+            .then(){ res -> Promise<[SpotifyDevice]> in
                 logger.debug("[AUTH] \(res)")
-            }
+                return api.fetchSpotifyDevices()
+                    .catch { logger.error("[ERROR] devices: \($0)") }
+        }.catch() {
+            logger.error("[ERROR] \($0)")
+        }
+        
 //        api.fetchSpotifyDevices().then { print($0) }
 //        return api.searchTracks(q: "killin")
 //            .then() { print($0) }
@@ -366,10 +414,19 @@ public class JoliApi: ObservableObject {
         
     }
     
-    static let sharedUrlSessionDelegate = HttpsHook()
+    static var sharedUrlSessionDelegate = HttpsHook()
     
-    static let sharedUrlSession = URLSession.init(configuration: URLSessionConfiguration.default,
+    static var sharedUrlSession = URLSession.init(configuration: URLSessionConfiguration.default,
                                                   delegate: JoliApi.sharedUrlSessionDelegate, delegateQueue: .main)
+    
+}
+
+extension URLSession {
+    
+    public func updated(configuration: URLSessionConfiguration, delegate: URLSessionDataDelegate? = nil, delegateQueue: OperationQueue? = nil) -> URLSession {
+        return URLSession.init(configuration: configuration,
+                               delegate: delegate ?? self.delegate, delegateQueue: delegateQueue ?? self.delegateQueue)
+    }
     
 }
 

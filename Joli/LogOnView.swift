@@ -209,7 +209,7 @@ struct LogOnView: View {
             }
             .animation(.spring())
             .offset(x: 0, y: self.appState.keyboardHeight == 0 ? 0 : geometry.size.height / 3 * -1)
-            .gesture(gesture)
+            .simultaneousGesture(gesture)
             .navigationBarTitle("Account", displayMode: .large)
             .navigationBarItems(trailing: Button(action: {
                 logger.info("Close Logon screen!")

@@ -191,7 +191,6 @@ public protocol DbModel: IdIdentifiable, CustomStringConvertible, DataConvertibl
     var updatedBy: ObjectOrId<User>? { get }
     var deletedBy: ObjectOrId<User>? { get }
     
-    static func all(baseUrl: URL?, on: DispatchQueue?) -> Promise<[Self]>
 }
 
 public var BASE_URL: (ws: URL, http: URL)!
@@ -217,7 +216,7 @@ extension DbModel {
         return "\(Self.className())(\(desc))"
     }
     
-    func save(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
+    func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
         let suffix = self.id == nil ? "" : "/\(self.id!)"
         let urlComp = "/api/db/\(Self.className())\(suffix)"
         //return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)
@@ -225,6 +224,7 @@ extension DbModel {
                                      dataType: Self?.self,
                                      payload: .dbModel(self),
                                      baseUrl: baseUrl,
+                                     urlSession: urlSession,
                                      on: on)
     }
     
@@ -260,25 +260,25 @@ extension DbModel {
         return encoder
     }
     
-    public func fetchUpdatedBy() -> Promise<User?> {
+    public func fetchUpdatedBy(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<User?> {
         guard let updatedBy = self.updatedBy, let id = updatedBy.id?.int else {
             return Promise<User?>(nil)
         }
         
-        return User.findById(id: id)
+        return User.findById(id: id, baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
     public static func className() -> String {
         return String(describing: Self.self)
     }
     
-    public static func all(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[Self]> {
-        return HttpMethod.get.fetch(urlString: "/api/db/\(Self.className())", dataType: [Self].self, baseUrl: baseUrl, on: on)
+    public static func all(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[Self]> {
+        return HttpMethod.get.fetch(urlString: "/api/db/\(Self.className())", dataType: [Self].self, baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
-    public static func findById(id: Int, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
+    public static func findById(id: Int, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
         return HttpMethod.get.fetch(urlString: "/api/db/\(Self.className())/\(id)",
-            dataType: Self?.self, baseUrl: baseUrl, on: on)
+            dataType: Self?.self, baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
 }
@@ -318,18 +318,18 @@ public struct Session: DbModel {
     public var userId: Int
     public var token: String
     
-    public static func fromCredentials(email: String, password: String, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Auth?> {
+    public static func fromCredentials(email: String, password: String, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Auth?> {
         let url = URLComponents(string: "/signin")!
         return HttpMethod.post.fetch(urlPath: url, dataType: Auth?.self,
                                      payload: .json(["email": email as AnyObject, "password": password as AnyObject]),
-                                     baseUrl: baseUrl, on: on)
+                                     baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
-    public static func fromCredentials(token: String, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Auth?> {
+    public static func fromCredentials(token: String, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Auth?> {
         let url = URLComponents(string: "/signin")!
         return HttpMethod.post.fetch(urlPath: url, dataType: Auth?.self,
                                      payload: .json(["token": token as AnyObject]),
-                                     baseUrl: baseUrl, on: on)
+                                     baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
 }
@@ -348,10 +348,8 @@ public struct Musicroom: DbModel {
     
     public var name: String
     
-    
-    
     @discardableResult
-    public func addTrack(_ track: Track, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Json> {
+    public func addTrack(_ track: Track, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Json> {
         guard let id = self.id?.int else {
             return Promise<Json>([:])
         }
@@ -359,23 +357,24 @@ public struct Musicroom: DbModel {
         let data = try! Self.jsonEncoder(outputFormatting: .prettyPrinted).encode(track)
         let payloadData = try! JSONSerialization.jsonObject(with: data, options: [])
         
-        return JoliApi.post(urlPath: urlPath, payload: ["roomId": id as AnyObject,
+        return JoliApi.fetchJson(urlPath: urlPath, payload: ["roomId": id as AnyObject,
                                                         "track": payloadData as AnyObject],
-                            baseUrl: baseUrl, on: on)
+                            baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
     // get users
     // get tracks
     
-    public func fetchTracks(baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<[Track]> {
+    public func fetchTracks(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[Track]> {
         guard let id = self.id?.int else {
             return Promise([])
         }
+        
         let urlPath = "/get_room_tracks"
         return HttpMethod.post.fetch(urlString: urlPath,
                                      dataType: [Track].self,
                                      payload: .json(["roomId": id as AnyObject]),
-                                     baseUrl: baseUrl, on: on)
+                                     baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
 }
@@ -454,8 +453,12 @@ extension Track {
         )
     }
     
+    public func fetchCurrentlyPlaying(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil){
+        
+    }
+    
     @discardableResult
-    public func play(deviceId: String?, baseUrl: URL? = nil, on: DispatchQueue? = nil) -> Promise<Track> {
+    public func play(deviceId: String?, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Track> {
         
         var urlPath = URLComponents(string: "/api/spotify/play")!
         urlPath.queryItems = [
@@ -466,7 +469,7 @@ extension Track {
             urlPath.queryItems!.append(URLQueryItem(name: "deviceId", value: deviceId))
         }
         
-        return HttpMethod.post.fetch(urlPath: urlPath, dataType: Self.self, payload: .dbModel(self), baseUrl: baseUrl, on: on)
+        return HttpMethod.post.fetch(urlPath: urlPath, dataType: Self.self, payload: .dbModel(self), baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
 }

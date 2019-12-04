@@ -302,7 +302,7 @@ class AppState: ObservableObject {
     }
 
     func fetchMusicrooms() {
-        Musicroom.all(baseUrl: api.baseUrl.rawValue.http, on: .global(qos: .background))
+        Musicroom.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession, on: .global(qos: .background))
             .then(on: .main) { [weak self] rooms in
                 self?.musicrooms = rooms
         }
@@ -314,7 +314,7 @@ class AppState: ObservableObject {
             return
         }
         
-        room.fetchTracks(baseUrl: api.baseUrl.rawValue.http).then() { [weak self] tracks in
+        room.fetchTracks(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession).then() { [weak self] tracks in
             self?.tracksByMusicrooms[roomId] = tracks
         }
     }

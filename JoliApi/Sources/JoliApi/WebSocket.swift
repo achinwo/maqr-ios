@@ -12,6 +12,7 @@ import Foundation
 struct WebSocketMessage: Encodable {
     let topic: String
     let body = ["subject": "PLAYER_STATE_NOW_PLAYING"]
+    let headers: HttpMethod.Headers
 }
 
 extension WebSocketMessage {
@@ -58,8 +59,8 @@ public class WebSocketClient: HttpsHook {
         self.onMessage = onMessage
     }
 
-    public func send(topic: String, payload: Encodable? = nil, completionHandler: ((Error?) -> Void)?){
-        let msg = WebSocketMessage(topic: topic)
+    public func send(topic: String, payload: Encodable? = nil, headers: HttpMethod.Headers? = nil, completionHandler: ((Error?) -> Void)?){
+        let msg = WebSocketMessage(topic: topic, headers: headers ?? [:])
         
         let message = URLSessionWebSocketTask.Message.string(msg.jsonString())
         self.task?.send(message) { error in
