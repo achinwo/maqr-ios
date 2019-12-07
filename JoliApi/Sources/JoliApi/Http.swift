@@ -90,9 +90,9 @@ public enum HttpMethod: String {
                 guard let data = data else {
                     return reject(error!)
                 }
-                
+
                 do {
-                    let respObj = try Musicroom.jsonDecoder().decode(Response<T>.self, from: data)
+                    let respObj = try Session.jsonDecoder().decode(Response<T>.self, from: data)
                     resolve(respObj.data)
                 } catch {
                     reject(error)
@@ -119,6 +119,57 @@ public enum HttpMethod: String {
                 case .get:
                     task = urlSession.dataTask(with: request, completionHandler: callback)
             }
+            task.resume()
+        }
+    }
+    
+    public func fetchJson(urlPath: URLComponents, payload: Json, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) ->  Promise<Json> {
+        
+        let queue = on ?? DispatchQueue.global(qos: .default)
+        let baseUrl = baseUrl ?? Track.baseUrl.http
+        
+        guard let url = urlPath.url(relativeTo: baseUrl) else {
+            return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
+        }
+        
+        return Promise<Json>(on: queue) { (resolve, reject) in
+            
+            let callback = { (data: Data?, resp: URLResponse?, error: Error?) -> Void in
+                
+                guard let data = data else {
+                    return reject(error!)
+                }
+                
+                do {
+
+                    let respObj = try JSONSerialization.jsonObject(with: data, options: [])
+                    
+                    resolve(respObj as! Json)
+                } catch {
+                    reject(error)
+                }
+            }
+            
+            guard let payloadData = try? JSONSerialization.data(withJSONObject: payload, options: []) else {
+                return reject(NetworkError.badRequest("bad paylod for post request: \(String(describing: payload))"))
+            }
+            
+            let urlSession = urlSession ?? JoliApi.sharedUrlSession
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = self.rawValue
+            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
+            
+            let task: URLSessionTask
+            
+            switch self {
+            case .post:
+                task = urlSession.uploadTask(with: request, from: payloadData, completionHandler: callback)
+            case .get:
+                task = urlSession.dataTask(with: request, completionHandler: callback)
+            }
+            
             task.resume()
         }
     }

@@ -14,6 +14,7 @@ let package = Package(
         .library(
             name: "JoliApi",
             targets: ["JoliApi"]),
+        .executable(name: "joli", targets: ["Lib"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -32,6 +33,7 @@ let package = Package(
 //        linkerSettings: [
 //            .linkedFramework("SpotifyiOS"),
 //        ]),
+        .target(name: "Lib", path: "Sources/Lib"),
         .target(
             name: "JoliApi",
             dependencies: ["Promises", "JSONSchema", "SwiftyBeaver"]

@@ -50,13 +50,7 @@ public class JoliApi: ObservableObject {
         
         let console = ConsoleDestination()  // log to Xcode Console
         let file = FileDestination()  // log to default swiftybeaver.log file
-        //let cloud = SBPlatformDestination(appID: "foo", appSecret: "bar", encryptionKey: "123") // to cloud
         
-        // use custom format and set console output to short time, log level & message
-        //console.format = "$DHH:mm:ss$d $T $N:$l $L: $M"
-        // or use this for JSON output: console.format = "$J"
-
-        // add the destinations to SwiftyBeaver
         logger.addDestination(console)
         logger.addDestination(file)
         
@@ -173,70 +167,12 @@ public class JoliApi: ObservableObject {
         return HttpMethod.get.fetch(urlPath: pathComp, dataType: [Track].self, payload: nil, urlSession: self.urlSession)
     }
     
-    public class func fetchJson(urlPath: URLComponents, payload: Json, httpMethod: HttpMethod = .get, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) ->  Promise<Json> {
-        
-        let queue = on ?? DispatchQueue.global(qos: .default)
-        let baseUrl = baseUrl ?? Track.baseUrl.http
-        
-        guard let url = urlPath.url(relativeTo: baseUrl) else {
-            return Promise(NetworkError.invalidUrl(urlPath, baseUrl))
-        }
-        
-        return Promise<Json>(on: queue) { (resolve, reject) in
-            
-            let callback = { (data: Data?, resp: URLResponse?, error: Error?) -> Void in
-                
-                guard let data = data else {
-                    return reject(error!)
-                }
-                
-                do {
-
-                    let respObj = try JSONSerialization.jsonObject(with: data, options: [])
-                    
-                    resolve(respObj as! Json)
-                } catch {
-                    reject(error)
-                }
-            }
-            
-            guard let payloadData = try? JSONSerialization.data(withJSONObject: payload, options: []) else {
-                return reject(NetworkError.badRequest("bad paylod for post request: \(String(describing: payload))"))
-            }
-            
-            let urlSession = urlSession ?? JoliApi.sharedUrlSession
-            
-            var request = URLRequest(url: url)
-            request.httpMethod = httpMethod.rawValue
-            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
-            
-            let task: URLSessionTask
-            
-            switch httpMethod {
-            case .post:
-                task = urlSession.uploadTask(with: request, from: payloadData, completionHandler: callback)
-            case .get:
-                task = urlSession.dataTask(with: request, completionHandler: callback)
-            }
-            
-            task.resume()
-        }
-    }
-    
     @discardableResult
     public func setVolume(_ volume: Int, deviceId: String, on: DispatchQueue? = nil) -> Promise<Json>{
         let payload: Json = ["deviceId": deviceId as AnyObject,
                              "volume": volume as AnyObject]
-
-//        return HttpMethod.post.fetch(urlPath: urlPath,
-//                                     dataType: Self.self,
-//                                     payload: self,
-//                                     baseUrl: baseUrl,
-//                                     on: on)
         let urlPath = URLComponents(string: "/api/spotify/volume")!
-
-        return Self.fetchJson(urlPath: urlPath, payload: payload, urlSession: self.urlSession, on: on)
+        return HttpMethod.post.fetchJson(urlPath: urlPath, payload: payload, urlSession: self.urlSession, on: on)
     }
 
     public var user: User?
@@ -291,7 +227,6 @@ public class JoliApi: ObservableObject {
                 
                 config.httpAdditionalHeaders = headers
                 self.urlSessionConfiguration = config
-                logger.debug("[JoliApi] updated headers: \(headers)")
             }
             .store(in: &cancellableSet)
             
@@ -364,11 +299,11 @@ public class JoliApi: ObservableObject {
         
         //JoliApi.sharedUrlSession.configuration = JoliApi.sharedUrlSession.configuration
         
-        let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imhhd2FAZ21haWwubmV0IiwiY3JlYXRlZEF0IjoiMjAxOS0xMi0wMVQwMDowOToyNy4yOTVaIiwiZXhwaXJlc0luIjoiaGF3YUBnbWFpbC5uZXQifQ.yqjreKSyzkG3VrVV9_7cAtOfBe6c50iGUOyieTBZN7g"
-        return api.authenticate(token: token)
+        return api.authenticate(email: "hawa@gmail.net", password: "Password@")
             .then(){ res -> Promise<[SpotifyDevice]> in
                 logger.debug("[AUTH] \(res)")
                 return api.fetchSpotifyDevices()
+                    .then() { logger.debug("devices: \($0)") }
                     .catch { logger.error("[ERROR] devices: \($0)") }
         }.catch() {
             logger.error("[ERROR] \($0)")
@@ -385,32 +320,32 @@ public class JoliApi: ObservableObject {
 //            logger.debug("[ERROR] \(error)")
 //        }
         
-        return Musicroom.all(baseUrl: url.rawValue.http, on: .global(qos: .background))
-            .then() { rooms in
-                logger.debug("[rooms] \(rooms)")
-        }.catch() { err in
-            logger.error("[Musicroom] \(err)")
-        }
-        
-        return Musicroom.findById(id: 1, baseUrl: url.rawValue.http, on: .global(qos: .background))
-        .then() { (res) -> Promise<[Track]> in
-            var r = res!
-            debugPrint(r)
-            
-//            let m = Mirror(reflecting: r)
+//        return Musicroom.all(baseUrl: url.rawValue.http, on: .global(qos: .background))
+//            .then() { rooms in
+//                logger.debug("[rooms] \(rooms)")
+//        }.catch() { err in
+//            logger.error("[Musicroom] \(err)")
+//        }
 //
-//            for c in m.children {
-//                logger.debug("child: \(c)")
-//            }
-            
-            //r.name = "Davido Party"
-
-            debugPrint("response: \(String(describing: r.$createdAt)) - \(String(describing: r.createdAt))")
-            return Promise([])//r.fetchTracks()
-        }
-        .catch() { error in
-            logger.debug("error: \(error)")
-        }
+//        return Musicroom.findById(id: 1, baseUrl: url.rawValue.http, on: .global(qos: .background))
+//        .then() { (res) -> Promise<[Track]> in
+//            var r = res!
+//            debugPrint(r)
+//
+////            let m = Mirror(reflecting: r)
+////
+////            for c in m.children {
+////                logger.debug("child: \(c)")
+////            }
+//
+//            //r.name = "Davido Party"
+//
+//            debugPrint("response: \(String(describing: r.$createdAt)) - \(String(describing: r.createdAt))")
+//            return Promise([])//r.fetchTracks()
+//        }
+//        .catch() { error in
+//            logger.debug("error: \(error)")
+//        }
         
     }
     
@@ -418,6 +353,15 @@ public class JoliApi: ObservableObject {
     
     static var sharedUrlSession = URLSession.init(configuration: URLSessionConfiguration.default,
                                                   delegate: JoliApi.sharedUrlSessionDelegate, delegateQueue: .main)
+    
+}
+
+extension JoliApi {
+    
+    public func createMusicroom(name: String, details: String, on: DispatchQueue? = nil) -> Promise<Musicroom> {
+        let musicroom = Musicroom(name: name, details: details)
+        return musicroom.save(baseUrl: baseUrl.rawValue.http, urlSession: urlSession, on: on)
+    }
     
 }
 
@@ -461,14 +405,3 @@ public class HttpsHook: NSObject, URLSessionDelegate {
     }
     
 }
-
-
-//class Abc: SPTConfiguration{
-
-//}
-//class  Sp:  SPT
-
-
-let DATA = """
-{"timestamp":1574717911678,"context":{"external_urls":{"spotify":"https://open.spotify.com/artist/5ZS223C6JyBfXasXxrRqOk"},"href":"https://api.spotify.com/v1/artists/5ZS223C6JyBfXasXxrRqOk","type":"artist","uri":"spotify:artist:5ZS223C6JyBfXasXxrRqOk"},"progress_ms":223706,"item":{"album":{"album_type":"single","artists":[{"external_urls":{"spotify":"https://open.spotify.com/artist/5ZS223C6JyBfXasXxrRqOk"},"href":"https://api.spotify.com/v1/artists/5ZS223C6JyBfXasXxrRqOk","id":"5ZS223C6JyBfXasXxrRqOk","name":"Jhené Aiko","type":"artist","uri":"spotify:artist:5ZS223C6JyBfXasXxrRqOk"}],"available_markets":["AD","AE","AR","AT","AU","BE","BG","BH","BO","BR","CA","CH","CL","CO","CR","CY","CZ","DE","DK","DO","DZ","EC","EE","EG","ES","FI","FR","GB","GR","GT","HK","HN","HU","ID","IE","IL","IN","IS","IT","JO","JP","KW","LB","LI","LT","LU","LV","MA","MC","MT","MX","MY","NI","NL","NO","NZ","OM","PA","PE","PH","PL","PS","PT","PY","QA","RO","SA","SE","SG","SK","SV","TH","TN","TR","TW","US","UY","VN","ZA"],"external_urls":{"spotify":"https://open.spotify.com/album/2vYEAU3L58qz0d8Mk2JVdi"},"href":"https://api.spotify.com/v1/albums/2vYEAU3L58qz0d8Mk2JVdi","id":"2vYEAU3L58qz0d8Mk2JVdi","images":[{"height":640,"url":"https://i.scdn.co/image/ab67616d0000b273d29a218ce0decfc7bae8efc7","width":640},{"height":300,"url":"https://i.scdn.co/image/ab67616d00001e02d29a218ce0decfc7bae8efc7","width":300},{"height":64,"url":"https://i.scdn.co/image/ab67616d00004851d29a218ce0decfc7bae8efc7","width":64}],"name":"Hello Ego","release_date":"2017-06-19","release_date_precision":"day","total_tracks":1,"type":"album","uri":"spotify:album:2vYEAU3L58qz0d8Mk2JVdi"},"artists":[{"external_urls":{"spotify":"https://open.spotify.com/artist/5ZS223C6JyBfXasXxrRqOk"},"href":"https://api.spotify.com/v1/artists/5ZS223C6JyBfXasXxrRqOk","id":"5ZS223C6JyBfXasXxrRqOk","name":"Jhené Aiko","type":"artist","uri":"spotify:artist:5ZS223C6JyBfXasXxrRqOk"},{"external_urls":{"spotify":"https://open.spotify.com/artist/7bXgB6jMjp9ATFy66eO08Z"},"href":"https://api.spotify.com/v1/artists/7bXgB6jMjp9ATFy66eO08Z","id":"7bXgB6jMjp9ATFy66eO08Z","name":"Chris Brown","type":"artist","uri":"spotify:artist:7bXgB6jMjp9ATFy66eO08Z"}],"available_markets":["AD","AE","AR","AT","AU","BE","BG","BH","BO","BR","CA","CH","CL","CO","CR","CY","CZ","DE","DK","DO","DZ","EC","EE","EG","ES","FI","FR","GB","GR","GT","HK","HN","HU","ID","IE","IL","IN","IS","IT","JO","JP","KW","LB","LI","LT","LU","LV","MA","MC","MT","MX","MY","NI","NL","NO","NZ","OM","PA","PE","PH","PL","PS","PT","PY","QA","RO","SA","SE","SG","SK","SV","TH","TN","TR","TW","US","UY","VN","ZA"],"disc_number":1,"duration_ms":228133,"explicit":true,"external_ids":{"isrc":"USUM71706781"},"external_urls":{"spotify":"https://open.spotify.com/track/2kt06ZsD735FYBZO8yAAQs"},"href":"https://api.spotify.com/v1/tracks/2kt06ZsD735FYBZO8yAAQs","id":"2kt06ZsD735FYBZO8yAAQs","is_local":false,"name":"Hello Ego","popularity":57,"preview_url":"https://p.scdn.co/mp3-preview/cf737c4dc0364bdae370607c7f621e273a2c0fea?cid=e3966e30011d4895997ce89c797de5a5","track_number":1,"type":"track","uri":"spotify:track:2kt06ZsD735FYBZO8yAAQs"},"currently_playing_type":"track","actions":{"disallows":{"resuming":true}},"is_playing":true}
-"""

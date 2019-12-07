@@ -191,11 +191,21 @@ public protocol DbModel: IdIdentifiable, CustomStringConvertible, DataConvertibl
     var updatedBy: ObjectOrId<User>? { get }
     var deletedBy: ObjectOrId<User>? { get }
     
+    static func fromJson(_ json: Json) -> Self?
+    
 }
 
 public var BASE_URL: (ws: URL, http: URL)!
 
 extension DbModel {
+    
+    public static func fromJson(_ json: Json) -> Self? {
+        let dec = Self.jsonDecoder()
+        guard let data = try? JSONSerialization.data(withJSONObject: json, options: []) else {
+            return nil
+        }
+        return try? dec.decode(Self.self, from: data)
+    }
     
     public func toData(outputFormatting: JSONEncoder.OutputFormatting? = nil) throws -> Data {
         return try Self.jsonEncoder(outputFormatting: outputFormatting ?? []).encode(self)
@@ -216,12 +226,12 @@ extension DbModel {
         return "\(Self.className())(\(desc))"
     }
     
-    func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
+    func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self> {
         let suffix = self.id == nil ? "" : "/\(self.id!)"
         let urlComp = "/api/db/\(Self.className())\(suffix)"
         //return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)
         return HttpMethod.post.fetch(urlString: urlComp,
-                                     dataType: Self?.self,
+                                     dataType: Self.self,
                                      payload: .dbModel(self),
                                      baseUrl: baseUrl,
                                      urlSession: urlSession,
@@ -336,6 +346,7 @@ public struct Session: DbModel {
 
 // MARK: - Musicroom
 public struct Musicroom: DbModel {
+    
     @Tracked<StringOrInt> public var id: StringOrInt?
     
     @Tracked<Date> public var createdAt: Date? = nil
@@ -347,6 +358,12 @@ public struct Musicroom: DbModel {
     @Tracked<ObjectOrId<User>> public var deletedBy: ObjectOrId<User>? = nil
     
     public var name: String
+    public var details: String
+    
+    public init(name: String, details: String) {
+        self.name = name
+        self.details = details
+    }
     
     @discardableResult
     public func addTrack(_ track: Track, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Json> {
@@ -357,7 +374,7 @@ public struct Musicroom: DbModel {
         let data = try! Self.jsonEncoder(outputFormatting: .prettyPrinted).encode(track)
         let payloadData = try! JSONSerialization.jsonObject(with: data, options: [])
         
-        return JoliApi.fetchJson(urlPath: urlPath, payload: ["roomId": id as AnyObject,
+        return HttpMethod.post.fetchJson(urlPath: urlPath, payload: ["roomId": id as AnyObject,
                                                         "track": payloadData as AnyObject],
                             baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
