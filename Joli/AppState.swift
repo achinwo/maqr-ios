@@ -212,6 +212,7 @@ class AppState: ObservableObject {
             .sink { auth in
                 self.auth = auth
                 self.userSettings.authToken = auth?.session.token
+                //logger.info("[AppState] storing token: \(String(describing: self.userSettings.authToken))")
             }
             .store(in: &cancellableSet)
         
@@ -222,7 +223,7 @@ class AppState: ObservableObject {
         
         nowPlayingSubject
             .sink() { result in
-                logger.debug("[AppState] result: \(String(describing: result))")
+                logger.debug("[AppState#nowPlayingSubject] result: \(String(describing: result))")
             }
             .store(in: &cancellableSet)
         

@@ -22,39 +22,6 @@ struct ViewOffset {
     
 }
 
-extension DbModel {
-    var view: some View {
-        GeometryReader(){ geometry in
-            self.makeView(geometry)
-        }
-    }
-    
-    func makeView(_ geom: GeometryProxy) -> some View {
-        return Text("View: \(Self.className())")
-    }
-}
-
-struct DbModelView<T: DbModel>: View {
-    
-    var item: T
-    
-    init(of: T){
-        item = of
-    }
-    
-    var body: some View {
-        self.item.view
-    }
-    
-}
-
-extension Track {
-    
-    func makeView(_ geom: GeometryProxy) -> some View {
-        return TrackView(track: self)
-    }
-    
-}
 
 struct AppView: View {
     
@@ -67,6 +34,7 @@ struct AppView: View {
     
     @State var isLogonViewPresented = false
     @State var isLogoutAlertPresented = false
+    @State var isRoomCreateFormPresented = false
     
     var body: some View {
         let settingsOffsetWidth: CGFloat? = appState.isSettingsPresented ? 0 : nil
@@ -82,40 +50,50 @@ struct AppView: View {
         return GeometryReader(){ geometry in
             ZStack(alignment: .bottomTrailing) {
                 
-//                NavigationView {
-//                    LogOnView().environmentObject(self.appState)
-//                }
-//                //.edgesIgnoringSafeArea(.bottom)
-//                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
-                
                 NavigationView {
-                    MusicroomList()
-                        .sheet(isPresented: self.$isLogonViewPresented) {
-                            NavigationView {
-                                LogOnView() { cancelled in
-                                    logger.debug("[LogOnView] view dismissed")
-                                }
-                            }.environmentObject(self.appState)
+                    VStack(alignment: .center){
+                        
+//                        Button(action: {
+//                            self.isRoomCreateFormPresented.toggle()
+//                            logger.debug("[CreateRoom] tapped")
+//                        }) {
+                        NavigationLink(destination: VStack() { RoomCreateFormView() }) {
+                            Text("Create Room")//.padding()
                         }
-                        .navigationBarItems(leading:
-                            Button(action: logonButtonAction) {
-                                Text("\(self.appState.auth == nil ? "Sign In" : self.appState.auth!.user.name)")
-                            }.alert(isPresented: self.$isLogoutAlertPresented) {
-                                Alert(title: Text("Sign out?").font(.title),
-                                      message: Text("\(self.appState.auth!.user.name)").font(.subheadline),
-                                      primaryButton: .cancel(),
-                                      secondaryButton: .destructive(Text("Yes")) {
-                                        self.appState.api.auth = nil
+                        
+//                        .actionSheet(isPresented: self.$isRoomCreateFormPresented) {
+//                            //Text("This is the content")
+//                            ActionSheet(title: Text("What do you want to do?"), message: Text("There's only one choice..."), buttons: [.default(Text("Dismiss Action Sheet"))])
+//
+//                        }
+                        MusicroomList()
+                            .sheet(isPresented: self.$isLogonViewPresented) {
+                                NavigationView {
+                                    LogOnView() { cancelled in
+                                        logger.debug("[LogOnView] view dismissed")
                                     }
-                                )
-                            }
-                            , trailing:
-                            Button(action: {
-                                self.appState.isSettingsPresented.toggle()
-                            }) {
-                                Image(systemName: "gear")
-                                    .padding()
-                            }
+                                }.environmentObject(self.appState)
+                        }
+                    }
+                    .navigationBarItems(leading:
+                        Button(action: logonButtonAction) {
+                            Text("\(self.appState.auth == nil ? "Sign In" : self.appState.auth!.user.name)")
+                        }.alert(isPresented: self.$isLogoutAlertPresented) {
+                            Alert(title: Text("Sign out?").font(.title),
+                                  message: Text("\(self.appState.auth!.user.name)").font(.subheadline),
+                                  primaryButton: .cancel(),
+                                  secondaryButton: .destructive(Text("Yes")) {
+                                    self.appState.api.auth = nil
+                                }
+                            )
+                        }
+                        , trailing:
+                        Button(action: {
+                            self.appState.isSettingsPresented.toggle()
+                        }) {
+                            Image(systemName: "gear")
+                                .padding()
+                        }
                     )
                 }
                 .animation(.spring())

@@ -153,6 +153,7 @@ public class JoliApi: ObservableObject {
         return Session.fromCredentials(token: token, baseUrl: self.baseUrl.rawValue.http, urlSession: urlSession ?? JoliApi.sharedUrlSession, on: on)
             .then() { auth -> Auth? in
                 self.auth = auth
+                //logger.debug("[JoliApi#authenticate] AUTH: \(auth)")
                 return auth
             }
     }
@@ -283,6 +284,11 @@ public class JoliApi: ObservableObject {
                 }
                 return devices
         }
+    }
+    
+    @discardableResult
+    public func delete<T>(_ model: T, on: DispatchQueue? = nil) -> Promise<T> where T: DbModel {
+        return model.delete(baseUrl: self.baseUrl.rawValue.http, urlSession: urlSession, on: on)
     }
     
     // MARK: - Test

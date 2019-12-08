@@ -40,6 +40,7 @@ struct MusicroomView: View {
         .accentColor(.orange)
         .onAppear() {
             self.appState.activeRoom = self.room
+            self.appState.fetchTracks(self.room)
         }
         .navigationBarItems(trailing:
             Button(action: {

@@ -16,6 +16,7 @@
 		925FC09B23777A0A00A8A72C /* MusicroomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09A23777A0A00A8A72C /* MusicroomView.swift */; };
 		925FC09D2378B81100A8A72C /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09C2378B81100A8A72C /* TrackView.swift */; };
 		925FC09F2379FE5900A8A72C /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09E2379FE5900A8A72C /* AppView.swift */; };
+		9271D42C239D3FCF00CE1425 /* MusicroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */; };
 		9274D921238DE71400A43752 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274D920238DE71400A43752 /* SettingsView.swift */; };
 		928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F6EB923761F7700FAC911 /* TrackSearchView.swift */; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
@@ -89,6 +90,8 @@
 		925FC09C2378B81100A8A72C /* TrackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
 		925FC09E2379FE5900A8A72C /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		925FC0A0237E2DF700A8A72C /* DeezerSDK */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DeezerSDK; sourceTree = "<group>"; };
+		9262E863239C993100891F6C /* Joli.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Joli.entitlements; sourceTree = "<group>"; };
+		9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomCreateView.swift; sourceTree = "<group>"; };
 		9274D920238DE71400A43752 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		928F6EB923761F7700FAC911 /* TrackSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSearchView.swift; sourceTree = "<group>"; };
 		92B0716C2364F8A80070EC73 /* MusicroomList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
@@ -149,6 +152,7 @@
 				925FC09A23777A0A00A8A72C /* MusicroomView.swift */,
 				925FC09C2378B81100A8A72C /* TrackView.swift */,
 				9274D920238DE71400A43752 /* SettingsView.swift */,
+				9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */,
 			);
 			name = "Supporting Views";
 			sourceTree = "<group>";
@@ -189,6 +193,7 @@
 		92F379E12363534D005FE2AB /* Joli */ = {
 			isa = PBXGroup;
 			children = (
+				9262E863239C993100891F6C /* Joli.entitlements */,
 				92D90BE8236C88B800EAAD31 /* Resources */,
 				925E5C6D2369D7E000D95AB7 /* Supporting Views */,
 				92F379E22363534D005FE2AB /* AppDelegate.swift */,
@@ -307,6 +312,9 @@
 		92F379D72363534D005FE2AB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				KnownAssetTags = (
+					New,
+				);
 				LastSwiftUpdateCheck = 1110;
 				LastUpgradeCheck = 1120;
 				ORGANIZATIONNAME = "Anthony Chinwo";
@@ -393,6 +401,7 @@
 				925E5C712369D85900D95AB7 /* CircleImage.swift in Sources */,
 				925FC09D2378B81100A8A72C /* TrackView.swift in Sources */,
 				92061A84236B0175007FC6F1 /* Extensions.swift in Sources */,
+				9271D42C239D3FCF00CE1425 /* MusicroomCreateView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -558,10 +567,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Joli/Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Joli/Preview Content\"";
-				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -579,7 +589,7 @@
 					"-all_load",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.Joli;
+				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_INSTALL_OBJC_HEADER = YES;
@@ -594,10 +604,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Joli/Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Joli/Preview Content\"";
-				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -614,7 +625,7 @@
 					"-all_load",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.Joli;
+				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_INSTALL_OBJC_HEADER = YES;

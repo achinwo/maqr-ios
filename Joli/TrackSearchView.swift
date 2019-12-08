@@ -114,7 +114,7 @@ struct ResignKeyboardOnDragGesture: ViewModifier {
     }
     
     func body(content: Content) -> some View {
-        content.gesture(gesture)
+        content.simultaneousGesture(gesture)
     }
     
 }

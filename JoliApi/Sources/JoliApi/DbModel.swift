@@ -94,6 +94,10 @@ public protocol IdIdentifiable: Codable, Hashable, Identifiable {
 //    }
 //}
 
+enum DbError: Error {
+    case valueError(String)
+}
+
 protocol Trackable {
     
 }
@@ -163,7 +167,7 @@ public indirect enum ObjectOrId<T: IdIdentifiable>: Equatable, Codable, Hashable
         }
     }
     
-    var obj: T? {
+    public var obj: T? {
         switch self {
         case .obj(let obj):
             return obj
@@ -226,8 +230,25 @@ extension DbModel {
         return "\(Self.className())(\(desc))"
     }
     
+    @discardableResult
+    public func delete(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self> {
+        
+        guard let id = self.id?.int else {
+            let promise = Promise<Self>.pending()
+            promise.reject(DbError.valueError("Can't delete an unpersisted record"))
+            return promise
+        }
+        
+        let urlComp = "/api/db/\(Self.className())/\(id)"
+        return HttpMethod.delete.fetch(urlString: urlComp,
+                                     dataType: Self.self,
+                                     baseUrl: baseUrl,
+                                     urlSession: urlSession,
+                                     on: on)
+    }
+    
     func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self> {
-        let suffix = self.id == nil ? "" : "/\(self.id!)"
+        let suffix = self.id?.int == nil ? "" : "/\(self.id!.int!)"
         let urlComp = "/api/db/\(Self.className())\(suffix)"
         //return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)
         return HttpMethod.post.fetch(urlString: urlComp,

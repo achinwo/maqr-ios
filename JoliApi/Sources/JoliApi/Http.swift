@@ -54,6 +54,7 @@ public enum HttpMethod: String {
     
     case get = "GET"
     case post = "POST"
+    case delete = "DELETE"
     
     func fetch<T: Codable>(urlString: String, dataType: T.Type, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         let baseUrl = baseUrl ?? Track.baseUrl.http
@@ -116,7 +117,7 @@ public enum HttpMethod: String {
                     }
                     
                     task = urlSession.uploadTask(with: request, from: payloadData, completionHandler: callback)
-                case .get:
+            case .get, .delete:
                     task = urlSession.dataTask(with: request, completionHandler: callback)
             }
             task.resume()
@@ -166,7 +167,7 @@ public enum HttpMethod: String {
             switch self {
             case .post:
                 task = urlSession.uploadTask(with: request, from: payloadData, completionHandler: callback)
-            case .get:
+            case .get, .delete:
                 task = urlSession.dataTask(with: request, completionHandler: callback)
             }
             
