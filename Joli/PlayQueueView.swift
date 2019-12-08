@@ -61,7 +61,7 @@ struct PlayQueueView: View {
                 //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
                 List {
                     ForEach(self.tracks) { track in
-                        TrackView(track: track)//.background(Color.pink)
+                        TrackView(track: track, allowDelete: true)//.background(Color.pink)
                     }
                     .onDelete(perform: self.delete)
                 }
@@ -75,9 +75,13 @@ struct PlayQueueView: View {
         guard let id = room.id?.int else {
             return
         }
+        
         logger.debug("[PlayQueueView] offsets: \(offsets)")
         for idx in offsets {
-            appState.tracksByMusicrooms[id]?.remove(at: idx)
+            guard let track = appState.tracksByMusicrooms[id]?.remove(at: idx) else {
+                continue
+            }
+            appState.api.delete(track)
         }
     }
     

@@ -11,12 +11,19 @@ import JoliApi
 
 
 struct TrackView: View {
+    
     @EnvironmentObject var appState: AppState
     var track: Track
+    var allowDelete = false
     
     @State var image: Image?
     var spotifyDevice: JoliApi.SpotifyDevice? {
         return self.appState.spotifyDevice
+    }
+    
+    init(track: Track, allowDelete: Bool = false){
+        self.track = track
+        self.allowDelete = allowDelete
     }
     
     var explicitLabel: some View {
@@ -66,6 +73,24 @@ struct TrackView: View {
             }) {
                 Text("Add to Queue")
                 Image(systemName: "plus")
+            }
+            
+            if self.allowDelete {
+
+                Button(action: {
+                    self.appState.api.delete(self.track)
+                        .catch() { error in
+                            logger.error("[TrackView] delete error: \(error)")
+                        }
+                        .always() {
+                            guard let room = self.appState.activeRoom else { return }
+                            
+                            self.appState.fetchTracks(room)
+                        }
+                }) {
+                    Text("Delete").foregroundColor(.red)
+                    Image(systemName: "minus.circle")
+                }
             }
         }
         .onTapGesture {
