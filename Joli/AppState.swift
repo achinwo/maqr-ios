@@ -77,6 +77,10 @@ final class UserSettings: ObservableObject {
 
 class AppState: ObservableObject {
     
+    static let URL_SCHEME = "joli"
+    static let SPOTIFY_URL_BASEPATH = "spotify-callback"
+    
+    @Published var spotifyAuthorizationInProgress = false
     @Published var userSettings = UserSettings()
     
     @Published var musicrooms: [Musicroom] = []
@@ -192,6 +196,35 @@ class AppState: ObservableObject {
         return nil
     }
     
+    func spotifyWebAuthorize(_ urlPath: URLComponents) -> Promise<Json> {
+        spotifyAuthorizationInProgress = true
+        
+        return HttpMethod.get.fetchJson(urlPath: urlPath,
+                                 payload: [:],
+                                 baseUrl: api.baseUrl.rawValue.http,
+                                 urlSession: api.urlSession)
+                .always() {
+                    self.spotifyAuthorizationInProgress = false
+                }
+    }
+    
+    func resolveSpotifyRedirectUrl(_ url: URL) -> URL? {
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        
+        guard let scheme = components?.scheme,
+            let basePath = components?.host,
+            let codeQuery = components?.queryItems?.first(where: { $0.name == "code" }),
+            scheme == AppState.URL_SCHEME,
+            basePath == AppState.SPOTIFY_URL_BASEPATH else {
+            return nil
+        }
+        
+        var redirectUrl = URLComponents(string: "/spotify_callback")
+        redirectUrl?.queryItems = [codeQuery, URLQueryItem(name: "platform", value: "ios")]
+        
+        return redirectUrl?.url(relativeTo: api.baseUrl.rawValue.http)
+    }
+    
     // MARK: - initialize
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
@@ -302,8 +335,9 @@ class AppState: ObservableObject {
         }
     }
 
-    func fetchMusicrooms() {
-        Musicroom.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession, on: .global(qos: .background))
+    @discardableResult
+    func fetchMusicrooms() -> Promise<[Musicroom]> {
+        return Musicroom.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession, on: .global(qos: .background))
             .then(on: .main) { [weak self] rooms in
                 self?.musicrooms = rooms
         }

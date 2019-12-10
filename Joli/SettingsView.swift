@@ -13,22 +13,40 @@ struct SettingsView: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        return GeometryReader() { geometry in
-            VStack {
-                Button(action: {
-                    self.appState.isSettingsPresented.toggle()
-                }) {
-                    Image(systemName: "xmark")
-                    Text("Close")
+        return VStack {
+            
+            Button(action: {
+                var components = URLComponents(string: "/spotify_login")!
+                components.queryItems = [URLQueryItem(name: "platform", value: "ios")]
+                
+                let url = components.url(relativeTo: self.appState.baseUrl.rawValue.http)!
+                
+                UIApplication.shared.open(url)
+            }) {
+                HStack(alignment: .center) {
+                    Spacer()
+                    
+                    if self.appState.spotifyAuthorizationInProgress {
+                        ActivityIndicator(isAnimating: self.appState.spotifyAuthorizationInProgress) { (indicator: UIActivityIndicatorView) in
+                            indicator.color = .white
+                            indicator.hidesWhenStopped = true
+                            //Any other UIActivityIndicatorView property you like
+                        }
+                    }
+                    
+                    Text("Spotify Authorize").foregroundColor(Color.white).bold()
+                    Spacer()
                 }
-                .padding()
-                VStack {
-                    Text("Home").background(Color.red)
-                }
-            }
-            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topTrailing)
-            .background(Color.yellow)
+            }.padding()
+                .background(Color.green)
+                .cornerRadius(CGFloat(4.0))
         }
+        .padding()
+        .navigationBarTitle("Setting")
+        .navigationBarItems(trailing: Button(action: { self.appState.isSettingsPresented.toggle() }) {
+            Image(systemName: "xmark")
+            Text("Close")
+        })
     }
 }
 

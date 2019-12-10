@@ -9,6 +9,7 @@
 import UIKit
 import SwiftUI
 import MediaPlayer
+import JoliApi
 
 extension MPVolumeView {
     static func setVolume(_ volume: Float) {
@@ -104,7 +105,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         guard let url = URLContexts.first?.url else {
             return
         }
-
+        
+        logger.info("[SceneDelegate] url: \(url)")
+        
+        if let redirectUrl = appState.resolveSpotifyRedirectUrl(url), let urlComp = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: false) {
+            appState.spotifyWebAuthorize(urlComp)
+            .then() { auth in
+                logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
+            }
+            .catch() { error in
+                logger.error("[SceneDelegate] spotify auth error: \(error)")
+            }
+            return
+        }
+        
         let parameters = appRemote.authorizationParameters(from: url);
 
         if let access_token = parameters?[SPTAppRemoteAccessTokenKey] {

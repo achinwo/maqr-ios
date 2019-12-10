@@ -53,19 +53,10 @@ struct AppView: View {
                 NavigationView {
                     VStack(alignment: .center){
                         
-//                        Button(action: {
-//                            self.isRoomCreateFormPresented.toggle()
-//                            logger.debug("[CreateRoom] tapped")
-//                        }) {
                         NavigationLink(destination: VStack() { RoomCreateFormView() }) {
-                            Text("Create Room")//.padding()
+                            Text("Create Room").padding()
                         }
                         
-//                        .actionSheet(isPresented: self.$isRoomCreateFormPresented) {
-//                            //Text("This is the content")
-//                            ActionSheet(title: Text("What do you want to do?"), message: Text("There's only one choice..."), buttons: [.default(Text("Dismiss Action Sheet"))])
-//
-//                        }
                         MusicroomList()
                             .sheet(isPresented: self.$isLogonViewPresented) {
                                 NavigationView {
@@ -98,10 +89,11 @@ struct AppView: View {
                 }
                 .animation(.spring())
                 
-                SettingsView()
-                    .animation(.spring())
-                    .offset(CGSize(width: settingsOffsetWidth ?? geometry.size.width, height: 0))
-                
+                NavigationView {
+                    SettingsView()
+                }
+                .animation(.spring())
+                .offset(CGSize(width: settingsOffsetWidth ?? geometry.size.width, height: 0))
             }
             
         }

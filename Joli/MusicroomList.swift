@@ -90,6 +90,9 @@ struct MusicroomList: View {
         .onAppear() {
             logger.debug("[Musicroom] fetchMusicrooms")
             self.appState.fetchMusicrooms()
+                .catch() { error in
+                    logger.error("[Musicroom] fetch Musicrooms error: \(error)")
+            }
         }
         //.colorScheme(.dark)
     }
