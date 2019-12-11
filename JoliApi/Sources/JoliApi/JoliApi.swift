@@ -176,7 +176,7 @@ public class JoliApi: ObservableObject {
         
         self.baseUrl = baseUrl
         let url = baseUrl.rawValue.ws.appendingPathComponent("/ws")
-        self.wsClient = WebSocketClient(url: url)
+        self.wsClient = WebSocketClient(url: url, trustedHosts: JoliApi.sharedUrlSessionDelegate.trustedHosts)
         
         //(ws: URL, http: URL)
         BASE_URL = baseUrl.rawValue
@@ -242,16 +242,20 @@ public class JoliApi: ObservableObject {
         }
     }
     
-    public func fetchSpotifyDevices(baseUrl optBaseUrl: URL? = nil, urlSession: HttpMethod.Headers? = nil, on: DispatchQueue? = nil) -> Promise<[Spotify.Device]> {
-        let on = on ?? DispatchQueue.main
-        let baseUrl = optBaseUrl ?? self.baseUrl.rawValue.http
-        return HttpMethod.get.fetch(urlString: "/api/spotify/devices", dataType: [String: [Spotify.Device]].self, baseUrl: baseUrl, urlSession: self.urlSession, on: on)
-            .then(on: on) { (dict) -> [Spotify.Device] in
+    public func fetchSpotifyDevices(on: DispatchQueue? = nil) -> Promise<[Spotify.Device]> {
+        let baseUrl = self.baseUrl.rawValue.http
+        let queue = on ?? DispatchQueue.main
+        return HttpMethod.get.fetch(urlString: "/api/spotify/devices", dataType: [String: [Spotify.Device]].self, baseUrl: baseUrl, urlSession: self.urlSession, on: queue)
+            .then(on: queue) { (dict) -> [Spotify.Device] in
                 guard let devices = dict["devices"] else {
                     throw NetworkError.badResponse("expected key \"devices\" in response: \(dict)")
                 }
                 return devices
         }
+    }
+    
+    public func fetchSpotifyUserProfile(on: DispatchQueue? = nil) -> Promise<Spotify.UserProfile> {
+        return HttpMethod.get.fetch(urlString: "/api/spotify/me", dataType: Spotify.UserProfile.self, baseUrl: self.baseUrl.rawValue.http, urlSession: self.urlSession, on: on)
     }
     
     @discardableResult
@@ -274,10 +278,10 @@ public class JoliApi: ObservableObject {
         //JoliApi.sharedUrlSession.configuration = JoliApi.sharedUrlSession.configuration
         
         return api.authenticate(email: "hawa@gmail.net", password: "Password@")
-            .then(){ res -> Promise<[Spotify.Device]> in
+            .then(){ res -> Promise<Spotify.UserProfile> in
                 logger.debug("[AUTH] \(res)")
-                return api.fetchSpotifyDevices()
-                    .then() { logger.debug("devices: \($0)") }
+                return api.fetchSpotifyUserProfile()
+                    .then() { logger.debug("user: \($0)") }
                     .catch { logger.error("[ERROR] devices: \($0)") }
         }.catch() {
             logger.error("[ERROR] \($0)")
