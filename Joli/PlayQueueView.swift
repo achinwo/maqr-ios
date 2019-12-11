@@ -8,6 +8,7 @@
 
 import SwiftUI
 import JoliApi
+import JoliCore
 
 struct PlayQueueView: View {
     

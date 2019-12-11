@@ -247,7 +247,7 @@ extension DbModel {
                                      on: on)
     }
     
-    func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self> {
+    public func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self> {
         let suffix = self.id?.int == nil ? "" : "/\(self.id!.int!)"
         let urlComp = "/api/db/\(Self.className())\(suffix)"
         //return Self.post(urlPath: urlComp, dataType: Self?.self, payload: self, on: on)

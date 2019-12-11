@@ -8,6 +8,7 @@
 
 import Foundation
 import JoliApi
+import JoliCore
 import SwiftUI
 import Combine
 import Promises
@@ -281,11 +282,11 @@ class AppState: ObservableObject {
 //            }
     }
     
-    @Published var spotifyDevices: [JoliApi.SpotifyDevice] = []
+    @Published var spotifyDevices: [Spotify.Device] = []
     @Published var selectedSpotifyDeviceIdx: Int? = nil
     @Published var activeRoom: Musicroom? = nil
     
-    public var spotifyDevice: JoliApi.SpotifyDevice? {
+    public var spotifyDevice: Spotify.Device? {
         guard let selectedSpotifyDeviceIdx = selectedSpotifyDeviceIdx else { return nil }
         return spotifyDevices[selectedSpotifyDeviceIdx]
     }

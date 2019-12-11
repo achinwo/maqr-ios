@@ -52,8 +52,8 @@ public class WebSocketClient: HttpsHook {
     //var queue: OperationQueue = DispatchQueue.global(qos: .background)
     //public var subjects: Set<String> = []
     
-    public init(url: URL, onMessage: MessageCallback? = nil) {
-        super.init()
+    public init(url: URL, trustedHosts: [String] = [], onMessage: MessageCallback? = nil) {
+        super.init(trustedHosts: trustedHosts)
         self.session = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue.main)
         self.url = url
         self.onMessage = onMessage
@@ -92,7 +92,7 @@ public class WebSocketClient: HttpsHook {
         }
     }
     
-    var connectionHandler: ((Bool) -> Void)?
+    public var connectionHandler: ((Bool) -> Void)?
     
     public func connect(connectionHandler: ((Bool) -> Void)? = nil) {
         switch connectionState {

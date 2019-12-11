@@ -2,25 +2,8 @@ import Foundation
 import Promises
 import Combine
 import SwiftyBeaver
+import JoliCore
 
-
-public enum SpotifyDeviceType: String, Codable {
-    /// https://developer.spotify.com/documentation/web-api/reference/player/get-a-users-available-devices/#device-types
-    
-    case computer = "Computer"
-    case tablet = "Tablet"
-    case smartphone = "Smartphone"
-    case speaker = "Speaker"
-    case tv = "TV"
-    case avr = "AVR"
-    case stb = "STB"
-    case audioDongle = "AudioDongle"
-    case gameConsole = "GameConsole"
-    case castVideo = "CastVideo"
-    case castAudio = "CastAudio"
-    case automobile = "Automobile"
-    case unknown = "Unknown"
-}
 
 
 public struct TrackInfo {
@@ -29,11 +12,6 @@ public struct TrackInfo {
 }
 
 internal let logger = SwiftyBeaver.self
-
-public struct Auth: Codable {
-    public var session: Session
-    public var user: User
-}
 
 // MARK: - JoliApi
 public class JoliApi: ObservableObject {
@@ -191,16 +169,6 @@ public class JoliApi: ObservableObject {
     }
     public var urlSession: URLSession = JoliApi.sharedUrlSession
     
-    public struct SpotifyDevice: Codable, Identifiable, Hashable {
-        public let id: String
-        public let isActive: Bool
-        public let isPrivateSession: Bool
-        public let isRestricted: Bool
-        public let name: String
-        public let type: SpotifyDeviceType
-        public let volumePercent: Int
-    }
-    
     // MARK: - init
     public init(baseUrl: BaseUrl = .localhost){
         JoliApi.initLogger()
@@ -274,11 +242,11 @@ public class JoliApi: ObservableObject {
         }
     }
     
-    public func fetchSpotifyDevices(baseUrl optBaseUrl: URL? = nil, urlSession: HttpMethod.Headers? = nil, on: DispatchQueue? = nil) -> Promise<[SpotifyDevice]> {
+    public func fetchSpotifyDevices(baseUrl optBaseUrl: URL? = nil, urlSession: HttpMethod.Headers? = nil, on: DispatchQueue? = nil) -> Promise<[Spotify.Device]> {
         let on = on ?? DispatchQueue.main
         let baseUrl = optBaseUrl ?? self.baseUrl.rawValue.http
-        return HttpMethod.get.fetch(urlString: "/api/spotify/devices", dataType: [String: [SpotifyDevice]].self, baseUrl: baseUrl, urlSession: self.urlSession, on: on)
-            .then(on: on) { (dict) -> [SpotifyDevice] in
+        return HttpMethod.get.fetch(urlString: "/api/spotify/devices", dataType: [String: [Spotify.Device]].self, baseUrl: baseUrl, urlSession: self.urlSession, on: on)
+            .then(on: on) { (dict) -> [Spotify.Device] in
                 guard let devices = dict["devices"] else {
                     throw NetworkError.badResponse("expected key \"devices\" in response: \(dict)")
                 }
@@ -306,7 +274,7 @@ public class JoliApi: ObservableObject {
         //JoliApi.sharedUrlSession.configuration = JoliApi.sharedUrlSession.configuration
         
         return api.authenticate(email: "hawa@gmail.net", password: "Password@")
-            .then(){ res -> Promise<[SpotifyDevice]> in
+            .then(){ res -> Promise<[Spotify.Device]> in
                 logger.debug("[AUTH] \(res)")
                 return api.fetchSpotifyDevices()
                     .then() { logger.debug("devices: \($0)") }
@@ -355,7 +323,12 @@ public class JoliApi: ObservableObject {
         
     }
     
-    static var sharedUrlSessionDelegate = HttpsHook()
+    static var sharedUrlSessionDelegate = HttpsHook(trustedHosts: [
+       BaseUrl.homeLaptop.rawValue.http.host!,
+       BaseUrl.homeDesktop.rawValue.http.host!,
+       BaseUrl.mobileHotspot.rawValue.http.host!,
+       BaseUrl.localhost.rawValue.http.host!,
+    ])
     
     static var sharedUrlSession = URLSession.init(configuration: URLSessionConfiguration.default,
                                                   delegate: JoliApi.sharedUrlSessionDelegate, delegateQueue: .main)
@@ -376,38 +349,6 @@ extension URLSession {
     public func updated(configuration: URLSessionConfiguration, delegate: URLSessionDataDelegate? = nil, delegateQueue: OperationQueue? = nil) -> URLSession {
         return URLSession.init(configuration: configuration,
                                delegate: delegate ?? self.delegate, delegateQueue: delegateQueue ?? self.delegateQueue)
-    }
-    
-}
-
-public class HttpsHook: NSObject, URLSessionDelegate {
-    
-    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-
-        let trustedHostArray: [String] = [
-            JoliApi.BaseUrl.homeLaptop.rawValue.http.host!,
-            JoliApi.BaseUrl.homeDesktop.rawValue.http.host!,
-            JoliApi.BaseUrl.mobileHotspot.rawValue.http.host!,
-            JoliApi.BaseUrl.localhost.rawValue.http.host!,
-        ]
-
-        logger.debug("[HttpsHook] trusted: \(trustedHostArray) - \(challenge.protectionSpace.authenticationMethod)")
-//        if Utils.getEnviroment() == Constants.Environment.Production.rawValue {
-//            trustedHostArray = Constants.TRUSTED_HOSTS.Production
-//        } else {
-//            trustedHostArray = Constants.TRUSTED_HOSTS.Develop
-//        }
-        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-              trustedHostArray.contains(challenge.protectionSpace.host) else {
-            return
-        }
-
-        logger.debug("[HttpsHook] protectionSpace: \(challenge.protectionSpace) - \(challenge.protectionSpace.host)")
-        let credential = URLCredential(trust: challenge.protectionSpace.serverTrust!)
-        //print("[HttpsHook] replacing: \(credential)")
-
-        challenge.sender?.use(credential, for: challenge)
-        completionHandler(URLSession.AuthChallengeDisposition.useCredential, credential)
     }
     
 }

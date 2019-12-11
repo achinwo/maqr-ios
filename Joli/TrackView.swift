@@ -8,7 +8,7 @@
 
 import SwiftUI
 import JoliApi
-
+import JoliCore
 
 struct TrackView: View {
     
@@ -17,7 +17,7 @@ struct TrackView: View {
     var allowDelete = false
     
     @State var image: Image?
-    var spotifyDevice: JoliApi.SpotifyDevice? {
+    var spotifyDevice: Spotify.Device? {
         return self.appState.spotifyDevice
     }
     

@@ -9,6 +9,44 @@ import Foundation
 import Promises
 
 
+public class HttpsHook: NSObject, URLSessionDelegate {
+    
+    public let trustedHosts: [String]
+    
+    public init(trustedHosts: [String]) {
+        self.trustedHosts = trustedHosts
+    }
+    
+    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+
+        let trustedHostArray: [String] = trustedHosts
+
+        //logger.debug("[HttpsHook] trusted: \(trustedHostArray) - \(challenge.protectionSpace.authenticationMethod)")
+//        if Utils.getEnviroment() == Constants.Environment.Production.rawValue {
+//            trustedHostArray = Constants.TRUSTED_HOSTS.Production
+//        } else {
+//            trustedHostArray = Constants.TRUSTED_HOSTS.Develop
+//        }
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              trustedHostArray.contains(challenge.protectionSpace.host) else {
+            return
+        }
+
+        //logger.debug("[HttpsHook] protectionSpace: \(challenge.protectionSpace) - \(challenge.protectionSpace.host)")
+        let credential = URLCredential(trust: challenge.protectionSpace.serverTrust!)
+        //print("[HttpsHook] replacing: \(credential)")
+
+        challenge.sender?.use(credential, for: challenge)
+        completionHandler(URLSession.AuthChallengeDisposition.useCredential, credential)
+    }
+    
+}
+
+public struct Auth: Codable {
+    public var session: Session
+    public var user: User
+}
+
 public struct Response<T: Codable>: Codable {
 
     public let data: T
@@ -56,12 +94,12 @@ public enum HttpMethod: String {
     case post = "POST"
     case delete = "DELETE"
     
-    func fetch<T: Codable>(urlString: String, dataType: T.Type, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
+    public func fetch<T: Codable>(urlString: String, dataType: T.Type, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         let baseUrl = baseUrl ?? Track.baseUrl.http
         return self.fetch(urlString: urlString, dataType: dataType, payload: nil, baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
-    func fetch<T: Codable>(urlString: String, dataType: T.Type, payload: HttpBody?, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
+    public func fetch<T: Codable>(urlString: String, dataType: T.Type, payload: HttpBody?, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         guard let url = URLComponents(string: urlString) else {
             return Promise(NetworkError.invalidUrlPath(urlString))
         }
@@ -70,7 +108,7 @@ public enum HttpMethod: String {
         return self.fetch(urlPath: url, dataType: dataType, payload: payload, baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
-    func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, payload: HttpBody?, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
+    public func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, payload: HttpBody?, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         let baseUrl = baseUrl ?? Track.baseUrl.http
         
         guard let url = urlPath.url(relativeTo: baseUrl) else {
@@ -80,7 +118,7 @@ public enum HttpMethod: String {
         return self.fetch(url: url, dataType: dataType, payload: payload, urlSession: urlSession, on: on)
     }
     
-    func fetch<T: Codable>(url: URL, dataType: T.Type, payload: HttpBody? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
+    public func fetch<T: Codable>(url: URL, dataType: T.Type, payload: HttpBody? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         
         let queue = on ?? DispatchQueue.global(qos: .default)
         //debugPrint("[fetch] \(url) - \(payload)")
@@ -155,7 +193,7 @@ public enum HttpMethod: String {
                 return reject(NetworkError.badRequest("bad paylod for post request: \(String(describing: payload))"))
             }
             
-            let urlSession = urlSession ?? JoliApi.sharedUrlSession
+            let urlSession = urlSession ?? URLSession.shared
             
             var request = URLRequest(url: url)
             request.httpMethod = self.rawValue
