@@ -13,6 +13,7 @@ public struct TrackInfo {
 
 internal let logger = SwiftyBeaver.self
 
+
 // MARK: - JoliApi
 public class JoliApi: ObservableObject {
     
@@ -20,6 +21,8 @@ public class JoliApi: ObservableObject {
     @Published public var currentPlayingTrack: Track?
     
     @Published public var auth: Auth?
+    
+    //public var playerStateDelegate?
     
     private static var loggerInitialized = false
 
@@ -200,47 +203,38 @@ public class JoliApi: ObservableObject {
             .store(in: &cancellableSet)
             
         
-        //self.wsClient.connect()
-        self.wsClient.connectionHandler = { connected in
-            logger.debug("JoliApi: connected=\(connected)")
-            guard connected, let onMessage = self.wsClient.onMessage else {
-                return
-            }
-            
-            for subject in self.subjects  {
-                self.subscribe(subject: subject, onMessage: onMessage)
-            }
-        }
     }
     
-    public func subscribe(subject: String, onMessage: @escaping WebSocketClient.MessageCallback){
-        self.wsClient.onMessage = onMessage
-        let topic = "/subscribe?subject=\(subject)"
-        let headers = self.urlSessionConfiguration.httpAdditionalHeaders as? HttpMethod.Headers
-        self.wsClient.send(topic: topic, headers: headers) { error in
-            if let error = error {
-                logger.debug("[wsSubscribe] error: \(error)")
-                return
-            }
-            
-            logger.debug("[JoliApi#subscribe] subject=\(subject)")
-            self.subjects.insert(subject)
-        }
+    public enum Subject: String {
+        case playerStateChanged = "PLAYER_STATE_CHANGED"
+        case playerStateNowPlaying = "PLAYER_STATE_NOW_PLAYING"
+        case activityFeed = "activity_feed"
     }
     
-    public func unsubscribe(subject: String){
-        let topic = "/unsubscribe?subject=\(subject)"
+    public func subscribe(subject: Subject, onMessage: @escaping WebSocketClient.ResponseCallback){
         let headers = self.urlSessionConfiguration.httpAdditionalHeaders as? HttpMethod.Headers
-        self.wsClient.send(topic: topic, headers: headers) { error in
-            if let error = error {
-                logger.debug("[wsUnsubscribe] error: \(error)")
-                return
+        self.wsClient.subscribe(subject.rawValue, headers: headers, handler: onMessage)
+            .then() {
+                logger.debug("[JoliApi#subscribe] subject=\(subject)")
             }
-            
-            logger.debug("[JoliApi#unsubscribe] subject=\(subject)")
-            self.subjects.remove(subject)
-        }
+        .catch(){ error in
+            logger.error("[wsSubscribe] error: \(error)")
+            }
     }
+    
+//    public func unsubscribe(subject: Subject){
+//        let topic = "/unsubscribe?subject=\(subject.rawValue)"
+//        let headers = self.urlSessionConfiguration.httpAdditionalHeaders as? HttpMethod.Headers
+//        self.wsClient.send(topic: topic, headers: headers) { error in
+//            if let error = error {
+//                logger.debug("[wsUnsubscribe] error: \(error)")
+//                return
+//            }
+//
+//            logger.debug("[JoliApi#unsubscribe] subject=\(subject)")
+//            self.subjects.remove(subject)
+//        }
+//    }
     
     public func fetchSpotifyDevices(on: DispatchQueue? = nil) -> Promise<[Spotify.Device]> {
         let baseUrl = self.baseUrl.rawValue.http

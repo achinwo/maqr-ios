@@ -26,8 +26,8 @@ struct ActivityView: View {
         Text("Activity")
             .onAppear() {
                 
-                self.appState.api.subscribe(subject: "activity_feed") { result in
-                    logger.debug("Activity: \(result)")
+                self.appState.api.subscribe(subject: .activityFeed) { (result, error) in
+                    logger.debug("Activity: \(String(describing: result)) - \(String(describing: error))")
                 }
         }
     }

@@ -417,6 +417,10 @@ public struct Musicroom: DbModel {
     
 }
 
+public protocol Playable {
+    func play(deviceId: String?, baseUrl: URL?, urlSession: URLSession?, on: DispatchQueue?) -> Promise<Self>
+}
+
 // MARK: - Track
 public struct Track: DbModel {
     
@@ -449,7 +453,7 @@ public struct Track: DbModel {
     
 }
 
-extension Track {
+extension Track: Playable {
     
     public static func fromCurrentlyPlayingObject(_ json: Json) -> Track? {
         

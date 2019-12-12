@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import Promises
 
 
 struct WebSocketMessage: Encodable {
@@ -33,13 +33,35 @@ public enum ConnectionState {
     case stopped
 }
 
+public enum WebSocketError: Error {
+    case sendFailed(String)
+}
+
 public class WebSocketClient: HttpsHook {
     
+    public enum MessageTopic {
+        case topic(String)
+        case subscribe(String)
+        
+        var stringValue: String {
+            switch self {
+            case .topic(let topicName):
+                return "/\(topicName)"
+            case .subscribe(let subject):
+                return "/subscribe?subject=\(subject)"
+            }
+        }
+    }
+    
     public typealias MessageCallback = (Result<URLSessionWebSocketTask.Message, Error>) -> Void
+    public typealias ResponseCallback = (Response?, Error?) throws -> Void
+    
+    typealias SubscriptionArguments = (callbacks: [ResponseCallback], message: URLSessionWebSocketTask.Message)
     
     var session: URLSession!
     var task: URLSessionWebSocketTask?
-    public var onMessage: MessageCallback?
+    
+    var messageCallbacks: [String: SubscriptionArguments] = [:]
     
     public var connectionState = ConnectionState.stopped
     
@@ -48,32 +70,81 @@ public class WebSocketClient: HttpsHook {
             self.connectionHandler?(connected)
         }
     }
+
     public var  url: URL!
     //var queue: OperationQueue = DispatchQueue.global(qos: .background)
     //public var subjects: Set<String> = []
     
-    public init(url: URL, trustedHosts: [String] = [], onMessage: MessageCallback? = nil) {
+    public init(url: URL, trustedHosts: [String] = []) {
         super.init(trustedHosts: trustedHosts)
         self.session = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue.main)
         self.url = url
-        self.onMessage = onMessage
     }
-
-    public func send(topic: String, payload: Encodable? = nil, headers: HttpMethod.Headers? = nil, completionHandler: ((Error?) -> Void)?){
-        let msg = WebSocketMessage(topic: topic, headers: headers ?? [:])
+    
+    private func addSubscription(_ subject: String, message: URLSessionWebSocketTask.Message, callback: @escaping ResponseCallback) {
+        var sub = self.messageCallbacks[subject] ?? (callbacks: [], message: message)
+        sub.callbacks.append(callback)
         
+        self.messageCallbacks[subject] = sub
+    }
+    
+    // TODO: handle non-subscription topics
+    // MARK: - Send Message
+    public func subscribe(_ subject: String, headers: HttpMethod.Headers? = nil, handler: @escaping ResponseCallback) -> Promise<Void> {
+
+        let msg = WebSocketMessage(topic: MessageTopic.subscribe(subject).stringValue, headers: headers ?? [:])
         let message = URLSessionWebSocketTask.Message.string(msg.jsonString())
-        self.task?.send(message) { error in
-            completionHandler?(error)
+
+        self.addSubscription(subject, message: message, callback: handler)
+        
+        return Promise() { (resolve, reject) in
+        
+            self.task?.send(message) { error in
+                guard let error = error else {
+                    resolve(())
+                    return
+                }
+                reject(error)
+            }
         }
     }
     
-    public func receive(){
+    private func reperformSubscriptions(){
+        for (subject, args) in self.messageCallbacks {
+            self.task?.send(args.message) { error in
+                guard let error = error else {
+                    print("[WebSocketClient#reperformSubsciptions] resubscibed \"\(subject)\"")
+                    return
+                }
+                print("[WebSocketClient#reperformSubsciptions] error subscribing \"\(subject)\": \(error)")
+            }
+        }
+    }
+    
+    private func triggerCallbacks(subject: String, resp: Response?, error: Error?){
+        
+        guard let sub = self.messageCallbacks[subject] else { return }
+        
+        for cb in sub.callbacks {
+            do {
+                try cb(resp, error)
+            } catch {
+                debugPrint("[WebSocketClient#triggerCallbacks] subject=\(subject), error=\(error)")
+            }
+        }
+    }
+    
+    private func receive(){
         self.task?.receive() { result in
-            //print("[result] \(result)")
             
             defer {
-                self.onMessage?(result)
+                
+                if let response = result.successResponse, let subject = response.subject {
+                    self.triggerCallbacks(subject: subject, resp: response, error: nil)
+                }else{
+                    print("[WebSocketClient#receive] Unhandled: \(result)")
+                }
+                
             }
             
             if case let Result.failure(error) = result {
@@ -178,6 +249,10 @@ extension WebSocketClient: URLSessionWebSocketDelegate {
             break
         }
         
+        defer {
+            self.reperformSubscriptions()
+        }
+        
         OperationQueue.main.addOperation(self.receive)
     }
 
@@ -194,6 +269,12 @@ extension WebSocketClient: URLSessionWebSocketDelegate {
         self.connected = false
         
         scheduleReconnect() // MARK: - Schedule Reconnect
+    }
+    
+    public struct Response {
+        public let topic: String
+        public var subject: String?
+        public let payload: Json
     }
     
 }
@@ -242,7 +323,23 @@ public extension Result where Success == URLSessionWebSocketTask.Message {
     }
     
     var successData: Data? {
-        return successTuple.data
+        return successTuple.data ?? successString?.data(using: .utf8)
     }
     
+    var successJson: Json? {
+        guard let data = successData else  { return nil }
+        return try? JSONSerialization.jsonObject(with: data, options: []) as? Json
+    }
+    
+    var successResponse: WebSocketClient.Response? {
+        guard let data = successJson,
+            let topicUrl = data["topic"] as? String,
+            let url = URLComponents(string: topicUrl),
+            let body = data["data"] as? Json
+            else { return nil }
+        
+        var subjectQ = url.queryItems?.first(where: { $0.name == "subject" })
+        
+        return WebSocketClient.Response(topic: url.path, subject: subjectQ?.value, payload: body)
+    }
 }

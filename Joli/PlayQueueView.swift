@@ -111,14 +111,10 @@ struct PlayQueueView: View {
             appState.api.wsClient.connect()
         }
         
-        self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
+        self.appState.api.subscribe(subject: .playerStateNowPlaying){ (result, error) in
             
-            guard let json = result.successString, let jsonDict = Self.jsonStringToDict(text: json) else {
-                logger.debug("failed to  deserialise result: \(result)")
-                return
-            }
             
-            let data = jsonDict["data"] as? [String: AnyObject]
+            let data = result?.payload
             let item = data?["item"] as? [String: AnyObject]
             //?["name"]
             //logger.debug("\(String(describing: item?["name"]))")//duration_ms

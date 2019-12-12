@@ -261,6 +261,7 @@ class AppState: ObservableObject {
             }
             .store(in: &cancellableSet)
         
+        //PLAYER_STATE_CHANGED
 //        self.appState.api.subscribe(subject: "PLAYER_STATE_NOW_PLAYING"){ result in
 //
 //            guard let json = result.successString, let jsonDict = Self.jsonStringToDict(text: json) else {
@@ -270,7 +271,7 @@ class AppState: ObservableObject {
 //
 //            let data = jsonDict["data"] as? [String: AnyObject]
 //            let item = data?["item"] as? [String: AnyObject]
-//            
+//
 //            log("[PLAYER_STATE_NOW_PLAYING] \(String(describing: item))")
 //
 //            self.appState.nowPlayingSubject.send(item)
@@ -354,4 +355,5 @@ class AppState: ObservableObject {
             self?.tracksByMusicrooms[roomId] = tracks
         }
     }
+    
 }
