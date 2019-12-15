@@ -43,6 +43,11 @@ public class JoliApi: ObservableObject {
         JoliApi.initLogger()
         return logger.self
     }
+    
+    public func addTrackToRoom(_ room: Musicroom, _ track: Track, on: DispatchQueue? = nil) -> Promise<Json>{
+        return room.addTrack(track, baseUrl: self.baseUrl.rawValue.http, urlSession: self.urlSession
+            , on: on)
+    }
 
     // MARK: - Environment
     public enum Environment: String {

@@ -66,7 +66,10 @@ struct TrackView: View {
             
             Button(action: {
                 guard let room = self.appState.activeRoom else { return }
-                room.addTrack(self.track)
+                self.appState.api.addTrackToRoom(room, self.track)
+                    .catch() { error in
+                        logger.error("[TrackView] addTrack error: \(error)")
+                }
                     .always {
                         self.appState.fetchTracks(room)
                 }

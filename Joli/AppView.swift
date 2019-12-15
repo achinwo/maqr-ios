@@ -81,6 +81,8 @@ struct AppView: View {
                         , trailing:
                         Button(action: {
                             self.appState.isSettingsPresented.toggle()
+                            
+                            print("[messageCallbacks] \(self.appState.api.wsClient.messageCallbacks)")
                         }) {
                             Image(systemName: "gear")
                                 .padding()

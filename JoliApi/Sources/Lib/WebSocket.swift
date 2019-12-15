@@ -56,12 +56,12 @@ public class WebSocketClient: HttpsHook {
     public typealias MessageCallback = (Result<URLSessionWebSocketTask.Message, Error>) -> Void
     public typealias ResponseCallback = (Response?, Error?) throws -> Void
     
-    typealias SubscriptionArguments = (callbacks: [ResponseCallback], message: URLSessionWebSocketTask.Message)
+    public typealias SubscriptionArguments = (callbacks: [ResponseCallback], message: URLSessionWebSocketTask.Message)
     
     var session: URLSession!
     var task: URLSessionWebSocketTask?
     
-    var messageCallbacks: [String: SubscriptionArguments] = [:]
+    public var messageCallbacks: [String: SubscriptionArguments] = [:]
     
     public var connectionState = ConnectionState.stopped
     
@@ -278,7 +278,6 @@ extension WebSocketClient: URLSessionWebSocketDelegate {
     }
     
 }
-
 
 public extension Result {
     var success: Success? {

@@ -18,6 +18,24 @@ struct MusicLibraryView: View {
     }
 }
 
+protocol ConversationalView: View {
+    
+    associatedtype View1: View
+    associatedtype View2: View
+    associatedtype View3: View
+    
+}
+
+extension ConversationalView {
+    
+    var body: some View {
+        return ZStack() {
+            Text("Stacked")
+        }
+    }
+    
+}
+
 struct ActivityView: View {
     
     @EnvironmentObject var appState: AppState
@@ -55,6 +73,9 @@ struct MusicroomList: View {
                             .resizable()
                             .frame(width: UIScreen.main.bounds.width - 40, height: 220, alignment: .center)
                         .cornerRadius(10)
+//                            .overlay(ZStack() {
+//
+//                                })
 
                         HStack(alignment: .lastTextBaseline) {
                             Text(verbatim: room.name).font(.title)
