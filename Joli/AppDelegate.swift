@@ -29,16 +29,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         static let VolumeKey = "outputVolume"
         static var Context = 0
     }
+    
+    private var  observingChanges = false
 
     func startObservingVolumeChanges() {
         logger.debug("[AppDelegate#startObservingVolumeChanges]")
+        
+        guard !observingChanges else { return }
+        
         audioSession.addObserver(self, forKeyPath: Observation.VolumeKey, options: [.initial, .new], context: &Observation.Context)
+        observingChanges = true
         //self.observeValue(forKeyPath: Observation.VolumeKey, of: audioSession, change: nil, context: &Observation.Context)
     }
     
     func stopObservingVolumeChanges() {
         logger.debug("[AppDelegate#stopObservingVolumeChanges]")
+        
+        guard observingChanges else { return }
         audioSession.removeObserver(self, forKeyPath: Observation.VolumeKey, context: &Observation.Context)
+        observingChanges = false
     }
 
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) -> Void {

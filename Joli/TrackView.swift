@@ -97,10 +97,12 @@ struct TrackView: View {
             }
         }
         .onTapGesture {
-            logger.debug("currect device: \(String(describing: self.spotifyDevice))\nuri: \(String(describing: self.track.uri))")
+            logger.debug("current device: \(String(describing: self.spotifyDevice))\nuri: \(String(describing: self.track.uri))")
             
             if let uri = self.track.uri {
-
+                
+                self.appState.setAudioSession(false)
+                
                 guard self.appState.spotifyRemote.isConnected else {
                     logger.debug("[Track#play] spotify not connected")
                     self.appState.spotifyRemote.authorizeAndPlayURI(uri)
@@ -115,6 +117,8 @@ struct TrackView: View {
                 self.appState.spotifyRemote.playerAPI?.subscribe() { (info, error) in
                     logger.debug("[Track#subscribe] \(String(describing: info)) - \(String(describing: error))")
                 }
+                
+                //self.appState.spotifyRemote.userAPI?.
             }else{
 
                 self.track.play(deviceId: self.spotifyDevice?.id, urlSession: self.appState.api.urlSession)

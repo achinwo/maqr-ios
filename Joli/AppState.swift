@@ -81,6 +81,13 @@ class AppState: ObservableObject {
     static let URL_SCHEME = "joli"
     static let SPOTIFY_URL_BASEPATH = "spotify-callback"
     
+    @Published var currentlyPlayingProgressPct = 0.0
+    @Published var currentlyPlayingTrack: Track? = nil
+    @Published var currentlyPlayingContent: Spotify.CurrentlyPlayingContent? = nil
+    @Published var currentlyPlayingAlbumImage: Image? = nil
+    
+    private var currentlyPlayingAlbumUrl: String? = nil
+    
     @Published var spotifyAuthorizationInProgress = false
     @Published var userSettings = UserSettings()
     
@@ -88,13 +95,13 @@ class AppState: ObservableObject {
     @Published var tracksByMusicrooms: [Int: [Track]] = [:]
     @Published var imagesByUrl: [String: Image] = [:]
     
-    @Published var currentlyPlayingTrack: Track?
-    @Published var currentlyPlayingImage: Image?
-    @Published var currentlyPlayingProgress: Int?
-    
     @Published var isSettingsPresented = false
     
     @Published var searchText: String = ""
+    
+    var appDelegate: AppDelegate {
+        return sceneDelegate.appDelegate
+    }
     
     var sceneDelegate: SceneDelegate {
         return UIApplication.shared.connectedScenes.first?.delegate as! SceneDelegate
@@ -182,7 +189,7 @@ class AppState: ObservableObject {
 
     var didChange = PassthroughSubject<AppState, Never>()
     
-    var nowPlayingSubject = CurrentValueSubject<[String: AnyObject]?, Never>(nil)
+    //var currentlyPlayingContent = CurrentValueSubject<Spotify.CurrentlyPlayingContent?, Never>(nil)
     
     @Published var auth: Auth?
     
@@ -226,6 +233,22 @@ class AppState: ObservableObject {
         return redirectUrl?.url(relativeTo: api.baseUrl.rawValue.http)
     }
     
+    func setAudioSession(_ enabled: Bool){
+        do {
+            try appDelegate.audioSession.setActive(enabled)
+            try appDelegate.audioSession.setCategory(.playback)
+            
+            if enabled {
+                appDelegate.startObservingVolumeChanges()
+            }else{
+                appDelegate.stopObservingVolumeChanges()
+            }
+            logger.debug("[setAudioSession] App is active")
+        } catch {
+            logger.debug("[setAudioSession] Failed to update audio session: \(error)")
+        }
+    }
+    
     // MARK: - initialize
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
@@ -255,20 +278,54 @@ class AppState: ObservableObject {
             self.api.authenticate(token: authToken)
         }
         
-        nowPlayingSubject
-            .sink() { result in
-                logger.debug("[AppState#nowPlayingSubject] result: \(String(describing: result))")
-            }
-            .store(in: &cancellableSet)
-        
-        //PLAYER_STATE_CHANGED
         api.subscribe(subject: .playerStateChanged){ (response, error) in
-            logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] \(String(describing: response))")
+            
+            guard let ctx = response?.payload,
+                let rawData = try? ctx.toData(),
+                let cPlaying = try? Spotify.CurrentlyPlayingContent.fromData(rawData)
+                else {
+                self.setAudioSession(false)
+                return
+            }
+            logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] \(cPlaying.isPlaying)")
+            
+            self.setAudioSession(cPlaying.isPlaying)
         }
         
-//            .sink(receiveCompletion: { completion in logger.debug("Completion: \(completion)") }) { track in
-//                logger.debug("[AppState] track: \(String(describing: track))")
-//            }
+        api.subscribe(subject: .playerStateNowPlaying){ (result, error) in
+            
+            
+            let data = result?.payload
+            
+            guard let ctx = data,
+                let rawData = try? ctx.toData(),
+                let cPlaying = try? Spotify.CurrentlyPlayingContent.fromData(rawData),
+                let duration = cPlaying.item.durationMs
+                else {
+                return
+            }
+
+            let progress = (Double(cPlaying.progressMs) / Double(duration)) * 100
+            
+            self.currentlyPlayingContent = cPlaying
+            self.currentlyPlayingTrack = cPlaying.item
+            self.currentlyPlayingProgressPct = progress
+            
+            guard let album = (data?["item"] as? Json)?["album"] as? Json,
+                let img = (album["images"] as? [Json])?[1],
+                let thumbnailUrl = img["url"] as? String else {
+                return
+            }
+            
+            if self.currentlyPlayingAlbumUrl == nil || self.currentlyPlayingAlbumUrl! != thumbnailUrl {
+                self.currentlyPlayingAlbumUrl = thumbnailUrl
+             
+                self.fetchedImage(url: thumbnailUrl)
+                                    .then() { imgObj in
+                                        self.currentlyPlayingAlbumImage = imgObj
+                                }
+            }
+        }
     }
     
     @Published var spotifyDevices: [Spotify.Device] = []

@@ -98,7 +98,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
     func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
       logger.debug("player state changed")
         
-        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle)")
+        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(playerState)")
     }
     
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {

@@ -59,5 +59,42 @@ public enum Spotify {
         }
         
     }
+    
+    public struct CurrentlyPlayingContent: Codable {
+        public let timestamp: Int
+        //public let context: Json
+        public let progressMs: Int
+        public let item: Track
+//        public let album: Json
+//        public let artists: [Json]
+//        public let availableMarkets: [String]
+//        public let discNumber: Int
+//        public let duration_ms: 231272,`
+//        public let explicit: false,
+//        public let external_ids: Json
+//        public let external_urls: Json
+//        public let href: String
+//        public let id: String
+//        public let is_local: Bool
+//        public let name: String
+//        public let popularity: Int
+//        public let preview_url: String
+//        public let track_number: Int
+//        public let type: String
+//        public let uri: String
+//        },
+        public let currentlyPlayingType: String
+        //public let actions: Json
+        public let isPlaying: Bool
+        
+        public static func fromData(_ data: Data) throws -> CurrentlyPlayingContent? {
+            do{
+                return try Track.jsonDecoder().decode(CurrentlyPlayingContent.self, from: data)
+            }catch{
+                debugPrint("[CurrentlyPlayingContent] failed to decode: \(error)")
+            }
+            return nil
+        }
+    }
 
 }

@@ -11,7 +11,7 @@ import Promises
 
 struct WebSocketMessage: Encodable {
     let topic: String
-    let body = ["subject": "PLAYER_STATE_NOW_PLAYING"]
+    let body: [String: String] = [:]
     let headers: HttpMethod.Headers
 }
 
@@ -337,7 +337,7 @@ public extension Result where Success == URLSessionWebSocketTask.Message {
             let body = data["data"] as? Json
             else { return nil }
         
-        var subjectQ = url.queryItems?.first(where: { $0.name == "subject" })
+        let subjectQ = url.queryItems?.first(where: { $0.name == "subject" })
         
         return WebSocketClient.Response(topic: url.path, subject: subjectQ?.value, payload: body)
     }

@@ -15,7 +15,6 @@ struct PlayQueueView: View {
     @State var albumArt: Image?
     @State var albumArtUrl: String?
     
-    
     @EnvironmentObject var appState: AppState
     
     var room: Musicroom
@@ -32,17 +31,20 @@ struct PlayQueueView: View {
     @State var nowPlaying: String?
     
     var body: some View {
-        GeometryReader() { geometry in
+        let track = self.appState.currentlyPlayingTrack
+        let title = track?.title ?? track?.name
+        
+        return GeometryReader() { geometry in
             VStack(alignment: .leading) {
                 
                 VStack(alignment: .leading){
-                    Text(self.nowPlaying != nil ? "Now Playing...\(self.nowPlaying!)" : "")
+                    Text(title != nil ? "Now Playing...\(title!)" : "")
                         .font(.title)
                     
                         //.font(self.albumArtUrl == nil ? Color.black : Color.white)
                         .padding()
-                    Slider(value: self.$nowPlayingPosition, in: 0...100, step: 1)
-                        .disabled(self.nowPlaying == nil)
+                    Slider(value: self.$appState.currentlyPlayingProgressPct, in: 0...100, step: 1)
+                        .disabled(self.appState.currentlyPlayingTrack == nil)
                         .allowsHitTesting(false)
                         //.padding().background(Color.pink)
                     
@@ -57,7 +59,7 @@ struct PlayQueueView: View {
                     }.padding()
                     .frame(minWidth: geometry.size.width, idealWidth: geometry.size.width, maxWidth: geometry.size.width, minHeight: geometry.size.height / 6, idealHeight: geometry.size.height / 4, maxHeight: geometry.size.height / 4, alignment: .top)
                     
-                .background(self.albumArt?.resizable().aspectRatio(contentMode: ContentMode.fill))
+                    .background(self.appState.currentlyPlayingAlbumImage?.resizable().aspectRatio(contentMode: ContentMode.fill))
                 
                 //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
                 List {
@@ -91,57 +93,8 @@ struct PlayQueueView: View {
         //self.appState.api.unsubscribe(subject: "PLAYER_STATE_NOW_PLAYING")
     }
     
-    static func jsonStringToDict(text: String) -> [String:AnyObject]? {
-        if let data = text.data(using: .utf8) {
-            do {
-                return try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject]
-            } catch let error {
-                logger.debug(error)
-            }
-        }
-        return nil
-    }
-    
     func onAppear() {
         logger.debug("Appeared - 2!!")
-        
-        //self.appState.api.
-        
-        if !appState.api.wsClient.connected {
-            appState.api.wsClient.connect()
-        }
-        
-        self.appState.api.subscribe(subject: .playerStateNowPlaying){ (result, error) in
-            
-            
-            let data = result?.payload
-            let item = data?["item"] as? [String: AnyObject]
-            //?["name"]
-            //logger.debug("\(String(describing: item?["name"]))")//duration_ms
-            
-            //logger.debug("\(String(describing: item?["album"]))")
-            
-            self.nowPlaying = item?["name"] as? String
-            
-            if let album = item?["album"] as? Json,
-                let img = (album["images"] as? [Json])?[1],
-                let artUrl = img["url"] as? String,
-                self.albumArtUrl == nil || (self.albumArtUrl != nil && artUrl != self.albumArtUrl) {
-                
-                self.appState.fetchedImage(url: artUrl)
-                    .then() { imgObj in
-                        self.albumArt = imgObj
-                        self.albumArtUrl = artUrl
-                }
-            }
-            
-            guard let duration = item?["duration_ms"] as? Double, let progress = data?["progress_ms"] as? Double else {
-                return
-            }
-            logger.debug("duration: \(duration), progress: \(progress)")
-            
-            self.nowPlayingPosition = (progress / duration) * 100
-        }
         
         appState.fetchSpotifyDevices()
     }
