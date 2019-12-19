@@ -20,11 +20,7 @@ struct PlayQueueView: View {
     var room: Musicroom
     
     var tracks: [Track] {
-        guard let id = room.id?.int else {
-            return []
-        }
-        
-        return appState.tracksByMusicrooms[id] ?? []
+        return appState.tracksByMusicrooms[room.id] ?? []
     }
     
     @State var nowPlayingPosition = 0.0
@@ -32,7 +28,7 @@ struct PlayQueueView: View {
     
     var body: some View {
         let track = self.appState.currentlyPlayingTrack
-        let title = track?.title ?? track?.name
+        let title = track?.name
         
         return GeometryReader() { geometry in
             VStack(alignment: .leading) {
@@ -75,13 +71,9 @@ struct PlayQueueView: View {
     }
     
     func delete(at offsets: IndexSet) {
-        guard let id = room.id?.int else {
-            return
-        }
-        
         logger.debug("[PlayQueueView] offsets: \(offsets)")
         for idx in offsets {
-            guard let track = appState.tracksByMusicrooms[id]?.remove(at: idx) else {
+            guard let track = appState.tracksByMusicrooms[room.id]?.remove(at: idx) else {
                 continue
             }
             appState.api.delete(track)

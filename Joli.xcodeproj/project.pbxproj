@@ -316,7 +316,7 @@
 					New,
 				);
 				LastSwiftUpdateCheck = 1110;
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = "Anthony Chinwo";
 				TargetAttributes = {
 					92F379DE2363534D005FE2AB = {

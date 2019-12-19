@@ -44,7 +44,7 @@ public class JoliApi: ObservableObject {
         return logger.self
     }
     
-    public func addTrackToRoom(_ room: Musicroom, _ track: Track, on: DispatchQueue? = nil) -> Promise<Json>{
+    public func addTrackToRoom(_ room: Musicroom, _ track: Spotify.Track, on: DispatchQueue? = nil) -> Promise<Json>{
         return room.addTrack(track, baseUrl: self.baseUrl.rawValue.http, urlSession: self.urlSession
             , on: on)
     }
@@ -118,12 +118,12 @@ public class JoliApi: ObservableObject {
         }
     }
     
-    public func playTrack(_ track: Track, deviceId: String?) -> Promise<Result<TrackInfo, Error>>{
-        return track.play(deviceId: deviceId, urlSession: self.urlSession)
-            .then() { track -> Result<TrackInfo, Error> in
-                return Result<TrackInfo, Error>.success(TrackInfo(track: track, info: [:]))
-        }
-    }
+//    public func playTrack(_ track: Track, deviceId: String?) -> Promise<Result<Spotify.CurrentlyPlayingContent, Error>>{
+//        return track.play(deviceId: deviceId, urlSession: self.urlSession)
+//            .then() { track -> Result<Spotify.CurrentlyPlayingContent, Error> in
+//                return Result<TrackInfo, Error>.success(TrackInfo(track: track, info: [:]))
+//        }
+//    }
 
     @discardableResult
     public func authenticate(email: String, password: String, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Auth?> {
@@ -131,7 +131,9 @@ public class JoliApi: ObservableObject {
             .then() { auth -> Auth? in
                 self.auth = auth
                 return auth
-            }
+        }.catch() { error in
+            logger.error("[authenticate] error: \(error)")
+        }
     }
     
     @discardableResult
@@ -144,14 +146,14 @@ public class JoliApi: ObservableObject {
             }
     }
     
-    public func searchTracks(q: String, limit: Int = 10) -> Promise<[Track]> {
+    public func searchTracks(q: String, limit: Int = 10) -> Promise<[Spotify.Track]> {
         var pathComp = URLComponents(string: "/api/spotify/search")!
         pathComp.queryItems = [
             URLQueryItem(name: "q", value: q),
             URLQueryItem(name: "limit", value: limit.description)
         ]
         
-        return HttpMethod.get.fetch(urlPath: pathComp, dataType: [Track].self, payload: nil, urlSession: self.urlSession)
+        return HttpMethod.get.fetch(urlPath: pathComp, dataType: [Spotify.Track].self, payload: nil, urlSession: self.urlSession)
     }
     
     @discardableResult
@@ -258,7 +260,7 @@ public class JoliApi: ObservableObject {
     }
     
     @discardableResult
-    public func delete<T>(_ model: T, on: DispatchQueue? = nil) -> Promise<T> where T: DbModel {
+    public func delete<T>(_ model: T, on: DispatchQueue? = nil) -> Promise<T> where T: Persisted {
         return model.delete(baseUrl: self.baseUrl.rawValue.http, urlSession: urlSession, on: on)
     }
     
@@ -273,18 +275,20 @@ public class JoliApi: ObservableObject {
         let api = JoliApi(baseUrl: .localhost)
         let url: BaseUrl = api.baseUrl
 
-        
+        let key: KeyPath<JoliApi, BaseUrl> = \.baseUrl
+        print("KEY: \(key) - \(api[keyPath: key])")
+        return Promise(nil)
         //JoliApi.sharedUrlSession.configuration = JoliApi.sharedUrlSession.configuration
         
-        return api.authenticate(email: "hawa@gmail.net", password: "Password@")
-            .then(){ res -> Promise<Spotify.UserProfile> in
-                logger.debug("[AUTH] \(res)")
-                return api.fetchSpotifyUserProfile()
-                    .then() { logger.debug("user: \($0)") }
-                    .catch { logger.error("[ERROR] devices: \($0)") }
-        }.catch() {
-            logger.error("[ERROR] \($0)")
-        }
+//        return api.authenticate(email: "hawa@gmail.net", password: "Password@")
+//            .then(){ res -> Promise<Spotify.UserProfile> in
+//                logger.debug("[AUTH] \(res)")
+//                return api.fetchSpotifyUserProfile()
+//                    .then() { logger.debug("user: \($0)") }
+//                    .catch { logger.error("[ERROR] devices: \($0)") }
+//        }.catch() {
+//            logger.error("[ERROR] \($0)")
+//        }
         
 //        api.fetchSpotifyDevices().then { print($0) }
 //        return api.searchTracks(q: "killin")
@@ -326,7 +330,7 @@ public class JoliApi: ObservableObject {
         
     }
     
-    static var sharedUrlSessionDelegate = HttpsHook(trustedHosts: [
+    public static var sharedUrlSessionDelegate = HttpsHook(trustedHosts: [
        BaseUrl.homeLaptop.rawValue.http.host!,
        BaseUrl.homeDesktop.rawValue.http.host!,
        BaseUrl.mobileHotspot.rawValue.http.host!,
@@ -338,20 +342,13 @@ public class JoliApi: ObservableObject {
     
 }
 
+
+
 extension JoliApi {
     
     public func createMusicroom(name: String, details: String, on: DispatchQueue? = nil) -> Promise<Musicroom> {
-        let musicroom = Musicroom(name: name, details: details)
+        let musicroom = Musicroom.build([.name: name as AnyObject, .details: details as AnyObject])
         return musicroom.save(baseUrl: baseUrl.rawValue.http, urlSession: urlSession, on: on)
-    }
-    
-}
-
-extension URLSession {
-    
-    public func updated(configuration: URLSessionConfiguration, delegate: URLSessionDataDelegate? = nil, delegateQueue: OperationQueue? = nil) -> URLSession {
-        return URLSession.init(configuration: configuration,
-                               delegate: delegate ?? self.delegate, delegateQueue: delegateQueue ?? self.delegateQueue)
     }
     
 }

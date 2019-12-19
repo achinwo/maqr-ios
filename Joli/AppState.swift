@@ -82,7 +82,7 @@ class AppState: ObservableObject {
     static let SPOTIFY_URL_BASEPATH = "spotify-callback"
     
     @Published var currentlyPlayingProgressPct = 0.0
-    @Published var currentlyPlayingTrack: Track? = nil
+    @Published var currentlyPlayingTrack: Spotify.Track? = nil
     @Published var currentlyPlayingContent: Spotify.CurrentlyPlayingContent? = nil
     @Published var currentlyPlayingAlbumImage: Image? = nil
     
@@ -93,6 +93,7 @@ class AppState: ObservableObject {
     
     @Published var musicrooms: [Musicroom] = []
     @Published var tracksByMusicrooms: [Int: [Track]] = [:]
+    @Published var usersById: [Int: User] = [:]
     @Published var imagesByUrl: [String: Image] = [:]
     
     @Published var isSettingsPresented = false
@@ -122,7 +123,7 @@ class AppState: ObservableObject {
     }()
     
     private var cancellableSet: Set<AnyCancellable> = []
-    @Published public var trackSearchResult: [Track] = []
+    @Published public var trackSearchResult: [Spotify.Track] = []
     
     var currentSearchFuture: Promise<Any>?
     
@@ -141,24 +142,24 @@ class AppState: ObservableObject {
         ).eraseToAnyPublisher()
     }()
     
-    var trackSearchResultPublisher: AnyPublisher<[Track], Never> {
+    var trackSearchResultPublisher: AnyPublisher<[Spotify.Track], Never> {
         $searchText
         .removeDuplicates()
         .debounce(for: 0.3, scheduler: RunLoop.main)
-        .map { input -> Future<[Track], Never> in
+        .map { input -> Future<[Spotify.Track], Never> in
             
             if let curr = self.currentSearchFuture{
                 curr.reject(FetchError.cancelled)
             }
             
-            return Future<[Track], Never>() { promise in
+            return Future<[Spotify.Track], Never>() { promise in
                 
                 guard !input.trimmingCharacters(in: [" "]).isEmpty else {
                     promise(.success([]))
                     return
                 }
                 
-                self.currentSearchFuture = self.api.searchTracks(q: input)
+                self.currentSearchFuture = self.api.searchTracks(q: input, limit: 25)
                     .then() { promise(.success($0)) }
                     .catch() { logger.debug("[AppState] trackSearchResult: \($0)") }
                 
@@ -294,33 +295,25 @@ class AppState: ObservableObject {
         
         api.subscribe(subject: .playerStateNowPlaying){ (result, error) in
             
-            
             let data = result?.payload
             
             guard let ctx = data,
                 let rawData = try? ctx.toData(),
-                let cPlaying = try? Spotify.CurrentlyPlayingContent.fromData(rawData),
-                let duration = cPlaying.item.durationMs
+                let cPlaying = try? Spotify.CurrentlyPlayingContent.fromData(rawData)
                 else {
                 return
             }
 
-            let progress = (Double(cPlaying.progressMs) / Double(duration)) * 100
+            let progress = (Double(cPlaying.progressMs) / Double(cPlaying.item.durationMs)) * 100
             
             self.currentlyPlayingContent = cPlaying
             self.currentlyPlayingTrack = cPlaying.item
             self.currentlyPlayingProgressPct = progress
             
-            guard let album = (data?["item"] as? Json)?["album"] as? Json,
-                let img = (album["images"] as? [Json])?[1],
-                let thumbnailUrl = img["url"] as? String else {
-                return
-            }
-            
-            if self.currentlyPlayingAlbumUrl == nil || self.currentlyPlayingAlbumUrl! != thumbnailUrl {
-                self.currentlyPlayingAlbumUrl = thumbnailUrl
+            if self.currentlyPlayingAlbumUrl == nil || self.currentlyPlayingAlbumUrl! != cPlaying.item.albumCoverUrl {
+                self.currentlyPlayingAlbumUrl = cPlaying.item.albumCoverUrl
              
-                self.fetchedImage(url: thumbnailUrl)
+                self.fetchedImage(url: cPlaying.item.albumCoverUrl)
                                     .then() { imgObj in
                                         self.currentlyPlayingAlbumImage = imgObj
                                 }
@@ -348,6 +341,9 @@ class AppState: ObservableObject {
                 }
                 
                 self.selectedSpotifyDeviceIdx = devices.firstIndex() { $0.isActive }
+        }
+        .catch(){ error in
+            logger.error("[fetchSpotifyDevices] error: \(error)")
         }
     }
     
@@ -385,19 +381,30 @@ class AppState: ObservableObject {
     @discardableResult
     func fetchMusicrooms() -> Promise<[Musicroom]> {
         return Musicroom.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession, on: .global(qos: .background))
-            .then(on: .main) { [weak self] rooms in
-                self?.musicrooms = rooms
+            .then(on: .main) { [weak self] (rooms) -> Promise<[User]> in
+                guard let self = self else { return Promise([]) }
+                
+                self.musicrooms = rooms
+                let creatorIds: [Int] = rooms.compactMap() { $0.createdById }
+                return User.findByIds(ids: creatorIds, baseUrl: self.api.baseUrl.rawValue.http,
+                                      urlSession: self.api.urlSession)
+        }
+        .then(){ [weak self] users in
+            let items = users.map() { ($0.id, $0) }
+            self?.usersById = Dictionary<Int, User>(uniqueKeysWithValues: items)
+            //logger.info("[users]")
+            guard let self = self else { return Promise([]) }
+            
+            return Promise(self.musicrooms)
         }
     }
     
     func fetchTracks(_ room: Musicroom) {
-        
-        guard let roomId = room.id?.int else {
-            return
-        }
-        
         room.fetchTracks(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession).then() { [weak self] tracks in
-            self?.tracksByMusicrooms[roomId] = tracks
+            self?.tracksByMusicrooms[room.id] = tracks
+        }
+        .catch() { error in
+            logger.error("[fetchTracks] error: \(error)")
         }
     }
     

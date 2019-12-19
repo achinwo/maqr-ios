@@ -81,7 +81,7 @@ struct MusicroomList: View {
                             Text(verbatim: room.name).font(.title)
                             Spacer()
                             
-                            Text("By \(room.createdBy?.obj?.name ?? "Unknown")")
+                            Text("By \(room.createdById == nil ? "Unknown" : self.appState.usersById[room.createdById!]?.name ?? "Unknown")")
                                 .font(.subheadline)
                                 .foregroundColor(.gray)
                         }.contextMenu {

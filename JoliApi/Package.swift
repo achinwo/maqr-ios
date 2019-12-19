@@ -20,7 +20,9 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/google/promises.git", from: "1.2.8"),
         .package(url: "https://github.com/kylef/JSONSchema.swift.git", from: "0.5.0"),
+        .package(url: "https://github.com/kylef/Commander.git", from: "0.9.1"),
         .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", .upToNextMajor(from: "1.7.0")),
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "0.50100.0"),
         //.package(url: "https://github.com/Zewo/Reflection.git", .exact("0.18.1")),
     ],
     targets: [
@@ -34,12 +36,12 @@ let package = Package(
 //            .linkedFramework("SpotifyiOS"),
 //        ]),
         .target(name: "JoliCore",
-                dependencies: ["Promises", "JSONSchema", "SwiftyBeaver"],
+                dependencies: ["Promises", "JSONSchema", "SwiftyBeaver", "Commander"],
                 path: "Sources/Lib"
         ),
         .target(
             name: "Cli",
-            dependencies: ["JoliCore"]
+            dependencies: ["JoliCore", "SwiftSyntax"]
         ),
         .target(
             name: "JoliApi",

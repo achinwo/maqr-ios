@@ -42,6 +42,16 @@ public class HttpsHook: NSObject, URLSessionDelegate {
     
 }
 
+
+extension URLSession {
+    
+    public func updated(configuration: URLSessionConfiguration, delegate: URLSessionDelegate? = nil, delegateQueue: OperationQueue? = nil) -> URLSession {
+        return URLSession.init(configuration: configuration,
+                               delegate: delegate ?? self.delegate, delegateQueue: delegateQueue ?? self.delegateQueue)
+    }
+    
+}
+
 public struct Auth: Codable {
     public var session: Session
     public var user: User
@@ -108,7 +118,7 @@ public enum HttpMethod: String {
         return self.fetch(urlPath: url, dataType: dataType, payload: payload, baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
-    public func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, payload: HttpBody?, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
+    public func fetch<T: Codable>(urlPath: URLComponents, dataType: T.Type, payload: HttpBody? = nil, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         let baseUrl = baseUrl ?? Track.baseUrl.http
         
         guard let url = urlPath.url(relativeTo: baseUrl) else {

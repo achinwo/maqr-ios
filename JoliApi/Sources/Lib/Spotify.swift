@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import  Promises
 
 public enum Spotify {
     
@@ -28,7 +28,7 @@ public enum Spotify {
         case unknown = "Unknown"
     }
     
-    public struct Device: Codable, Identifiable, Hashable {
+    public struct Device: Codable, Identifiable, Hashable, DataConvertible {
         public let id: String
         public let isActive: Bool
         public let isPrivateSession: Bool
@@ -36,6 +36,16 @@ public enum Spotify {
         public let name: String
         public let type: DeviceType
         public let volumePercent: Int
+        
+        public func toData(outputFormatting: JSONEncoder.OutputFormatting? = nil) throws -> Data {
+            return try Musicroom.jsonEncoder(outputFormatting: outputFormatting ?? []).encode(self)
+        }
+        
+        public static func me(baseUrl: URL? = nil, urlSession: URLSession? = nil) -> Promise<Device>{
+            
+            return HttpMethod.get.fetch(urlString: "/api/this/device",
+                                        dataType: Device.self, baseUrl: baseUrl, urlSession: urlSession)
+        }
     }
     
     public struct UserProfile: Codable {
@@ -60,41 +70,133 @@ public enum Spotify {
         
     }
     
+    // MARK: - CurrentlyPlayingContent
     public struct CurrentlyPlayingContent: Codable {
         public let timestamp: Int
-        //public let context: Json
         public let progressMs: Int
         public let item: Track
-//        public let album: Json
-//        public let artists: [Json]
-//        public let availableMarkets: [String]
-//        public let discNumber: Int
-//        public let duration_ms: 231272,`
-//        public let explicit: false,
-//        public let external_ids: Json
-//        public let external_urls: Json
-//        public let href: String
-//        public let id: String
-//        public let is_local: Bool
-//        public let name: String
-//        public let popularity: Int
-//        public let preview_url: String
-//        public let track_number: Int
-//        public let type: String
-//        public let uri: String
-//        },
         public let currentlyPlayingType: String
-        //public let actions: Json
+        public let actions: Actions
         public let isPlaying: Bool
-        
+
+        // MARK: - Actions
+        public struct Actions: Codable {
+            public let disallows: Disallows
+        }
+
+        // MARK: - Disallows
+        public struct Disallows: Codable {
+            public let skippingPrev: Bool?
+            public let togglingRepeatTrack: Bool?
+        }
+
         public static func fromData(_ data: Data) throws -> CurrentlyPlayingContent? {
             do{
-                return try Track.jsonDecoder().decode(CurrentlyPlayingContent.self, from: data)
+                return try Musicroom.jsonDecoder().decode(CurrentlyPlayingContent.self, from: data)
             }catch{
                 debugPrint("[CurrentlyPlayingContent] failed to decode: \(error)")
             }
             return nil
         }
+        
     }
 
+    // MARK: - Track
+    public struct Track: Codable, Playable, DataConvertible {
+        
+        @discardableResult
+        public func play(deviceId: String?, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Json> {
+                
+            var urlPath = URLComponents(string: "/api/spotify/play")!
+            urlPath.queryItems = [
+                URLQueryItem(name: "trackId", value: self.uri),
+            ]
+            
+            if let deviceId = deviceId {
+                urlPath.queryItems!.append(URLQueryItem(name: "deviceId", value: deviceId))
+            }
+            
+            return HttpMethod.post.fetchJson(urlPath: urlPath, payload: [:], baseUrl: baseUrl, urlSession: urlSession, on: on)
+        }
+        
+        public var explicit: Bool?
+        
+        public var title: String {
+            return name
+        }
+        
+        public var artistName: String {
+            return artists.first!.name
+        }
+        
+        public var thumbnailUrl: String {
+            return album.images.last!.url
+        }
+        
+        public var albumCoverUrl: String {
+            return album.images.first!.url
+        }
+        
+        public let album: Album
+        public let artists: [Artist]
+        public let availableMarkets: [String]
+        public let discNumber: Int?
+        public let durationMs: Int
+        public let externalIds: ExternalIds
+        public let externalUrls: ExternalUrls
+        public let href: String
+        public let id: String
+        public let isLocal: Bool
+        public let name: String
+        public let popularity: Int
+        public let previewUrl: String?
+        public let trackNumber: Int?
+        public let type: String
+        public let uri: String
+
+        // MARK: - ExternalIDS
+        public struct ExternalIds: Codable {
+            public let isrc: String?
+        }
+        
+    }
+    
+    // MARK: - ExternalUrls
+    public struct ExternalUrls: Codable {
+        public let spotify: String
+    }
+
+    // MARK: - Album
+    public struct Album: Codable {
+        public let albumType: String
+        public let artists: [Artist]
+        public let availableMarkets: [String]
+        public let externalUrls: ExternalUrls
+        public let href: String
+        public let id: String
+        public let images: [Image]
+        public let name: String
+        public let releaseDate: String
+        public let releaseDatePrecision: String
+        public let totalTracks: Int
+        public let type: String
+        public let uri: String
+    }
+
+    // MARK: - Artist
+    public struct Artist: Codable {
+        public let externalUrls: ExternalUrls
+        public let href: String
+        public let id: String
+        public let name: String
+        public let type: String
+        public let uri: String
+    }
+
+    // MARK: - Image
+    public struct Image: Codable {
+        public let height: Int
+        public let url: String
+        public let width: Int
+    }
 }
