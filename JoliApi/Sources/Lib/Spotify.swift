@@ -69,9 +69,17 @@ public enum Spotify {
         }
         
     }
-    
+    // MARK: - CurrentlyPlayingContext
+    public struct CurrentlyPlayingContext: Codable {
+        public let externalUrls: ExternalUrls
+        public let href: String
+        public let type: String
+        public let uri: String
+    }
+        
     // MARK: - CurrentlyPlayingContent
     public struct CurrentlyPlayingContent: Codable {
+        public let context: CurrentlyPlayingContext? = nil
         public let timestamp: Int
         public let progressMs: Int
         public let item: Track
@@ -181,6 +189,11 @@ public enum Spotify {
         public let totalTracks: Int
         public let type: String
         public let uri: String
+    }
+    
+    // MARK: Recommendation
+    public struct Recommendation: Codable {
+        public let tracks: [Track]
     }
 
     // MARK: - Artist

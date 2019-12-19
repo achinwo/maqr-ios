@@ -65,6 +65,53 @@ public struct AuthToken: Persisted, DataConvertible {
     }
 }
 
+/// RoomTrack
+// MARK: - RoomTrack
+public struct RoomTrack: Persisted, DataConvertible {
+    public let addedBy: Int?
+    public let createdAt: Date
+    public let createdById: Int?
+    public let deletedAt: Date?
+    public let deletedById: Int?
+    public let id: Int
+    public let musicroom: Musicroom?
+    public let roomId: Int
+    public let track: Track?
+    public let trackId: Int
+    public let updatedAt: Date
+    public let updatedById: Int?
+
+    public enum CodingKeys: String, CodingKey {
+        case addedBy = "addedBy"
+        case createdAt = "createdAt"
+        case createdById = "createdById"
+        case deletedAt = "deletedAt"
+        case deletedById = "deletedById"
+        case id = "id"
+        case musicroom = "musicroom"
+        case roomId = "roomId"
+        case track = "track"
+        case trackId = "trackId"
+        case updatedAt = "updatedAt"
+        case updatedById = "updatedById"
+    }
+
+    public init(addedBy: Int?, createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, musicroom: Musicroom?, roomId: Int, track: Track?, trackId: Int, updatedAt: Date, updatedById: Int?) {
+        self.addedBy = addedBy
+        self.createdAt = createdAt
+        self.createdById = createdById
+        self.deletedAt = deletedAt
+        self.deletedById = deletedById
+        self.id = id
+        self.musicroom = musicroom
+        self.roomId = roomId
+        self.track = track
+        self.trackId = trackId
+        self.updatedAt = updatedAt
+        self.updatedById = updatedById
+    }
+}
+
 /// Musicroom
 // MARK: - Musicroom
 public struct Musicroom: Persisted, DataConvertible {
@@ -101,205 +148,6 @@ public struct Musicroom: Persisted, DataConvertible {
         self.id = id
         self.name = name
         self.status = status
-        self.updatedAt = updatedAt
-        self.updatedById = updatedById
-    }
-}
-
-/// RoomTrack
-// MARK: - RoomTrack
-public struct RoomTrack: Persisted, DataConvertible {
-    public let addedBy: Int?
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let id: Int
-    public let roomId: Int
-    public let trackId: Int
-    public let updatedAt: Date
-    public let updatedById: Int?
-
-    public enum CodingKeys: String, CodingKey {
-        case addedBy = "addedBy"
-        case createdAt = "createdAt"
-        case createdById = "createdById"
-        case deletedAt = "deletedAt"
-        case deletedById = "deletedById"
-        case id = "id"
-        case roomId = "roomId"
-        case trackId = "trackId"
-        case updatedAt = "updatedAt"
-        case updatedById = "updatedById"
-    }
-
-    public init(addedBy: Int?, createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, roomId: Int, trackId: Int, updatedAt: Date, updatedById: Int?) {
-        self.addedBy = addedBy
-        self.createdAt = createdAt
-        self.createdById = createdById
-        self.deletedAt = deletedAt
-        self.deletedById = deletedById
-        self.id = id
-        self.roomId = roomId
-        self.trackId = trackId
-        self.updatedAt = updatedAt
-        self.updatedById = updatedById
-    }
-}
-
-/// QueuedTrack
-// MARK: - QueuedTrack
-public struct QueuedTrack: Persisted, DataConvertible {
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let id: Int
-    public let playEndedAt: Date?
-    public let playStartedAt: Date?
-    public let roomId: Int?
-    public let trackId: Int?
-    public let updatedAt: Date
-    public let updatedById: Int?
-
-    public enum CodingKeys: String, CodingKey {
-        case createdAt = "createdAt"
-        case createdById = "createdById"
-        case deletedAt = "deletedAt"
-        case deletedById = "deletedById"
-        case id = "id"
-        case playEndedAt = "playEndedAt"
-        case playStartedAt = "playStartedAt"
-        case roomId = "roomId"
-        case trackId = "trackId"
-        case updatedAt = "updatedAt"
-        case updatedById = "updatedById"
-    }
-
-    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, playEndedAt: Date?, playStartedAt: Date?, roomId: Int?, trackId: Int?, updatedAt: Date, updatedById: Int?) {
-        self.createdAt = createdAt
-        self.createdById = createdById
-        self.deletedAt = deletedAt
-        self.deletedById = deletedById
-        self.id = id
-        self.playEndedAt = playEndedAt
-        self.playStartedAt = playStartedAt
-        self.roomId = roomId
-        self.trackId = trackId
-        self.updatedAt = updatedAt
-        self.updatedById = updatedById
-    }
-}
-
-/// QueuedTrackVote
-// MARK: - QueuedTrackVote
-public struct QueuedTrackVote: Persisted, DataConvertible {
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let id: Int
-    public let updatedAt: Date
-    public let updatedById: Int?
-
-    public enum CodingKeys: String, CodingKey {
-        case createdAt = "createdAt"
-        case createdById = "createdById"
-        case deletedAt = "deletedAt"
-        case deletedById = "deletedById"
-        case id = "id"
-        case updatedAt = "updatedAt"
-        case updatedById = "updatedById"
-    }
-
-    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, updatedAt: Date, updatedById: Int?) {
-        self.createdAt = createdAt
-        self.createdById = createdById
-        self.deletedAt = deletedAt
-        self.deletedById = deletedById
-        self.id = id
-        self.updatedAt = updatedAt
-        self.updatedById = updatedById
-    }
-}
-
-/// Session
-// MARK: - Session
-public struct Session: Persisted, DataConvertible {
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let id: Int
-    public let token: String
-    public let updatedAt: Date
-    public let updatedById: Int?
-    public let userId: Double
-
-    public enum CodingKeys: String, CodingKey {
-        case createdAt = "createdAt"
-        case createdById = "createdById"
-        case deletedAt = "deletedAt"
-        case deletedById = "deletedById"
-        case id = "id"
-        case token = "token"
-        case updatedAt = "updatedAt"
-        case updatedById = "updatedById"
-        case userId = "userId"
-    }
-
-    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, token: String, updatedAt: Date, updatedById: Int?, userId: Double) {
-        self.createdAt = createdAt
-        self.createdById = createdById
-        self.deletedAt = deletedAt
-        self.deletedById = deletedById
-        self.id = id
-        self.token = token
-        self.updatedAt = updatedAt
-        self.updatedById = updatedById
-        self.userId = userId
-    }
-}
-
-/// User
-// MARK: - User
-public struct User: Persisted, DataConvertible {
-    public let activatedAt: Date?
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let email: String
-    public let id: Int
-    public let name: String
-    public let passwordHash: String
-    public let updatedAt: Date
-    public let updatedById: Int?
-
-    public enum CodingKeys: String, CodingKey {
-        case activatedAt = "activatedAt"
-        case createdAt = "createdAt"
-        case createdById = "createdById"
-        case deletedAt = "deletedAt"
-        case deletedById = "deletedById"
-        case email = "email"
-        case id = "id"
-        case name = "name"
-        case passwordHash = "passwordHash"
-        case updatedAt = "updatedAt"
-        case updatedById = "updatedById"
-    }
-
-    public init(activatedAt: Date?, createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, email: String, id: Int, name: String, passwordHash: String, updatedAt: Date, updatedById: Int?) {
-        self.activatedAt = activatedAt
-        self.createdAt = createdAt
-        self.createdById = createdById
-        self.deletedAt = deletedAt
-        self.deletedById = deletedById
-        self.email = email
-        self.id = id
-        self.name = name
-        self.passwordHash = passwordHash
         self.updatedAt = updatedAt
         self.updatedById = updatedById
     }
@@ -376,5 +224,169 @@ public struct Track: Persisted, DataConvertible {
         self.updatedAt = updatedAt
         self.updatedById = updatedById
         self.uri = uri
+    }
+}
+
+/// QueuedTrack
+// MARK: - QueuedTrack
+public struct QueuedTrack: Persisted, DataConvertible {
+    public let createdAt: Date
+    public let createdById: Int?
+    public let deletedAt: Date?
+    public let deletedById: Int?
+    public let id: Int
+    public let playEndedAt: Date?
+    public let playStartedAt: Date?
+    public let roomId: Int?
+    public let roomtrackId: Int
+    public let trackId: Int?
+    public let updatedAt: Date
+    public let updatedById: Int?
+
+    public enum CodingKeys: String, CodingKey {
+        case createdAt = "createdAt"
+        case createdById = "createdById"
+        case deletedAt = "deletedAt"
+        case deletedById = "deletedById"
+        case id = "id"
+        case playEndedAt = "playEndedAt"
+        case playStartedAt = "playStartedAt"
+        case roomId = "roomId"
+        case roomtrackId = "roomtrackId"
+        case trackId = "trackId"
+        case updatedAt = "updatedAt"
+        case updatedById = "updatedById"
+    }
+
+    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, playEndedAt: Date?, playStartedAt: Date?, roomId: Int?, roomtrackId: Int, trackId: Int?, updatedAt: Date, updatedById: Int?) {
+        self.createdAt = createdAt
+        self.createdById = createdById
+        self.deletedAt = deletedAt
+        self.deletedById = deletedById
+        self.id = id
+        self.playEndedAt = playEndedAt
+        self.playStartedAt = playStartedAt
+        self.roomId = roomId
+        self.roomtrackId = roomtrackId
+        self.trackId = trackId
+        self.updatedAt = updatedAt
+        self.updatedById = updatedById
+    }
+}
+
+/// QueuedTrackVote
+// MARK: - QueuedTrackVote
+public struct QueuedTrackVote: Persisted, DataConvertible {
+    public let createdAt: Date
+    public let createdById: Int?
+    public let deletedAt: Date?
+    public let deletedById: Int?
+    public let id: Int
+    public let queuedTrackId: Int
+    public let updatedAt: Date
+    public let updatedById: Int?
+
+    public enum CodingKeys: String, CodingKey {
+        case createdAt = "createdAt"
+        case createdById = "createdById"
+        case deletedAt = "deletedAt"
+        case deletedById = "deletedById"
+        case id = "id"
+        case queuedTrackId = "queuedTrackId"
+        case updatedAt = "updatedAt"
+        case updatedById = "updatedById"
+    }
+
+    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, queuedTrackId: Int, updatedAt: Date, updatedById: Int?) {
+        self.createdAt = createdAt
+        self.createdById = createdById
+        self.deletedAt = deletedAt
+        self.deletedById = deletedById
+        self.id = id
+        self.queuedTrackId = queuedTrackId
+        self.updatedAt = updatedAt
+        self.updatedById = updatedById
+    }
+}
+
+/// Session
+// MARK: - Session
+public struct Session: Persisted, DataConvertible {
+    public let createdAt: Date
+    public let createdById: Int?
+    public let deletedAt: Date?
+    public let deletedById: Int?
+    public let id: Int
+    public let token: String
+    public let updatedAt: Date
+    public let updatedById: Int?
+    public let userId: Int
+
+    public enum CodingKeys: String, CodingKey {
+        case createdAt = "createdAt"
+        case createdById = "createdById"
+        case deletedAt = "deletedAt"
+        case deletedById = "deletedById"
+        case id = "id"
+        case token = "token"
+        case updatedAt = "updatedAt"
+        case updatedById = "updatedById"
+        case userId = "userId"
+    }
+
+    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, token: String, updatedAt: Date, updatedById: Int?, userId: Int) {
+        self.createdAt = createdAt
+        self.createdById = createdById
+        self.deletedAt = deletedAt
+        self.deletedById = deletedById
+        self.id = id
+        self.token = token
+        self.updatedAt = updatedAt
+        self.updatedById = updatedById
+        self.userId = userId
+    }
+}
+
+/// User
+// MARK: - User
+public struct User: Persisted, DataConvertible {
+    public let activatedAt: Date?
+    public let createdAt: Date
+    public let createdById: Int?
+    public let deletedAt: Date?
+    public let deletedById: Int?
+    public let email: String
+    public let id: Int
+    public let name: String
+    public let passwordHash: String
+    public let updatedAt: Date
+    public let updatedById: Int?
+
+    public enum CodingKeys: String, CodingKey {
+        case activatedAt = "activatedAt"
+        case createdAt = "createdAt"
+        case createdById = "createdById"
+        case deletedAt = "deletedAt"
+        case deletedById = "deletedById"
+        case email = "email"
+        case id = "id"
+        case name = "name"
+        case passwordHash = "passwordHash"
+        case updatedAt = "updatedAt"
+        case updatedById = "updatedById"
+    }
+
+    public init(activatedAt: Date?, createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, email: String, id: Int, name: String, passwordHash: String, updatedAt: Date, updatedById: Int?) {
+        self.activatedAt = activatedAt
+        self.createdAt = createdAt
+        self.createdById = createdById
+        self.deletedAt = deletedAt
+        self.deletedById = deletedById
+        self.email = email
+        self.id = id
+        self.name = name
+        self.passwordHash = passwordHash
+        self.updatedAt = updatedAt
+        self.updatedById = updatedById
     }
 }

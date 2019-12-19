@@ -291,6 +291,22 @@ class AppState: ObservableObject {
             logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] \(cPlaying.isPlaying)")
             
             self.setAudioSession(cPlaying.isPlaying)
+            
+            guard abs(cPlaying.progressMs - cPlaying.item.durationMs) < 3000
+                 else {
+                logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] still playing: \(cPlaying.progressMs) - \(cPlaying.item.durationMs) ")
+                return
+            }
+            
+            self.fetchSpotifyRecommendations()
+                .then(){ recs in
+                    guard let track = recs.tracks.first else { return }
+                    logger.info("[NEXT] \(track)")
+                    track.play(deviceId: self.spotifyDevice?.id, baseUrl: self.api.baseUrl.rawValue.http, urlSession: self.api.urlSession)
+                }
+                .catch(){ error in
+                    logger.error("fetchSpotifyRecommendations error: \(error)")
+                }
         }
         
         api.subscribe(subject: .playerStateNowPlaying){ (result, error) in
@@ -321,6 +337,20 @@ class AppState: ObservableObject {
         }
     }
     
+    // MARK: - fetchSpotifyRecommendations
+    public func fetchSpotifyRecommendations() -> Promise<Spotify.Recommendation> {
+        var path = URLComponents(string: "/api/spotify/recommendations")!
+        
+        path.queryItems = [
+            URLQueryItem(name: "limit", value: "10"),//
+            URLQueryItem(name: "min_energy", value: "0.4"),
+            URLQueryItem(name: "seed_genres", value: "afrobeat"),
+            URLQueryItem(name: "seed_artists", value: ""),
+            URLQueryItem(name: "seed_tracks", value: "44SSviC4R1TkAdsyptjDpE"),
+        ]
+        return HttpMethod.get.fetch(urlPath: path, dataType: Spotify.Recommendation.self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+    }
+    
     @Published var spotifyDevices: [Spotify.Device] = []
     @Published var selectedSpotifyDeviceIdx: Int? = nil
     @Published var activeRoom: Musicroom? = nil
@@ -347,6 +377,8 @@ class AppState: ObservableObject {
         }
     }
     
+    @Published var spotifyWebAuthorized = false
+    
     @discardableResult
     func fetchedImage(url: String) -> Promise<Image?> {
         
@@ -367,9 +399,21 @@ class AppState: ObservableObject {
                 }
                 
                 let image = Image(uiImage: img)
+                let noirImgage: Image
+                
+                if let noirImg = img.noir {
+                    noirImgage = Image(uiImage: noirImg)
+                }else{
+                    noirImgage = image
+                }
                 
                 DispatchQueue.main.async {
-                    self.imagesByUrl[url] = image
+                    let noirUrl = "\(url).noir"
+                    let origUrl = "\(url).original"
+                    self.imagesByUrl[origUrl] = image
+                    self.imagesByUrl[noirUrl] = noirImgage
+                    
+                    self.imagesByUrl[url] = self.imagesByUrl[self.spotifyWebAuthorized ? origUrl : noirUrl]
                 }
                 
                 resolve(image)
@@ -408,4 +452,17 @@ class AppState: ObservableObject {
         }
     }
     
+}
+
+extension UIImage {
+    var noir: UIImage? {
+        let context = CIContext(options: nil)
+        guard let currentFilter = CIFilter(name: "CIPhotoEffectNoir") else { return nil }
+        currentFilter.setValue(CIImage(image: self), forKey: kCIInputImageKey)
+        if let output = currentFilter.outputImage,
+            let cgImage = context.createCGImage(output, from: output.extent) {
+            return UIImage(cgImage: cgImage, scale: scale, orientation: imageOrientation)
+        }
+        return nil
+    }
 }
