@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		92061A84236B0175007FC6F1 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92061A83236B0175007FC6F1 /* Extensions.swift */; };
+		925774BA23AD3DC3001DB707 /* MusicLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774B923AD3DC3001DB707 /* MusicLibraryView.swift */; };
+		925774BC23AD66E4001DB707 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774BB23AD66E4001DB707 /* ActivityView.swift */; };
 		925E5C702369D85900D95AB7 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925E5C6E2369D85900D95AB7 /* MapView.swift */; };
 		925E5C712369D85900D95AB7 /* CircleImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925E5C6F2369D85900D95AB7 /* CircleImage.swift */; };
 		925FC09523775BB100A8A72C /* LogOnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09423775BB100A8A72C /* LogOnView.swift */; };
@@ -79,6 +81,8 @@
 
 /* Begin PBXFileReference section */
 		92061A83236B0175007FC6F1 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		925774B923AD3DC3001DB707 /* MusicLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicLibraryView.swift; sourceTree = "<group>"; };
+		925774BB23AD66E4001DB707 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		925E5C6E2369D85900D95AB7 /* MapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		925E5C6F2369D85900D95AB7 /* CircleImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircleImage.swift; sourceTree = "<group>"; };
 		925E5C72236A742100D95AB7 /* SpotifyiOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SpotifyiOS.framework; sourceTree = "<group>"; };
@@ -153,6 +157,8 @@
 				925FC09C2378B81100A8A72C /* TrackView.swift */,
 				9274D920238DE71400A43752 /* SettingsView.swift */,
 				9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */,
+				925774B923AD3DC3001DB707 /* MusicLibraryView.swift */,
+				925774BB23AD66E4001DB707 /* ActivityView.swift */,
 			);
 			name = "Supporting Views";
 			sourceTree = "<group>";
@@ -389,12 +395,14 @@
 			files = (
 				925FC09F2379FE5900A8A72C /* AppView.swift in Sources */,
 				925FC09523775BB100A8A72C /* LogOnView.swift in Sources */,
+				925774BA23AD3DC3001DB707 /* MusicLibraryView.swift in Sources */,
 				92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */,
 				925FC09B23777A0A00A8A72C /* MusicroomView.swift in Sources */,
 				925FC097237777E600A8A72C /* PlayQueueView.swift in Sources */,
 				92F379E32363534D005FE2AB /* AppDelegate.swift in Sources */,
 				928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */,
 				9274D921238DE71400A43752 /* SettingsView.swift in Sources */,
+				925774BC23AD66E4001DB707 /* ActivityView.swift in Sources */,
 				925E5C702369D85900D95AB7 /* MapView.swift in Sources */,
 				92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */,
 				92B071762364FA2D0070EC73 /* AppState.swift in Sources */,

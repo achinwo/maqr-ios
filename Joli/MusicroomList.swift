@@ -11,46 +11,6 @@ import JoliApi
 import JoliCore
 import AVKit
 
-struct MusicLibraryView: View {
-    @EnvironmentObject var appState: AppState
-    var body: some View {
-        TrackSearchView()
-    }
-}
-
-protocol ConversationalView: View {
-    
-    associatedtype View1: View
-    associatedtype View2: View
-    associatedtype View3: View
-    
-}
-
-extension ConversationalView {
-    
-    var body: some View {
-        return ZStack() {
-            Text("Stacked")
-        }
-    }
-    
-}
-
-struct ActivityView: View {
-    
-    @EnvironmentObject var appState: AppState
-    
-    var body: some View {
-        Text("Activity")
-            .onAppear() {
-                
-                self.appState.api.subscribe(subject: .activityFeed) { (result, error) in
-                    logger.debug("Activity: \(String(describing: result)) - \(String(describing: error))")
-                }
-        }
-    }
-}
-
 struct MusicroomList: View {
     
     @EnvironmentObject var appState: AppState
@@ -108,7 +68,7 @@ struct MusicroomList: View {
                 }
             }
         }
-        .navigationBarTitle(Text("Joli"), displayMode: .large)
+        .navigationBarTitle(Text("Joli") + Text("\nmusic coordinator").font(.footnote), displayMode: .large)
         .onAppear() {
             logger.debug("[Musicroom] fetchMusicrooms")
             self.appState.fetchMusicrooms()

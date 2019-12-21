@@ -216,6 +216,7 @@ public class JoliApi: ObservableObject {
         case playerStateChanged = "PLAYER_STATE_CHANGED"
         case playerStateNowPlaying = "PLAYER_STATE_NOW_PLAYING"
         case activityFeed = "activity_feed"
+        case dbUpdates = "database_updates"
     }
     
     public func subscribe(subject: Subject, onMessage: @escaping WebSocketClient.ResponseCallback){
@@ -224,8 +225,8 @@ public class JoliApi: ObservableObject {
             .then() {
                 logger.debug("[JoliApi#subscribe] subject=\(subject)")
             }
-        .catch(){ error in
-            logger.error("[wsSubscribe] error: \(error)")
+            .catch(){ error in
+                logger.error("[wsSubscribe] error: \(error)")
             }
     }
     

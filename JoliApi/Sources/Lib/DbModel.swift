@@ -9,6 +9,7 @@
 //   let session = try? newJSONDecoder().decode(Session.self, from: jsonData)
 //   let user = try? newJSONDecoder().decode(User.self, from: jsonData)
 //   let track = try? newJSONDecoder().decode(Track.self, from: jsonData)
+//   let roomMembership = try? newJSONDecoder().decode(RoomMembership.self, from: jsonData)
 
 import Foundation
 
@@ -121,8 +122,8 @@ public struct Musicroom: Persisted, DataConvertible {
     public let deletedById: Int?
     public let details: String
     public let id: Int
+    public let membership: Membership?
     public let name: String
-    public let status: String?
     public let updatedAt: Date
     public let updatedById: Int?
 
@@ -133,24 +134,30 @@ public struct Musicroom: Persisted, DataConvertible {
         case deletedById = "deletedById"
         case details = "details"
         case id = "id"
+        case membership = "membership"
         case name = "name"
-        case status = "status"
         case updatedAt = "updatedAt"
         case updatedById = "updatedById"
     }
 
-    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, details: String, id: Int, name: String, status: String?, updatedAt: Date, updatedById: Int?) {
+    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, details: String, id: Int, membership: Membership?, name: String, updatedAt: Date, updatedById: Int?) {
         self.createdAt = createdAt
         self.createdById = createdById
         self.deletedAt = deletedAt
         self.deletedById = deletedById
         self.details = details
         self.id = id
+        self.membership = membership
         self.name = name
-        self.status = status
         self.updatedAt = updatedAt
         self.updatedById = updatedById
     }
+}
+
+public enum Membership: String, Codable {
+    case inviteOnly = "inviteOnly"
+    case membershipOpen = "open"
+    case membershipPrivate = "private"
 }
 
 /// Track
@@ -235,13 +242,16 @@ public struct QueuedTrack: Persisted, DataConvertible {
     public let deletedAt: Date?
     public let deletedById: Int?
     public let id: Int
+    public let musicroom: Musicroom?
     public let playEndedAt: Date?
     public let playStartedAt: Date?
     public let roomId: Int?
     public let roomtrackId: Int
+    public let track: Track?
     public let trackId: Int?
     public let updatedAt: Date
     public let updatedById: Int?
+    public let votes: [QueuedTrackVote]?
 
     public enum CodingKeys: String, CodingKey {
         case createdAt = "createdAt"
@@ -249,28 +259,34 @@ public struct QueuedTrack: Persisted, DataConvertible {
         case deletedAt = "deletedAt"
         case deletedById = "deletedById"
         case id = "id"
+        case musicroom = "musicroom"
         case playEndedAt = "playEndedAt"
         case playStartedAt = "playStartedAt"
         case roomId = "roomId"
         case roomtrackId = "roomtrackId"
+        case track = "track"
         case trackId = "trackId"
         case updatedAt = "updatedAt"
         case updatedById = "updatedById"
+        case votes = "votes"
     }
 
-    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, playEndedAt: Date?, playStartedAt: Date?, roomId: Int?, roomtrackId: Int, trackId: Int?, updatedAt: Date, updatedById: Int?) {
+    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, musicroom: Musicroom?, playEndedAt: Date?, playStartedAt: Date?, roomId: Int?, roomtrackId: Int, track: Track?, trackId: Int?, updatedAt: Date, updatedById: Int?, votes: [QueuedTrackVote]?) {
         self.createdAt = createdAt
         self.createdById = createdById
         self.deletedAt = deletedAt
         self.deletedById = deletedById
         self.id = id
+        self.musicroom = musicroom
         self.playEndedAt = playEndedAt
         self.playStartedAt = playStartedAt
         self.roomId = roomId
         self.roomtrackId = roomtrackId
+        self.track = track
         self.trackId = trackId
         self.updatedAt = updatedAt
         self.updatedById = updatedById
+        self.votes = votes
     }
 }
 
@@ -388,5 +404,52 @@ public struct User: Persisted, DataConvertible {
         self.passwordHash = passwordHash
         self.updatedAt = updatedAt
         self.updatedById = updatedById
+    }
+}
+
+/// RoomMembership
+// MARK: - RoomMembership
+public struct RoomMembership: Persisted, DataConvertible {
+    public let createdAt: Date
+    public let createdById: Int?
+    public let deletedAt: Date?
+    public let deletedById: Int?
+    public let id: Int
+    public let inviteAcceptedAt: Int?
+    public let invitedById: Int
+    public let isAdmin: Int
+    public let roomId: Int
+    public let updatedAt: Date
+    public let updatedById: Int?
+    public let userId: Int
+
+    public enum CodingKeys: String, CodingKey {
+        case createdAt = "createdAt"
+        case createdById = "createdById"
+        case deletedAt = "deletedAt"
+        case deletedById = "deletedById"
+        case id = "id"
+        case inviteAcceptedAt = "inviteAcceptedAt"
+        case invitedById = "invitedById"
+        case isAdmin = "isAdmin"
+        case roomId = "roomId"
+        case updatedAt = "updatedAt"
+        case updatedById = "updatedById"
+        case userId = "userId"
+    }
+
+    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, inviteAcceptedAt: Int?, invitedById: Int, isAdmin: Int, roomId: Int, updatedAt: Date, updatedById: Int?, userId: Int) {
+        self.createdAt = createdAt
+        self.createdById = createdById
+        self.deletedAt = deletedAt
+        self.deletedById = deletedById
+        self.id = id
+        self.inviteAcceptedAt = inviteAcceptedAt
+        self.invitedById = invitedById
+        self.isAdmin = isAdmin
+        self.roomId = roomId
+        self.updatedAt = updatedAt
+        self.updatedById = updatedById
+        self.userId = userId
     }
 }

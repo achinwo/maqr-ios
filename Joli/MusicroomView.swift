@@ -10,32 +10,114 @@ import SwiftUI
 import JoliApi
 import JoliCore
 
+enum MusicroomTab: Int, CaseIterable {
+    case library = 0
+    case playQueue = 1
+    case activity = 2
+    
+    var title: String {
+        switch(self){
+        case .library:
+            return "Library"
+        case .activity:
+            return "Activity"
+        case .playQueue:
+            return "Playing"
+        }
+    }
+    
+    var iconName: String {
+        switch(self){
+        case .library:
+            return "rectangle.stack"
+        case .activity:
+            return "list.bullet.below.rectangle"
+        case .playQueue:
+            return "music.house"
+        }
+    }
+}
+
 struct MusicroomView: View {
     @EnvironmentObject var appState: AppState
     
     var room: Musicroom
     @Environment(\.presentationMode) var presentationMode
     @State var selectedTabIdx = 1
+    @State var isSearchingTracks = false
+    @State var isDeviceSelectPresented = false
+    
+    var navTrailingItem: some View {
+        var imageName: String
+        var action: () -> Void
+        
+        if selectedTabIdx == 0 || selectedTabIdx == 1 {
+            imageName = "plus"
+            action = { self.isSearchingTracks.toggle() }
+        }else{
+            imageName = "gear"
+            action = {
+                self.appState.isSettingsPresented.toggle()
+            }
+        }
+        
+        var buttons: [ActionSheet.Button] = appState.spotifyDevices.map() { device in
+            var suffix = ""
+            if let selectedDeviceIdx = self.appState.selectedSpotifyDeviceIdx,
+                device == self.appState.spotifyDevices[selectedDeviceIdx] {
+                suffix = " ✔️"
+            }
+            
+            return .default(Text("\(device.name)\(suffix)")) {
+                logger.debug("[spotifyDevices] selected device: \(device)")
+                self.appState.selectedSpotifyDeviceIdx = self.appState.spotifyDevices.firstIndex(of: device)
+            }
+        }
+        
+        buttons.append(.cancel())
+        
+        return HStack(alignment: .firstTextBaseline) {
+            Spacer()
+            if selectedTabIdx == MusicroomTab.playQueue.rawValue {
+                Button(action: {self.isDeviceSelectPresented.toggle()}) {
+                        Image(systemName: "hifispeaker")
+                            .padding()
+                    }.actionSheet(isPresented: self.$isDeviceSelectPresented){
+                    ActionSheet(title: Text("Select Audio Device"), message: Text("Spotify connected devices"), buttons: buttons)
+                }
+            }
+            
+            Button(action: action) {
+                    Image(systemName: imageName)
+                        .padding()
+            }.sheet(isPresented: self.$isSearchingTracks){
+                NavigationView(){
+                    TrackSearchView()
+                }
+                .environmentObject(self.appState)
+                .navigationBarTitle(Text("Add Tracks to Queue"), displayMode: .inline)
+            }
+        }
+    }
     
     var body: some View {
-        TabView(selection: self.$selectedTabIdx) {
-            MusicLibraryView()
-                .tabItem {
-                    //Image(systemName: "2.circle")
-                    Text("Music Library").font(.largeTitle)
-            }.tag(0)
+ 
+        return VStack(alignment: .center){
+            Picker(selection: self.$selectedTabIdx, label: Text("Room")){
+                ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
+                    Text(roomTab.title).tag(roomTab.rawValue)
+                }
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            .padding()
             
-            PlayQueueView(room: self.room)
-                .tabItem {
-                    //Image(systemName: "1.circle")
-                    Text("Playing")
-            }.tag(1)
-            
-            ActivityView()
-                .tabItem {
-                    //Image(systemName: "2.circle")
-                    Text("Activity")
-            }.tag(2)
+            if self.selectedTabIdx == MusicroomTab.library.rawValue{
+                MusicLibraryView(room: self.room)
+            }else if self.selectedTabIdx == MusicroomTab.playQueue.rawValue {
+                PlayQueueView(room: self.room)
+            }else if self.selectedTabIdx == MusicroomTab.activity.rawValue{
+                ActivityView(room: self.room)
+            }
         }
         .font(.largeTitle)
         .accentColor(.orange)
@@ -44,14 +126,9 @@ struct MusicroomView: View {
             self.appState.fetchTracks(self.room)
         }
         .navigationBarItems(trailing:
-            Button(action: {
-                self.appState.isSettingsPresented.toggle()
-            }) {
-                Image(systemName: "gear")
-                    .padding()
-            }
+            self.navTrailingItem
         )
-        .navigationBarTitle(Text(verbatim: room.name), displayMode: .inline)
+            .navigationBarTitle(Text(room.name), displayMode: .inline)
     }
     
     @State var isSearching = false

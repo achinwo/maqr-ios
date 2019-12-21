@@ -68,7 +68,7 @@ public enum NetworkError: Error {
     case invalidUrlPath(String)
     case badRequest(String)
     case badResponse(String)
-    case deserialization(String)
+    case deserialization(String?, URLResponse?, Error)
 }
 
 public typealias Json = [String: AnyObject]
@@ -99,6 +99,8 @@ public enum HttpBody {
 public enum HttpMethod: String {
     
     public typealias Headers = [String: String]
+    
+    public static var verbose = false
     
     case get = "GET"
     case post = "POST"
@@ -144,7 +146,7 @@ public enum HttpMethod: String {
                     let respObj = try Session.jsonDecoder().decode(Response<T>.self, from: data)
                     resolve(respObj.data)
                 } catch {
-                    reject(error)
+                    reject(NetworkError.deserialization(data.stringUtf8, resp, error))
                 }
             }
             
@@ -222,4 +224,12 @@ public enum HttpMethod: String {
             task.resume()
         }
     }
+}
+
+extension Data {
+    
+    public var stringUtf8: String? {
+        return String(data: self, encoding: .utf8)
+    }
+    
 }

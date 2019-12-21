@@ -51,11 +51,10 @@ struct AppView: View {
             ZStack(alignment: .bottomTrailing) {
                 
                 NavigationView {
-                    VStack(alignment: .center){
                         
-                        NavigationLink(destination: VStack() { RoomCreateFormView() }) {
-                            Text("Create Room").padding()
-                        }
+//                        NavigationLink(destination: VStack() { RoomCreateFormView() }) {
+//                            Text("Create Room").padding()
+//                        }
                         
                         MusicroomList()
                             .sheet(isPresented: self.$isLogonViewPresented) {
@@ -65,7 +64,6 @@ struct AppView: View {
                                     }
                                 }.environmentObject(self.appState)
                         }
-                    }
                     .navigationBarItems(leading:
                         Button(action: logonButtonAction) {
                             Text("\(self.appState.auth == nil ? "Sign In" : self.appState.auth!.user.name)")
@@ -79,14 +77,18 @@ struct AppView: View {
                             )
                         }
                         , trailing:
-                        Button(action: {
-                            self.appState.isSettingsPresented.toggle()
-                            
-                            print("[messageCallbacks] \(self.appState.api.wsClient.messageCallbacks)")
-                        }) {
-                            Image(systemName: "gear")
-                                .padding()
+                        HStack(){
+                            NavigationLink(destination: VStack() { RoomCreateFormView() }) {
+                                Image(systemName: "plus")
+                            }.padding()
+                            Button(action: {
+                                self.appState.isSettingsPresented.toggle()
+                            }) {
+                                Image(systemName: "gear")
+                                    
+                            }.padding()
                         }
+                        
                     )
                 }
                 .animation(.spring())

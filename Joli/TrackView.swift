@@ -47,7 +47,7 @@ struct TrackView: View {
     var body: some View {
         HStack(alignment: .center) {
             
-            CircleImage(image: image)//.background(Color.blue)
+            CircleImage(url: track.thumbnailUrl) //.background(Color.blue)
             
             VStack(alignment: .leading) {
                 Text(track.title)

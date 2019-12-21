@@ -80,7 +80,8 @@ struct SettingsView: View {
         return VStack {
             
             //WebView(request: URLRequest(url: url)).padding(0)
-            
+            ExampleView()
+            Text("Room Membership")
             Button(action: {
                 var components = URLComponents(string: "/spotify_login")!
                 components.queryItems = [URLQueryItem(name: "platform", value: "ios")]
@@ -112,6 +113,31 @@ struct SettingsView: View {
             Image(systemName: "xmark")
             Text("Close")
         })
+    }
+}
+
+struct ExampleView: View {
+    @State private var pushed = false
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                NavigationLink(destination: PushedView(),
+                               isActive: $pushed) { Text("Push Now") }
+                
+                Button("Push with delay") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
+                        self.pushed = true
+                    }
+                }
+            }
+        }
+    }
+    
+    struct PushedView: View {
+        var body: some View {
+            Text("Hello")
+        }
     }
 }
 

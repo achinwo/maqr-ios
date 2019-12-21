@@ -92,7 +92,6 @@ struct TrackSearchView: View {
                         TrackView(track: track)
                     }
                 }
-                .navigationBarTitle(Text("Search"), displayMode: .large)
                 .resignKeyboardOnDragGesture()
         }
     }

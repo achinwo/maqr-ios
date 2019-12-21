@@ -218,7 +218,14 @@ public protocol Playable {
     var albumCoverUrl: String { get }
     var artistName: String { get }
     var uri: String { get }
+    var isPlayable: Bool { get }
     func play(deviceId: String?, baseUrl: URL?, urlSession: URLSession?, on: DispatchQueue?) -> Promise<Json>
+}
+
+extension Playable {
+    public var isPlayable: Bool {
+        return true
+    }
 }
 
 public var BASE_URL: (ws: URL, http: URL)!
@@ -406,6 +413,117 @@ extension Musicroom {
                                      baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
+}
+
+extension AuthToken {
+    public var isExpired: Bool {
+        let expiryTime = createdAt.addingTimeInterval(.init(expiresIn))
+        return Date() >= expiryTime
+    }
+}
+
+extension QueuedTrack: Playable {
+    
+    public var isPlayable: Bool {
+        return track != nil
+    }
+    
+    public var explicit: Bool? {
+        return track?.explicit
+    }
+    
+    public var title: String {
+        return track!.title
+    }
+    
+    public var thumbnailUrl: String {
+        return track!.thumbnailUrl
+    }
+    
+    public var albumCoverUrl: String {
+        return track!.albumCoverUrl
+    }
+    
+    public var artistName: String {
+        return track!.artistName
+    }
+    
+    public var uri: String {
+        return track!.uri
+    }
+    
+    public func play(deviceId: String?, baseUrl: URL?, urlSession: URLSession?, on: DispatchQueue?) -> Promise<Json> {
+        
+        guard let track = track else {
+            return Promise(NetworkError.badRequest("Track is null"))
+        }
+        
+        var urlPath = URLComponents(string: "/api/spotify/play")!
+        urlPath.queryItems = [
+            URLQueryItem(name: "trackId", value: track.uri),
+        ]
+        
+        if let deviceId = deviceId {
+            urlPath.queryItems!.append(URLQueryItem(name: "deviceId", value: deviceId))
+        }
+        
+        return HttpMethod.post.fetchJson(urlPath: urlPath, payload: [:],
+                                         baseUrl: baseUrl, urlSession: urlSession, on: on)
+    }
+    
+}
+
+// MARK: - RoomTrack
+extension RoomTrack: Playable {
+    
+    public var isPlayable: Bool {
+        return track != nil
+    }
+    
+    public var explicit: Bool? {
+        return track?.explicit
+    }
+    
+    public var title: String {
+        return track!.title
+    }
+    
+    public var thumbnailUrl: String {
+        return track!.thumbnailUrl
+    }
+    
+    public var albumCoverUrl: String {
+        return track!.albumCoverUrl
+    }
+    
+    public var artistName: String {
+        return track!.artistName
+    }
+    
+    public var uri: String {
+        return track!.uri
+    }
+    
+    public func play(deviceId: String?, baseUrl: URL?, urlSession: URLSession?, on: DispatchQueue?) -> Promise<Json> {
+        
+        guard let track = track else {
+            return Promise(NetworkError.badRequest("Track is null"))
+        }
+        
+        var urlPath = URLComponents(string: "/api/spotify/play")!
+        urlPath.queryItems = [
+            URLQueryItem(name: "trackId", value: track.uri),
+        ]
+        
+        if let deviceId = deviceId {
+            urlPath.queryItems!.append(URLQueryItem(name: "deviceId", value: deviceId))
+        }
+        
+        return HttpMethod.post.fetchJson(urlPath: urlPath, payload: [:],
+                                         baseUrl: baseUrl, urlSession: urlSession, on: on)
+    }
+    
+        
 }
 
 // MARK: - Track

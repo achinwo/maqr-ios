@@ -92,7 +92,8 @@ class AppState: ObservableObject {
     @Published var userSettings = UserSettings()
     
     @Published var musicrooms: [Musicroom] = []
-    @Published var tracksByMusicrooms: [Int: [Track]] = [:]
+    @Published var tracksByMusicrooms: [Int: [RoomTrack]] = [:]
+    @Published var queuedTracksByMusicrooms: [Int: [QueuedTrack]] = [:]
     @Published var usersById: [Int: User] = [:]
     @Published var imagesByUrl: [String: Image] = [:]
     
@@ -168,25 +169,6 @@ class AppState: ObservableObject {
         .switchToLatest()
         .eraseToAnyPublisher()
     }
-    
-//    var deviceChangePublisher: AnyPublisher<JoliApi.SpotifyDevice, Never> {
-//        $selectedSpotifyDeviceIdx
-//        .map { input -> Future<[Track], Never> in
-//            return Future<[Track], Never>() { promise in
-//
-//                guard !input.trimmingCharacters(in: [" "]).isEmpty else {
-//                    promise(.success([]))
-//                    return
-//                }
-//
-//                self.api.searchTracks(q: input)
-//                    .then() { promise(.success($0)) }
-//                    .catch() { logger.debug("[AppState] trackSearchResult: \($0)") }
-//            }
-//        }
-//        .switchToLatest()
-//        .eraseToAnyPublisher()
-//    }
 
     var didChange = PassthroughSubject<AppState, Never>()
     
@@ -205,16 +187,20 @@ class AppState: ObservableObject {
         return nil
     }
     
-    func spotifyWebAuthorize(_ urlPath: URLComponents) -> Promise<Json> {
+    func spotifyWebAuthorize(_ urlPath: URLComponents) -> Promise<AuthToken> {
         spotifyAuthorizationInProgress = true
         
-        return HttpMethod.get.fetchJson(urlPath: urlPath,
-                                 payload: [:],
-                                 baseUrl: api.baseUrl.rawValue.http,
-                                 urlSession: api.urlSession)
-                .always() {
-                    self.spotifyAuthorizationInProgress = false
-                }
+        return HttpMethod.get.fetch(urlPath: urlPath,
+                                    dataType: AuthToken.self,
+                                    baseUrl: api.baseUrl.rawValue.http,
+                                    urlSession: api.urlSession)
+            .then(){ auth -> Promise<AuthToken> in
+                self.spotifyWebAuthorized = !auth.isExpired
+                return Promise(auth)
+        }
+        .always() {
+            self.spotifyAuthorizationInProgress = false
+        }
     }
     
     func resolveSpotifyRedirectUrl(_ url: URL) -> URL? {
@@ -271,6 +257,17 @@ class AppState: ObservableObject {
                 self.auth = auth
                 self.userSettings.authToken = auth?.session.token
                 //logger.info("[AppState] storing token: \(String(describing: self.userSettings.authToken))")
+
+                self.fetchSpotifyAuthToken()
+                    .then() { auth in
+                        self.spotifyWebAuthorized = !auth.isExpired
+                    }
+                    .catch() { error in
+                        self.errorHandler("fetchSpotifyAuthToken")(error)
+                        self.spotifyWebAuthorized = false
+                    }
+                
+                self.fetchMusicrooms()
             }
             .store(in: &cancellableSet)
         
@@ -335,6 +332,48 @@ class AppState: ObservableObject {
                                 }
             }
         }
+        
+        api.subscribe(subject: .activityFeed) { (result, error) in
+            logger.debug("Activity: \(String(describing: result)) - \(String(describing: error))")
+        }
+        
+        api.subscribe(subject: .dbUpdates) { (result, error) in
+            logger.debug("DbUpdates: \(String(describing: result)) - \(String(describing: error))")
+        }
+        
+        self.$spotifyWebAuthorized.sink() { spotifyConnected in
+            let urlSuffix = spotifyConnected ? ".original" : ".noir"
+            
+            for (url, img) in self.imagesByUrl {
+                if !url.hasSuffix(urlSuffix) {
+                    continue
+                }
+                
+                let targetUrl = String(url.prefix(upTo: url.index(url.endIndex, offsetBy: urlSuffix.count * -1)))
+                self.imagesByUrl[targetUrl] = img
+            }
+            
+            if let cover = self.currentlyPlayingAlbumUrl, let newImage = self.imagesByUrl["\(cover)\(urlSuffix)"] {
+                self.currentlyPlayingAlbumImage = newImage
+            }
+            
+            if spotifyConnected {
+                self.fetchSpotifyDevices()
+            }
+        }.store(in: &cancellableSet)
+    }
+    
+    // MARK: - errorHandler
+    public func errorHandler(_ funcName: String = #function) -> (Error) -> Void {
+        return { (error: Error) in
+            logger.error("[\(funcName)] error: \(error)")
+        }
+    }
+    
+    // MARK: - fetchSpotifyAuth
+    public func fetchSpotifyAuthToken() -> Promise<AuthToken> {
+        return HttpMethod.get.fetch(urlString: "/api/spotify/auth", dataType: AuthToken.self,
+                                    baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
     
     // MARK: - fetchSpotifyRecommendations
@@ -416,7 +455,7 @@ class AppState: ObservableObject {
                     self.imagesByUrl[url] = self.imagesByUrl[self.spotifyWebAuthorized ? origUrl : noirUrl]
                 }
                 
-                resolve(image)
+                resolve(self.spotifyWebAuthorized ? image : noirImgage)
             }
             task.resume()
         }
@@ -444,8 +483,16 @@ class AppState: ObservableObject {
     }
     
     func fetchTracks(_ room: Musicroom) {
-        room.fetchTracks(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession).then() { [weak self] tracks in
-            self?.tracksByMusicrooms[room.id] = tracks
+        RoomTrack.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+            .then() { [weak self] tracks in
+                
+                guard let self = self else { return }
+                
+                for track in tracks.filter({ $0.isPlayable }) {
+                    var roomTracks = self.tracksByMusicrooms[track.roomId] ?? []
+                    roomTracks.append(track)
+                    self.tracksByMusicrooms[track.roomId] = roomTracks
+                }
         }
         .catch() { error in
             logger.error("[fetchTracks] error: \(error)")

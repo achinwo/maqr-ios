@@ -12,19 +12,10 @@ import JoliCore
 
 struct PlayQueueView: View {
     
-    @State var albumArt: Image?
-    @State var albumArtUrl: String?
-    
     @EnvironmentObject var appState: AppState
-    
+    @State var queuedTracks: [QueuedTrack] = []
     var room: Musicroom
     
-    var tracks: [Track] {
-        return appState.tracksByMusicrooms[room.id] ?? []
-    }
-    
-    @State var nowPlayingPosition = 0.0
-    @State var nowPlaying: String?
     
     var body: some View {
         let track = self.appState.currentlyPlayingTrack
@@ -36,8 +27,6 @@ struct PlayQueueView: View {
                 VStack(alignment: .leading){
                     Text(title != nil ? "Now Playing...\(title!)" : "")
                         .font(.title)
-                    
-                        //.font(self.albumArtUrl == nil ? Color.black : Color.white)
                         .padding()
                     Slider(value: self.$appState.currentlyPlayingProgressPct, in: 0...100, step: 1)
                         .disabled(self.appState.currentlyPlayingTrack == nil)
@@ -57,27 +46,9 @@ struct PlayQueueView: View {
                     
                     .background(self.appState.currentlyPlayingAlbumImage?.resizable().aspectRatio(contentMode: ContentMode.fill))
                 
-                //Text("Value: \(self.selectedSpotifyDeviceId ?? "None")")
-                List {
-                    ForEach(self.tracks) { track in
-                        TrackView(track: track, allowDelete: true)//.background(Color.pink)
-                    }
-                    .onDelete(perform: self.delete)
-                }
-                
             }
         }
         
-    }
-    
-    func delete(at offsets: IndexSet) {
-        logger.debug("[PlayQueueView] offsets: \(offsets)")
-        for idx in offsets {
-            guard let track = appState.tracksByMusicrooms[room.id]?.remove(at: idx) else {
-                continue
-            }
-            appState.api.delete(track)
-        }
     }
     
     func onDisappear(){
