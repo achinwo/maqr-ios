@@ -93,9 +93,9 @@ struct MusicroomView: View {
             }.sheet(isPresented: self.$isSearchingTracks){
                 NavigationView(){
                     TrackSearchView()
+                    .navigationBarTitle(Text("Add Tracks to Queue"), displayMode: .inline)
                 }
                 .environmentObject(self.appState)
-                .navigationBarTitle(Text("Add Tracks to Queue"), displayMode: .inline)
             }
         }
     }
@@ -108,6 +108,7 @@ struct MusicroomView: View {
                     Text(roomTab.title).tag(roomTab.rawValue)
                 }
             }
+        .zIndex(500)
             .pickerStyle(SegmentedPickerStyle())
             .padding()
             
@@ -119,8 +120,10 @@ struct MusicroomView: View {
                 ActivityView(room: self.room)
             }
         }
-        .font(.largeTitle)
-        .accentColor(.orange)
+        
+        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height - 200, alignment: .top)
+        //.padding(.top, 80)
+        //.background(Color.yellow)
         .onAppear() {
             self.appState.activeRoom = self.room
             self.appState.fetchTracks(self.room)

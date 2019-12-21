@@ -109,6 +109,14 @@ public class JoliApi: ObservableObject {
             }
         }
         
+        public var http: URL {
+            return rawValue.http
+        }
+        
+        public var ws: URL {
+            return rawValue.ws
+        }
+        
         public init?(rawValue: String) {
             self = .host(rawValue)
         }
@@ -180,9 +188,9 @@ public class JoliApi: ObservableObject {
     public var urlSession: URLSession = JoliApi.sharedUrlSession
     
     // MARK: - init
-    public init(baseUrl: BaseUrl = .localhost){
+    public init(baseUrl: BaseUrl = .localhost, authToken: String? = nil){
         JoliApi.initLogger()
-        self.urlSessionConfiguration = JoliApi.sharedUrlSession.configuration
+        self.urlSessionConfiguration = JoliApi.sharedUrlSession.configuration.withAuthHeader(authToken)
         
         self.baseUrl = baseUrl
         let url = baseUrl.rawValue.ws.appendingPathComponent("/ws")
@@ -194,18 +202,7 @@ public class JoliApi: ObservableObject {
         self.$auth
             .receive(on: RunLoop.main)
             .sink() { auth in
-                
-                let config = URLSessionConfiguration.default
-                var headers = config.httpAdditionalHeaders ?? [:]
-                
-                if let auth = auth {
-                    headers["X-SESSION-ID"] = auth.session.token
-                } else {
-                    headers.removeValue(forKey: "X-SESSION-ID")
-                }
-                
-                config.httpAdditionalHeaders = headers
-                self.urlSessionConfiguration = config
+                self.urlSessionConfiguration = URLSessionConfiguration.default.withAuthHeader(auth?.session.token)
             }
             .store(in: &cancellableSet)
             
@@ -343,7 +340,24 @@ public class JoliApi: ObservableObject {
     
 }
 
+extension URLSessionConfiguration {
+    
+    public func withAuthHeader(_ authToken: String?) -> URLSessionConfiguration {
 
+        let config = URLSessionConfiguration.default
+        var headers = config.httpAdditionalHeaders ?? [:]
+        
+        if let authToken = authToken {
+            headers["X-SESSION-ID"] = authToken
+        } else {
+            headers.removeValue(forKey: "X-SESSION-ID")
+        }
+        
+        config.httpAdditionalHeaders = headers
+        return config
+    }
+    
+}
 
 extension JoliApi {
     

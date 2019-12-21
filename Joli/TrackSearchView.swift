@@ -56,7 +56,7 @@ struct TrackSearchView: View {
             .foregroundColor(.secondary)
             .background(Color(.secondarySystemBackground))
             .cornerRadius(10.0)
-            .font(.subheadline)
+            .font(.title)
             .onAppear(){
                 logger.debug("changed: \(self.appState.searchText)")
 
@@ -75,11 +75,11 @@ struct TrackSearchView: View {
                     self.showCancelButton = false
                 }
                 .foregroundColor(Color(.systemBlue))
-                .font(.subheadline)
+                .font(.title)
             }
         }
         .padding(.horizontal)
-            .navigationBarHidden(showCancelButton) // .animation(.default) // animation does not work properly
+            //.navigationBarHidden(showCancelButton) // .animation(.default) // animation does not work properly
     }
     
     var body: some View {

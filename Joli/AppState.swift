@@ -119,9 +119,7 @@ class AppState: ObservableObject {
     
     let baseUrl: JoliApi.BaseUrl
     
-    lazy var api: JoliApi = {
-        JoliApi(baseUrl: self.baseUrl)
-    }()
+    let api: JoliApi
     
     private var cancellableSet: Set<AnyCancellable> = []
     @Published public var trackSearchResult: [Spotify.Track] = []
@@ -240,15 +238,8 @@ class AppState: ObservableObject {
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
         
-        trackSearchResultPublisher
-        .receive(on: RunLoop.main)
-        .assign(to: \.trackSearchResult, on: self)
-        .store(in: &cancellableSet)
-        
-        AppState.keyboardHeightPublisher
-        .receive(on: RunLoop.main)
-        .assign(to: \.keyboardHeight, on: self)
-        .store(in: &cancellableSet)
+        self.api = JoliApi(baseUrl: self.baseUrl)
+        api.urlSessionConfiguration = api.urlSessionConfiguration.withAuthHeader(self.userSettings.authToken)
         
         self.api.$auth
             .receive(on: RunLoop.main)
@@ -276,6 +267,17 @@ class AppState: ObservableObject {
             self.api.authenticate(token: authToken)
         }
         
+        trackSearchResultPublisher
+        .receive(on: RunLoop.main)
+        .assign(to: \.trackSearchResult, on: self)
+        .store(in: &cancellableSet)
+        
+        AppState.keyboardHeightPublisher
+        .receive(on: RunLoop.main)
+        .assign(to: \.keyboardHeight, on: self)
+        .store(in: &cancellableSet)
+        
+        
         api.subscribe(subject: .playerStateChanged){ (response, error) in
             
             guard let ctx = response?.payload,
@@ -285,7 +287,7 @@ class AppState: ObservableObject {
                 self.setAudioSession(false)
                 return
             }
-            logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] \(cPlaying.isPlaying)")
+            logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] playing: \(cPlaying.isPlaying)")
             
             self.setAudioSession(cPlaying.isPlaying)
             
@@ -337,6 +339,7 @@ class AppState: ObservableObject {
             logger.debug("Activity: \(String(describing: result)) - \(String(describing: error))")
         }
         
+        // MARK: - Database Updates
         api.subscribe(subject: .dbUpdates) { (result, error) in
             logger.debug("DbUpdates: \(String(describing: result)) - \(String(describing: error))")
         }
@@ -479,6 +482,49 @@ class AppState: ObservableObject {
             guard let self = self else { return Promise([]) }
             
             return Promise(self.musicrooms)
+        }
+    }
+    
+    func playTrack(_ track: Playable){
+        if track is Spotify.Track {
+            
+            setAudioSession(false)
+            
+            guard spotifyRemote.isConnected else {
+                logger.debug("[Track#play] spotify not connected")
+                spotifyRemote.authorizeAndPlayURI(track.uri)
+                return
+            }
+            
+            spotifyRemote.playerAPI?.play(track.uri){ info, error in
+                logger.debug("[Track#play] \(String(describing: info)) - \(String(describing: error))")
+            }
+        }else{
+            track.play(deviceId: self.spotifyDevice?.id, baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: nil)
+        }
+    }
+    
+    func pausePlayback() -> Promise<Json> {
+        if spotifyRemote.isConnected {
+            setAudioSession(false)
+            
+            return Promise() { (resolve, reject) in
+
+                self.spotifyRemote.playerAPI?.pause(){ info, error in
+                    logger.debug("[pauseTrack] \(String(describing: info)) - \(String(describing: error))")
+                    
+                    guard let error = error else {
+                        return resolve(info as? Json ?? [:])
+                        
+                    }
+                    
+                    return reject(error)
+                }
+            }
+        }else{
+            let path = URLComponents(string: "/api/spotify/me/player/pause")!
+            return HttpMethod.put.fetchJson(urlPath: path, payload: [:], baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+                .catch(self.errorHandler())
         }
     }
     

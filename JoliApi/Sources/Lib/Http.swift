@@ -105,6 +105,7 @@ public enum HttpMethod: String {
     case get = "GET"
     case post = "POST"
     case delete = "DELETE"
+    case put = "PUT"
     
     public func fetch<T: Codable>(urlString: String, dataType: T.Type, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<T> {
         let baseUrl = baseUrl ?? Track.baseUrl.http
@@ -160,7 +161,7 @@ public enum HttpMethod: String {
             
             let task: URLSessionTask
             switch self {
-                case .post:
+            case .post, .put:
                     
                     guard let payloadData = try? payload?.toData() else {
                         return reject(NetworkError.badRequest("bad payload for post request: \(String(describing: payload))"))
@@ -215,7 +216,7 @@ public enum HttpMethod: String {
             let task: URLSessionTask
             
             switch self {
-            case .post:
+            case .post, .put:
                 task = urlSession.uploadTask(with: request, from: payloadData, completionHandler: callback)
             case .get, .delete:
                 task = urlSession.dataTask(with: request, completionHandler: callback)

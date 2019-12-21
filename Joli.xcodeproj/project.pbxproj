@@ -159,6 +159,7 @@
 				9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */,
 				925774B923AD3DC3001DB707 /* MusicLibraryView.swift */,
 				925774BB23AD66E4001DB707 /* ActivityView.swift */,
+				928F6EB923761F7700FAC911 /* TrackSearchView.swift */,
 			);
 			name = "Supporting Views";
 			sourceTree = "<group>";
@@ -210,7 +211,6 @@
 				92F379EA2363534F005FE2AB /* Preview Content */,
 				92B071752364FA2D0070EC73 /* AppState.swift */,
 				92061A83236B0175007FC6F1 /* Extensions.swift */,
-				928F6EB923761F7700FAC911 /* TrackSearchView.swift */,
 				925FC09E2379FE5900A8A72C /* AppView.swift */,
 			);
 			path = Joli;
