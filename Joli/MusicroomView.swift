@@ -38,6 +38,10 @@ enum MusicroomTab: Int, CaseIterable {
     }
 }
 
+protocol MusicroomTabView: View {
+    init(room: Musicroom)
+}
+
 struct MusicroomView: View {
     @EnvironmentObject var appState: AppState
     
@@ -61,29 +65,12 @@ struct MusicroomView: View {
             }
         }
         
-        var buttons: [ActionSheet.Button] = appState.spotifyDevices.map() { device in
-            var suffix = ""
-            if let selectedDeviceIdx = self.appState.selectedSpotifyDeviceIdx,
-                device == self.appState.spotifyDevices[selectedDeviceIdx] {
-                suffix = " ✔️"
-            }
-            
-            return .default(Text("\(device.name)\(suffix)")) {
-                logger.debug("[spotifyDevices] selected device: \(device)")
-                self.appState.selectedSpotifyDeviceIdx = self.appState.spotifyDevices.firstIndex(of: device)
-            }
-        }
-        
-        buttons.append(.cancel())
-        
         return HStack(alignment: .firstTextBaseline) {
             Spacer()
             if selectedTabIdx == MusicroomTab.playQueue.rawValue {
-                Button(action: {self.isDeviceSelectPresented.toggle()}) {
+                Button(action: {self.appState.isDeviceChooserPresented.toggle()}) {
                         Image(systemName: "hifispeaker")
                             .padding()
-                    }.actionSheet(isPresented: self.$isDeviceSelectPresented){
-                    ActionSheet(title: Text("Select Audio Device"), message: Text("Spotify connected devices"), buttons: buttons)
                 }
             }
             
@@ -100,15 +87,57 @@ struct MusicroomView: View {
         }
     }
     
+    var spotifyConnectBanner: some View {
+        return HStack(alignment: .center){
+            ImageStore.shared.image(name: "Spotify_Icon_RGB_Green")
+                .resizable().frame(width: 32, height: 32, alignment: .center)
+                .padding(.init(top: 4, leading: 16, bottom: 4, trailing: 4))
+            Text("Connect with Spotify").font(.subheadline).foregroundColor(.gray)//.padding()
+            Spacer()
+            
+            Button(action: {
+                self.appState.openSpotifyWebAuthorization()
+            }) {
+                
+                if self.appState.spotifyAuthorizationInProgress {
+                    ActivityIndicator(isAnimating: self.appState.spotifyAuthorizationInProgress) { (indicator: UIActivityIndicatorView) in
+                        indicator.color = .green
+                        indicator.hidesWhenStopped = true
+                    }.padding(.leading, 6)
+                }
+                
+                Text("Connect").font(.subheadline)
+                .foregroundColor(.green)
+                .padding(6)
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 50)
+                    .stroke(Color.green, lineWidth: 1.2)
+            )
+            .padding(.trailing, 16)
+            
+        }.frame(width: UIScreen.main.bounds.width, height: self.appState.spotifyWebAuthorized ? 0 : 50, alignment: .center)
+        .clipped()
+        .animation(.easeInOut)
+    }
+    
     var body: some View {
  
-        return VStack(alignment: .center){
+        return VStack(alignment: .center, spacing: 0){
+
+            self.spotifyConnectBanner
+
+            if !self.appState.spotifyWebAuthorized {
+                Divider()
+            }
+            
             Picker(selection: self.$selectedTabIdx, label: Text("Room")){
                 ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
                     Text(roomTab.title).tag(roomTab.rawValue)
                 }
             }
         .zIndex(500)
+        .opacity(90)
             .pickerStyle(SegmentedPickerStyle())
             .padding()
             
@@ -121,9 +150,9 @@ struct MusicroomView: View {
             }
         }
         
-        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height - 200, alignment: .top)
-        //.padding(.top, 80)
-        //.background(Color.yellow)
+        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .top)
+        .padding(.top, 120)
+        //.background(Color.green)
         .onAppear() {
             self.appState.activeRoom = self.room
             self.appState.fetchTracks(self.room)
@@ -136,6 +165,65 @@ struct MusicroomView: View {
     
     @State var isSearching = false
 }
+
+struct BubbleTabView<Content> : View where Content : View {
+    @EnvironmentObject<AppState> var appState: AppState
+    
+    let tabItems: [TabItem]
+    let label: Text
+    @State var selected: TabItem?
+    var selectedIndex: Binding<Int>?
+    let content: () -> Content
+    
+    init(selection: Binding<Int>?, tabItems: [TabItem], label: Text, @ViewBuilder content: @escaping () -> Content){
+        self.tabItems = tabItems
+        self.label = label
+        selectedIndex = selection
+        self.content = content
+        
+    }
+    
+    var body: some View {
+        return VStack(alignment: .center, spacing: 0) {
+            Picker(selection: self.selectedIndex ?? Binding.constant(0), label: self.label){
+                ForEach(TabItem.allCases, id: \.self){ tab in
+                    Text(tab.title).tag(tab.rawValue)
+                }
+            }
+            self.content()
+        }
+    }
+    
+    enum TabItem: Int, CaseIterable {
+        case activity = 0
+        case playQueue = 1
+        case library = 2
+        
+        var title: String {
+            switch self {
+            case .activity:
+                return "Activity"
+            case .playQueue:
+                return "Playing ●"
+            case .library:
+                return "Library"
+            }
+        }
+        
+        func view<V: MusicroomTabView>(room: Musicroom, viewType: V.Type) -> V {
+            switch self {
+                case .activity:
+                    return viewType.init(room: room)
+                case .playQueue:
+                    return viewType.init(room: room)
+                case .library:
+                    return viewType.init(room: room)
+            }
+        }
+        
+    }
+}
+
 
 //struct MusicroomView_Previews: PreviewProvider {
 //    static var previews: some View {

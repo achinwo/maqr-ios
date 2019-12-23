@@ -191,7 +191,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
         logger.debug("[SceneDelegate] App is active")
-        appState.api.wsClient.connect()
+        appState.api.wsClient.connect() { connected in
+            self.appState.onServerConnectionStateChanged(connected)
+        }
         
 //        do {
 //            try appDelegate.audioSession.setActive(true)

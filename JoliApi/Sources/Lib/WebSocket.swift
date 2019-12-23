@@ -29,6 +29,7 @@ extension WebSocketMessage {
 }
 
 public enum ConnectionState {
+    case connected
     case reconnecting(Int)
     case stopped
 }

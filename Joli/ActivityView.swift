@@ -27,7 +27,10 @@ extension ConversationalView {
     
 }
 
-struct ActivityView: View {
+struct ActivityView: MusicroomTabView {
+    init(room: Musicroom) {
+        self.room = room
+    }
     
     @EnvironmentObject var appState: AppState
     var room: Musicroom

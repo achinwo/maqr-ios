@@ -122,7 +122,7 @@ public struct Musicroom: Persisted, DataConvertible {
     public let deletedById: Int?
     public let details: String
     public let id: Int
-    public let membership: Membership?
+    public let membership: Membership
     public let name: String
     public let updatedAt: Date
     public let updatedById: Int?
@@ -140,7 +140,7 @@ public struct Musicroom: Persisted, DataConvertible {
         case updatedById = "updatedById"
     }
 
-    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, details: String, id: Int, membership: Membership?, name: String, updatedAt: Date, updatedById: Int?) {
+    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, details: String, id: Int, membership: Membership, name: String, updatedAt: Date, updatedById: Int?) {
         self.createdAt = createdAt
         self.createdById = createdById
         self.deletedAt = deletedAt
@@ -245,10 +245,10 @@ public struct QueuedTrack: Persisted, DataConvertible {
     public let musicroom: Musicroom?
     public let playEndedAt: Date?
     public let playStartedAt: Date?
-    public let roomId: Int?
+    public let roomId: Int
     public let roomtrackId: Int
     public let track: Track?
-    public let trackId: Int?
+    public let trackId: Int
     public let updatedAt: Date
     public let updatedById: Int?
     public let votes: [QueuedTrackVote]?
@@ -271,7 +271,7 @@ public struct QueuedTrack: Persisted, DataConvertible {
         case votes = "votes"
     }
 
-    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, musicroom: Musicroom?, playEndedAt: Date?, playStartedAt: Date?, roomId: Int?, roomtrackId: Int, track: Track?, trackId: Int?, updatedAt: Date, updatedById: Int?, votes: [QueuedTrackVote]?) {
+    public init(createdAt: Date, createdById: Int?, deletedAt: Date?, deletedById: Int?, id: Int, musicroom: Musicroom?, playEndedAt: Date?, playStartedAt: Date?, roomId: Int, roomtrackId: Int, track: Track?, trackId: Int, updatedAt: Date, updatedById: Int?, votes: [QueuedTrackVote]?) {
         self.createdAt = createdAt
         self.createdById = createdById
         self.deletedAt = deletedAt

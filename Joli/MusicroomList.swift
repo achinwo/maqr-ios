@@ -23,27 +23,44 @@ struct MusicroomList: View {
     
     var body: some View {
         //NavigationView {
-        List(appState.musicrooms) { (room: Musicroom) in
+        
+        let resolveCreatedBy = { (room: Musicroom) -> String in
+            var createdBy: String
+            
+            if let id = room.createdById, let createdByUser = self.appState.usersById[id] {
+                createdBy = createdByUser.name
+            } else {
+                createdBy = "Unknown"
+            }
+            return createdBy
+        }
+        
+        return List(appState.musicrooms) { (room: Musicroom) in
             NavigationLink(destination: MusicroomView(room: room)) {
 
                 ZStack(alignment: .bottomTrailing) {
                     VStack(alignment: .leading) {
 
-                        ImageStore.shared.image(name: "party-people")
-                            .resizable()
-                            .frame(width: UIScreen.main.bounds.width - 40, height: 220, alignment: .center)
-                        .cornerRadius(10)
-//                            .overlay(ZStack() {
-//
-//                                })
-
-                        HStack(alignment: .lastTextBaseline) {
-                            Text(verbatim: room.name).font(.title)
-                            Spacer()
+                        HStack(alignment: .firstTextBaseline){
+                            VStack(alignment: .leading) {
+                                Text(verbatim: room.name).font(.title)
+                                Text(room.details).font(.subheadline).lineLimit(4)
+                                
+                                if (self.appState.auth == nil || room.createdById == nil) || self.appState.api.auth!.user.createdById != room.createdById! {
+                                    Text(resolveCreatedBy(room))
+                                        .font(.footnote)
+                                        .foregroundColor(.gray)
+                                }
+                            }
                             
-                            Text("By \(room.createdById == nil ? "Unknown" : self.appState.usersById[room.createdById!]?.name ?? "Unknown")")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
+                            Spacer()
+                            HStack(alignment: .firstTextBaseline){
+                                Image(systemName: "music.mic")
+                                Text((room.createdById ?? 2) == 2 ? "Grim" : "Afrobeats").font(.footnote)
+                                Text("•").font(.subheadline)
+                                Image(systemName: "headphones")
+                                Text(room.createdById?.description ?? "7")
+                            }.foregroundColor(.gray)
                         }.contextMenu {
                             
                             Button(action: {
@@ -60,7 +77,15 @@ struct MusicroomList: View {
                             }
                         }
                         
-                        Text(room.details).font(.body).lineLimit(4)
+                        ImageStore.shared.image(name: "party-people")
+                            .resizable()
+                            .frame(width: UIScreen.main.bounds.width - 40, height: 220, alignment: .center)
+                        .cornerRadius(10)
+//                            .overlay(ZStack() {
+//
+//                                })
+                        
+                        
                         Divider()
                     }
                     //Text("Home").background(Color.red)
@@ -68,9 +93,10 @@ struct MusicroomList: View {
                 }
             }
         }
-        .navigationBarTitle(Text("Joli") + Text("\nmusic coordinator").font(.footnote), displayMode: .large)
+        .navigationBarTitle(Text("J❍li").foregroundColor(.green), displayMode: .large)
+        .accentColor(appState.navbarColor)
         .onAppear() {
-            logger.debug("[Musicroom] fetchMusicrooms")
+            logger.debug("[Musicroom❖] fetchMusicrooms")
             self.appState.fetchMusicrooms()
                 .catch() { error in
                     logger.error("[Musicroom] fetch Musicrooms error: \(error)")

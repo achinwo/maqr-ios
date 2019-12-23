@@ -158,7 +158,7 @@ public protocol Persistable {
 
 
 // MARK: - Persisted
-public protocol Persisted: Identifiable, Codable, DataConvertible, Persistable {
+public protocol Persisted: Identifiable, Codable, DataConvertible, Persistable, Hashable {
     
     associatedtype CodingKeys: CodingKey & Hashable
     
@@ -340,8 +340,14 @@ extension Persisted {
         return String(describing: Self.self)
     }
     
-    public static func all(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[Self]> {
-        return HttpMethod.get.fetch(urlString: "/api/db/\(Self.className())", dataType: [Self].self, baseUrl: baseUrl, urlSession: urlSession, on: on)
+    public static func all(where whereClause: PropertiesDict? = nil, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[Self]> {
+        var queryPath = URLComponents(string: "/api/db/\(Self.className())")!
+        
+        queryPath.queryItems = []
+        for (key, val) in (whereClause ?? [:]){
+            queryPath.queryItems?.append(URLQueryItem(name: key.stringValue, value: val as? String))
+        }
+        return HttpMethod.get.fetch(urlPath: queryPath, dataType: [Self].self, baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
     public static func findById(id: Int, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self?> {
@@ -404,6 +410,14 @@ extension Musicroom {
     
     // get users
     // get tracks
+    
+    public func queueTrack(_ track: Playable, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<QueuedTrack>{
+        
+        let urlPath = "/api/musicrooms/\(id)/\(track.uri)"
+        return HttpMethod.post.fetch(urlString: urlPath,
+                                     dataType: QueuedTrack.self,
+                                     baseUrl: baseUrl, urlSession: urlSession, on: on)
+    }
     
     public func fetchTracks(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[Track]> {
         let urlPath = "/get_room_tracks"

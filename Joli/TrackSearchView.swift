@@ -44,6 +44,7 @@ struct TrackSearchView: View {
                 }) { () -> Void in
                     logger.debug("onCommit")
                 }.foregroundColor(.primary)
+                    .keyboardType(.alphabet)
 
                 Button(action: { () -> Void in
                     self.appState.searchText = ""

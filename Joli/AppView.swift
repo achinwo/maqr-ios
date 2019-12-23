@@ -8,6 +8,7 @@
 
 import SwiftUI
 import JoliApi
+import JoliCore
 
 typealias Size = ()
 
@@ -39,6 +40,8 @@ struct AppView: View {
     
     @State var heightOffset: CGFloat = 0
     
+    static let DEFAULT_PLAY_WIDGET_HIEGHTOFFSET: CGFloat = 200
+    
     var body: some View {
         let settingsOffsetWidth: CGFloat? = appState.isSettingsPresented ? 0 : nil
         
@@ -48,15 +51,6 @@ struct AppView: View {
             } else {
                 self.isLogoutAlertPresented = true
             }
-        }
-        
-        
-        let gesture = DragGesture(minimumDistance: 0)
-            .onEnded() { val in
-                self.dragging = false
-        }.onChanged() { changeVal in
-            self.dragging = true
-            self.heightOffset = changeVal.translation.height
         }
         
         return GeometryReader(){ geometry in
@@ -98,6 +92,7 @@ struct AppView: View {
                         
                     )
                 }
+                //.background(self.appState.navbarColor)
                 .animation(.spring())
                 
                 NavigationView {
@@ -106,76 +101,145 @@ struct AppView: View {
                 .animation(.spring())
                 .offset(CGSize(width: settingsOffsetWidth ?? geometry.size.width, height: 0))
                 
-                VStack(alignment: .leading){
-                    HStack(alignment: .center){
-                        if self.appState.currentlyPlayingContent != nil
-                        && self.appState.imagesByUrl[self.appState.currentlyPlayingTrack!.albumCoverUrl] != nil {
-                            self.appState.imagesByUrl[self.appState.currentlyPlayingTrack!.albumCoverUrl]?
-                                .resizable().frame(width: 116, height: 116, alignment: .bottomLeading)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 0){
-                            HStack(alignment: .bottom){
-
-                                Text(self.appState.currentlyPlayingTrack?.name ?? "No Name")
-                                    .font(.title)//.background(Color.blue)
-                            }
-                            HStack(alignment: .top){
-                                VStack(alignment: .leading){
-                                    Text(self.appState.currentlyPlayingTrack == nil ? "" : "By \(self.appState.currentlyPlayingTrack!.artistName)").font(.subheadline)
-                                    
-                                    HStack(alignment: .center){
-                                        Image(systemName: "hand.thumbsup")
-                                        Text("4")
-                                        
-                                        if self.appState.spotifyDevice != nil {
-
-                                            Text("•").font(.title)
-                                            
-                                            Image(systemName: "hifispeaker")
-                                            Text(self.appState.spotifyDevice!.type.rawValue)
-                                            .lineLimit(1)
-                                                .font(.footnote)
-                                        }
-                                    }
-                                }
-                                Spacer()
-                                if self.appState.currentlyPlayingTrack != nil && self.appState.currentlyPlayingContent!.isPlaying {
-                                    Image(systemName: "pause.circle").resizable().padding(.trailing, 10).padding(.bottom, 10)
-                                        .frame(width: 64, height: 64, alignment: .bottomLeading)
-                                        .onTapGesture {
-                                            self.appState.pausePlayback()
-                                        }
-                                }else{
-                                    Image(systemName: "play.circle").resizable().padding(.trailing, 10).padding(.bottom, 10)
-                                        .frame(width: 64, height: 64, alignment: .bottomLeading)
-                                    .onTapGesture {
-                                        guard let track = self.appState.currentlyPlayingTrack else {
-                                            return
-                                        }
-                                        self.appState.playTrack(track)
-                                    }
-                                }
-                            }//.background(Color.green)
-                        }.frame(width: UIScreen.main.bounds.width - 32 - 116, height: 116, alignment: .bottomLeading)
-                        
-                    }
-                }
-                .simultaneousGesture(gesture)
-                .frame(width: UIScreen.main.bounds.width - 32, height: 116, alignment: .bottomLeading)
-                .padding(.trailing, 8)
-                .background(Color.yellow)
-                    .opacity(0.95)
-                .shadow(radius: 8)
-                    
-                .cornerRadius(10)
-                .animation(.easeInOut)
-                    .offset(CGSize(width: -16, height: self.dragging ? self.heightOffset : self.appState.currentlyPlayingTrack != nil && self.appState.currentlyPlayingContent!.isPlaying ? 0 : 150))
-                .edgesIgnoringSafeArea(.bottom)
+                self.currentPlayingView
                 
+//                VStack(alignment: .center, spacing: 0){
+//                    HStack(alignment: .center){
+//                        Image(systemName: "bolt.slash")
+//                            .resizable().frame(width: 32, height: 32, alignment: .center)
+//                            .padding(.init(top: 4, leading: 16, bottom: 4, trailing: 4))
+//                            .foregroundColor(.gray)
+//                        Text("Connection Lost").font(.subheadline).foregroundColor(.gray)//.padding()
+//                        Spacer()
+//                    }
+//                    .animation(.easeInOut)
+//                    Divider()
+//                }
+//                .background(Color.white)
+//                .clipped()
+//                .alignmentGuide(.top) { d in
+//                    logger.debug("[alignmentGuide] \(d)")
+//                    return d[.top]
+//                }
+//                .frame(width: UIScreen.main.bounds.width,
+//                       height: self.appState.serverConnectionState == ConnectionState.connected ? CGFloat(0) : CGFloat(50),
+//                       alignment: .center)
+            }//.colorScheme(.dark)
+        }
+    }
+        
+    var currentPlayingView: some View {
+        let gesture = DragGesture(minimumDistance: 10)
+            .onEnded() { val in
+                self.dragging = false
+                self.heightOffset = val.translation.height > 50 ? AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET : val.location.y
+            }
+            .onChanged() { changeVal in
+                self.dragging = true
+                self.heightOffset = changeVal.location.y
+            }
+        
+        var buttons: [ActionSheet.Button] = appState.spotifyDevices.map() { device in
+            var suffix = ""
+            if let selectedDeviceIdx = self.appState.selectedSpotifyDeviceIdx,
+                device == self.appState.spotifyDevices[selectedDeviceIdx] {
+                suffix = " ✔️"
             }
             
+            return .default(Text("\(device.name)\(suffix)")) {
+                logger.debug("[spotifyDevices] selected device: \(device)")
+                self.appState.selectedSpotifyDeviceIdx = self.appState.spotifyDevices.firstIndex(of: device)
+                self.appState.triggerAndClearDeviceCallbacks(cancelled: false)
+            }
         }
+        
+        buttons.append(.cancel() {
+            self.appState.triggerAndClearDeviceCallbacks(cancelled: true)
+        })
+        
+        return VStack(alignment: .leading){
+                HStack(alignment: .center){
+                    if self.appState.currentlyPlayingContent != nil
+                    && self.appState.imagesByUrl[self.appState.currentlyPlayingTrack!.albumCoverUrl] != nil {
+                        self.appState.imagesByUrl[self.appState.currentlyPlayingTrack!.albumCoverUrl]?
+                            .resizable().frame(width: 116, height: 116, alignment: .bottomLeading)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 0){
+                        HStack(alignment: .bottom){
+
+                            Text(self.appState.currentlyPlayingTrack?.name ?? "No Name")
+                                .font(.headline)//.background(Color.blue)
+                        }
+                        HStack(alignment: .top){
+                            VStack(alignment: .leading){
+                                Text(self.appState.currentlyPlayingTrack == nil ? "" : "By \(self.appState.currentlyPlayingTrack!.artistName)").font(.subheadline)
+                                
+                                HStack(alignment: .center){
+                                    Image(systemName: "hand.thumbsup")
+                                    Text("4")
+                                    
+                                    if self.appState.spotifyDevice != nil {
+
+                                        Text("•").font(.title)
+                                        
+                                        Image(systemName: "hifispeaker")
+                                        Text(self.appState.spotifyDevice!.type.rawValue)
+                                        .lineLimit(1)
+                                            .font(.footnote)
+                                    }
+                                }
+                            }
+                            Spacer()
+                            if self.appState.currentlyPlayingTrack != nil && self.appState.currentlyPlayingContent!.isPlaying {
+                                Image(systemName: "pause.circle").resizable().padding(.trailing, 10).padding(.bottom, 10)
+                                    .frame(width: 64, height: 64, alignment: .bottomLeading)
+                                    .onTapGesture {
+                                        self.appState.pausePlayback()
+                                    }
+                            }else{
+                                Image(systemName: "play.circle").resizable().padding(.trailing, 10).padding(.bottom, 10)
+                                    .frame(width: 64, height: 64, alignment: .bottomLeading)
+                                .onTapGesture {
+                                    guard let track = self.appState.currentlyPlayingTrack else {
+                                        return
+                                    }
+                                    self.appState.playTrack(track)
+                                }
+                            }
+                        }//.background(Color.green)
+                    }.frame(width: UIScreen.main.bounds.width - 32 - 116, height: 116, alignment: .bottomLeading)
+                    
+                }
+            }
+            .actionSheet(isPresented: self.$appState.isDeviceChooserPresented){
+                ActionSheet(title: Text("Select Audio Device"), message: Text("Spotify connected devices"), buttons: buttons)
+            }
+             //   .animation(self.dragging ? .none : .easeInOut)
+            .simultaneousGesture(gesture)
+            .frame(width: UIScreen.main.bounds.width - 32, height: 116, alignment: .bottomLeading)
+            .padding(.trailing, 8)
+            .background(Color.yellow)
+                .opacity(0.95)
+            .shadow(radius: 8)
+                
+            .cornerRadius(10)
+            .animation(.easeInOut)
+            .offset(self.currentlyPlayingViewOffset)
+            .edgesIgnoringSafeArea(.bottom)
+        
+    }
+
+    var currentlyPlayingViewOffset: CGSize {
+        guard let content = appState.currentlyPlayingContent else {
+            return CGSize(width: -16, height: AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET)
+        }
+        
+        if !content.isPlaying{
+            return CGSize(width: -16, height: AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET)
+        }
+        
+        return CGSize(width: -16, height: heightOffset)
     }
 }
 

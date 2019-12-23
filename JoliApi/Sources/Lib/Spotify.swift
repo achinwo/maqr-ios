@@ -212,4 +212,8 @@ public enum Spotify {
         public let url: String
         public let width: Int
     }
+    
+    public enum ErrorMessage: String {
+        case invalidAccessToken = "Invalid access token"
+    }
 }

@@ -15,15 +15,23 @@ struct TrackView: View {
     @EnvironmentObject var appState: AppState
     var track: Playable
     var allowDelete = false
+    var allowQueueAdd = false
     
     @State var image: Image?
     var spotifyDevice: Spotify.Device? {
         return self.appState.spotifyDevice
     }
     
-    init(track: Playable, allowDelete: Bool = false){
+    var isQueueable: Bool {
+        return !(track is QueuedTrack)
+    }
+    
+    var isDeleteable: Bool {
+        return track is QueuedTrack || track is RoomTrack
+    }
+    
+    init(track: Playable){
         self.track = track
-        self.allowDelete = allowDelete
     }
     
     var explicitLabel: some View {
@@ -62,22 +70,31 @@ struct TrackView: View {
                     self.explicitLabel
                 }
             }
+            
+            if self.isQueueable {
+                Image(systemName: "plus").font(.subheadline).padding()
+            }
         }.contextMenu {
             
-            Button(action: {
-                guard let room = self.appState.activeRoom, let track = self.track as? Spotify.Track else { return }
-                self.appState.api.addTrackToRoom(room, track)
-                    .catch() { error in
-                        logger.error("[TrackView] addTrack error: \(error)")
+            if self.isQueueable {
+                Button(action: {
+                    guard let room = self.appState.activeRoom, let track = self.track as? Spotify.Track else { return }
+                    self.appState.api.addTrackToRoom(room, track)
+                        .then(){ track in
+                            return
+                        }
+                        .catch() { error in
+                            logger.error("[TrackView] addTrack error: \(error)")
+                        }
+                        .always {
+                            self.appState.fetchTracks(room)
+                            self.appState.fetchQueuedTracks(room)
+                    }
+                }) {
+                    Text("Add to Queue")
+                    Image(systemName: "plus")
                 }
-                    .always {
-                        self.appState.fetchTracks(room)
-                }
-            }) {
-                Text("Add to Queue")
-                Image(systemName: "plus")
             }
-            
 //            if self.track is Persisted {
 //
 //                Button(action: {

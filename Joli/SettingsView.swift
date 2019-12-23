@@ -83,12 +83,7 @@ struct SettingsView: View {
             ExampleView()
             Text("Room Membership")
             Button(action: {
-                var components = URLComponents(string: "/spotify_login")!
-                components.queryItems = [URLQueryItem(name: "platform", value: "ios")]
-                
-                let url = components.url(relativeTo: self.appState.baseUrl.rawValue.http)!
-                
-                UIApplication.shared.open(url)
+                self.appState.openSpotifyWebAuthorization()
             }) {
                 HStack(alignment: .center) {
                     Spacer()

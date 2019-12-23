@@ -86,6 +86,11 @@ class AppState: ObservableObject {
     @Published var currentlyPlayingContent: Spotify.CurrentlyPlayingContent? = nil
     @Published var currentlyPlayingAlbumImage: Image? = nil
     
+    @Published var lastPlayedTrack: Spotify.Track? = nil
+    @Published var lastPlayedContent: Spotify.CurrentlyPlayingContent? = nil
+    
+    @Published var navbarColor: Color = .gray
+    
     private var currentlyPlayingAlbumUrl: String? = nil
     
     @Published var spotifyAuthorizationInProgress = false
@@ -93,7 +98,7 @@ class AppState: ObservableObject {
     
     @Published var musicrooms: [Musicroom] = []
     @Published var tracksByMusicrooms: [Int: [RoomTrack]] = [:]
-    @Published var queuedTracksByMusicrooms: [Int: [QueuedTrack]] = [:]
+    @Published var queuedTracksByMusicrooms: [Int: Set<QueuedTrack>] = [:]
     @Published var usersById: [Int: User] = [:]
     @Published var imagesByUrl: [String: Image] = [:]
     
@@ -173,6 +178,7 @@ class AppState: ObservableObject {
     //var currentlyPlayingContent = CurrentValueSubject<Spotify.CurrentlyPlayingContent?, Never>(nil)
     
     @Published var auth: Auth?
+    @Published var serverConnectionState: ConnectionState = .stopped
     
     static func jsonStringToDict(text: String) -> [String:AnyObject]? {
         if let data = text.data(using: .utf8) {
@@ -234,6 +240,90 @@ class AppState: ObservableObject {
         }
     }
     
+    
+    @Published var isDeviceChooserPresented: Bool = false
+    @Published var isSpotifyConnectPresented: Bool = false
+    
+    typealias DeviceReadyCallback = (Spotify.Device?, Bool) throws -> Void
+    typealias SpotifyReadyCallback = (Spotify.UserProfile?, Bool) throws -> String?
+    
+    var deviceReadyCallbacks: [DeviceReadyCallback] = []
+    
+    func triggerAndClearDeviceCallbacks(cancelled: Bool = false){
+        for callback in self.deviceReadyCallbacks {
+            do{
+                try callback(self.spotifyDevice, cancelled)
+            }catch{
+                logger.error("[triggerAndClearDeviceCallbacks] \(error)")
+            }
+        }
+        self.deviceReadyCallbacks.removeAll()
+    }
+    
+    func openSpotifyWebAuthorization(){
+        var components = URLComponents(string: "/spotify_login")!
+        components.queryItems = [URLQueryItem(name: "platform", value: "ios")]
+        
+        let url = components.url(relativeTo: baseUrl.http)!
+        
+        UIApplication.shared.open(url)
+    }
+    
+    func assertSelectedDevice(_ callback: @escaping DeviceReadyCallback) {
+        if let spotifyDevice = spotifyDevice {
+            try? callback(spotifyDevice, false)
+            return
+        }
+        self.deviceReadyCallbacks.append(callback)
+        
+        if spotifyDevices.isEmpty {
+            fetchSpotifyDevices()
+                .then() { devices in
+                    self.isDeviceChooserPresented = true
+            }.catch() { error in
+                guard case let NetworkError.errorMessage(err) = error, let message = err.message else{
+                    return
+                }
+                
+                logger.warning("[assertSelectedDevice] spotify: \(message) - \(message == Spotify.ErrorMessage.invalidAccessToken.rawValue)")
+                try? callback(nil, false)
+                
+                self.openSpotifyWebAuthorization()
+            }
+            
+        }else{
+            self.isDeviceChooserPresented = true
+        }
+        
+    }
+    
+    func assertSpotifyAvailable(_ callback: DeviceReadyCallback) {
+        self.isSpotifyConnectPresented = true
+    }
+    
+    func onServerConnectionStateChanged(_ connected: Bool){
+        self.navbarColor = connected ? Color.green : .gray
+        self.serverConnectionState = api.wsClient.connectionState
+        
+        if !connected {
+            assertSpotifyAuthorized()
+        }
+    }
+    
+    func assertSpotifyAuthorized(caller: String = #function) {
+        self.fetchSpotifyAuthToken()
+        .then() { auth in
+            self.spotifyWebAuthorized = !auth.isExpired
+        }
+        .catch() { error in
+            self.errorHandler("fetchSpotifyAuthToken#\(caller)")(error)
+            self.spotifyWebAuthorized = false
+            
+            self.currentlyPlayingTrack = nil
+            self.currentlyPlayingContent = nil
+        }
+    }
+    
     // MARK: - initialize
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
@@ -249,14 +339,7 @@ class AppState: ObservableObject {
                 self.userSettings.authToken = auth?.session.token
                 //logger.info("[AppState] storing token: \(String(describing: self.userSettings.authToken))")
 
-                self.fetchSpotifyAuthToken()
-                    .then() { auth in
-                        self.spotifyWebAuthorized = !auth.isExpired
-                    }
-                    .catch() { error in
-                        self.errorHandler("fetchSpotifyAuthToken")(error)
-                        self.spotifyWebAuthorized = false
-                    }
+                self.assertSpotifyAuthorized()
                 
                 self.fetchMusicrooms()
             }
@@ -402,8 +485,9 @@ class AppState: ObservableObject {
         return spotifyDevices[selectedSpotifyDeviceIdx]
     }
     
-    func fetchSpotifyDevices() {
-        api.fetchSpotifyDevices(on: DispatchQueue.main)
+    @discardableResult
+    func fetchSpotifyDevices() -> Promise<[Spotify.Device]> {
+        return api.fetchSpotifyDevices(on: DispatchQueue.main)
             .then() { devices in
                 logger.debug("Devices: \(devices)")
                 self.spotifyDevices = devices
@@ -500,10 +584,14 @@ class AppState: ObservableObject {
                 logger.debug("[Track#play] \(String(describing: info)) - \(String(describing: error))")
             }
         }else{
-            track.play(deviceId: self.spotifyDevice?.id, baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: nil)
+            assertSelectedDevice() { [weak self] (device, cancelled) in
+                logger.debug("[Track#play] assertion completed - \(String(describing: device))")
+                track.play(deviceId: device?.id, baseUrl: self?.api.baseUrl.http, urlSession: self?.api.urlSession, on: nil)
+            }
         }
     }
     
+    @discardableResult
     func pausePlayback() -> Promise<Json> {
         if spotifyRemote.isConnected {
             setAudioSession(false)
@@ -536,12 +624,34 @@ class AppState: ObservableObject {
                 
                 for track in tracks.filter({ $0.isPlayable }) {
                     var roomTracks = self.tracksByMusicrooms[track.roomId] ?? []
+                    
+                    guard !roomTracks.contains(track) else {
+                        continue
+                    }
+                    
                     roomTracks.append(track)
-                    self.tracksByMusicrooms[track.roomId] = roomTracks
+                    self.tracksByMusicrooms[track.roomId] = roomTracks.sorted() { $0.createdAt > $1.createdAt}
                 }
         }
         .catch() { error in
             logger.error("[fetchTracks] error: \(error)")
+        }
+    }
+    
+    func fetchQueuedTracks(_ room: Musicroom) {
+        QueuedTrack.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+            .then() { [weak self] tracks in
+                
+                guard let self = self else { return }
+                
+                for track in tracks {
+                    var roomTracks = self.queuedTracksByMusicrooms[track.roomId] ?? []
+                    roomTracks.insert(track)
+                    self.queuedTracksByMusicrooms[track.roomId] = roomTracks
+                }
+        }
+        .catch() { error in
+            logger.error("[fetchQueuedTracks] error: \(error)")
         }
     }
     

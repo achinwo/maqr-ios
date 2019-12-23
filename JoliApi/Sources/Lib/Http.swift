@@ -57,10 +57,14 @@ public struct Auth: Codable {
     public var user: User
 }
 
-public struct Response<T: Codable>: Codable {
+public struct ErrorMessage: Codable, Error {
+    public let status: Int
+    public let message: String?
+}
 
-    public let data: T
-    
+public struct Response<T: Codable>: Codable {
+    public let data: T?
+    public let error: ErrorMessage?
 }
 
 public enum NetworkError: Error {
@@ -68,6 +72,7 @@ public enum NetworkError: Error {
     case invalidUrlPath(String)
     case badRequest(String)
     case badResponse(String)
+    case errorMessage(ErrorMessage)
     case deserialization(String?, URLResponse?, Error)
 }
 
@@ -145,7 +150,16 @@ public enum HttpMethod: String {
 
                 do {
                     let respObj = try Session.jsonDecoder().decode(Response<T>.self, from: data)
-                    resolve(respObj.data)
+                    
+                    guard let respData = respObj.data else {
+                        let error = respObj.error != nil ?
+                            NetworkError.errorMessage(respObj.error!) : 
+                            NetworkError.badResponse(data.stringUtf8 ?? "<<Data to string failed>>")
+                        
+                        return reject(error)
+                    }
+                    
+                    resolve(respData)
                 } catch {
                     reject(NetworkError.deserialization(data.stringUtf8, resp, error))
                 }

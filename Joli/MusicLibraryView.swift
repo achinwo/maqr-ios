@@ -10,43 +10,44 @@ import SwiftUI
 import JoliApi
 import JoliCore
 
-struct MusicLibraryView: View {
+struct MusicLibraryView: MusicroomTabView {
     @EnvironmentObject var appState: AppState
     @State var albumArt: Image?
     @State var albumArtUrl: String?
         
     var room: Musicroom
     
+    init(room: Musicroom) {
+        self.room = room
+    }
+    
     var tracks: [RoomTrack] {
-        return appState.tracksByMusicrooms[room.id] ?? []
+        return (appState.tracksByMusicrooms[room.id] ?? []).map() { $0 }
     }
     
     @State var nowPlayingPosition = 0.0
     @State var nowPlaying: String?
     
     var body: some View {
-        return GeometryReader() { geometry in
-            VStack(alignment: .leading) {
-                List {
-                    ForEach(self.tracks) { track in
-                        TrackView(track: track, allowDelete: true)//.background(Color.pink)
-                    }
-                    .onDelete(perform: self.delete)
+        VStack(alignment: .leading) {
+            List {
+                ForEach(self.tracks) { track in
+                    TrackView(track: track)//.background(Color.pink)
                 }
-                
+                //.keyboardType(.)
+                .onDelete(perform: self.delete)
             }
-        }
-        
+        }.padding(.bottom, 80)
     }
     
     func delete(at offsets: IndexSet) {
-        logger.debug("[PlayQueueView] offsets: \(offsets)")
-        for idx in offsets {
-            guard let track = appState.tracksByMusicrooms[room.id]?.remove(at: idx) else {
-                continue
-            }
-            appState.api.delete(track)
-        }
+        logger.error("[PlayQueueView] Delete broken! offsets: \(offsets)")
+//        for idx in offsets {
+//            guard let track = appState.tracksByMusicrooms[room.id]?.remove(at: ) else {
+//                continue
+//            }
+//            appState.api.delete(track)
+//        }
     }
     
     func onDisappear(){
