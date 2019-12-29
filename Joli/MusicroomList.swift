@@ -22,6 +22,25 @@ struct MusicroomList: View {
     }
     
     var body: some View {
+        return ZStack(alignment: .top) {
+            self.roomsListView
+            
+            if self.appState.alerts.sortedByImportance.first == ServiceAlert.serverConnectionLost {
+                VStack(alignment: .leading, spacing: 0) {
+                    self.appState.alerts.sortedByImportance.first!.view(self.appState)
+                    Divider()
+                }
+                .alignmentGuide(.top) { d in d[explicit: VerticalAlignment.top] ?? CGFloat.zero }
+                .background(Color.white)
+//                .frame(width: UIScreen.main.bounds.width,
+//                       height: 50, alignment: .center)
+                .clipped()
+                .animation(.interactiveSpring())
+            }
+        }
+    }
+    
+    var roomsListView: some View {
         //NavigationView {
         
         let resolveCreatedBy = { (room: Musicroom) -> String in
@@ -41,10 +60,9 @@ struct MusicroomList: View {
                 ZStack(alignment: .bottomTrailing) {
                     VStack(alignment: .leading) {
 
-                        HStack(alignment: .firstTextBaseline){
+                        HStack(alignment: .center){
                             VStack(alignment: .leading) {
                                 Text(verbatim: room.name).font(.title)
-                                Text(room.details).font(.subheadline).lineLimit(4)
                                 
                                 if (self.appState.auth == nil || room.createdById == nil) || self.appState.api.auth!.user.createdById != room.createdById! {
                                     Text(resolveCreatedBy(room))
@@ -54,13 +72,17 @@ struct MusicroomList: View {
                             }
                             
                             Spacer()
-                            HStack(alignment: .firstTextBaseline){
-                                Image(systemName: "music.mic")
-                                Text((room.createdById ?? 2) == 2 ? "Grim" : "Afrobeats").font(.footnote)
-                                Text("•").font(.subheadline)
-                                Image(systemName: "headphones")
-                                Text(room.createdById?.description ?? "7")
-                            }.foregroundColor(.gray)
+                            VStack(alignment: .trailing) {
+                                Text(room.details).font(.subheadline).lineLimit(4)
+                                
+                                HStack(alignment: .firstTextBaseline){
+                                    Image(systemName: "music.note")
+                                    Text((room.createdById ?? 2) == 2 ? "Grim" : "Afrobeats").font(.footnote)
+                                    Text("•").font(.subheadline)
+                                    Image(systemName: "headphones")
+                                    Text(room.createdById?.description ?? "7")
+                                }.foregroundColor(.gray)
+                            }
                         }.contextMenu {
                             
                             Button(action: {

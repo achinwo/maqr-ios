@@ -32,6 +32,33 @@ public enum ConnectionState {
     case connected
     case reconnecting(Int)
     case stopped
+    
+    func lost() -> Self {
+        switch self {
+        case .connected:
+            return .reconnecting(0)
+        default:
+            return self
+        }
+    }
+    
+    func established() -> Self {
+        switch self {
+        case .reconnecting(_):
+            return .connected
+        default:
+            return self
+        }
+    }
+    
+    public var isConnected: Bool {
+        switch self {
+        case .connected:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 public enum WebSocketError: Error {
@@ -64,11 +91,12 @@ public class WebSocketClient: HttpsHook {
     
     public var messageCallbacks: [String: SubscriptionArguments] = [:]
     
-    public var connectionState = ConnectionState.stopped
     
-    public var connected = false {
+    public var connectionHandler: ((ConnectionState) -> Void)?
+    
+    public var connectionState = ConnectionState.stopped {
         didSet {
-            self.connectionHandler?(connected)
+            self.connectionHandler?(connectionState)
         }
     }
 
@@ -150,23 +178,23 @@ public class WebSocketClient: HttpsHook {
             
             if case let Result.failure(error) = result {
                 print("[receive] error response aborting...\(error)")
+                self.connectionState = self.connectionState.lost()
                 self.scheduleReconnect() // MARK: - Schedule Reconnect
                 return
             }
             
-            guard self.connected else {
-                print("[receive] disconected aborting...")
-                return
+            switch(self.connectionState){
+            case .connected:
+                print("[receive] scheduling next receive cycle...")
+                OperationQueue.main.addOperation(self.receive)
+            default:
+                break
             }
             
-            print("[receive] scheduling next receive cycle...")
-            OperationQueue.main.addOperation(self.receive)
         }
     }
     
-    public var connectionHandler: ((Bool) -> Void)?
-    
-    public func connect(connectionHandler: ((Bool) -> Void)? = nil) {
+    public func connect(connectionHandler: ((ConnectionState) -> Void)? = nil) {
         switch connectionState {
         case .stopped:
             connectionState = .reconnecting(0)
@@ -179,7 +207,7 @@ public class WebSocketClient: HttpsHook {
         startTask(connectionHandler: connectionHandler)
     }
     
-    private func startTask(timeout: Double = 10, connectionHandler: ((Bool) -> Void)? = nil){
+    private func startTask(timeout: Double = 10, connectionHandler: ((ConnectionState) -> Void)? = nil){
         
         if let task = self.task {
             task.cancel(with: .goingAway, reason: "Initailizing new connection".data(using: .utf8))
@@ -212,17 +240,20 @@ public class WebSocketClient: HttpsHook {
             print("[WebSocketClient] reconnecting: \(nextCount)")
             connectionState = .reconnecting(nextCount)
             
-            guard !taskScheduled else {return}
+            guard !taskScheduled else {
+                return
+            }
             
             taskScheduled = true
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now().advanced(by: .seconds(retryCount * 5))) {
-                //self.cancelTask()
+            DispatchQueue.global(qos: .background).asyncAfter(deadline: DispatchTime.now().advanced(by: .seconds(retryCount * 5))) {
                 
-                guard self.connected else { return }
-                
+                guard case .reconnecting(_) = self.connectionState else {
+                    print("[WebSocketClient] aborting asyncAfter: \(self.connectionState)")
+                    return
+                }
+
                 self.task?.cancel(with: .noStatusReceived, reason: "attempting reconnect".data(using: .utf8))
                 self.startTask(timeout: Double(nextCount * 5))
-                self.taskScheduled = false
             }
         default:
             return
@@ -234,21 +265,16 @@ public class WebSocketClient: HttpsHook {
 extension WebSocketClient: URLSessionWebSocketDelegate {
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?){
-        print("Errored!")
-        self.connected = false
+        print("[WebSocketClient] Errored! \(String(describing: error))")
+        connectionState = connectionState.lost()
+
+        self.taskScheduled = false
         scheduleReconnect() // MARK: - Schedule Reconnect
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
-        print("Connected! - \(String(describing: `protocol`))")
-        self.connected = true
-        
-        switch connectionState {
-        case .reconnecting(_):
-            connectionState = .reconnecting(0)
-        default:
-            break
-        }
+        print("[WebSocketClient] Connected! - \(String(describing: `protocol`))")
+        connectionState = connectionState.established()
         
         defer {
             self.reperformSubscriptions()
@@ -260,15 +286,15 @@ extension WebSocketClient: URLSessionWebSocketDelegate {
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         
         if let reason = reason {
-            print("Disconnected! \(closeCode) - \(String(data: reason, encoding: .utf8)!)")
+            print("[WebSocketClient] Disconnected! \(closeCode) - \(String(data: reason, encoding: .utf8)!)")
 
         }else{
-            print("Disconnected! \(closeCode)")
+            print("[WebSocketClient] Disconnected! \(closeCode)")
 
         }
-        
-        self.connected = false
-        
+
+        self.taskScheduled = false
+        connectionState = connectionState.lost()
         scheduleReconnect() // MARK: - Schedule Reconnect
     }
     

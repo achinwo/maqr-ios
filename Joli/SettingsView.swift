@@ -78,13 +78,12 @@ struct SettingsView: View {
     
     var body: some View {
         return VStack {
+//
+//            //WebView(request: URLRequest(url: url)).padding(0)
+//            ExampleView()
+//            Text("Room Membership")
             
-            //WebView(request: URLRequest(url: url)).padding(0)
-            ExampleView()
-            Text("Room Membership")
-            Button(action: {
-                self.appState.openSpotifyWebAuthorization()
-            }) {
+            Button(action: self.appState.sceneDelegate.requestSpotifyAccess) {
                 HStack(alignment: .center) {
                     Spacer()
                     

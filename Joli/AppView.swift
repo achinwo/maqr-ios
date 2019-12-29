@@ -33,7 +33,7 @@ struct AppView: View {
     @State var mainViewOffset = CGSize(width: 0, height: 0)
     @State var activityIdx = 0
     
-    @State var isLogonViewPresented = false
+    
     @State var isLogoutAlertPresented = false
     @State var isRoomCreateFormPresented = false
     @State var dragging = false
@@ -47,7 +47,7 @@ struct AppView: View {
         
         let logonButtonAction = {
             if self.appState.auth == nil {
-                self.isLogonViewPresented = true
+                self.appState.isLogonViewPresented = true
             } else {
                 self.isLogoutAlertPresented = true
             }
@@ -58,7 +58,7 @@ struct AppView: View {
                 
                 NavigationView {
                         MusicroomList()
-                            .sheet(isPresented: self.$isLogonViewPresented) {
+                            .sheet(isPresented: self.$appState.isLogonViewPresented) {
                                 NavigationView {
                                     LogOnView() { cancelled in
                                         logger.debug("[LogOnView] view dismissed")
@@ -121,6 +121,7 @@ struct AppView: View {
 //                    logger.debug("[alignmentGuide] \(d)")
 //                    return d[.top]
 //                }
+                
 //                .frame(width: UIScreen.main.bounds.width,
 //                       height: self.appState.serverConnectionState == ConnectionState.connected ? CGFloat(0) : CGFloat(50),
 //                       alignment: .center)

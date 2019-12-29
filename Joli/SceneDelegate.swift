@@ -10,6 +10,7 @@ import UIKit
 import SwiftUI
 import MediaPlayer
 import JoliApi
+import JoliCore
 
 extension MPVolumeView {
     static func setVolume(_ volume: Float) {
@@ -26,6 +27,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
     
     func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
         logger.debug("Spotify: created session \(session)")
+        
+        self.appRemote.connectionParameters.accessToken = session.accessToken
+        self.appRemote.connect()
+        
+        let builder = Builder<AuthToken>.init(properties: [
+            AuthToken.CodingKeys.accessToken: session.accessToken as AnyObject,
+            AuthToken.CodingKeys.refreshToken: session.refreshToken as AnyObject,
+            AuthToken.CodingKeys.scope: session.scope as AnyObject,
+            AuthToken.CodingKeys.expiresIn: 3016 as AnyObject,
+            AuthToken.CodingKeys.tokenType: "Bearer" as AnyObject,
+        ])
+        
+        builder.save()
+            .then(){ auth in
+                logger.info("[\(#function)] AUth: \(auth)")
+        }.catch(appState.errorHandler())
     }
     
     func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
@@ -52,15 +69,49 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
     let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
     
     lazy var appRemote: SPTAppRemote = {
-      let appRemote = SPTAppRemote(configuration: self.configuration, logLevel: .debug)
-      appRemote.connectionParameters.accessToken = self.accessToken
-      appRemote.delegate = self
-      return appRemote
+        
+        self.configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!
+        self.configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
+
+        let appRemote = SPTAppRemote(configuration: self.configuration, logLevel: .debug)
+        appRemote.connectionParameters.accessToken = self.accessToken
+        appRemote.delegate = self
+        return appRemote
     }()
     
-    lazy var spotifySessionManager = {
+    lazy var spotifySessionManager: SPTSessionManager = {
+        
+        var configuration = SPTConfiguration(
+          clientID: SpotifyClientID,
+          redirectURL: SpotifyRedirectURL //URL(string: "joli://spotify-callback/")!
+        )
+        
+        configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!
+        //https://localhost:8080/spotify_callback/
+        configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
+        
+        configuration.playURI = ""
+        
         return SPTSessionManager(configuration: configuration, delegate: self)
     }()
+    
+    func requestSpotifyAccess() {
+        //"app-remote-control streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-birthdate user-read-email user-read-private"
+        let requestedScopes: SPTScope = [
+                                         .appRemoteControl,
+                                         .streaming,
+                                         .userModifyPlaybackState,
+                                         .userReadPlaybackState,
+                                         .userReadCurrentlyPlaying,
+                                         .userReadBirthDate,
+                                         .userReadEmail,
+                                         .userReadRecentlyPlayed,
+                                         .userReadPrivate
+        ]
+        self.spotifySessionManager.alwaysShowAuthorizationDialog = true
+        //self.spotifySessionManager.
+        self.spotifySessionManager.initiateSession(with: requestedScopes, options: .default)
+    }
     
     lazy var isSpotifyAppInstalled = {
         return spotifySessionManager.isSpotifyAppInstalled
@@ -82,10 +133,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         
         self.appRemote.playerAPI?.delegate = self
         self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
-          if let error = error {
-            logger.debug("Spotify: playstae subsrcibe error: \(error)")
-            logger.debug(error.localizedDescription)
-          }
+            if let error = error {
+                logger.debug("Spotify: playstae subsrcibe error: \(error)")
+                logger.debug(error.localizedDescription)
+                return
+            }
+            
+            logger.info("[PlayerState] \(String(describing: result))")
         })
     }
     
@@ -120,7 +174,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         }
         
         let parameters = appRemote.authorizationParameters(from: url);
-
+        logger.info("[\(#function)] spotify auth params: \(String(describing: parameters))")
         if let access_token = parameters?[SPTAppRemoteAccessTokenKey] {
             appRemote.connectionParameters.accessToken = access_token
             self.accessToken = access_token
@@ -191,8 +245,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
         logger.debug("[SceneDelegate] App is active")
-        appState.api.wsClient.connect() { connected in
-            self.appState.onServerConnectionStateChanged(connected)
+        appState.api.wsClient.connect() { connectionState in
+            self.appState.onServerConnectionStateChanged(connectionState)
         }
         
 //        do {

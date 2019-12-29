@@ -214,6 +214,7 @@ public class JoliApi: ObservableObject {
         case playerStateNowPlaying = "PLAYER_STATE_NOW_PLAYING"
         case activityFeed = "activity_feed"
         case dbUpdates = "database_updates"
+        case queryTrackSearch = "QUERY_TRACK_SEARCH"
     }
     
     public func subscribe(subject: Subject, onMessage: @escaping WebSocketClient.ResponseCallback){

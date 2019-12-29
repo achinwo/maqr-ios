@@ -76,6 +76,112 @@ final class UserSettings: ObservableObject {
     }
 }
 
+enum ServiceAlert: Int {
+    
+    case serverConnectionLost = 0
+    case loginRequired = 1
+    case spotifyWebAuthRequired = 2
+    
+    var message: String {
+        switch self {
+        case .serverConnectionLost:
+            return "Connection lost"
+        case .spotifyWebAuthRequired:
+            return "Connect with Spotify"
+        case .loginRequired:
+            return "Login"
+        }
+    }
+    
+    func view(_ appState: AppState) -> some View {
+        var retryText: String
+        switch appState.api.wsClient.connectionState {
+        case .reconnecting(_):
+            let date = Date().addingTimeInterval(Double(appState.serverReconnectCountdown))
+
+            // ask for the full relative date
+            let formatter = RelativeDateTimeFormatter()
+            formatter.unitsStyle = .short
+
+            // get exampleDate relative to the current date
+            let dateString = formatter.localizedString(for: date, relativeTo: Date())
+
+            retryText = appState.serverReconnectCountdown > 1 ? "retrying \(dateString)..." : "retrying"
+        default:
+            retryText = "retry aborted"
+        }
+        return HStack(alignment: .center) {
+            
+            if self == .spotifyWebAuthRequired {
+                ImageStore.shared.image(name: "Spotify_Icon_RGB_Green")
+                    .resizable().frame(width: 32, height: 32, alignment: .center)
+                    .padding(.init(top: 4, leading: 16, bottom: 4, trailing: 4))
+            } else if self == .serverConnectionLost {
+                Image(systemName: "bolt.slash")
+                    .resizable().frame(width: 32, height: 32, alignment: .center)
+                    .padding(EdgeInsets.init(top: 4, leading: 16, bottom: 4, trailing: 4))
+                    .foregroundColor(.gray)
+            }
+            else if self == .loginRequired {
+                Image(systemName: "link.circle.fill")
+                    .resizable().frame(width: 32, height: 32, alignment: .center)
+                    .padding(EdgeInsets.init(top: 4, leading: 16, bottom: 4, trailing: 4))
+                    .foregroundColor(.blue)
+            }
+            
+            Text(self.message).font(.subheadline).foregroundColor(.gray)//.padding()
+            Spacer()
+            
+            if self == .spotifyWebAuthRequired {
+                Button(action: {
+                    appState.openSpotifyWebAuthorization()
+                }) {
+                    
+                    if appState.spotifyAuthorizationInProgress {
+                        ActivityIndicator(isAnimating: appState.spotifyAuthorizationInProgress) { (indicator: UIActivityIndicatorView) in
+                            indicator.color = .green
+                            indicator.hidesWhenStopped = true
+                        }.padding(.leading, 6)
+                    }
+                    
+                    Text("Connect").font(.subheadline)
+                    .foregroundColor(.green)
+                    .padding(6)
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 50)
+                        .stroke(Color.green, lineWidth: 1.2)
+                )
+                .padding(.trailing, 16)
+            } else if self == .serverConnectionLost {
+                Text(retryText).font(.subheadline).foregroundColor(.gray).padding(.trailing, 16)
+            } else if self == .loginRequired {
+                Button(action: {
+                    appState.isLogonViewPresented = true
+                }) {
+                    
+                    Text("Sign In").font(.subheadline)
+                    .foregroundColor(.blue)
+                    .padding(6)
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 50)
+                        .stroke(Color.blue, lineWidth: 1.2)
+                )
+                .padding(.trailing, 16)
+            }
+        }
+    }
+}
+
+extension Set where Element == ServiceAlert {
+    
+    var sortedByImportance: [ServiceAlert] {
+        return self.sorted() { $0.rawValue < $1.rawValue }
+    }
+    
+}
+
 class AppState: ObservableObject {
     
     static let URL_SCHEME = "joli"
@@ -132,6 +238,34 @@ class AppState: ObservableObject {
     var currentSearchFuture: Promise<Any>?
     
     @Published var keyboardHeight: CGFloat = 0
+
+    var didChange = PassthroughSubject<AppState, Never>()
+    
+    @Published var isDeviceChooserPresented: Bool = false
+    @Published var isSpotifyConnectPresented: Bool = false
+    
+    typealias DeviceReadyCallback = (Spotify.Device?, Bool) throws -> Void
+    typealias SpotifyReadyCallback = (Spotify.UserProfile?, Bool) throws -> String?
+    
+    var deviceReadyCallbacks: [DeviceReadyCallback] = []
+    
+    @Published var auth: Auth?
+    @Published var serverConnectionState: ConnectionState = .stopped
+    @Published var serverReconnectCountdown: Int = 0
+    
+    @Published var spotifyDevices: [Spotify.Device] = []
+    @Published var selectedSpotifyDeviceIdx: Int? = nil
+    @Published var activeRoom: Musicroom? = nil
+    
+    @Published var spotifyWebAuthorized = false
+    
+    public var spotifyDevice: Spotify.Device? {
+        guard let selectedSpotifyDeviceIdx = selectedSpotifyDeviceIdx else { return nil }
+        return spotifyDevices[selectedSpotifyDeviceIdx]
+    }
+    
+    @Published var alerts: Set<ServiceAlert> = [.loginRequired, .spotifyWebAuthRequired, .serverConnectionLost]
+    // MARK: - Class variables
     
     static var keyboardHeightPublisher: AnyPublisher<CGFloat, Never> = {
         logger.info("[AppState] init keyboardHeightPublisher")
@@ -172,24 +306,7 @@ class AppState: ObservableObject {
         .switchToLatest()
         .eraseToAnyPublisher()
     }
-
-    var didChange = PassthroughSubject<AppState, Never>()
-    
-    //var currentlyPlayingContent = CurrentValueSubject<Spotify.CurrentlyPlayingContent?, Never>(nil)
-    
-    @Published var auth: Auth?
-    @Published var serverConnectionState: ConnectionState = .stopped
-    
-    static func jsonStringToDict(text: String) -> [String:AnyObject]? {
-        if let data = text.data(using: .utf8) {
-            do {
-                return try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject]
-            } catch let error {
-                logger.debug(error)
-            }
-        }
-        return nil
-    }
+    @Published var isLogonViewPresented = false
     
     func spotifyWebAuthorize(_ urlPath: URLComponents) -> Promise<AuthToken> {
         spotifyAuthorizationInProgress = true
@@ -213,13 +330,20 @@ class AppState: ObservableObject {
         guard let scheme = components?.scheme,
             let basePath = components?.host,
             let codeQuery = components?.queryItems?.first(where: { $0.name == "code" }),
-            scheme == AppState.URL_SCHEME,
-            basePath == AppState.SPOTIFY_URL_BASEPATH else {
+            [AppState.URL_SCHEME, "spotify-ios-quick-start"].contains(scheme),
+            [AppState.SPOTIFY_URL_BASEPATH, "spotify-login-callback"].contains(basePath) else {
             return nil
         }
         
         var redirectUrl = URLComponents(string: "/spotify_callback")
-        redirectUrl?.queryItems = [codeQuery, URLQueryItem(name: "platform", value: "ios")]
+        redirectUrl?.queryItems = [codeQuery,
+                                   URLQueryItem(name: "redirect",
+                                                value: (scheme == AppState.URL_SCHEME ?
+                                                    "joli://\(AppState.SPOTIFY_URL_BASEPATH)"
+                                                    : "https://localhost:8080/spotify_callback/"
+                                                    //: "spotify-ios-quick-start://spotify-login-callback/"
+                                   )),
+                                   URLQueryItem(name: "platform", value: "ios")]
         
         return redirectUrl?.url(relativeTo: api.baseUrl.rawValue.http)
     }
@@ -239,15 +363,6 @@ class AppState: ObservableObject {
             logger.debug("[setAudioSession] Failed to update audio session: \(error)")
         }
     }
-    
-    
-    @Published var isDeviceChooserPresented: Bool = false
-    @Published var isSpotifyConnectPresented: Bool = false
-    
-    typealias DeviceReadyCallback = (Spotify.Device?, Bool) throws -> Void
-    typealias SpotifyReadyCallback = (Spotify.UserProfile?, Bool) throws -> String?
-    
-    var deviceReadyCallbacks: [DeviceReadyCallback] = []
     
     func triggerAndClearDeviceCallbacks(cancelled: Bool = false){
         for callback in self.deviceReadyCallbacks {
@@ -274,39 +389,83 @@ class AppState: ObservableObject {
             try? callback(spotifyDevice, false)
             return
         }
+        
         self.deviceReadyCallbacks.append(callback)
         
-        if spotifyDevices.isEmpty {
-            fetchSpotifyDevices()
-                .then() { devices in
-                    self.isDeviceChooserPresented = true
-            }.catch() { error in
-                guard case let NetworkError.errorMessage(err) = error, let message = err.message else{
-                    return
-                }
-                
-                logger.warning("[assertSelectedDevice] spotify: \(message) - \(message == Spotify.ErrorMessage.invalidAccessToken.rawValue)")
-                try? callback(nil, false)
-                
-                self.openSpotifyWebAuthorization()
-            }
-            
-        }else{
+        guard spotifyDevices.isEmpty else {
             self.isDeviceChooserPresented = true
+            return
         }
         
+        fetchSpotifyDevices()
+            .then() { devices in
+                self.isDeviceChooserPresented = true
+        }.catch() { error in
+            guard case let NetworkError.errorMessage(err) = error, let message = err.message else{
+                return
+            }
+            
+            logger.warning("[assertSelectedDevice] spotify: \(message) - \(message == Spotify.ErrorMessage.invalidAccessToken.rawValue)")
+            try? callback(nil, false)
+            
+            self.openSpotifyWebAuthorization()
+        }
     }
     
-    func assertSpotifyAvailable(_ callback: DeviceReadyCallback) {
-        self.isSpotifyConnectPresented = true
+    private func updateAlerts(_ alert: ServiceAlert, add: Bool = true){
+        var existingAlerts = self.alerts
+        if add {
+            existingAlerts.insert(alert)
+        } else {
+            existingAlerts.remove(alert)
+        }
+        self.alerts = existingAlerts
     }
     
-    func onServerConnectionStateChanged(_ connected: Bool){
-        self.navbarColor = connected ? Color.green : .gray
-        self.serverConnectionState = api.wsClient.connectionState
+    weak var timer: Timer?
+    
+    deinit {
+        timer?.invalidate()
+        cancellableSet.removeAll()
+    }
+    
+    // MARK: - onServerConnectionStateChanged
+    func onServerConnectionStateChanged(_ state: ConnectionState){
+        self.serverConnectionState = state
         
-        if !connected {
-            assertSpotifyAuthorized()
+        timer?.invalidate()
+        switch state {
+        case .connected:
+            self.navbarColor = state.isConnected ? Color.green : .gray
+            self.assertSpotifyAuthorized()
+            self.updateAlerts(.serverConnectionLost, add: false)
+            self.fetchMusicrooms()
+            
+        case .reconnecting(let attempt):
+            self.spotifyWebAuthorized = false
+            self.updateAlerts(.serverConnectionLost, add: true)
+            
+            var currentAttemptSecs = attempt * 5
+            self.serverReconnectCountdown = currentAttemptSecs
+            
+            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timerInstance in
+                
+                guard let self = self else {
+                    return
+                }
+                //logger.info("[on server state] \(self.serverReconnectCountdown)")
+                
+                currentAttemptSecs = currentAttemptSecs - 1
+                self.serverReconnectCountdown = self.serverReconnectCountdown - Int(timerInstance.timeInterval)
+                
+                if self.serverReconnectCountdown <= 0 {
+                    self.timer?.invalidate()
+                }
+            }
+        case .stopped:
+            
+            self.spotifyWebAuthorized = false
+            self.updateAlerts(.serverConnectionLost, add: true)
         }
     }
     
@@ -324,7 +483,7 @@ class AppState: ObservableObject {
         }
     }
     
-    // MARK: - initialize
+    // MARK: - initialize (Start)
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
         
@@ -339,8 +498,8 @@ class AppState: ObservableObject {
                 self.userSettings.authToken = auth?.session.token
                 //logger.info("[AppState] storing token: \(String(describing: self.userSettings.authToken))")
 
-                self.assertSpotifyAuthorized()
-                
+                self.spotifyWebAuthorized = false
+                self.updateAlerts(.loginRequired, add: auth == nil ? true : false)
                 self.fetchMusicrooms()
             }
             .store(in: &cancellableSet)
@@ -373,6 +532,7 @@ class AppState: ObservableObject {
             logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] playing: \(cPlaying.isPlaying)")
             
             self.setAudioSession(cPlaying.isPlaying)
+            self.spotifyWebAuthorized = true
             
             guard abs(cPlaying.progressMs - cPlaying.item.durationMs) < 3000
                  else {
@@ -445,9 +605,13 @@ class AppState: ObservableObject {
             
             if spotifyConnected {
                 self.fetchSpotifyDevices()
+                self.updateAlerts(.spotifyWebAuthRequired, add: false)
+            } else {
+                self.updateAlerts(.spotifyWebAuthRequired, add: true)
             }
         }.store(in: &cancellableSet)
     }
+    // MARK: - initialize (End)
     
     // MARK: - errorHandler
     public func errorHandler(_ funcName: String = #function) -> (Error) -> Void {
@@ -462,6 +626,57 @@ class AppState: ObservableObject {
                                     baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
     
+    func playTrack(_ track: Playable){
+//        if track is Spotify.Track {
+//
+//            setAudioSession(false)
+//
+//            guard spotifyRemote.isConnected else {
+//                logger.debug("[Track#play] spotify not connected")
+//                spotifyRemote.authorizeAndPlayURI(track.uri)
+//                return
+//            }
+//
+//            spotifyRemote.playerAPI?.play(track.uri){ info, error in
+//                logger.debug("[Track#play] \(String(describing: info)) - \(String(describing: error))")
+//            }
+//        }else{
+            assertSelectedDevice() { [weak self] (device, cancelled) in
+                logger.debug("[Track#play] assertion completed - \(String(describing: device))")
+                track.play(deviceId: device?.id, baseUrl: self?.api.baseUrl.http, urlSession: self?.api.urlSession, on: nil)
+            }
+        //}
+    }
+    
+    @discardableResult
+    func pausePlayback() -> Promise<Json> {
+        if spotifyRemote.isConnected {
+            setAudioSession(false)
+            
+            return Promise() { (resolve, reject) in
+
+                self.spotifyRemote.playerAPI?.pause(){ info, error in
+                    logger.debug("[pauseTrack] \(String(describing: info)) - \(String(describing: error))")
+                    
+                    guard let error = error else {
+                        return resolve(info as? Json ?? [:])
+                        
+                    }
+                    
+                    return reject(error)
+                }
+            }
+        }else{
+            let path = URLComponents(string: "/api/spotify/me/player/pause")!
+            return HttpMethod.put.fetchJson(urlPath: path, payload: [:], baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+                .catch(self.errorHandler())
+        }
+    }
+}
+
+// MARK: - AppState fetch methods
+extension AppState {
+
     // MARK: - fetchSpotifyRecommendations
     public func fetchSpotifyRecommendations() -> Promise<Spotify.Recommendation> {
         var path = URLComponents(string: "/api/spotify/recommendations")!
@@ -474,15 +689,6 @@ class AppState: ObservableObject {
             URLQueryItem(name: "seed_tracks", value: "44SSviC4R1TkAdsyptjDpE"),
         ]
         return HttpMethod.get.fetch(urlPath: path, dataType: Spotify.Recommendation.self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
-    }
-    
-    @Published var spotifyDevices: [Spotify.Device] = []
-    @Published var selectedSpotifyDeviceIdx: Int? = nil
-    @Published var activeRoom: Musicroom? = nil
-    
-    public var spotifyDevice: Spotify.Device? {
-        guard let selectedSpotifyDeviceIdx = selectedSpotifyDeviceIdx else { return nil }
-        return spotifyDevices[selectedSpotifyDeviceIdx]
     }
     
     @discardableResult
@@ -502,8 +708,6 @@ class AppState: ObservableObject {
             logger.error("[fetchSpotifyDevices] error: \(error)")
         }
     }
-    
-    @Published var spotifyWebAuthorized = false
     
     @discardableResult
     func fetchedImage(url: String) -> Promise<Image?> {
@@ -547,7 +751,7 @@ class AppState: ObservableObject {
             task.resume()
         }
     }
-
+    
     @discardableResult
     func fetchMusicrooms() -> Promise<[Musicroom]> {
         return Musicroom.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession, on: .global(qos: .background))
@@ -566,53 +770,6 @@ class AppState: ObservableObject {
             guard let self = self else { return Promise([]) }
             
             return Promise(self.musicrooms)
-        }
-    }
-    
-    func playTrack(_ track: Playable){
-        if track is Spotify.Track {
-            
-            setAudioSession(false)
-            
-            guard spotifyRemote.isConnected else {
-                logger.debug("[Track#play] spotify not connected")
-                spotifyRemote.authorizeAndPlayURI(track.uri)
-                return
-            }
-            
-            spotifyRemote.playerAPI?.play(track.uri){ info, error in
-                logger.debug("[Track#play] \(String(describing: info)) - \(String(describing: error))")
-            }
-        }else{
-            assertSelectedDevice() { [weak self] (device, cancelled) in
-                logger.debug("[Track#play] assertion completed - \(String(describing: device))")
-                track.play(deviceId: device?.id, baseUrl: self?.api.baseUrl.http, urlSession: self?.api.urlSession, on: nil)
-            }
-        }
-    }
-    
-    @discardableResult
-    func pausePlayback() -> Promise<Json> {
-        if spotifyRemote.isConnected {
-            setAudioSession(false)
-            
-            return Promise() { (resolve, reject) in
-
-                self.spotifyRemote.playerAPI?.pause(){ info, error in
-                    logger.debug("[pauseTrack] \(String(describing: info)) - \(String(describing: error))")
-                    
-                    guard let error = error else {
-                        return resolve(info as? Json ?? [:])
-                        
-                    }
-                    
-                    return reject(error)
-                }
-            }
-        }else{
-            let path = URLComponents(string: "/api/spotify/me/player/pause")!
-            return HttpMethod.put.fetchJson(urlPath: path, payload: [:], baseUrl: api.baseUrl.http, urlSession: api.urlSession)
-                .catch(self.errorHandler())
         }
     }
     

@@ -14,8 +14,10 @@ struct TrackView: View {
     
     @EnvironmentObject var appState: AppState
     var track: Playable
-    var allowDelete = false
-    var allowQueueAdd = false
+    
+    var isVoteable: Bool {
+        return track is QueuedTrack
+    }
     
     @State var image: Image?
     var spotifyDevice: Spotify.Device? {
@@ -35,25 +37,18 @@ struct TrackView: View {
     }
     
     var explicitLabel: some View {
-        if let explicit = track.explicit, explicit {
-            return Text("Explicit").padding(2)
-            .font(.footnote)
-                .foregroundColor(Color.red)
-            .cornerRadius(2)
-                .overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
-               // .font(.subheadline)
-                //.border(.red)
-        } else {
-            return Text("").padding(2)
-            .font(.footnote)
-            .foregroundColor(Color.clear)
-            .cornerRadius(10)
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.clear, lineWidth: 1))
-        }
+        return Text(track.explicit == nil ? "" : "E")
+        .padding(2)
+        .background(Color.red)
+        .font(.footnote)
+        .foregroundColor(Color.white)
+        .cornerRadius(3)
+        .opacity(track.explicit == nil ? 0.0 : 100)
+        //.overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
     }
     
     var body: some View {
-        HStack(alignment: .center) {
+        HStack(alignment: VerticalAlignment.center) {
             
             CircleImage(url: track.thumbnailUrl) //.background(Color.blue)
             
@@ -72,7 +67,23 @@ struct TrackView: View {
             }
             
             if self.isQueueable {
-                Image(systemName: "plus").font(.subheadline).padding()
+                Button(action: {
+                    logger.debug("[TrackView] \(self.track.title)")
+                }) {
+                    Image(systemName: "plus").font(.subheadline)
+                }.padding()
+            }
+            
+            if self.track is QueuedTrack {
+                Button(action: {
+                    logger.debug("[TrackView] \(self.track.title)")
+                }) {
+                    HStack(){
+                        
+                        Image(systemName: "hand.thumbsup").font(.subheadline)
+                        //Text((self.track as? QueuedTrack)?.votes?.count ?? "")
+                    }
+                }.padding()
             }
         }.contextMenu {
             
@@ -114,10 +125,7 @@ struct TrackView: View {
 //            }
         }
         .onTapGesture {
-            logger.debug("current device: \(String(describing: self.spotifyDevice))\nuri: \(String(describing: self.track.uri))")
-            
             self.appState.playTrack(self.track)
-            
         }
         .onAppear(){
             

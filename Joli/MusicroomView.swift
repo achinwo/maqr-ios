@@ -67,7 +67,7 @@ struct MusicroomView: View {
         
         return HStack(alignment: .firstTextBaseline) {
             Spacer()
-            if selectedTabIdx == MusicroomTab.playQueue.rawValue {
+            if [MusicroomTab.playQueue.rawValue, MusicroomTab.library.rawValue].contains(selectedTabIdx) {
                 Button(action: {self.appState.isDeviceChooserPresented.toggle()}) {
                         Image(systemName: "hifispeaker")
                             .padding()
@@ -87,47 +87,20 @@ struct MusicroomView: View {
         }
     }
     
-    var spotifyConnectBanner: some View {
-        return HStack(alignment: .center){
-            ImageStore.shared.image(name: "Spotify_Icon_RGB_Green")
-                .resizable().frame(width: 32, height: 32, alignment: .center)
-                .padding(.init(top: 4, leading: 16, bottom: 4, trailing: 4))
-            Text("Connect with Spotify").font(.subheadline).foregroundColor(.gray)//.padding()
-            Spacer()
-            
-            Button(action: {
-                self.appState.openSpotifyWebAuthorization()
-            }) {
-                
-                if self.appState.spotifyAuthorizationInProgress {
-                    ActivityIndicator(isAnimating: self.appState.spotifyAuthorizationInProgress) { (indicator: UIActivityIndicatorView) in
-                        indicator.color = .green
-                        indicator.hidesWhenStopped = true
-                    }.padding(.leading, 6)
-                }
-                
-                Text("Connect").font(.subheadline)
-                .foregroundColor(.green)
-                .padding(6)
-            }
-            .overlay(
-                RoundedRectangle(cornerRadius: 50)
-                    .stroke(Color.green, lineWidth: 1.2)
-            )
-            .padding(.trailing, 16)
-            
-        }.frame(width: UIScreen.main.bounds.width, height: self.appState.spotifyWebAuthorized ? 0 : 50, alignment: .center)
-        .clipped()
-        .animation(.easeInOut)
-    }
+//    var alertBanner: some View {
+//        return
+//    }
     
     var body: some View {
- 
         return VStack(alignment: .center, spacing: 0){
 
-            self.spotifyConnectBanner
-
-            if !self.appState.spotifyWebAuthorized {
+            if !self.appState.alerts.isEmpty {
+                self.appState.alerts.sortedByImportance.first!.view(self.appState)
+                .frame(width: UIScreen.main.bounds.width,
+                       height: 50, alignment: .center)
+                .clipped()
+                .animation(.easeInOut)
+                
                 Divider()
             }
             

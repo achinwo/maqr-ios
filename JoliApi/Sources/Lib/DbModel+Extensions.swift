@@ -366,8 +366,11 @@ extension Persisted {
 }
 
 // MARK: - User
-extension User{
+extension User: Discjockey {
     
+    public var ranking: DiscjockeyPosition {
+        return DiscjockeyPosition(rawValue: self.djRanking ?? 0) ?? DiscjockeyPosition.personal
+    }
     // get musicrooms
 }
 
