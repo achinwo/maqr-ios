@@ -19,7 +19,20 @@ struct PlayQueueView: MusicroomTabView {
     var tracks: [QueuedTrack] {
         let tracks = appState.queuedTracksByMusicrooms[room.id] ?? []
         //logger.info("[returnung tracks] \(tracks)")
-        return tracks.map(){ $0 }
+        return tracks.sorted(){ (track1, track2) -> Bool in
+            let track1Votes = self.appState.votesByTrackId[track1.id]
+            let track2Votes = self.appState.votesByTrackId[track2.id]
+            
+            if track1Votes != nil && track2Votes != nil && track1Votes!.count != track2Votes!.count {
+                return track1Votes!.count > track2Votes!.count
+            } else if track1Votes != nil && track2Votes != nil {
+                return track1.title > track2.title
+            } else if track1Votes != nil || track2Votes != nil {
+                return track1Votes != nil
+            } else {
+                return track1.createdAt > track2.createdAt
+            }
+        }
     }
     
     init(room: Musicroom) {
@@ -28,27 +41,51 @@ struct PlayQueueView: MusicroomTabView {
     
     var body: some View {
         let track = self.appState.currentlyPlayingTrack
-        let title = track?.name
-        let tracksViewHeight = CGFloat(100.0 * Double(self.tracks.count))
+        let tracksViewHeight = CGFloat(80.0 * Double(self.tracks.count))
+        
+        let width: CGFloat
+            
+        if self.appState.currentlyPlayingProgressPct > 0 {
+            width = CGFloat(self.appState.currentlyPlayingProgressPct / 100.0) * UIScreen.main.bounds.width
+        }else{
+            width = 0
+        }
+        
+        //logger.info("[Progress.width] \(width)")
         return ScrollView(.vertical, showsIndicators: true) {
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 0) {
                 
-                VStack(alignment: .leading){
-                    Text(title != nil ? "Now Playing...\(title!)" : "")
-                        .font(.title)
-                        .padding()
-                    Slider(value: self.$appState.currentlyPlayingProgressPct, in: 0...100, step: 1)
-                        .disabled(self.appState.currentlyPlayingTrack == nil)
-                        .allowsHitTesting(false)
+                Divider()
+                VStack(alignment: .center){
+                    self.appState.currentlyPlayingAlbumImage?.resizable()
+                        .aspectRatio(contentMode: ContentMode.fill)
+                        .clipped()
                     
                 }
+                .animation(.easeInOut)
                 .onAppear(perform: self.onAppear)
-                .padding()
-                    //.background(Color.blue)
-                //.frame(width: UIScreen.main.bounds.width, height: 100, alignment: .top)
-                .background(self.appState.currentlyPlayingAlbumImage?.resizable()
-                .aspectRatio(contentMode: ContentMode.fill).clipped())
+                .onDisappear(perform: self.onDisappear)
+                .background(Color.purple)
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width, alignment: .top)
+                   // .offset(x: 0, y: UIScreen.main.bounds.width)
+                //.padding()
+                //.background()
 
+                ZStack(alignment: .leading){
+                    Color.gray.frame(width: UIScreen.main.bounds.width, height: 4, alignment: .leading)
+                        
+                    Color.green.frame(width: width, height: 4, alignment: .leading)
+                        .animation(.spring())
+                        .shadow(radius: 12)
+                }
+            .clipped()
+                .animation(.easeInOut)
+                .frame(width: UIScreen.main.bounds.width, height: track == nil ? 0 : 4, alignment: .leading)
+                
+                if track != nil {
+                    TrackView(track: track!).padding().padding([.top, .bottom], 4)
+                    Divider()
+                }
                 
                 VStack(alignment: .leading){
 
@@ -62,26 +99,19 @@ struct PlayQueueView: MusicroomTabView {
                     .frame(width: UIScreen.main.bounds.width, height: tracksViewHeight, alignment: .center)
                 }
             }
-        }
+        }//.content.offset(x: 0, y: UIScreen.main.bounds.width)
         
     }
-//            VStack(alignment: .leading) {
-//                List {
-//                    ForEach(self.tracks) { track in
-//                        TrackView(track: track, allowDelete: true)//.background(Color.pink)
-//                    }
-//                }
-//            }.background(Color.pink)
-//        }//.background(Color.green)
-  //  }
+    
     @State var showPopover = false
+    
     func onDisappear(){
-        logger.debug("Disappeared!!")
+        logger.debug("Disappeared!! Art is not  visible")
         //self.appState.api.unsubscribe(subject: "PLAYER_STATE_NOW_PLAYING")
     }
     
     func onAppear() {
-        logger.debug("Appeared - 2!!")
+        logger.debug("Appeared - 2!! Art is visible")
         
         appState.fetchQueuedTracks(room)
     }

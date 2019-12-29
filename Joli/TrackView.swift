@@ -19,6 +19,20 @@ struct TrackView: View {
         return track is QueuedTrack
     }
     
+    var votes: [QueuedTrackVote]? {
+        guard let queuedTrack = self.track as? QueuedTrack else {
+            return nil
+        }
+        return self.appState.votesByTrackId[queuedTrack.id]
+    }
+    
+    var queuedTrackUris: [String] {
+        guard let room = appState.activeRoom else {
+            return []
+        }
+        return (appState.queuedTracksByMusicrooms[room.id] ?? []).map() { $0.uri }
+    }
+    
     @State var image: Image?
     var spotifyDevice: Spotify.Device? {
         return self.appState.spotifyDevice
@@ -47,45 +61,86 @@ struct TrackView: View {
         //.overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
     }
     
+    func playTrack(){
+        self.isRequestingPlay = true
+        self.appState.playTrack(self.track)
+            .always {
+                self.isRequestingPlay = false
+        }
+    }
+    
+    @State var isVoting = false
+    @State var isQueueing = false
+    @State var isRequestingPlay = false
+    
     var body: some View {
-        HStack(alignment: VerticalAlignment.center) {
+        let votesText: String
+        
+        if let votes = votes, votes.count > 0 {
+            votesText = votes.count.description
+        } else {
+            votesText = ""
+        }
+        
+        return HStack(alignment: VerticalAlignment.center) {
             
-            CircleImage(url: track.thumbnailUrl) //.background(Color.blue)
+            CircleImage(url: track.thumbnailUrl)
+                .opacity(self.isRequestingPlay ? 0.85 : 1)
+                .onTapGesture(perform: playTrack)
             
             VStack(alignment: .leading) {
                 Text(track.title)
+                    .animation(.easeInOut)
                     .font(.headline).lineLimit(2)
                 
                 HStack {
                     
-                    Text("By \(track.artistName)")
+                    Text(track.artistName)
+                        .animation(.easeInOut)
                         .font(.subheadline)
                     Spacer()
                     
                     self.explicitLabel
                 }
             }
+            .opacity(self.isRequestingPlay ? 0.85 : 1)
+            .onTapGesture(perform: playTrack)
             
-            if self.isQueueable {
-                Button(action: {
-                    logger.debug("[TrackView] \(self.track.title)")
-                }) {
-                    Image(systemName: "plus").font(.subheadline)
-                }.padding()
+            if self.isQueueable && !queuedTrackUris.contains(track.uri) {
+                Image(systemName: "plus")
+                    .animation(.easeInOut)
+                    .font(self.isQueueing ? .title : .subheadline)
+                    .padding()
+                    .onTapGesture {
+                        logger.debug("[TrackView] \(self.track.title)")
+                        self.isQueueing = true
+                        self.appState.queueTrack(self.track)
+                            .always {
+                                self.isQueueing = false
+                        }
+                        self.appState.showToast = true
+                }
             }
             
-            if self.track is QueuedTrack {
-                Button(action: {
-                    logger.debug("[TrackView] \(self.track.title)")
-                }) {
-                    HStack(){
-                        
-                        Image(systemName: "hand.thumbsup").font(.subheadline)
-                        //Text((self.track as? QueuedTrack)?.votes?.count ?? "")
+            if self.isVoteable {
+                HStack(){
+                    
+                    Image(systemName: "hand.thumbsup").font(self.isVoting ? .title : .subheadline)
+                    Text(votesText).font(self.isVoting ? .title : .subheadline)
+                }
+                .animation(.spring())
+                .onTapGesture {
+                    logger.debug("[TrackView] voted - \(self.track.title)")
+                    
+                    self.isVoting = true
+                    self.appState.voteTrack(self.track as! QueuedTrack)
+                        .always {
+                            self.isVoting = false
                     }
-                }.padding()
+                }
             }
-        }.contextMenu {
+        }
+        .contextMenu {
             
             if self.isQueueable {
                 Button(action: {
@@ -124,9 +179,6 @@ struct TrackView: View {
 //                }
 //            }
         }
-        .onTapGesture {
-            self.appState.playTrack(self.track)
-        }
         .onAppear(){
             
             self.appState.fetchedImage(url: self.track.thumbnailUrl)
@@ -135,4 +187,58 @@ struct TrackView: View {
             }
         }
     }
+}
+
+struct Toast<Presenting>: View where Presenting: View {
+
+    /// The binding that decides the appropriate drawing in the body.
+    @Binding var isShowing: Bool
+    /// The view that will be "presenting" this toast
+    let presenting: () -> Presenting
+    /// The text to show
+    let text: Text
+
+    var body: some View {
+
+        GeometryReader { geometry in
+
+            ZStack(alignment: .center) {
+
+                self.presenting()
+                    .blur(radius: self.isShowing ? 1 : 0)
+
+                VStack {
+                    self.text
+                }
+                .frame(width: geometry.size.width / 2,
+                       height: geometry.size.height / 5)
+                .background(Color.secondary.colorInvert())
+                .foregroundColor(Color.primary)
+                .cornerRadius(20)
+                .transition(.slide)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                      withAnimation {
+                        self.isShowing = false
+                      }
+                    }
+                }
+                .opacity(self.isShowing ? 1 : 0)
+
+            }
+
+        }
+
+    }
+
+}
+
+extension View {
+
+    func toast(isShowing: Binding<Bool>, text: Text) -> some View {
+        Toast(isShowing: isShowing,
+              presenting: { self },
+              text: text)
+    }
+
 }

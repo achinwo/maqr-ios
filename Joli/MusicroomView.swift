@@ -26,6 +26,17 @@ enum MusicroomTab: Int, CaseIterable {
         }
     }
     
+    var emoji: String? {
+        switch(self){
+        case .library:
+            return "💽"
+        case .activity:
+            return "🔮"
+        case .playQueue:
+            return "🎶"
+        }
+    }
+    
     var iconName: String {
         switch(self){
         case .library:
@@ -106,7 +117,9 @@ struct MusicroomView: View {
             
             Picker(selection: self.$selectedTabIdx, label: Text("Room")){
                 ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
-                    Text(roomTab.title).tag(roomTab.rawValue)
+                    Text("\(roomTab.emoji != nil ? "\(roomTab.emoji!) " : "")\(roomTab.title)")
+                        .foregroundColor(.green)
+                        .tag(roomTab.rawValue)
                 }
             }
         .zIndex(500)
@@ -122,10 +135,12 @@ struct MusicroomView: View {
                 ActivityView(room: self.room)
             }
         }
+        .toast(isShowing: self.$appState.showToast, text: Text("Hello toast!"))
         
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .top)
         .padding(.top, 120)
         //.background(Color.green)
+        
         .onAppear() {
             self.appState.activeRoom = self.room
             self.appState.fetchTracks(self.room)

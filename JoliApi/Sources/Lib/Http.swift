@@ -177,7 +177,7 @@ public enum HttpMethod: String {
             switch self {
             case .post, .put:
                     
-                    guard let payloadData = try? payload?.toData() else {
+                guard let payloadData = try? (payload ?? .json([:])).toData() else {
                         return reject(NetworkError.badRequest("bad payload for post request: \(String(describing: payload))"))
                     }
                     

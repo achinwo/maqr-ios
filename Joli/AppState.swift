@@ -203,8 +203,11 @@ class AppState: ObservableObject {
     @Published var userSettings = UserSettings()
     
     @Published var musicrooms: [Musicroom] = []
+    
     @Published var tracksByMusicrooms: [Int: [RoomTrack]] = [:]
     @Published var queuedTracksByMusicrooms: [Int: Set<QueuedTrack>] = [:]
+    @Published var votesByTrackId: [Int: [QueuedTrackVote]] = [:]
+    
     @Published var usersById: [Int: User] = [:]
     @Published var imagesByUrl: [String: Image] = [:]
     
@@ -264,6 +267,10 @@ class AppState: ObservableObject {
         return spotifyDevices[selectedSpotifyDeviceIdx]
     }
     
+    @Published var isLogonViewPresented = false
+    
+    @State var showToast: Bool = false
+    
     @Published var alerts: Set<ServiceAlert> = [.loginRequired, .spotifyWebAuthRequired, .serverConnectionLost]
     // MARK: - Class variables
     
@@ -306,7 +313,6 @@ class AppState: ObservableObject {
         .switchToLatest()
         .eraseToAnyPublisher()
     }
-    @Published var isLogonViewPresented = false
     
     func spotifyWebAuthorize(_ urlPath: URLComponents) -> Promise<AuthToken> {
         spotifyAuthorizationInProgress = true
@@ -585,6 +591,11 @@ class AppState: ObservableObject {
         // MARK: - Database Updates
         api.subscribe(subject: .dbUpdates) { (result, error) in
             logger.debug("DbUpdates: \(String(describing: result)) - \(String(describing: error))")
+            guard let typeName = result?.payload["type"] as? String, QueuedTrackVote.className() == typeName else {
+                return
+            }
+            
+            self.fetchTrackVotes()
         }
         
         self.$spotifyWebAuthorized.sink() { spotifyConnected in
@@ -626,7 +637,21 @@ class AppState: ObservableObject {
                                     baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
     
-    func playTrack(_ track: Playable){
+    func queueTrack(_ track: Playable) -> Promise<QueuedTrack> {
+        guard let activeRoom = self.activeRoom else {
+            fatalError("Cant queue track without active musicroom")
+        }
+        
+        return activeRoom.queueTrack(track, baseUrl: baseUrl.http, urlSession: api.urlSession, on: nil)
+            .then() { queuedTrack in
+                logger.info("[queueTrack] queued: \(queuedTrack)")
+                self.fetchQueuedTracks(activeRoom)
+        }
+            .catch(self.errorHandler())
+    }
+    
+    @discardableResult
+    func playTrack(_ track: Playable) -> Promise<Void> {
 //        if track is Spotify.Track {
 //
 //            setAudioSession(false)
@@ -641,11 +666,30 @@ class AppState: ObservableObject {
 //                logger.debug("[Track#play] \(String(describing: info)) - \(String(describing: error))")
 //            }
 //        }else{
-            assertSelectedDevice() { [weak self] (device, cancelled) in
+        
+        return Promise() { (resolve, reject) in
+            self.assertSelectedDevice() { [weak self] (device, cancelled) in
                 logger.debug("[Track#play] assertion completed - \(String(describing: device))")
                 track.play(deviceId: device?.id, baseUrl: self?.api.baseUrl.http, urlSession: self?.api.urlSession, on: nil)
+                    .then { _ in
+                        resolve(())
+                }.catch(reject)
             }
+        }
+            
         //}
+    }
+    
+    func voteTrack(_ track: QueuedTrack) -> Promise<QueuedTrackVote> {
+        let builder = Builder<QueuedTrackVote>()
+        return builder.update(.queuedTrackId, track.id as AnyObject)
+            .save(baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: nil)
+            .always {
+                guard let room = self.activeRoom else {
+                    return
+                }
+                self.fetchQueuedTracks(room, clean: true)
+        }
     }
     
     @discardableResult
@@ -795,20 +839,57 @@ extension AppState {
         }
     }
     
-    func fetchQueuedTracks(_ room: Musicroom) {
+    func fetchQueuedTracks(_ room: Musicroom, clean: Bool = false) {
         QueuedTrack.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
             .then() { [weak self] tracks in
                 
                 guard let self = self else { return }
                 
+                if clean {
+                    self.queuedTracksByMusicrooms.removeAll()
+                }
+                
                 for track in tracks {
                     var roomTracks = self.queuedTracksByMusicrooms[track.roomId] ?? []
                     roomTracks.insert(track)
                     self.queuedTracksByMusicrooms[track.roomId] = roomTracks
+                    
+                    guard let votes = track.votes else {
+                        self.votesByTrackId[track.id] = []
+                        continue
+                    }
+                    
+                    self.updateVotes(votes)
                 }
         }
         .catch() { error in
             logger.error("[fetchQueuedTracks] error: \(error)")
+        }
+    }
+    
+    private func updateVotes(_ votes: [QueuedTrackVote]){
+        for vote in votes {
+            var trackVotes = self.votesByTrackId[vote.queuedTrackId] ?? []
+            
+            guard !trackVotes.contains(vote) else {
+                continue
+            }
+            
+            trackVotes.append(vote)
+            self.votesByTrackId[vote.queuedTrackId] = trackVotes
+        }
+    }
+    
+    func fetchTrackVotes(){
+        QueuedTrackVote.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+            .then() { [weak self] votes in
+                
+                guard let self = self else { return }
+                
+                self.updateVotes(votes)
+        }
+        .catch() { error in
+            logger.error("[fetchTrackVotes] error: \(error)")
         }
     }
     

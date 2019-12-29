@@ -190,6 +190,7 @@ public class JoliApi: ObservableObject {
     // MARK: - init
     public init(baseUrl: BaseUrl = .localhost, authToken: String? = nil){
         JoliApi.initLogger()
+        
         self.urlSessionConfiguration = JoliApi.sharedUrlSession.configuration.withAuthHeader(authToken)
         
         self.baseUrl = baseUrl
@@ -206,7 +207,6 @@ public class JoliApi: ObservableObject {
             }
             .store(in: &cancellableSet)
             
-        
     }
     
     public enum Subject: String {
@@ -354,6 +354,7 @@ extension URLSessionConfiguration {
             headers.removeValue(forKey: "X-SESSION-ID")
         }
         
+        config.timeoutIntervalForRequest = 10
         config.httpAdditionalHeaders = headers
         return config
     }

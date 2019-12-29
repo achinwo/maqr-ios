@@ -35,7 +35,7 @@ struct MusicLibraryView: MusicroomTabView {
                     TrackView(track: track)//.background(Color.pink)
                 }
                 //.keyboardType(.)
-                .onDelete(perform: self.delete)
+                //.onDelete(perform: self.delete)
             }
         }.padding(.bottom, 80)
     }

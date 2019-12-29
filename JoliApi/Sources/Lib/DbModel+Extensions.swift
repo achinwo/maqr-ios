@@ -371,6 +371,13 @@ extension User: Discjockey {
     public var ranking: DiscjockeyPosition {
         return DiscjockeyPosition(rawValue: self.djRanking ?? 0) ?? DiscjockeyPosition.personal
     }
+    
+    public func fetchActiveRoom(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Musicroom?> {
+        guard let roomId = self.activeRoomId else {
+            return Promise(nil)
+        }
+        return Musicroom.findById(id: roomId, baseUrl: baseUrl, urlSession: urlSession, on: on)
+    }
     // get musicrooms
 }
 
@@ -439,6 +446,7 @@ extension AuthToken {
     }
 }
 
+// MARK: - QueueTrack
 extension QueuedTrack: Playable {
     
     public var isPlayable: Bool {
