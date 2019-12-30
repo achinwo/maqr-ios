@@ -78,14 +78,39 @@ public enum Spotify {
     }
         
     // MARK: - CurrentlyPlayingContent
-    public struct CurrentlyPlayingContent: Codable {
+    public struct CurrentlyPlayingContent: Codable, Playable {
+        
+        public var explicit: Bool? {
+            return item.explicit
+        }
+        
+        public var title: String {
+            return item.title
+        }
+        
+        public var thumbnailUrl: String {
+            return item.thumbnailUrl
+        }
+        
+        public var albumCoverUrl: String {
+            return item.albumCoverUrl
+        }
+        
+        public var artistName: String {
+            return item.artistName
+        }
+        
+        public var uri: String {
+            return item.uri
+        }
+        
         public let context: CurrentlyPlayingContext? = nil
         public let timestamp: Int
         public let progressMs: Int
         public let item: Track
         public let currentlyPlayingType: String
         public let actions: Actions
-        public let isPlaying: Bool
+        public var isPlaying: Bool
 
         // MARK: - Actions
         public struct Actions: Codable {
@@ -111,21 +136,6 @@ public enum Spotify {
 
     // MARK: - Track
     public struct Track: Codable, Playable, DataConvertible {
-        
-        @discardableResult
-        public func play(deviceId: String?, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Json> {
-                
-            var urlPath = URLComponents(string: "/api/spotify/play")!
-            urlPath.queryItems = [
-                URLQueryItem(name: "trackId", value: self.uri),
-            ]
-            
-            if let deviceId = deviceId {
-                urlPath.queryItems!.append(URLQueryItem(name: "deviceId", value: deviceId))
-            }
-            
-            return HttpMethod.post.fetchJson(urlPath: urlPath, payload: [:], baseUrl: baseUrl, urlSession: urlSession, on: on)
-        }
         
         public var explicit: Bool?
         

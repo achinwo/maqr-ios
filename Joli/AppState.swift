@@ -651,7 +651,7 @@ class AppState: ObservableObject {
     }
     
     @discardableResult
-    func playTrack(_ track: Playable) -> Promise<Void> {
+    func playTrack(_ track: Playable, positionMs: Int? = nil) -> Promise<Void> {
 //        if track is Spotify.Track {
 //
 //            setAudioSession(false)
@@ -670,7 +670,7 @@ class AppState: ObservableObject {
         return Promise() { (resolve, reject) in
             self.assertSelectedDevice() { [weak self] (device, cancelled) in
                 logger.debug("[Track#play] assertion completed - \(String(describing: device))")
-                track.play(deviceId: device?.id, baseUrl: self?.api.baseUrl.http, urlSession: self?.api.urlSession, on: nil)
+                track.play(deviceId: device?.id, positionMs: positionMs, baseUrl: self?.api.baseUrl.http, urlSession: self?.api.urlSession, on: nil)
                     .then { _ in
                         resolve(())
                 }.catch(reject)

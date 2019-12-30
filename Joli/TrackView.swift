@@ -14,6 +14,7 @@ struct TrackView: View {
     
     @EnvironmentObject var appState: AppState
     var track: Playable
+    @State var isPlaying = false
     
     var isVoteable: Bool {
         return track is QueuedTrack
@@ -44,6 +45,18 @@ struct TrackView: View {
     
     var isDeleteable: Bool {
         return track is QueuedTrack || track is RoomTrack
+    }
+    
+    var currentlyPlayingContent: Spotify.CurrentlyPlayingContent? {
+        guard let track = track as? Spotify.CurrentlyPlayingContent else {
+            return nil
+        }
+        
+        if let current = self.appState.currentlyPlayingContent, current.uri == track.uri {
+            return current
+        } else {
+            return track
+        }
     }
     
     init(track: Playable){
@@ -106,6 +119,36 @@ struct TrackView: View {
             .opacity(self.isRequestingPlay ? 0.85 : 1)
             .onTapGesture(perform: playTrack)
             
+            if self.currentlyPlayingContent != nil {
+                Image(systemName: self.isPlaying ? "pause.circle" : "play.circle")
+                    .resizable().padding(.trailing, 10).padding(.bottom, 10)
+                    .foregroundColor(self.isRequestingPlay ? Color.gray : Color.primary)
+                    .frame(width: 64, height: 64, alignment: .bottomLeading)
+                    .onTapGesture() {
+                        guard let content = self.currentlyPlayingContent else {
+                            return
+                        }
+                        
+                        self.isRequestingPlay = true
+                        
+                        if self.isPlaying {
+                            self.appState.pausePlayback()
+                                .then() { _ in
+                                    self.isPlaying = false
+                            }.always {
+                                self.isRequestingPlay = false
+                            }
+                        } else {
+                            self.appState.playTrack(content, positionMs: content.progressMs)
+                                .then() {
+                                    self.isPlaying = true
+                                }.always {
+                                    self.isRequestingPlay = false
+                                }
+                        }
+                    }
+            }
+            
             if self.isQueueable && !queuedTrackUris.contains(track.uri) {
                 Image(systemName: "plus")
                     .animation(.easeInOut)
@@ -124,14 +167,11 @@ struct TrackView: View {
             
             if self.isVoteable {
                 HStack(){
-                    
                     Image(systemName: "hand.thumbsup").font(self.isVoting ? .title : .subheadline)
                     Text(votesText).font(self.isVoting ? .title : .subheadline)
                 }
                 .animation(.spring())
                 .onTapGesture {
-                    logger.debug("[TrackView] voted - \(self.track.title)")
-                    
                     self.isVoting = true
                     self.appState.voteTrack(self.track as! QueuedTrack)
                         .always {
@@ -139,6 +179,9 @@ struct TrackView: View {
                     }
                 }
             }
+        }
+        .onAppear() {
+            self.isPlaying = self.currentlyPlayingContent?.isPlaying ?? false
         }
         .contextMenu {
             
