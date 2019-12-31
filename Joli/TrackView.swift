@@ -59,18 +59,26 @@ struct TrackView: View {
         }
     }
     
+    var isCurrentlyPlaying: Bool {
+        guard let current = self.currentlyPlayingContent else {
+            return false
+        }
+        
+        return current.isPlaying
+    }
+    
     init(track: Playable){
         self.track = track
     }
     
     var explicitLabel: some View {
-        return Text(track.explicit == nil ? "" : "E")
+        return Text(track.explicit == nil || !track.explicit! ? "" : "E")
         .padding(2)
         .background(Color.red)
         .font(.footnote)
         .foregroundColor(Color.white)
         .cornerRadius(3)
-        .opacity(track.explicit == nil ? 0.0 : 100)
+        .opacity(track.explicit == nil || !track.explicit! ? 0.0 : 100)
         //.overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
     }
     
@@ -99,7 +107,6 @@ struct TrackView: View {
             
             CircleImage(url: track.thumbnailUrl)
                 .opacity(self.isRequestingPlay ? 0.85 : 1)
-                .onTapGesture(perform: playTrack)
             
             VStack(alignment: .leading) {
                 Text(track.title)
@@ -117,37 +124,6 @@ struct TrackView: View {
                 }
             }
             .opacity(self.isRequestingPlay ? 0.85 : 1)
-            .onTapGesture(perform: playTrack)
-            
-            if self.currentlyPlayingContent != nil {
-                Image(systemName: self.isPlaying ? "pause.circle" : "play.circle")
-                    .resizable().padding(.trailing, 10).padding(.bottom, 10)
-                    .foregroundColor(self.isRequestingPlay ? Color.gray : Color.primary)
-                    .frame(width: 64, height: 64, alignment: .bottomLeading)
-                    .onTapGesture() {
-                        guard let content = self.currentlyPlayingContent else {
-                            return
-                        }
-                        
-                        self.isRequestingPlay = true
-                        
-                        if self.isPlaying {
-                            self.appState.pausePlayback()
-                                .then() { _ in
-                                    self.isPlaying = false
-                            }.always {
-                                self.isRequestingPlay = false
-                            }
-                        } else {
-                            self.appState.playTrack(content, positionMs: content.progressMs)
-                                .then() {
-                                    self.isPlaying = true
-                                }.always {
-                                    self.isRequestingPlay = false
-                                }
-                        }
-                    }
-            }
             
             if self.isQueueable && !queuedTrackUris.contains(track.uri) {
                 Image(systemName: "plus")
@@ -179,7 +155,38 @@ struct TrackView: View {
                     }
                 }
             }
+            
+            if self.currentlyPlayingContent != nil {
+                Image(systemName: self.isPlaying ? "pause.circle" : "play.circle")
+                    .resizable().padding(.trailing, 10).padding(.bottom, 10)
+                    .foregroundColor(self.isRequestingPlay ? Color.gray : Color.primary)
+                    .frame(width: 64, height: 64, alignment: .bottomLeading)
+                    .onTapGesture() {
+                        guard let content = self.currentlyPlayingContent else {
+                            return
+                        }
+                        
+                        self.isRequestingPlay = true
+                        
+                        if self.isPlaying {
+                            self.appState.pausePlayback()
+                                .then() { _ in
+                                    self.isPlaying = false
+                            }.always {
+                                self.isRequestingPlay = false
+                            }
+                        } else {
+                            self.appState.playTrack(content, positionMs: content.progressMs)
+                                .then() {
+                                    self.isPlaying = true
+                                }.always {
+                                    self.isRequestingPlay = false
+                                }
+                        }
+                    }
+            }
         }
+        .onTapGesture(perform: playTrack)
         .onAppear() {
             self.isPlaying = self.currentlyPlayingContent?.isPlaying ?? false
         }
@@ -221,13 +228,6 @@ struct TrackView: View {
 //                    Image(systemName: "minus.circle")
 //                }
 //            }
-        }
-        .onAppear(){
-            
-            self.appState.fetchedImage(url: self.track.thumbnailUrl)
-                .then() { (image: Image?) in
-                    self.image = image
-            }
         }
     }
 }

@@ -10,7 +10,7 @@ import SwiftUI
 struct CircleImage: View {
     @EnvironmentObject var appState: AppState
     
-    var image: Image?
+    @State var image: Image?
     var url: String?
     
     init(url: String){
@@ -29,7 +29,17 @@ struct CircleImage: View {
         return img
                 .clipShape(Circle())
                 .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                    //.overlay(Circle().stroke(Color.secondary, lineWidth: 1))
+                .onAppear() {
+                    
+                    guard let url = self.url else {
+                        return
+                    }
+                    
+                    self.appState.fetchedImage(url: url)
+                        .then() { (image: Image?) in
+                            self.image = image
+                    }
+                }
         
     }
 }

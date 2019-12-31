@@ -27,6 +27,7 @@
 		92B071762364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
 		92B071772364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
 		92B071792365035A0070EC73 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92B071782365035A0070EC73 /* JoliApi */; };
+		92D19BA623BB9D66006D6B41 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D19BA523BB9D66006D6B41 /* UserProfileView.swift */; };
 		92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92D90BE9236C890B00EAAD31 /* party-people.jpg */; };
 		92E67209236BC511003AC55F /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		92E6720A236BC511003AC55F /* SpotifyiOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -104,6 +105,7 @@
 		928F6EB923761F7700FAC911 /* TrackSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSearchView.swift; sourceTree = "<group>"; };
 		92B0716C2364F8A80070EC73 /* MusicroomList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
 		92B071752364FA2D0070EC73 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		92D19BA523BB9D66006D6B41 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		92D90BE9236C890B00EAAD31 /* party-people.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "party-people.jpg"; sourceTree = "<group>"; };
 		92F35AF1238A0AAB0081E30A /* env.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = env.json; sourceTree = "<group>"; };
 		92F379DF2363534D005FE2AB /* Joli.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Joli.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -165,6 +167,7 @@
 				925774BB23AD66E4001DB707 /* ActivityView.swift */,
 				928F6EB923761F7700FAC911 /* TrackSearchView.swift */,
 				921AAD5323B10CA700243335 /* FeedbackSettingsView.swift */,
+				92D19BA523BB9D66006D6B41 /* UserProfileView.swift */,
 			);
 			name = "Supporting Views";
 			sourceTree = "<group>";
@@ -405,6 +408,7 @@
 				925774BA23AD3DC3001DB707 /* MusicLibraryView.swift in Sources */,
 				92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */,
 				925FC09B23777A0A00A8A72C /* MusicroomView.swift in Sources */,
+				92D19BA623BB9D66006D6B41 /* UserProfileView.swift in Sources */,
 				925FC097237777E600A8A72C /* PlayQueueView.swift in Sources */,
 				92F379E32363534D005FE2AB /* AppDelegate.swift in Sources */,
 				928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */,

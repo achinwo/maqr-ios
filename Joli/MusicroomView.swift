@@ -67,7 +67,7 @@ struct MusicroomView: View {
         var action: () -> Void
         
         if selectedTabIdx == 0 || selectedTabIdx == 1 {
-            imageName = "plus"
+            imageName = "plus.magnifyingglass"
             action = { self.isSearchingTracks.toggle() }
         }else{
             imageName = "gear"
@@ -144,6 +144,7 @@ struct MusicroomView: View {
         .onAppear() {
             self.appState.activeRoom = self.room
             self.appState.fetchTracks(self.room)
+            self.appState.assertSpotifyAuthorized()
         }
         .navigationBarItems(trailing:
             self.navTrailingItem

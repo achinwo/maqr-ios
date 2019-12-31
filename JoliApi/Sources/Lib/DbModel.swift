@@ -16,20 +16,20 @@ import Foundation
 /// AuthToken
 // MARK: - AuthToken
 public struct AuthToken: Persisted, DataConvertible {
-    public let accessToken: String
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let expiresIn: Int
-    public let id: Int
-    public let parentId: Int?
-    public let refreshToken: String?
-    public let scope: String
-    public let tokenType: String?
-    public let updatedAt: Date
-    public let updatedById: Int?
-    public let userId: Int?
+    public var accessToken: String
+    public var createdAt: Date
+    public var createdById: Int?
+    public var deletedAt: Date?
+    public var deletedById: Int?
+    public var expiresIn: Int
+    public var id: Int
+    public var parentId: Int?
+    public var refreshToken: String?
+    public var scope: String
+    public var tokenType: String?
+    public var updatedAt: Date
+    public var updatedById: Int?
+    public var userId: Int?
 
     public enum CodingKeys: String, CodingKey {
         case accessToken = "accessToken"
@@ -69,18 +69,18 @@ public struct AuthToken: Persisted, DataConvertible {
 /// RoomTrack
 // MARK: - RoomTrack
 public struct RoomTrack: Persisted, DataConvertible {
-    public let addedBy: Int?
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let id: Int
-    public let musicroom: Musicroom?
-    public let roomId: Int
-    public let track: Track?
-    public let trackId: Int
-    public let updatedAt: Date
-    public let updatedById: Int?
+    public var addedBy: Int?
+    public var createdAt: Date
+    public var createdById: Int?
+    public var deletedAt: Date?
+    public var deletedById: Int?
+    public var id: Int
+    public var musicroom: Musicroom?
+    public var roomId: Int
+    public var track: Track?
+    public var trackId: Int
+    public var updatedAt: Date
+    public var updatedById: Int?
 
     public enum CodingKeys: String, CodingKey {
         case addedBy = "addedBy"
@@ -116,16 +116,16 @@ public struct RoomTrack: Persisted, DataConvertible {
 /// Musicroom
 // MARK: - Musicroom
 public struct Musicroom: Persisted, DataConvertible {
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let details: String
-    public let id: Int
-    public let membership: Membership
-    public let name: String
-    public let updatedAt: Date
-    public let updatedById: Int?
+    public var createdAt: Date
+    public var createdById: Int?
+    public var deletedAt: Date?
+    public var deletedById: Int?
+    public var details: String
+    public var id: Int
+    public var membership: Membership
+    public var name: String
+    public var updatedAt: Date
+    public var updatedById: Int?
 
     public enum CodingKeys: String, CodingKey {
         case createdAt = "createdAt"
@@ -163,27 +163,27 @@ public enum Membership: String, Codable {
 /// Track
 // MARK: - Track
 public struct Track: Persisted, DataConvertible {
-    public let artistName: String
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let durationMs: Int?
-    public let explicit: Bool?
-    public let href: String?
-    public let id: Int
-    public let isLocal: Bool?
-    public let name: String?
-    public let popularity: Int?
-    public let previewUrl: String?
-    public let thumbnailUrl: String
-    public let title: String
-    public let trackId: String
-    public let trackNumber: Int?
-    public let type: String?
-    public let updatedAt: Date
-    public let updatedById: Int?
-    public let uri: String
+    public var artistName: String
+    public var createdAt: Date
+    public var createdById: Int?
+    public var deletedAt: Date?
+    public var deletedById: Int?
+    public var durationMs: Int?
+    public var explicit: Bool?
+    public var href: String?
+    public var id: Int
+    public var isLocal: Bool?
+    public var name: String?
+    public var popularity: Int?
+    public var previewUrl: String?
+    public var thumbnailUrl: String
+    public var title: String
+    public var trackId: String
+    public var trackNumber: Int?
+    public var type: String?
+    public var updatedAt: Date
+    public var updatedById: Int?
+    public var uri: String
 
     public enum CodingKeys: String, CodingKey {
         case artistName = "artistName"
@@ -237,21 +237,21 @@ public struct Track: Persisted, DataConvertible {
 /// QueuedTrack
 // MARK: - QueuedTrack
 public struct QueuedTrack: Persisted, DataConvertible {
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let id: Int
-    public let musicroom: Musicroom?
-    public let playEndedAt: Date?
-    public let playStartedAt: Date?
-    public let roomId: Int
-    public let roomtrackId: Int
-    public let track: Track?
-    public let trackId: Int
-    public let updatedAt: Date
-    public let updatedById: Int?
-    public let votes: [QueuedTrackVote]?
+    public var createdAt: Date
+    public var createdById: Int?
+    public var deletedAt: Date?
+    public var deletedById: Int?
+    public var id: Int
+    public var musicroom: Musicroom?
+    public var playEndedAt: Date?
+    public var playStartedAt: Date?
+    public var roomId: Int
+    public var roomtrackId: Int
+    public var track: Track?
+    public var trackId: Int
+    public var updatedAt: Date
+    public var updatedById: Int?
+    public var votes: [QueuedTrackVote]?
 
     public enum CodingKeys: String, CodingKey {
         case createdAt = "createdAt"
@@ -293,14 +293,14 @@ public struct QueuedTrack: Persisted, DataConvertible {
 /// QueuedTrackVote
 // MARK: - QueuedTrackVote
 public struct QueuedTrackVote: Persisted, DataConvertible {
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let id: Int
-    public let queuedTrackId: Int
-    public let updatedAt: Date
-    public let updatedById: Int?
+    public var createdAt: Date
+    public var createdById: Int?
+    public var deletedAt: Date?
+    public var deletedById: Int?
+    public var id: Int
+    public var queuedTrackId: Int
+    public var updatedAt: Date
+    public var updatedById: Int?
 
     public enum CodingKeys: String, CodingKey {
         case createdAt = "createdAt"
@@ -328,15 +328,15 @@ public struct QueuedTrackVote: Persisted, DataConvertible {
 /// Session
 // MARK: - Session
 public struct Session: Persisted, DataConvertible {
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let id: Int
-    public let token: String
-    public let updatedAt: Date
-    public let updatedById: Int?
-    public let userId: Int
+    public var createdAt: Date
+    public var createdById: Int?
+    public var deletedAt: Date?
+    public var deletedById: Int?
+    public var id: Int
+    public var token: String
+    public var updatedAt: Date
+    public var updatedById: Int?
+    public var userId: Int
 
     public enum CodingKeys: String, CodingKey {
         case createdAt = "createdAt"
@@ -366,19 +366,19 @@ public struct Session: Persisted, DataConvertible {
 /// User
 // MARK: - User
 public struct User: Persisted, DataConvertible {
-    public let activatedAt: Date?
-    public let activeRoomId: Int?
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let djRanking: Int?
-    public let email: String
-    public let id: Int
-    public let name: String
-    public let passwordHash: String
-    public let updatedAt: Date
-    public let updatedById: Int?
+    public var activatedAt: Date?
+    public var activeRoomId: Int?
+    public var createdAt: Date
+    public var createdById: Int?
+    public var deletedAt: Date?
+    public var deletedById: Int?
+    public var djRanking: Int?
+    public var email: String
+    public var id: Int
+    public var name: String
+    public var passwordHash: String
+    public var updatedAt: Date
+    public var updatedById: Int?
 
     public enum CodingKeys: String, CodingKey {
         case activatedAt = "activatedAt"
@@ -416,18 +416,18 @@ public struct User: Persisted, DataConvertible {
 /// RoomMembership
 // MARK: - RoomMembership
 public struct RoomMembership: Persisted, DataConvertible {
-    public let createdAt: Date
-    public let createdById: Int?
-    public let deletedAt: Date?
-    public let deletedById: Int?
-    public let id: Int
-    public let inviteAcceptedAt: Int?
-    public let invitedById: Int
-    public let isAdmin: Int
-    public let roomId: Int
-    public let updatedAt: Date
-    public let updatedById: Int?
-    public let userId: Int
+    public var createdAt: Date
+    public var createdById: Int?
+    public var deletedAt: Date?
+    public var deletedById: Int?
+    public var id: Int
+    public var inviteAcceptedAt: Int?
+    public var invitedById: Int
+    public var isAdmin: Int
+    public var roomId: Int
+    public var updatedAt: Date
+    public var updatedById: Int?
+    public var userId: Int
 
     public enum CodingKeys: String, CodingKey {
         case createdAt = "createdAt"

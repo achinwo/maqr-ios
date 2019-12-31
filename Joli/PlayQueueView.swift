@@ -60,7 +60,7 @@ struct PlayQueueView: MusicroomTabView {
                             .clipped()
                         
                     }
-                    .animation(.easeInOut)
+                    .animation(.spring())
                     .onAppear(perform: self.onAppear)
                     .onDisappear(perform: self.onDisappear)
                     .background(Color.purple)
@@ -75,6 +75,7 @@ struct PlayQueueView: MusicroomTabView {
                         Color.gray.frame(width: UIScreen.main.bounds.width, height: 4, alignment: .leading)
                             
                         Color.green.frame(width: width, height: 4, alignment: .leading)
+                            .cornerRadius(1)
                             .animation(.spring())
                             .shadow(radius: 12)
                     }
@@ -84,7 +85,6 @@ struct PlayQueueView: MusicroomTabView {
                     
                     if self.appState.currentlyPlayingContent != nil {
                         TrackView(track: self.appState.currentlyPlayingContent!)
-                            .environmentObject(self.appState)
                             .padding()
                         Divider()
                     }
@@ -93,8 +93,7 @@ struct PlayQueueView: MusicroomTabView {
 
                         List {
                             ForEach(self.tracks, id: \.uri) { track in
-                                TrackView(track: track)//.background(Color.pink)
-                                //Text("\(track.title)")//.tag(track.url)
+                                TrackView(track: track).tag(track.uri)
                             }
                         }
                         .background(Color.pink)

@@ -29,7 +29,46 @@ struct MusicLibraryView: MusicroomTabView {
     @State var nowPlaying: String?
     
     var body: some View {
-        VStack(alignment: .leading) {
+        var durationMs = 0.0
+        
+        for track in tracks {
+            durationMs = durationMs + Double(track.duration ?? 29000)
+        }
+        
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day, .hour, .minute, .second]
+        formatter.unitsStyle = .brief
+        formatter.maximumUnitCount = 1
+        
+        var playtime = ""
+        if !tracks.isEmpty && durationMs == 0 {
+            playtime = "..."
+        } else if !tracks.isEmpty {
+            playtime = "\(formatter.string(from: durationMs / 1000)!) playtime"
+        }
+        
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center){
+                Image(systemName: "timer")
+                Text(playtime)
+                Spacer()
+                Image(systemName: "music.note.list")
+                Text(tracks.count.description)
+
+                HStack(alignment: .center){
+                    Text("•").font(.title)
+                    
+                    Image(systemName: "hifispeaker")
+                    Text(appState.spotifyDevice?.name ?? "None")
+                        .lineLimit(1)
+                }.opacity(appState.spotifyDevice == nil ? 0.2 : 1)
+            }
+            .animation(.easeInOut)
+            .font(.footnote)
+            .foregroundColor(.gray)
+            .padding([.leading, .trailing], 16)
+            
+            Divider()
             List {
                 ForEach(self.tracks) { track in
                     TrackView(track: track)//.background(Color.pink)

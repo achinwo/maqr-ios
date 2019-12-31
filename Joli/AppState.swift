@@ -272,6 +272,11 @@ class AppState: ObservableObject {
     @State var showToast: Bool = false
     
     @Published var alerts: Set<ServiceAlert> = [.loginRequired, .spotifyWebAuthRequired, .serverConnectionLost]
+    
+    var screen: CGRect {
+        return UIScreen.main.bounds
+    }
+    
     // MARK: - Class variables
     
     static var keyboardHeightPublisher: AnyPublisher<CGFloat, Never> = {
@@ -290,7 +295,7 @@ class AppState: ObservableObject {
     var trackSearchResultPublisher: AnyPublisher<[Spotify.Track], Never> {
         $searchText
         .removeDuplicates()
-        .debounce(for: 0.3, scheduler: RunLoop.main)
+        .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .background))
         .map { input -> Future<[Spotify.Track], Never> in
             
             if let curr = self.currentSearchFuture{
@@ -448,7 +453,11 @@ class AppState: ObservableObject {
             self.fetchMusicrooms()
             
         case .reconnecting(let attempt):
-            self.spotifyWebAuthorized = false
+            
+            if self.spotifyWebAuthorized  {
+                self.spotifyWebAuthorized = false
+            }
+            
             self.updateAlerts(.serverConnectionLost, add: true)
             
             var currentAttemptSecs = attempt * 5
@@ -525,6 +534,21 @@ class AppState: ObservableObject {
         .assign(to: \.keyboardHeight, on: self)
         .store(in: &cancellableSet)
         
+        self.$activeRoom
+            .receive(on: RunLoop.main)
+            .sink { room in
+
+                guard var user = self.api.auth?.user else {
+                    return
+                }
+
+                user.activeRoomId = room?.id //.setActiveRoom(room, baseUrl: api.baseUrl.http, )
+                user.save(baseUrl: self.api.baseUrl.http,
+                          urlSession: self.api.urlSession,
+                          on: nil)
+                    .catch(self.errorHandler())
+            }
+            .store(in: &cancellableSet)
         
         api.subscribe(subject: .playerStateChanged){ (response, error) in
             
@@ -582,6 +606,10 @@ class AppState: ObservableObject {
                                         self.currentlyPlayingAlbumImage = imgObj
                                 }
             }
+            
+            if !self.spotifyWebAuthorized {
+                self.spotifyWebAuthorized = true
+            }
         }
         
         api.subscribe(subject: .activityFeed) { (result, error) in
@@ -598,7 +626,9 @@ class AppState: ObservableObject {
             self.fetchTrackVotes()
         }
         
-        self.$spotifyWebAuthorized.sink() { spotifyConnected in
+        self.$spotifyWebAuthorized
+            .removeDuplicates()
+            .sink() { spotifyConnected in
             let urlSuffix = spotifyConnected ? ".original" : ".noir"
             
             for (url, img) in self.imagesByUrl {
@@ -616,7 +646,11 @@ class AppState: ObservableObject {
             
             if spotifyConnected {
                 self.fetchSpotifyDevices()
-                self.updateAlerts(.spotifyWebAuthRequired, add: false)
+                    .always {
+                        self.updateAlerts(.spotifyWebAuthRequired, add: false)
+                        Spotify.CurrentlyPlayingContent.fetch(baseUrl: self.api.baseUrl.http,
+                                                              urlSession: self.api.urlSession)
+                    }
             } else {
                 self.updateAlerts(.spotifyWebAuthRequired, add: true)
             }
@@ -646,8 +680,10 @@ class AppState: ObservableObject {
             .then() { queuedTrack in
                 logger.info("[queueTrack] queued: \(queuedTrack)")
                 self.fetchQueuedTracks(activeRoom)
+        }.catch() { error in
+            logger.error("[queueTrack] \(error)")
+            self.assertSpotifyAuthorized()
         }
-            .catch(self.errorHandler())
     }
     
     @discardableResult
@@ -675,9 +711,10 @@ class AppState: ObservableObject {
                         resolve(())
                 }.catch(reject)
             }
+        }.catch() { error in
+            logger.error("[playTrack] \(error)")
+            self.assertSpotifyAuthorized()
         }
-            
-        //}
     }
     
     func voteTrack(_ track: QueuedTrack) -> Promise<QueuedTrackVote> {
@@ -694,27 +731,27 @@ class AppState: ObservableObject {
     
     @discardableResult
     func pausePlayback() -> Promise<Json> {
-        if spotifyRemote.isConnected {
-            setAudioSession(false)
-            
-            return Promise() { (resolve, reject) in
-
-                self.spotifyRemote.playerAPI?.pause(){ info, error in
-                    logger.debug("[pauseTrack] \(String(describing: info)) - \(String(describing: error))")
-                    
-                    guard let error = error else {
-                        return resolve(info as? Json ?? [:])
-                        
-                    }
-                    
-                    return reject(error)
-                }
-            }
-        }else{
+//        if spotifyRemote.isConnected {
+//            setAudioSession(false)
+//
+//            return Promise() { (resolve, reject) in
+//
+//                self.spotifyRemote.playerAPI?.pause(){ info, error in
+//                    logger.debug("[pauseTrack] \(String(describing: info)) - \(String(describing: error))")
+//
+//                    guard let error = error else {
+//                        return resolve(info as? Json ?? [:])
+//
+//                    }
+//
+//                    return reject(error)
+//                }
+//            }
+//        }else{
             let path = URLComponents(string: "/api/spotify/me/player/pause")!
             return HttpMethod.put.fetchJson(urlPath: path, payload: [:], baseUrl: api.baseUrl.http, urlSession: api.urlSession)
                 .catch(self.errorHandler())
-        }
+        //}
     }
 }
 

@@ -33,23 +33,23 @@ public enum DiscjockeyPosition: Int, CaseIterable, CustomStringConvertible {
     public var description: String {
         switch self {
         case .soundEngineer:
-            return "Sound Engineer"
+            return "🔊 Sound Engineer"
         case .directorOfPhotography:
-            return "DOP"
+            return "🎥 DOP"
         case .starboy:
-            return "Starboy 💫"
+            return "💫 Starboy"
         case .assistantHead:
-            return "Assistant Head"
+            return "👩🏾‍🍳 Assistant Head"
         case .personal:
-            return "Personal"
+            return "💁🏾‍♀️ Personal"
         case .executive:
-            return "Executive"
+            return "😎 Executive"
         case .executiveHeadOfSales:
-            return "Executive Head of Sales"
+            return "👩🏾‍💼 Executive Head of Sales"
         case .leadCreativeDirector:
-            return "Lead Creative Director"
+            return "🤸🏾‍♂️ Lead Creative Director"
         case .distributionManager:
-            return "Distribution Manager"
+            return "🚗 Distribution Manager"
         }
     }
 }

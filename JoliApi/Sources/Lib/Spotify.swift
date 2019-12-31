@@ -84,6 +84,10 @@ public enum Spotify {
             return item.explicit
         }
         
+        public var duration: Int? {
+            return item.durationMs
+        }
+        
         public var title: String {
             return item.title
         }
@@ -132,6 +136,11 @@ public enum Spotify {
             return nil
         }
         
+        @discardableResult
+        public static func fetch(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<CurrentlyPlayingContent?> {
+            return HttpMethod.get.fetch(urlString: "/api/spotify/current-playing", dataType: CurrentlyPlayingContent?.self, baseUrl: baseUrl, urlSession: urlSession, on: on)
+        }
+        
     }
 
     // MARK: - Track
@@ -153,6 +162,10 @@ public enum Spotify {
         
         public var albumCoverUrl: String {
             return album.images.first!.url
+        }
+        
+        public var duration: Int? {
+            return self.durationMs
         }
         
         public let album: Album

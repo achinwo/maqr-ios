@@ -212,6 +212,8 @@ public struct Builder<T:Persisted>: Persistable {
 
 // MARK: - Playable
 public protocol Playable {
+    //associatedtype Track: Playable = Never
+    
     var explicit: Bool? { get }
     var title: String { get }
     var thumbnailUrl: String { get }
@@ -219,8 +221,13 @@ public protocol Playable {
     var artistName: String { get }
     var uri: String { get }
     var isPlayable: Bool { get }
+    var duration: Int? { get }
     func play(deviceId: String?, positionMs: Int?, baseUrl: URL?, urlSession: URLSession?, on: DispatchQueue?) -> Promise<Json>
 }
+
+//extension Playable where Playable.Track == Track {
+//
+//}
 
 extension Playable {
     
@@ -272,6 +279,10 @@ extension Persisted {
     
     public static func build(_ json: Self.PropertiesDict? = nil) -> Builder<Self> {
         return Builder<Self>(properties: json)
+    }
+    
+    public func builder() -> Builder<Self> {
+        return Builder<Self>(properties: properties())
     }
     
     public func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Self> {
@@ -335,14 +346,7 @@ extension Persisted {
     
     static func jsonDecoder() -> JSONDecoder {
         let decoder = JSONDecoder()
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        formatter.calendar = Calendar(identifier: .iso8601)
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.locale = Locale(identifier: "en_UK_POSIX")
-        
-        decoder.dateDecodingStrategy = .formatted(formatter)
+        decoder.dateDecodingStrategy = .iso8601
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         
         return decoder
@@ -386,6 +390,24 @@ extension Persisted {
                                     baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
     
+    func properties() -> Self.PropertiesDict {
+        var properties: Self.PropertiesDict = [:]
+        guard let data = try? self.toData(),
+            let dictionary = try? JSONSerialization.jsonObject(with: data, options: []) as? Json else {
+            fatalError("\(#file) - \(#function)")
+        }
+        
+        for (key, val) in dictionary {
+            guard let codingKey = CodingKeys.init(stringValue: key) else {
+                continue
+            }
+            
+            properties[codingKey] = val
+        }
+        
+        return properties
+    }
+    
 }
 
 // MARK: - User
@@ -401,6 +423,13 @@ extension User: Discjockey {
         }
         return Musicroom.findById(id: roomId, baseUrl: baseUrl, urlSession: urlSession, on: on)
     }
+    
+//    public func setActiveRoom(_ , baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<Musicroom?> {
+//        guard let roomId = self.activeRoomId else {
+//            return Promise(nil)
+//        }
+//        return Musicroom.findById(id: roomId, baseUrl: baseUrl, urlSession: urlSession, on: on)
+//    }
     // get musicrooms
 }
 
@@ -472,6 +501,10 @@ extension AuthToken {
 // MARK: - QueueTrack
 extension QueuedTrack: Playable {
     
+    public var duration: Int? {
+        return self.track?.durationMs
+    }
+    
     public var isPlayable: Bool {
         return track != nil
     }
@@ -538,6 +571,10 @@ extension RoomTrack: Playable {
         return track?.explicit
     }
     
+    public var duration: Int? {
+        return track!.durationMs
+    }
+    
     public var title: String {
         return track!.title
     }
@@ -583,6 +620,10 @@ extension RoomTrack: Playable {
 // MARK: - Track
 
 extension Track: Playable {
+    
+    public var duration: Int? {
+        return self.durationMs
+    }
     
     public var albumCoverUrl: String {
         return thumbnailUrl

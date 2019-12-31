@@ -67,7 +67,12 @@ struct AppView: View {
                         }
                     .navigationBarItems(leading:
                         Button(action: logonButtonAction) {
-                            Text("\(self.appState.auth == nil ? "Sign In" : self.appState.auth!.user.name)")
+                            
+                            if self.appState.auth != nil {
+                                UserProfileView(user: self.appState.auth!.user.builder())
+                            } else {
+                                Text("Sign In")
+                            }
                         }.alert(isPresented: self.$isLogoutAlertPresented) {
                             Alert(title: Text("Sign out?").font(.title),
                                   message: Text("\(self.appState.auth!.user.name)").font(.subheadline),
@@ -78,6 +83,7 @@ struct AppView: View {
                             )
                         }
                         , trailing:
+                        
                         HStack(){
                             NavigationLink(destination: VStack() { RoomCreateFormView() }) {
                                 Image(systemName: "plus")
@@ -89,7 +95,6 @@ struct AppView: View {
                                     
                             }.padding()
                         }
-                        
                     )
                 }
                 //.background(self.appState.navbarColor)
@@ -158,8 +163,20 @@ struct AppView: View {
             self.appState.triggerAndClearDeviceCallbacks(cancelled: true)
         })
         
+        var width: CGFloat = .zero
+            
+        if self.appState.currentlyPlayingProgressPct > 0 {
+            width = CGFloat(self.appState.currentlyPlayingProgressPct / 100.0) * (UIScreen.main.bounds.width - 142)
+        }
+        
+        var deviceChooserMessage = Text(self.appState.spotifyDevices.count == 0 ? "You have no connected Spotify devices" : "Spotify connected devices")
+        
+        if self.appState.spotifyDevices.count == 0 {
+            deviceChooserMessage = deviceChooserMessage.foregroundColor(.red).bold()
+        }
+        
         return VStack(alignment: .leading){
-                HStack(alignment: .center){
+                HStack(alignment: .center, spacing: 4){
                     if self.appState.currentlyPlayingContent != nil
                     && self.appState.imagesByUrl[self.appState.currentlyPlayingTrack!.albumCoverUrl] != nil {
                         self.appState.imagesByUrl[self.appState.currentlyPlayingTrack!.albumCoverUrl]?
@@ -167,7 +184,8 @@ struct AppView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 0){
-                        HStack(alignment: .bottom){
+                        
+                        HStack(alignment: .top){
 
                             Text(self.appState.currentlyPlayingTrack?.name ?? "No Name")
                                 .font(.headline)//.background(Color.blue)
@@ -209,12 +227,23 @@ struct AppView: View {
                                 }
                             }
                         }//.background(Color.green)
+                        
+                        ZStack(alignment: .leading){
+                            Color.gray.frame(width: UIScreen.main.bounds.width - 142, height: 4, alignment: .leading)
+                                
+                            Color.green.frame(width: width, height: 4, alignment: .leading)
+                                .cornerRadius(1)
+                                .animation(.spring())
+                        }.offset(x: -4, y: 0)
+                        
                     }.frame(width: UIScreen.main.bounds.width - 32 - 116, height: 116, alignment: .bottomLeading)
                     
                 }
             }
             .actionSheet(isPresented: self.$appState.isDeviceChooserPresented){
-                ActionSheet(title: Text("Select Audio Device"), message: Text("Spotify connected devices"), buttons: buttons)
+                ActionSheet(title: Text("Audio Device"),
+                            message: deviceChooserMessage,
+                            buttons: buttons)
             }
              //   .animation(self.dragging ? .none : .easeInOut)
             .simultaneousGesture(gesture)

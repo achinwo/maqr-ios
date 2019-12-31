@@ -36,8 +36,18 @@ struct ActivityView: MusicroomTabView {
     var room: Musicroom
     
     var body: some View {
-        VStack(){
-            Text("Activity")
-        }
+        ScrollView(.vertical){
+            if room.createdById != nil && self.appState.usersById[room.createdById!] != nil {
+                HStack(){
+                    UserProfileView(user: self.appState.usersById[room.createdById!]!.builder()).padding()
+                    Spacer()
+                    Text("host").padding([.leading, .trailing], 4)
+                        .foregroundColor(.white).background(Color.gray).cornerRadius(12).padding()
+                }
+                Divider()
+            } else {
+                Text("Activity")
+            }
+        }//.frame(width: appState.screen.width, height: appState.screen.height, alignment: .center)
     }
 }
