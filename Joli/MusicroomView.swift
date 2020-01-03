@@ -10,7 +10,7 @@ import SwiftUI
 import JoliApi
 import JoliCore
 
-enum MusicroomTab: Int, CaseIterable {
+enum MusicroomTab: Int, CaseIterable, Hashable {
     case library = 0
     case playQueue = 1
     case activity = 2
@@ -58,7 +58,7 @@ struct MusicroomView: View {
     
     var room: Musicroom
     @Environment(\.presentationMode) var presentationMode
-    @State var selectedTabIdx = 1
+    //@State var selectedTabIdx = 1
     @State var isSearchingTracks = false
     @State var isDeviceSelectPresented = false
     
@@ -66,7 +66,7 @@ struct MusicroomView: View {
         var imageName: String
         var action: () -> Void
         
-        if selectedTabIdx == 0 || selectedTabIdx == 1 {
+        if self.appState.selectedTabIdx == 0 || self.appState.selectedTabIdx == 1 {
             imageName = "plus.magnifyingglass"
             action = { self.isSearchingTracks.toggle() }
         }else{
@@ -78,7 +78,7 @@ struct MusicroomView: View {
         
         return HStack(alignment: .firstTextBaseline) {
             Spacer()
-            if [MusicroomTab.playQueue.rawValue, MusicroomTab.library.rawValue].contains(selectedTabIdx) {
+            if [MusicroomTab.playQueue.rawValue, MusicroomTab.library.rawValue].contains(self.appState.selectedTabIdx) {
                 Button(action: {self.appState.isDeviceChooserPresented.toggle()}) {
                         Image(systemName: "hifispeaker")
                             .padding()
@@ -115,27 +115,27 @@ struct MusicroomView: View {
                 Divider()
             }
             
-            Picker(selection: self.$selectedTabIdx, label: Text("Room")){
+            Picker(selection: self.$appState.selectedTabIdx, label: Text("Room")){
                 ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
                     Text("\(roomTab.emoji != nil ? "\(roomTab.emoji!) " : "")\(roomTab.title)")
                         .foregroundColor(.green)
                         .tag(roomTab.rawValue)
                 }
             }
-        .zIndex(500)
-        .opacity(90)
+            .zIndex(500)
+            .opacity(90)
             .pickerStyle(SegmentedPickerStyle())
             .padding()
             
-            if self.selectedTabIdx == MusicroomTab.library.rawValue{
+            if self.appState.selectedTabIdx == MusicroomTab.library.rawValue{
                 MusicLibraryView(room: self.room)
-            }else if self.selectedTabIdx == MusicroomTab.playQueue.rawValue {
+            }else if self.appState.selectedTabIdx == MusicroomTab.playQueue.rawValue {
                 PlayQueueView(room: self.room)
-            }else if self.selectedTabIdx == MusicroomTab.activity.rawValue{
+            }else if self.appState.selectedTabIdx == MusicroomTab.activity.rawValue{
                 ActivityView(room: self.room)
             }
         }
-        .toast(isShowing: self.$appState.showToast, text: Text("Hello toast!"))
+        //.toast(isShowing: self.$appState.showToast, text: Text("Hello toast!"))
         
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .top)
         .padding(.top, 120)

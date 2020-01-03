@@ -53,52 +53,51 @@ struct AppView: View {
             }
         }
         
-        return GeometryReader(){ geometry in
-            ZStack(alignment: .bottomTrailing) {
-                
-                NavigationView {
-                        MusicroomList()
-                            .sheet(isPresented: self.$appState.isLogonViewPresented) {
-                                NavigationView {
-                                    LogOnView() { cancelled in
-                                        logger.debug("[LogOnView] view dismissed")
-                                    }
-                                }.environmentObject(self.appState)
-                        }
-                    .navigationBarItems(leading:
-                        Button(action: logonButtonAction) {
-                            
-                            if self.appState.auth != nil {
-                                UserProfileView(user: self.appState.auth!.user.builder())
-                            } else {
-                                Text("Sign In")
+        let roomsView = NavigationView {
+                MusicroomList()
+                    .sheet(isPresented: self.$appState.isLogonViewPresented) {
+                        NavigationView {
+                            LogOnView() { cancelled in
+                                logger.debug("[LogOnView] view dismissed")
                             }
-                        }.alert(isPresented: self.$isLogoutAlertPresented) {
-                            Alert(title: Text("Sign out?").font(.title),
-                                  message: Text("\(self.appState.auth!.user.name)").font(.subheadline),
-                                  primaryButton: .cancel(),
-                                  secondaryButton: .destructive(Text("Yes")) {
-                                    self.appState.api.auth = nil
-                                }
-                            )
-                        }
-                        , trailing:
-                        
-                        HStack(){
-                            NavigationLink(destination: VStack() { RoomCreateFormView() }) {
-                                Image(systemName: "plus")
-                            }.padding()
-                            Button(action: {
-                                self.appState.isSettingsPresented.toggle()
-                            }) {
-                                Image(systemName: "gear")
-                                    
-                            }.padding()
+                        }.environmentObject(self.appState)
+                }
+            .navigationBarItems(leading:
+                Button(action: logonButtonAction) {
+                    
+                    if self.appState.auth != nil {
+                        UserProfileView(user: self.appState.auth!.user.builder())
+                    } else {
+                        Text("Sign In")
+                    }
+                }.alert(isPresented: self.$isLogoutAlertPresented) {
+                    Alert(title: Text("Sign out?").font(.title),
+                          message: Text("\(self.appState.auth!.user.name)").font(.subheadline),
+                          primaryButton: .cancel(),
+                          secondaryButton: .destructive(Text("Yes")) {
+                            self.appState.api.auth = nil
                         }
                     )
                 }
-                //.background(self.appState.navbarColor)
-                .animation(.spring())
+                , trailing:
+                
+                HStack(){
+                    NavigationLink(destination: VStack() { RoomCreateFormView() }) {
+                        Image(systemName: "plus")
+                    }.padding()
+                    Button(action: {
+                        self.appState.isSettingsPresented.toggle()
+                    }) {
+                        Image(systemName: "gear")
+                            
+                    }.padding()
+                }
+            )
+        }
+        
+        return GeometryReader(){ geometry in
+            ZStack(alignment: .bottomTrailing) {
+                roomsView.animation(.spring())
                 
                 NavigationView {
                     SettingsView()
@@ -108,29 +107,8 @@ struct AppView: View {
                 
                 self.currentPlayingView
                 
-//                VStack(alignment: .center, spacing: 0){
-//                    HStack(alignment: .center){
-//                        Image(systemName: "bolt.slash")
-//                            .resizable().frame(width: 32, height: 32, alignment: .center)
-//                            .padding(.init(top: 4, leading: 16, bottom: 4, trailing: 4))
-//                            .foregroundColor(.gray)
-//                        Text("Connection Lost").font(.subheadline).foregroundColor(.gray)//.padding()
-//                        Spacer()
-//                    }
-//                    .animation(.easeInOut)
-//                    Divider()
-//                }
-//                .background(Color.white)
-//                .clipped()
-//                .alignmentGuide(.top) { d in
-//                    logger.debug("[alignmentGuide] \(d)")
-//                    return d[.top]
-//                }
-                
-//                .frame(width: UIScreen.main.bounds.width,
-//                       height: self.appState.serverConnectionState == ConnectionState.connected ? CGFloat(0) : CGFloat(50),
-//                       alignment: .center)
-            }//.colorScheme(.dark)
+            }
+            //.colorScheme(.dark)
         }
     }
         
@@ -265,7 +243,11 @@ struct AppView: View {
             return CGSize(width: -16, height: AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET)
         }
         
-        if !content.isPlaying{
+        if self.appState.activeRoom != nil && self.appState.selectedTabIdx == MusicroomTab.playQueue.rawValue {
+            return CGSize(width: -16, height: AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET)
+        }
+        
+        if !content.isPlaying {
             return CGSize(width: -16, height: AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET)
         }
         

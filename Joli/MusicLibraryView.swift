@@ -49,19 +49,17 @@ struct MusicLibraryView: MusicroomTabView {
         
         return VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center){
-                Image(systemName: "timer")
-                Text(playtime)
-                Spacer()
-                Image(systemName: "music.note.list")
-                Text(tracks.count.description)
-
                 HStack(alignment: .center){
-                    Text("•").font(.title)
-                    
                     Image(systemName: "hifispeaker")
                     Text(appState.spotifyDevice?.name ?? "None")
                         .lineLimit(1)
                 }.opacity(appState.spotifyDevice == nil ? 0.2 : 1)
+                Spacer()
+                Image(systemName: "timer")
+                Text(playtime)
+                Text("•").font(.title)
+                Image(systemName: "music.note.list")
+                Text(tracks.count.description)
             }
             .animation(.easeInOut)
             .font(.footnote)

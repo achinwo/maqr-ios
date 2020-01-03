@@ -36,9 +36,9 @@ struct TrackSearchView: View {
     func searchControl() -> some View {
         return HStack {
             HStack {
-                Image(systemName: "magnifyingglass")
+                Image(systemName: "magnifyingglass").padding([.leading, .trailing], 16)
                 
-                TextField("search", text: self.$appState.searchText, onEditingChanged: { (isEditing:Bool) -> Void in
+                TextField("Search", text: self.$appState.searchText, onEditingChanged: { (isEditing:Bool) -> Void in
                     self.showCancelButton = true
                     
                 }) { () -> Void in

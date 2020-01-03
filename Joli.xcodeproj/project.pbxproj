@@ -30,7 +30,6 @@
 		92D19BA623BB9D66006D6B41 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D19BA523BB9D66006D6B41 /* UserProfileView.swift */; };
 		92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92D90BE9236C890B00EAAD31 /* party-people.jpg */; };
 		92E67209236BC511003AC55F /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (Required, ); }; };
-		92E6720A236BC511003AC55F /* SpotifyiOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		92F35AF2238A0AAB0081E30A /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 92F35AF1238A0AAB0081E30A /* env.json */; };
 		92F379E32363534D005FE2AB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E22363534D005FE2AB /* AppDelegate.swift */; };
 		92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E42363534D005FE2AB /* SceneDelegate.swift */; };
@@ -68,17 +67,6 @@
 			);
 			name = "Embed PlugIns";
 			runOnlyForDeploymentPostprocessing = 0;
-		};
-		92E6720B236BC511003AC55F /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 8;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				92E6720A236BC511003AC55F /* SpotifyiOS.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -270,7 +258,6 @@
 				92F379DB2363534D005FE2AB /* Sources */,
 				92F379DC2363534D005FE2AB /* Frameworks */,
 				92F379DD2363534D005FE2AB /* Resources */,
-				92E6720B236BC511003AC55F /* Embed Frameworks */,
 				925FC0A6237EA25100A8A72C /* Embed PlugIns */,
 			);
 			buildRules = (

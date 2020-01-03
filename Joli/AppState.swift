@@ -196,6 +196,7 @@ class AppState: ObservableObject {
     @Published var lastPlayedContent: Spotify.CurrentlyPlayingContent? = nil
     
     @Published var navbarColor: Color = .gray
+    @Published var selectedTabIdx = 1
     
     private var currentlyPlayingAlbumUrl: String? = nil
     
