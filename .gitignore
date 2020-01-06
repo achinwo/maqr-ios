@@ -9,6 +9,8 @@ DerivedData/
 Joli/env.json
 env.json
 
+JoliApi
+
 ## Various settings
 *.pbxuser
 !default.pbxuser
