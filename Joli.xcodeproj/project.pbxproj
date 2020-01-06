@@ -14,6 +14,7 @@
 		9234321123BFD2F700E24E96 /* TodayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9234321023BFD2F700E24E96 /* TodayViewController.swift */; };
 		9234321423BFD2F700E24E96 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9234321223BFD2F700E24E96 /* MainInterface.storyboard */; };
 		9234321823BFD2F700E24E96 /* JoliWidget.appex in Embed PlugIns */ = {isa = PBXBuildFile; fileRef = 9234320C23BFD2F700E24E96 /* JoliWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9234323223C3F63600E24E96 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 9234323123C3F63600E24E96 /* JoliApi */; };
 		925774BA23AD3DC3001DB707 /* MusicLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774B923AD3DC3001DB707 /* MusicLibraryView.swift */; };
 		925774BC23AD66E4001DB707 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774BB23AD66E4001DB707 /* ActivityView.swift */; };
 		925E5C702369D85900D95AB7 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925E5C6E2369D85900D95AB7 /* MapView.swift */; };
@@ -30,7 +31,6 @@
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B071762364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
 		92B071772364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
-		92B071792365035A0070EC73 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92B071782365035A0070EC73 /* JoliApi */; };
 		92D19BA623BB9D66006D6B41 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D19BA523BB9D66006D6B41 /* UserProfileView.swift */; };
 		92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92D90BE9236C890B00EAAD31 /* party-people.jpg */; };
 		92E67209236BC511003AC55F /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -127,7 +127,6 @@
 		92F37A002363534F005FE2AB /* JoliUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JoliUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		92F37A042363534F005FE2AB /* JoliUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliUITests.swift; sourceTree = "<group>"; };
 		92F37A062363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		92F37A172363571C005FE2AB /* JoliApi */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JoliApi; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,7 +142,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				92B071792365035A0070EC73 /* JoliApi in Frameworks */,
+				9234323223C3F63600E24E96 /* JoliApi in Frameworks */,
 				92E67209236BC511003AC55F /* SpotifyiOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -212,7 +211,6 @@
 			children = (
 				92F35AF1238A0AAB0081E30A /* env.json */,
 				925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */,
-				92F37A172363571C005FE2AB /* JoliApi */,
 				92F379E12363534D005FE2AB /* Joli */,
 				92F379F82363534F005FE2AB /* JoliTests */,
 				92F37A032363534F005FE2AB /* JoliUITests */,
@@ -324,7 +322,7 @@
 			);
 			name = Joli;
 			packageProductDependencies = (
-				92B071782365035A0070EC73 /* JoliApi */,
+				9234323123C3F63600E24E96 /* JoliApi */,
 			);
 			productName = Joli;
 			productReference = 92F379DF2363534D005FE2AB /* Joli.app */;
@@ -404,6 +402,9 @@
 				Base,
 			);
 			mainGroup = 92F379D62363534D005FE2AB;
+			packageReferences = (
+				9234323023C3F63600E24E96 /* XCRemoteSwiftPackageReference "JoliApi" */,
+			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -917,9 +918,21 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		9234323023C3F63600E24E96 /* XCRemoteSwiftPackageReference "JoliApi" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/achinwo/JoliApi.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
-		92B071782365035A0070EC73 /* JoliApi */ = {
+		9234323123C3F63600E24E96 /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 9234323023C3F63600E24E96 /* XCRemoteSwiftPackageReference "JoliApi" */;
 			productName = JoliApi;
 		};
 /* End XCSwiftPackageProductDependency section */
