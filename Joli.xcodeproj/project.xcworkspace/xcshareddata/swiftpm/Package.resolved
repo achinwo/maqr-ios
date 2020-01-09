@@ -11,15 +11,6 @@
         }
       },
       {
-        "package": "JoliApi",
-        "repositoryURL": "https://github.com/achinwo/JoliApi.git",
-        "state": {
-          "branch": "master",
-          "revision": "7ae20c29a414578ae7520bb0684692968a28cf3b",
-          "version": null
-        }
-      },
-      {
         "package": "JSONSchema",
         "repositoryURL": "https://github.com/kylef/JSONSchema.swift.git",
         "state": {

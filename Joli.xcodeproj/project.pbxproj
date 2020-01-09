@@ -15,6 +15,7 @@
 		9234321423BFD2F700E24E96 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9234321223BFD2F700E24E96 /* MainInterface.storyboard */; };
 		9234321823BFD2F700E24E96 /* JoliWidget.appex in Embed PlugIns */ = {isa = PBXBuildFile; fileRef = 9234320C23BFD2F700E24E96 /* JoliWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9234323223C3F63600E24E96 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 9234323123C3F63600E24E96 /* JoliApi */; };
+		9234323723C680E600E24E96 /* JoliApi in Resources */ = {isa = PBXBuildFile; fileRef = 9234323623C680E500E24E96 /* JoliApi */; };
 		925774BA23AD3DC3001DB707 /* MusicLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774B923AD3DC3001DB707 /* MusicLibraryView.swift */; };
 		925774BC23AD66E4001DB707 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774BB23AD66E4001DB707 /* ActivityView.swift */; };
 		925E5C702369D85900D95AB7 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925E5C6E2369D85900D95AB7 /* MapView.swift */; };
@@ -92,6 +93,7 @@
 		9234321323BFD2F700E24E96 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
 		9234321523BFD2F700E24E96 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9234322F23C0D5B800E24E96 /* JoliWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JoliWidget.entitlements; sourceTree = "<group>"; };
+		9234323623C680E500E24E96 /* JoliApi */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JoliApi; sourceTree = "<group>"; };
 		925774B923AD3DC3001DB707 /* MusicLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicLibraryView.swift; sourceTree = "<group>"; };
 		925774BB23AD66E4001DB707 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		925E5C6E2369D85900D95AB7 /* MapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
@@ -104,7 +106,6 @@
 		925FC09A23777A0A00A8A72C /* MusicroomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomView.swift; sourceTree = "<group>"; };
 		925FC09C2378B81100A8A72C /* TrackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
 		925FC09E2379FE5900A8A72C /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
-		925FC0A0237E2DF700A8A72C /* DeezerSDK */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DeezerSDK; sourceTree = "<group>"; };
 		9262E863239C993100891F6C /* Joli.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Joli.entitlements; sourceTree = "<group>"; };
 		9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomCreateView.swift; sourceTree = "<group>"; };
 		9274D920238DE71400A43752 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -209,6 +210,7 @@
 		92F379D62363534D005FE2AB = {
 			isa = PBXGroup;
 			children = (
+				9234323623C680E500E24E96 /* JoliApi */,
 				92F35AF1238A0AAB0081E30A /* env.json */,
 				925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */,
 				92F379E12363534D005FE2AB /* Joli */,
@@ -279,7 +281,6 @@
 		92F37A18236458F2005FE2AB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				925FC0A0237E2DF700A8A72C /* DeezerSDK */,
 				925E5C72236A742100D95AB7 /* SpotifyiOS.framework */,
 				9234320D23BFD2F700E24E96 /* NotificationCenter.framework */,
 			);
@@ -437,6 +438,7 @@
 				925FC0992377793100A8A72C /* african_giant_cover.jpg in Resources */,
 				92F379E92363534F005FE2AB /* Assets.xcassets in Resources */,
 				92F35AF2238A0AAB0081E30A /* env.json in Resources */,
+				9234323723C680E600E24E96 /* JoliApi in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

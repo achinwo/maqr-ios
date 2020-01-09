@@ -33,8 +33,8 @@ struct UserProfileView: View {
     }
 }
 
-//struct UserProfileView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        UserProfileView(user: User.)
-//    }
-//}
+struct UserProfileView_Previews: PreviewProvider {
+    static var previews: some View {
+        UserProfileView(user: SEED_DATA.users.first!.builder())
+    }
+}
