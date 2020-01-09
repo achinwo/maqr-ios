@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C16733723C7D4B400CF3131 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 3C16733623C7D4B400CF3131 /* JoliApi */; };
 		92061A84236B0175007FC6F1 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92061A83236B0175007FC6F1 /* Extensions.swift */; };
 		921AAD5223AF88F000243335 /* Spotify_Icon_RGB_Green.png in Resources */ = {isa = PBXBuildFile; fileRef = 921AAD5123AF88F000243335 /* Spotify_Icon_RGB_Green.png */; };
 		921AAD5423B10CA700243335 /* FeedbackSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921AAD5323B10CA700243335 /* FeedbackSettingsView.swift */; };
@@ -143,6 +144,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C16733723C7D4B400CF3131 /* JoliApi in Frameworks */,
 				92B071792365035A0070EC73 /* JoliApi in Frameworks */,
 				92E67209236BC511003AC55F /* SpotifyiOS.framework in Frameworks */,
 			);
@@ -325,6 +327,7 @@
 			name = Joli;
 			packageProductDependencies = (
 				92B071782365035A0070EC73 /* JoliApi */,
+				3C16733623C7D4B400CF3131 /* JoliApi */,
 			);
 			productName = Joli;
 			productReference = 92F379DF2363534D005FE2AB /* Joli.app */;
@@ -404,6 +407,9 @@
 				Base,
 			);
 			mainGroup = 92F379D62363534D005FE2AB;
+			packageReferences = (
+				3C16733523C7D4B400CF3131 /* XCRemoteSwiftPackageReference "JoliApi" */,
+			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -917,7 +923,23 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		3C16733523C7D4B400CF3131 /* XCRemoteSwiftPackageReference "JoliApi" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/achinwo/JoliApi.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		3C16733623C7D4B400CF3131 /* JoliApi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3C16733523C7D4B400CF3131 /* XCRemoteSwiftPackageReference "JoliApi" */;
+			productName = JoliApi;
+		};
 		92B071782365035A0070EC73 /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
