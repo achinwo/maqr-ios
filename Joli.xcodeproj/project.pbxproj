@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C16733723C7D4B400CF3131 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 3C16733623C7D4B400CF3131 /* JoliApi */; };
 		92061A84236B0175007FC6F1 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92061A83236B0175007FC6F1 /* Extensions.swift */; };
 		920F871D23C7FCD9008F18E0 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 920F871C23C7FCD9008F18E0 /* JoliApi */; };
 		920F872D23CD374D008F18E0 /* ServiceAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920F872C23CD374D008F18E0 /* ServiceAlert.swift */; };
@@ -135,6 +136,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C16733723C7D4B400CF3131 /* JoliApi in Frameworks */,
+				92B071792365035A0070EC73 /* JoliApi in Frameworks */,
 				92E67209236BC511003AC55F /* SpotifyiOS.framework in Frameworks */,
 				920F871D23C7FCD9008F18E0 /* JoliApi in Frameworks */,
 			);
