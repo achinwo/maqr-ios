@@ -22,12 +22,12 @@ extension Builder where T == User {
 }
 
 struct UserProfileView: View {
-    var user: Builder<User>
+    var user: UserRecord
     
     var body: some View {
         
         return VStack(alignment: .leading) {
-            Text(user[.name, String.self]!).font(.headline)
+            Text(user.name!).font(.headline)
             Text(user.ranking.description.lowercased()).font(.footnote).foregroundColor(.gray)
         }
     }

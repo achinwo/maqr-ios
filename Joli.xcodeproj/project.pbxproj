@@ -8,13 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		92061A84236B0175007FC6F1 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92061A83236B0175007FC6F1 /* Extensions.swift */; };
+		920F871D23C7FCD9008F18E0 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 920F871C23C7FCD9008F18E0 /* JoliApi */; };
+		920F872D23CD374D008F18E0 /* ServiceAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920F872C23CD374D008F18E0 /* ServiceAlert.swift */; };
 		921AAD5223AF88F000243335 /* Spotify_Icon_RGB_Green.png in Resources */ = {isa = PBXBuildFile; fileRef = 921AAD5123AF88F000243335 /* Spotify_Icon_RGB_Green.png */; };
 		921AAD5423B10CA700243335 /* FeedbackSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921AAD5323B10CA700243335 /* FeedbackSettingsView.swift */; };
 		9234320E23BFD2F700E24E96 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9234320D23BFD2F700E24E96 /* NotificationCenter.framework */; };
 		9234321123BFD2F700E24E96 /* TodayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9234321023BFD2F700E24E96 /* TodayViewController.swift */; };
 		9234321423BFD2F700E24E96 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9234321223BFD2F700E24E96 /* MainInterface.storyboard */; };
 		9234321823BFD2F700E24E96 /* JoliWidget.appex in Embed PlugIns */ = {isa = PBXBuildFile; fileRef = 9234320C23BFD2F700E24E96 /* JoliWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		9234323223C3F63600E24E96 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 9234323123C3F63600E24E96 /* JoliApi */; };
 		9234323723C680E600E24E96 /* JoliApi in Resources */ = {isa = PBXBuildFile; fileRef = 9234323623C680E500E24E96 /* JoliApi */; };
 		925774BA23AD3DC3001DB707 /* MusicLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774B923AD3DC3001DB707 /* MusicLibraryView.swift */; };
 		925774BC23AD66E4001DB707 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774BB23AD66E4001DB707 /* ActivityView.swift */; };
@@ -31,7 +32,6 @@
 		928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F6EB923761F7700FAC911 /* TrackSearchView.swift */; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B071762364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
-		92B071772364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
 		92D19BA623BB9D66006D6B41 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D19BA523BB9D66006D6B41 /* UserProfileView.swift */; };
 		92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92D90BE9236C890B00EAAD31 /* party-people.jpg */; };
 		92E67209236BC511003AC55F /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -42,7 +42,6 @@
 		92F379EC2363534F005FE2AB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92F379EB2363534F005FE2AB /* Preview Assets.xcassets */; };
 		92F379EF2363534F005FE2AB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */; };
 		92F379FA2363534F005FE2AB /* JoliTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379F92363534F005FE2AB /* JoliTests.swift */; };
-		92F37A052363534F005FE2AB /* JoliUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F37A042363534F005FE2AB /* JoliUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,13 +53,6 @@
 			remoteInfo = JoliWidget;
 		};
 		92F379F62363534F005FE2AB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 92F379DE2363534D005FE2AB;
-			remoteInfo = Joli;
-		};
-		92F37A012363534F005FE2AB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
 			proxyType = 1;
@@ -85,6 +77,9 @@
 
 /* Begin PBXFileReference section */
 		92061A83236B0175007FC6F1 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		920F872423C9147D008F18E0 /* JoliUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliUITests.swift; sourceTree = "<group>"; };
+		920F872623C9147D008F18E0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		920F872C23CD374D008F18E0 /* ServiceAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceAlert.swift; sourceTree = "<group>"; };
 		921AAD5123AF88F000243335 /* Spotify_Icon_RGB_Green.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Spotify_Icon_RGB_Green.png; sourceTree = "<group>"; };
 		921AAD5323B10CA700243335 /* FeedbackSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSettingsView.swift; sourceTree = "<group>"; };
 		9234320C23BFD2F700E24E96 /* JoliWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = JoliWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -125,9 +120,6 @@
 		92F379F52363534F005FE2AB /* JoliTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JoliTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		92F379F92363534F005FE2AB /* JoliTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliTests.swift; sourceTree = "<group>"; };
 		92F379FB2363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		92F37A002363534F005FE2AB /* JoliUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JoliUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		92F37A042363534F005FE2AB /* JoliUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliUITests.swift; sourceTree = "<group>"; };
-		92F37A062363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,8 +135,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9234323223C3F63600E24E96 /* JoliApi in Frameworks */,
 				92E67209236BC511003AC55F /* SpotifyiOS.framework in Frameworks */,
+				920F871D23C7FCD9008F18E0 /* JoliApi in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,16 +147,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		92F379FD2363534F005FE2AB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		920F872323C9147D008F18E0 /* JoliUITests */ = {
+			isa = PBXGroup;
+			children = (
+				920F872423C9147D008F18E0 /* JoliUITests.swift */,
+				920F872623C9147D008F18E0 /* Info.plist */,
+			);
+			path = JoliUITests;
+			sourceTree = "<group>";
+		};
 		9234320F23BFD2F700E24E96 /* JoliWidget */ = {
 			isa = PBXGroup;
 			children = (
@@ -215,8 +209,8 @@
 				925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */,
 				92F379E12363534D005FE2AB /* Joli */,
 				92F379F82363534F005FE2AB /* JoliTests */,
-				92F37A032363534F005FE2AB /* JoliUITests */,
 				9234320F23BFD2F700E24E96 /* JoliWidget */,
+				920F872323C9147D008F18E0 /* JoliUITests */,
 				92F379E02363534D005FE2AB /* Products */,
 				92F37A18236458F2005FE2AB /* Frameworks */,
 			);
@@ -227,7 +221,6 @@
 			children = (
 				92F379DF2363534D005FE2AB /* Joli.app */,
 				92F379F52363534F005FE2AB /* JoliTests.xctest */,
-				92F37A002363534F005FE2AB /* JoliUITests.xctest */,
 				9234320C23BFD2F700E24E96 /* JoliWidget.appex */,
 			);
 			name = Products;
@@ -248,6 +241,7 @@
 				92B071752364FA2D0070EC73 /* AppState.swift */,
 				92061A83236B0175007FC6F1 /* Extensions.swift */,
 				925FC09E2379FE5900A8A72C /* AppView.swift */,
+				920F872C23CD374D008F18E0 /* ServiceAlert.swift */,
 			);
 			path = Joli;
 			sourceTree = "<group>";
@@ -267,15 +261,6 @@
 				92F379FB2363534F005FE2AB /* Info.plist */,
 			);
 			path = JoliTests;
-			sourceTree = "<group>";
-		};
-		92F37A032363534F005FE2AB /* JoliUITests */ = {
-			isa = PBXGroup;
-			children = (
-				92F37A042363534F005FE2AB /* JoliUITests.swift */,
-				92F37A062363534F005FE2AB /* Info.plist */,
-			);
-			path = JoliUITests;
 			sourceTree = "<group>";
 		};
 		92F37A18236458F2005FE2AB /* Frameworks */ = {
@@ -323,7 +308,7 @@
 			);
 			name = Joli;
 			packageProductDependencies = (
-				9234323123C3F63600E24E96 /* JoliApi */,
+				920F871C23C7FCD9008F18E0 /* JoliApi */,
 			);
 			productName = Joli;
 			productReference = 92F379DF2363534D005FE2AB /* Joli.app */;
@@ -346,24 +331,6 @@
 			productName = JoliTests;
 			productReference = 92F379F52363534F005FE2AB /* JoliTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		92F379FF2363534F005FE2AB /* JoliUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 92F37A0F2363534F005FE2AB /* Build configuration list for PBXNativeTarget "JoliUITests" */;
-			buildPhases = (
-				92F379FC2363534F005FE2AB /* Sources */,
-				92F379FD2363534F005FE2AB /* Frameworks */,
-				92F379FE2363534F005FE2AB /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				92F37A022363534F005FE2AB /* PBXTargetDependency */,
-			);
-			name = JoliUITests;
-			productName = JoliUITests;
-			productReference = 92F37A002363534F005FE2AB /* JoliUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -388,10 +355,6 @@
 						CreatedOnToolsVersion = 11.1;
 						TestTargetID = 92F379DE2363534D005FE2AB;
 					};
-					92F379FF2363534F005FE2AB = {
-						CreatedOnToolsVersion = 11.1;
-						TestTargetID = 92F379DE2363534D005FE2AB;
-					};
 				};
 			};
 			buildConfigurationList = 92F379DA2363534D005FE2AB /* Build configuration list for PBXProject "Joli" */;
@@ -404,7 +367,7 @@
 			);
 			mainGroup = 92F379D62363534D005FE2AB;
 			packageReferences = (
-				9234323023C3F63600E24E96 /* XCRemoteSwiftPackageReference "JoliApi" */,
+				920F871B23C7FCD9008F18E0 /* XCRemoteSwiftPackageReference "JoliApi" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -412,7 +375,6 @@
 			targets = (
 				92F379DE2363534D005FE2AB /* Joli */,
 				92F379F42363534F005FE2AB /* JoliTests */,
-				92F379FF2363534F005FE2AB /* JoliUITests */,
 				9234320B23BFD2F700E24E96 /* JoliWidget */,
 			);
 		};
@@ -443,13 +405,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		92F379F32363534F005FE2AB /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		92F379FE2363534F005FE2AB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -489,6 +444,7 @@
 				925E5C712369D85900D95AB7 /* CircleImage.swift in Sources */,
 				925FC09D2378B81100A8A72C /* TrackView.swift in Sources */,
 				92061A84236B0175007FC6F1 /* Extensions.swift in Sources */,
+				920F872D23CD374D008F18E0 /* ServiceAlert.swift in Sources */,
 				9271D42C239D3FCF00CE1425 /* MusicroomCreateView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -498,15 +454,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				92F379FA2363534F005FE2AB /* JoliTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		92F379FC2363534F005FE2AB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				92B071772364FA2D0070EC73 /* AppState.swift in Sources */,
-				92F37A052363534F005FE2AB /* JoliUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -522,11 +469,6 @@
 			isa = PBXTargetDependency;
 			target = 92F379DE2363534D005FE2AB /* Joli */;
 			targetProxy = 92F379F62363534F005FE2AB /* PBXContainerItemProxy */;
-		};
-		92F37A022363534F005FE2AB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 92F379DE2363534D005FE2AB /* Joli */;
-			targetProxy = 92F37A012363534F005FE2AB /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -793,6 +735,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = JoliTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -802,6 +745,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Joli-Bridging-Header.h";
+				SWIFT_PRECOMPILE_BRIDGING_HEADER = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Joli.app/Joli";
@@ -815,6 +760,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KG87ZUCP4X;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = JoliTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -824,49 +770,11 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Joli-Bridging-Header.h";
+				SWIFT_PRECOMPILE_BRIDGING_HEADER = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Joli.app/Joli";
-			};
-			name = Release;
-		};
-		92F37A102363534F005FE2AB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = KG87ZUCP4X;
-				INFOPLIST_FILE = JoliUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Joli;
-			};
-			name = Debug;
-		};
-		92F37A112363534F005FE2AB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = KG87ZUCP4X;
-				INFOPLIST_FILE = JoliUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Joli;
 			};
 			name = Release;
 		};
@@ -909,19 +817,10 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		92F37A0F2363534F005FE2AB /* Build configuration list for PBXNativeTarget "JoliUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				92F37A102363534F005FE2AB /* Debug */,
-				92F37A112363534F005FE2AB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		9234323023C3F63600E24E96 /* XCRemoteSwiftPackageReference "JoliApi" */ = {
+		920F871B23C7FCD9008F18E0 /* XCRemoteSwiftPackageReference "JoliApi" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/achinwo/JoliApi.git";
 			requirement = {
@@ -932,9 +831,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9234323123C3F63600E24E96 /* JoliApi */ = {
+		920F871C23C7FCD9008F18E0 /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9234323023C3F63600E24E96 /* XCRemoteSwiftPackageReference "JoliApi" */;
+			package = 920F871B23C7FCD9008F18E0 /* XCRemoteSwiftPackageReference "JoliApi" */;
 			productName = JoliApi;
 		};
 /* End XCSwiftPackageProductDependency section */

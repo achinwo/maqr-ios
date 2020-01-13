@@ -2,11 +2,12 @@
 //  JoliUITests.swift
 //  JoliUITests
 //
-//  Created by Anthony Chinwo on 25/10/2019.
-//  Copyright © 2019 Anthony Chinwo. All rights reserved.
+//  Created by Anthony Chinwo on 10/01/2020.
+//  Copyright © 2020 Anthony Chinwo. All rights reserved.
 //
 
 import XCTest
+@testable import JoliCore
 @testable import JoliApi
 
 class JoliUITests: XCTestCase {
