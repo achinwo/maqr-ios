@@ -551,12 +551,21 @@ class AppState: ObservableObject {
             }
         }.store(in: &cancellableSet)
     }
-    // MARK: - initialize (End)
+    // MARK: initialize (End)
     
     // MARK: - errorHandler
     public func errorHandler(_ funcName: String = #function) -> (Error) -> Void {
         return { (error: Error) in
             logger.error("[\(funcName)] error: \(error)")
+            
+            guard case let NetworkError.errorMessage(err) = error,
+                let message = err.message,
+                message == Spotify.ErrorMessage.invalidAccessToken.rawValue
+            else {
+                return
+            }
+            
+            self.spotifyWebAuthorized = false
         }
     }
     
@@ -646,7 +655,6 @@ class AppState: ObservableObject {
             let path = URLComponents(string: "/api/spotify/me/player/pause")!
             return HttpMethod.put.fetchJson(urlPath: path, payload: [:], baseUrl: api.baseUrl.http, urlSession: api.urlSession)
                 .catch(self.errorHandler())
-        //}
     }
 }
 
