@@ -70,8 +70,8 @@ struct SettingsView: View {
         var components = URLComponents(string: "/spotify_login")!
         components.queryItems = [URLQueryItem(name: "platform", value: "ios")]
         
-        //return components.url(relativeTo: self.appState.baseUrl.rawValue.http)!
-        return URL(string: "https://google.com")!
+        return components.url(relativeTo: self.appState.baseUrl.rawValue.http)!
+        //return URL(string: "https://google.com")!
     }
     
     @State var baseUrl: URL? = nil
@@ -79,7 +79,7 @@ struct SettingsView: View {
     var body: some View {
         return VStack {
 //
-//            //WebView(request: URLRequest(url: url)).padding(0)
+            WebView(request: URLRequest(url: url)).padding(0)
 //            ExampleView()
 //            Text("Room Membership")
             

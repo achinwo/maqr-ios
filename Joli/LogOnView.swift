@@ -161,6 +161,7 @@ struct LogOnView: View {
     
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var appKeyboardState: AppKeyboardState
     @State var activityIdx = 0
     @State var offsetY: CGFloat = CGFloat(0)
     
@@ -208,7 +209,7 @@ struct LogOnView: View {
                 }
             }
             .animation(.spring())
-            .offset(x: 0, y: self.appState.keyboardHeight == 0 ? 0 : geometry.size.height / 3 * -1)
+            .offset(x: 0, y: self.appKeyboardState.keyboardHeight == 0 ? 0 : geometry.size.height / 3 * -1)
             .simultaneousGesture(gesture)
             .navigationBarTitle("Account", displayMode: .large)
             .navigationBarItems(trailing: Button(action: {

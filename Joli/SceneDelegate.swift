@@ -190,7 +190,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
 
         // Create the SwiftUI view that provides the window contents.
         //let env: EnvironmentObject<AppState> = EnvironmentObject();
-        let contentView = AppView().environmentObject(appState)
+        let contentView = AppView()
+            .environmentObject(appState)
+            .environmentObject(appState.currentlyPlaying)
+            .environmentObject(appState.keyboardState)
 
         logger.debug("Spootify app installed: \(spotifySessionManager.isSpotifyAppInstalled)")
         

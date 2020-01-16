@@ -13,6 +13,9 @@ import JoliCore
 struct TrackView: View {
     
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var currentlyPlaying: AppCurrentlyPlayingState
+    @State var image: Image?
+    
     var track: Playable
     @State var isPlaying = false
     
@@ -34,7 +37,6 @@ struct TrackView: View {
         return (appState.queuedTracksByMusicrooms[room.id] ?? []).map() { $0.uri }
     }
     
-    @State var image: Image?
     var spotifyDevice: Spotify.Device? {
         return self.appState.spotifyDevice
     }
@@ -52,7 +54,7 @@ struct TrackView: View {
             return nil
         }
         
-        if let current = self.appState.currentlyPlayingContent, current.uri == track.uri {
+        if let current = self.currentlyPlaying.content, current.uri == track.uri {
             return current
         } else {
             return track
@@ -60,7 +62,7 @@ struct TrackView: View {
     }
     
     var isCurrentlyPlaying: Bool {
-        guard let current = self.currentlyPlayingContent else {
+        guard let current = self.currentlyPlaying.content else {
             return false
         }
         

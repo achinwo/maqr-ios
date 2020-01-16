@@ -27,6 +27,7 @@ struct ViewOffset {
 struct AppView: View {
     
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var currentlyPlaying: AppCurrentlyPlayingState
     
     @State var settingsViewOffset: ViewOffset = ViewOffset(x: nil, y: 0)
     @State var settingsViewOffsetSize = CGSize(width: 0, height: 0)
@@ -60,7 +61,7 @@ struct AppView: View {
                             LogOnView() { cancelled in
                                 logger.debug("[LogOnView] view dismissed")
                             }
-                        }.environmentObject(self.appState)
+                        }.environmentObject(self.appState).environmentObject(self.appState.keyboardState)
                 }
             .navigationBarItems(leading:
                 Button(action: logonButtonAction) {
@@ -143,8 +144,8 @@ struct AppView: View {
         
         var width: CGFloat = .zero
             
-        if self.appState.currentlyPlayingProgressPct > 0 {
-            width = CGFloat(self.appState.currentlyPlayingProgressPct / 100.0) * (UIScreen.main.bounds.width - 142)
+        if self.currentlyPlaying.progressPct > 0 {
+            width = CGFloat(self.currentlyPlaying.progressPct / 100.0) * (UIScreen.main.bounds.width - 142)
         }
         
         var deviceChooserMessage = Text(self.appState.spotifyDevices.count == 0 ? "You have no connected Spotify devices" : "Spotify connected devices")
@@ -155,9 +156,9 @@ struct AppView: View {
         
         return VStack(alignment: .leading){
                 HStack(alignment: .center, spacing: 4){
-                    if self.appState.currentlyPlayingContent != nil
-                    && self.appState.imagesByUrl[self.appState.currentlyPlayingTrack!.albumCoverUrl] != nil {
-                        self.appState.imagesByUrl[self.appState.currentlyPlayingTrack!.albumCoverUrl]?
+                    if self.currentlyPlaying.content != nil
+                        && self.appState.imagesByUrl[self.currentlyPlaying.track!.albumCoverUrl] != nil {
+                        self.appState.imagesByUrl[self.currentlyPlaying.track!.albumCoverUrl]?
                             .resizable().frame(width: 116, height: 116, alignment: .bottomLeading)
                     }
                     
@@ -165,12 +166,12 @@ struct AppView: View {
                         
                         HStack(alignment: .top){
 
-                            Text(self.appState.currentlyPlayingTrack?.name ?? "No Name")
+                            Text(self.currentlyPlaying.track?.name ?? "No Name")
                                 .font(.headline)//.background(Color.blue)
                         }
                         HStack(alignment: .top){
                             VStack(alignment: .leading){
-                                Text(self.appState.currentlyPlayingTrack == nil ? "" : "By \(self.appState.currentlyPlayingTrack!.artistName)").font(.subheadline)
+                                Text(self.currentlyPlaying.track == nil ? "" : "By \(self.currentlyPlaying.track!.artistName)").font(.subheadline)
                                 
                                 HStack(alignment: .center){
                                     Image(systemName: "hand.thumbsup")
@@ -188,7 +189,7 @@ struct AppView: View {
                                 }
                             }
                             Spacer()
-                            if self.appState.currentlyPlayingTrack != nil && self.appState.currentlyPlayingContent!.isPlaying {
+                            if self.currentlyPlaying.track != nil && self.currentlyPlaying.content!.isPlaying {
                                 Image(systemName: "pause.circle").resizable().padding(.trailing, 10).padding(.bottom, 10)
                                     .frame(width: 64, height: 64, alignment: .bottomLeading)
                                     .onTapGesture {
@@ -198,7 +199,7 @@ struct AppView: View {
                                 Image(systemName: "play.circle").resizable().padding(.trailing, 10).padding(.bottom, 10)
                                     .frame(width: 64, height: 64, alignment: .bottomLeading)
                                 .onTapGesture {
-                                    guard let track = self.appState.currentlyPlayingTrack else {
+                                    guard let track = self.currentlyPlaying.track else {
                                         return
                                     }
                                     self.appState.playTrack(track)
@@ -239,7 +240,7 @@ struct AppView: View {
     }
 
     var currentlyPlayingViewOffset: CGSize {
-        guard let content = appState.currentlyPlayingContent else {
+        guard let content = currentlyPlaying.content else {
             return CGSize(width: -16, height: AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET)
         }
         

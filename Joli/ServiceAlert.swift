@@ -39,7 +39,7 @@ enum ServiceAlert: Int {
             // get exampleDate relative to the current date
             let dateString = formatter.localizedString(for: date, relativeTo: Date())
 
-            retryText = appState.serverReconnectCountdown > 1 ? "retrying \(dateString)..." : "retrying"
+            retryText = appState.serverReconnectCountdown > 1 ? "retrying \(dateString)..." : ""
         default:
             retryText = "retry aborted"
         }
@@ -62,7 +62,8 @@ enum ServiceAlert: Int {
                     .foregroundColor(.blue)
             }
             
-            Text(self.message).font(.subheadline).foregroundColor(.gray)//.padding()
+            Text("\(self.message)\(self == .serverConnectionLost ? "\(retryText.isEmpty ? "" : ",") \(retryText)" : "")")
+                .font(.subheadline).foregroundColor(.gray)//.padding()
             Spacer()
             
             if self == .spotifyWebAuthRequired {
@@ -87,7 +88,19 @@ enum ServiceAlert: Int {
                 )
                 .padding(.trailing, 16)
             } else if self == .serverConnectionLost {
-                Text(retryText).font(.subheadline).foregroundColor(.gray).padding(.trailing, 16)
+                Button(action: {
+                    appState.api.wsClient.connectionState = .reconnecting(0)
+                }) {
+                    
+                    Text("Retry Now").font(.subheadline)
+                    .foregroundColor(.primary)
+                    .padding(6)
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 50)
+                        .stroke(Color.primary, lineWidth: 1.2)
+                )
+                .padding(.trailing, 16)
             } else if self == .loginRequired {
                 Button(action: {
                     appState.isLogonViewPresented = true

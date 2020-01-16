@@ -13,6 +13,7 @@ import JoliCore
 struct PlayQueueView: MusicroomTabView {
     
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var currentlyPlaying: AppCurrentlyPlayingState
     @State var queuedTracks: [QueuedTrack] = []
     var room: Musicroom
     
@@ -40,13 +41,13 @@ struct PlayQueueView: MusicroomTabView {
     }
     
     var body: some View {
-        let track = self.appState.currentlyPlayingTrack
+        let track = self.currentlyPlaying.track
         let tracksViewHeight = CGFloat(80.0 * Double(self.tracks.count))
         
         var width: CGFloat = .zero
             
-        if self.appState.currentlyPlayingProgressPct > 0 {
-            width = CGFloat(self.appState.currentlyPlayingProgressPct / 100.0) * UIScreen.main.bounds.width
+        if self.currentlyPlaying.progressPct > 0 {
+            width = CGFloat(self.currentlyPlaying.progressPct / 100.0) * UIScreen.main.bounds.width
         }
         
         return VStack(alignment: .center, spacing: 0){
@@ -55,7 +56,7 @@ struct PlayQueueView: MusicroomTabView {
                 VStack(alignment: .leading, spacing: 0) {
                     
                     VStack(alignment: .center){
-                        self.appState.currentlyPlayingAlbumImage?.resizable()
+                        self.currentlyPlaying.albumImage?.resizable()
                             .aspectRatio(contentMode: ContentMode.fill)
                             .clipped()
                         
@@ -65,7 +66,7 @@ struct PlayQueueView: MusicroomTabView {
                     .onDisappear(perform: self.onDisappear)
                     .background(Color.purple)
                     .frame(width: UIScreen.main.bounds.width,
-                           height: self.appState.currentlyPlayingAlbumImage != nil ? UIScreen.main.bounds.width : 2,
+                           height: self.currentlyPlaying.albumImage != nil ? UIScreen.main.bounds.width : 2,
                            alignment: .top)
                     //.offset(x: 0, y: )
                     //.padding()
@@ -83,8 +84,8 @@ struct PlayQueueView: MusicroomTabView {
                     .animation(.easeInOut)
                     .frame(width: UIScreen.main.bounds.width, height: track == nil ? 0 : 4, alignment: .leading)
                     
-                    if self.appState.currentlyPlayingContent != nil {
-                        TrackView(track: self.appState.currentlyPlayingContent!)
+                    if self.currentlyPlaying.content != nil {
+                        TrackView(track: self.currentlyPlaying.content!)
                             .padding()
                         Divider()
                     }

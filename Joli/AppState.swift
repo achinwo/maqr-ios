@@ -76,21 +76,43 @@ final class UserSettings: ObservableObject {
     }
 }
 
+class AppCurrentlyPlayingState: ObservableObject {
+    
+    @Published var progressPct = 0.0
+    @Published var track: Spotify.Track? = nil
+    @Published var content: Spotify.CurrentlyPlayingContent? = nil
+    @Published var albumImage: Image? = nil
+
+    var didChange = PassthroughSubject<AppState, Never>()
+    
+}
+
+class AppKeyboardState: ObservableObject {
+    
+    @Published var keyboardHeight: CGFloat = 0
+    private var cancellableSet: Set<AnyCancellable> = []
+    
+    init(){
+        AppState.keyboardHeightPublisher
+        .receive(on: RunLoop.main)
+        .assign(to: \.keyboardHeight, on: self)
+        .store(in: &cancellableSet)
+    }
+}
+
 class AppState: ObservableObject {
     
     static let URL_SCHEME = "joli"
     static let SPOTIFY_URL_BASEPATH = "spotify-callback"
-    
-    @Published var currentlyPlayingProgressPct = 0.0
-    @Published var currentlyPlayingTrack: Spotify.Track? = nil
-    @Published var currentlyPlayingContent: Spotify.CurrentlyPlayingContent? = nil
-    @Published var currentlyPlayingAlbumImage: Image? = nil
     
     @Published var lastPlayedTrack: Spotify.Track? = nil
     @Published var lastPlayedContent: Spotify.CurrentlyPlayingContent? = nil
     
     @Published var navbarColor: Color = .gray
     @Published var selectedTabIdx = 1
+    
+    let currentlyPlaying: AppCurrentlyPlayingState
+    let keyboardState = AppKeyboardState()
     
     private var currentlyPlayingAlbumUrl: String? = nil
     
@@ -134,8 +156,6 @@ class AppState: ObservableObject {
     @Published public var trackSearchResult: [Spotify.Track] = []
     
     var currentSearchFuture: Promise<Any>?
-    
-    @Published var keyboardHeight: CGFloat = 0
 
     var didChange = PassthroughSubject<AppState, Never>()
     
@@ -380,6 +400,7 @@ class AppState: ObservableObject {
     }
     
     func assertSpotifyAuthorized(caller: String = #function) {
+        self.spotifyAuthorizationInProgress = true
         self.fetchSpotifyAuthToken()
         .then() { auth in
             self.spotifyWebAuthorized = !auth.isExpired
@@ -388,8 +409,11 @@ class AppState: ObservableObject {
             self.errorHandler("fetchSpotifyAuthToken#\(caller)")(error)
             self.spotifyWebAuthorized = false
             
-            self.currentlyPlayingTrack = nil
-            self.currentlyPlayingContent = nil
+            self.currentlyPlaying.track = nil
+            self.currentlyPlaying.content = nil
+        }
+        .always {
+            self.spotifyAuthorizationInProgress = false
         }
     }
     
@@ -397,8 +421,11 @@ class AppState: ObservableObject {
     init(baseUrl: JoliApi.BaseUrl) {
         self.baseUrl = baseUrl
         
+        self.currentlyPlaying = AppCurrentlyPlayingState()
+        
         self.api = JoliApi(baseUrl: self.baseUrl)
         api.urlSessionConfiguration = api.urlSessionConfiguration.withAuthHeader(self.userSettings.authToken)
+        
         
         self.api.$auth
             .receive(on: RunLoop.main)
@@ -424,10 +451,6 @@ class AppState: ObservableObject {
         .assign(to: \.trackSearchResult, on: self)
         .store(in: &cancellableSet)
         
-        AppState.keyboardHeightPublisher
-        .receive(on: RunLoop.main)
-        .assign(to: \.keyboardHeight, on: self)
-        .store(in: &cancellableSet)
         
         self.$activeRoom
             .receive(on: RunLoop.main)
@@ -489,16 +512,16 @@ class AppState: ObservableObject {
 
             let progress = (Double(cPlaying.progressMs) / Double(cPlaying.item.durationMs)) * 100
             
-            self.currentlyPlayingContent = cPlaying
-            self.currentlyPlayingTrack = cPlaying.item
-            self.currentlyPlayingProgressPct = progress
+            self.currentlyPlaying.content = cPlaying
+            self.currentlyPlaying.track = cPlaying.item
+            self.currentlyPlaying.progressPct = progress
             
             if self.currentlyPlayingAlbumUrl == nil || self.currentlyPlayingAlbumUrl! != cPlaying.item.albumCoverUrl {
                 self.currentlyPlayingAlbumUrl = cPlaying.item.albumCoverUrl
              
                 self.fetchedImage(url: cPlaying.item.albumCoverUrl)
                                     .then() { imgObj in
-                                        self.currentlyPlayingAlbumImage = imgObj
+                                        self.currentlyPlaying.albumImage = imgObj
                                 }
             }
             
@@ -536,7 +559,7 @@ class AppState: ObservableObject {
             }
             
             if let cover = self.currentlyPlayingAlbumUrl, let newImage = self.imagesByUrl["\(cover)\(urlSuffix)"] {
-                self.currentlyPlayingAlbumImage = newImage
+                self.currentlyPlaying.albumImage = newImage
             }
             
             if spotifyConnected {
