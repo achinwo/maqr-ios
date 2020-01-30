@@ -277,7 +277,7 @@ class AppState: ObservableObject {
     func setAudioSession(_ enabled: Bool){
         do {
             try appDelegate.audioSession.setActive(enabled)
-            try appDelegate.audioSession.setCategory(.playback)
+            try appDelegate.audioSession.setCategory(.ambient)
             
             if enabled {
                 appDelegate.startObservingVolumeChanges()
@@ -423,9 +423,13 @@ class AppState: ObservableObject {
         
         self.currentlyPlaying = AppCurrentlyPlayingState()
         
-        self.api = JoliApi(baseUrl: self.baseUrl)
+        let headers: [String: String] = ["X-PLATFORM": "ios",
+                                         "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
+                                         "X-DEVICE-MODEL": UIDevice.current.model,
+                                         "X-DEVICE-NAME": UIDevice.current.name,
+        ]
+        self.api = JoliApi(baseUrl: self.baseUrl, headers: headers)
         api.urlSessionConfiguration = api.urlSessionConfiguration.withAuthHeader(self.userSettings.authToken)
-        
         
         self.api.$auth
             .receive(on: RunLoop.main)

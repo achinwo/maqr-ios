@@ -79,7 +79,7 @@ struct SettingsView: View {
     var body: some View {
         return VStack {
 //
-            WebView(request: URLRequest(url: url)).padding(0)
+//            //WebView(request: URLRequest(url: url)).padding(0)
 //            ExampleView()
 //            Text("Room Membership")
             
