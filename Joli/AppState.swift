@@ -41,6 +41,7 @@ struct UserDefault<T: Codable> {
     
     enum Key: String {
         case authToken
+        case activeRoom
     }
     
     let key: Key
@@ -92,12 +93,20 @@ class AppKeyboardState: ObservableObject {
     @Published var keyboardHeight: CGFloat = 0
     private var cancellableSet: Set<AnyCancellable> = []
     
+    var didChange = PassthroughSubject<AppState, Never>()
+    
     init(){
         AppState.keyboardHeightPublisher
         .receive(on: RunLoop.main)
         .assign(to: \.keyboardHeight, on: self)
         .store(in: &cancellableSet)
     }
+}
+
+class AppServerReconnectState: ObservableObject {
+
+    @Published var countdown: Int = 0
+    
 }
 
 class AppState: ObservableObject {
@@ -169,7 +178,7 @@ class AppState: ObservableObject {
     
     @Published var auth: Auth?
     @Published var serverConnectionState: ConnectionState = .stopped
-    @Published var serverReconnectCountdown: Int = 0
+    @Published var serverReconnectState = AppServerReconnectState()
     
     @Published var spotifyDevices: [Spotify.Device] = []
     @Published var selectedSpotifyDeviceIdx: Int? = nil
@@ -375,8 +384,7 @@ class AppState: ObservableObject {
             
             self.updateAlerts(.serverConnectionLost, add: true)
             
-            var currentAttemptSecs = attempt * 5
-            self.serverReconnectCountdown = currentAttemptSecs
+            self.serverReconnectState.countdown = attempt * 5
             
             timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timerInstance in
                 
@@ -385,10 +393,10 @@ class AppState: ObservableObject {
                 }
                 //logger.info("[on server state] \(self.serverReconnectCountdown)")
                 
-                currentAttemptSecs = currentAttemptSecs - 1
-                self.serverReconnectCountdown = self.serverReconnectCountdown - Int(timerInstance.timeInterval)
+                //currentAttemptSecs = currentAttemptSecs - 1
+                self.serverReconnectState.countdown = self.serverReconnectState.countdown - Int(timerInstance.timeInterval)
                 
-                if self.serverReconnectCountdown <= 0 {
+                if self.serverReconnectState.countdown <= 0 {
                     self.timer?.invalidate()
                 }
             }

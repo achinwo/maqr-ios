@@ -30,7 +30,7 @@ enum ServiceAlert: Int {
         var retryText: String
         switch appState.api.wsClient.connectionState {
         case .reconnecting(_):
-            let date = Date().addingTimeInterval(Double(appState.serverReconnectCountdown))
+            let date = Date().addingTimeInterval(Double(appState.serverReconnectState.countdown))
 
             // ask for the full relative date
             let formatter = RelativeDateTimeFormatter()
@@ -39,7 +39,7 @@ enum ServiceAlert: Int {
             // get exampleDate relative to the current date
             let dateString = formatter.localizedString(for: date, relativeTo: Date())
 
-            retryText = appState.serverReconnectCountdown > 1 ? "retrying \(dateString)..." : ""
+            retryText = appState.serverReconnectState.countdown > 1 ? "retrying \(dateString)..." : ""
         default:
             retryText = "retry aborted"
         }

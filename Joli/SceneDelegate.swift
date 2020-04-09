@@ -194,6 +194,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
             .environmentObject(appState)
             .environmentObject(appState.currentlyPlaying)
             .environmentObject(appState.keyboardState)
+            .environmentObject(appState.serverReconnectState)
 
         logger.debug("Spootify app installed: \(spotifySessionManager.isSpotifyAppInstalled)")
         
