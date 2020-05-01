@@ -10,6 +10,7 @@ import UIKit
 import AVKit
 import JoliApi
 import SwiftyBeaver
+import UserNotifications
 
 let logger = JoliApi.getLogger()
 
@@ -98,6 +99,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
     }
+    
+    func registerForPushNotifications() {
+      UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) {
+          [weak self] granted, error in
+            
+          print("Permission granted: \(granted)")
+          guard granted else { return }
+        
+          self?.getNotificationSettings()
+      }
+    }
+    
+    func getNotificationSettings() {
+      UNUserNotificationCenter.current().getNotificationSettings { settings in
+        print("Notification settings: \(settings)")
+        
+        guard settings.authorizationStatus == .authorized else { return }
+        
+        DispatchQueue.main.async {
+          UIApplication.shared.registerForRemoteNotifications()
+        }
+      }
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+      let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+      let token = tokenParts.joined()
+        logger.info("Device Token: \(token)")
+        
+        appState.api.setNotificationToken(token).then() { device in
+            logger.info("Token Saved: \(device)")
+        }
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        logger.error("Failed to register: \(error)")
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        do {
@@ -128,6 +166,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         logger.debug("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl)")
         
         self.appState = AppState(baseUrl: env.baseUrl)
+        
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { // Change `2.0` to the desired number of seconds.
+           // Code you want to be delayed
+            self.registerForPushNotifications()
+        }
         
         return true
     }
