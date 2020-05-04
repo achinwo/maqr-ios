@@ -142,7 +142,7 @@ class AppState: ObservableObject {
     @Published var searchText: String = ""
     
     var appDelegate: AppDelegate {
-        return sceneDelegate.appDelegate
+        return UIApplication.shared.delegate as! AppDelegate
     }
     
     var sceneDelegate: SceneDelegate {
@@ -439,6 +439,7 @@ class AppState: ObservableObject {
         self.api = JoliApi(baseUrl: self.baseUrl, headers: headers)
         api.urlSessionConfiguration = api.urlSessionConfiguration.withAuthHeader(self.userSettings.authToken)
         
+        // MARK: - initialize (Authentication Handler)
         self.api.$auth
             .receive(on: RunLoop.main)
             //.assign(to: \.auth, on: self)
