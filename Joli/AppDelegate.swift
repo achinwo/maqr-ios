@@ -132,6 +132,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             logger.info("Token Saved: \(device)")
         }
     }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+      fetchCompletionHandler completionHandler:
+      @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+      guard let aps = userInfo["aps"] as? [String: AnyObject] else {
+        completionHandler(.failed)
+        return
+      }
+        logger.info("[AppDelegate] handled notificatiom", context: aps)
+    }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         logger.error("Failed to register: \(error)")
@@ -163,9 +174,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             JoliApi.Environment.CACHED_ENV_CONFIG.merge(json) { (_, new) in new }
         }
         
-        logger.debug("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl)")
+        logger.debug("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl), notifOptions:\(launchOptions)")
         
         self.appState = AppState(baseUrl: env.baseUrl)
+        
+        let notificationOption = launchOptions?[.remoteNotification]
+
+        // 1
+        if let notification = notificationOption as? [String: AnyObject],
+          let aps = notification["aps"] as? [String: AnyObject] {
+            logger.info("[AppDelegate] launched with notification", context: aps)
+        }
         
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { // Change `2.0` to the desired number of seconds.
