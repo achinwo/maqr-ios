@@ -83,7 +83,7 @@ struct SettingsView: View {
 //            ExampleView()
 //            Text("Room Membership")
             
-            Button(action: self.appState.sceneDelegate.requestSpotifyAccess) {
+            Button(action: { self.appState.sceneDelegate?.requestSpotifyAccess() }) {
                 HStack(alignment: .center) {
                     Spacer()
                     

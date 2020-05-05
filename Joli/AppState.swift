@@ -145,16 +145,16 @@ class AppState: ObservableObject {
         return UIApplication.shared.delegate as! AppDelegate
     }
     
-    var sceneDelegate: SceneDelegate {
-        return UIApplication.shared.connectedScenes.first?.delegate as! SceneDelegate
+    var sceneDelegate: SceneDelegate? {
+        return UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate
     }
     
     var env: JoliApi.Environment {
-        return self.sceneDelegate.appDelegate.env
+        return self.appDelegate.env
     }
     
-    var spotifyRemote: SPTAppRemote {
-        return sceneDelegate.appRemote
+    var spotifyRemote: SPTAppRemote? {
+        return sceneDelegate?.appRemote
     }
     
     let baseUrl: JoliApi.BaseUrl
@@ -411,6 +411,7 @@ class AppState: ObservableObject {
         self.spotifyAuthorizationInProgress = true
         self.fetchSpotifyAuthToken()
         .then() { auth in
+            logger.info("[AppState#assertSpotifyAuthorized] expired: \(auth.isExpired), auth: \(auth)", context: auth)
             self.spotifyWebAuthorized = !auth.isExpired
         }
         .catch() { error in
