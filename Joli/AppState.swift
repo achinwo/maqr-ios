@@ -184,7 +184,11 @@ class AppState: ObservableObject {
     @Published var selectedSpotifyDeviceIdx: Int? = nil
     @Published var activeRoom: Musicroom? = nil
     
-    @Published var spotifyWebAuthorized = false
+    @Published var spotifyWebAuth: AuthToken? = nil
+    
+    var spotifyWebAuthorized: Bool {
+        return spotifyWebAuth != nil
+    }
     
     public var spotifyDevice: Spotify.Device? {
         guard let selectedSpotifyDeviceIdx = selectedSpotifyDeviceIdx else { return nil }
@@ -251,7 +255,7 @@ class AppState: ObservableObject {
                                     baseUrl: api.baseUrl.rawValue.http,
                                     urlSession: api.urlSession)
             .then(){ auth -> Promise<AuthToken> in
-                self.spotifyWebAuthorized = !auth.isExpired
+                //self.spotifyWebAuthorized = !auth.isExpired
                 return Promise(auth)
         }
         .always() {
@@ -369,18 +373,15 @@ class AppState: ObservableObject {
         self.serverConnectionState = state
         
         timer?.invalidate()
+        self.assertSpotifyAuthorized()
+        
         switch state {
         case .connected:
             self.navbarColor = state.isConnected ? Color.green : .gray
-            self.assertSpotifyAuthorized()
             self.updateAlerts(.serverConnectionLost, add: false)
             self.fetchMusicrooms()
             
         case .reconnecting(let attempt):
-            
-            if self.spotifyWebAuthorized  {
-                self.spotifyWebAuthorized = false
-            }
             
             self.updateAlerts(.serverConnectionLost, add: true)
             
@@ -401,8 +402,6 @@ class AppState: ObservableObject {
                 }
             }
         case .stopped:
-            
-            self.spotifyWebAuthorized = false
             self.updateAlerts(.serverConnectionLost, add: true)
         }
     }
@@ -411,12 +410,11 @@ class AppState: ObservableObject {
         self.spotifyAuthorizationInProgress = true
         self.fetchSpotifyAuthToken()
         .then() { auth in
-            logger.info("[AppState#assertSpotifyAuthorized] expired: \(auth.isExpired), auth: \(auth)", context: auth)
-            self.spotifyWebAuthorized = !auth.isExpired
+            self.spotifyWebAuth = auth
         }
         .catch() { error in
             self.errorHandler("fetchSpotifyAuthToken#\(caller)")(error)
-            self.spotifyWebAuthorized = false
+            self.spotifyWebAuth = nil
             
             self.currentlyPlaying.track = nil
             self.currentlyPlaying.content = nil
@@ -448,8 +446,11 @@ class AppState: ObservableObject {
                 self.auth = auth
                 self.userSettings.authToken = auth?.session.token
                 //logger.info("[AppState] storing token: \(String(describing: self.userSettings.authToken))")
-
-                self.spotifyWebAuthorized = false
+                
+                if auth == nil {
+                    self.spotifyWebAuth = nil
+                }
+                
                 self.updateAlerts(.loginRequired, add: auth == nil ? true : false)
                 self.fetchMusicrooms()
             }
@@ -494,7 +495,6 @@ class AppState: ObservableObject {
             logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] playing: \(cPlaying.isPlaying)")
             
             self.setAudioSession(cPlaying.isPlaying)
-            self.spotifyWebAuthorized = true
             
             guard abs(cPlaying.progressMs - cPlaying.item.durationMs) < 3000
                  else {
@@ -539,9 +539,6 @@ class AppState: ObservableObject {
                                 }
             }
             
-            if !self.spotifyWebAuthorized {
-                self.spotifyWebAuthorized = true
-            }
         }
         
         api.subscribe(subject: .activityFeed) { (result, error) in
@@ -558,9 +555,10 @@ class AppState: ObservableObject {
             self.fetchTrackVotes()
         }
         
-        self.$spotifyWebAuthorized
+        self.$spotifyWebAuth
             .removeDuplicates()
-            .sink() { spotifyConnected in
+            .sink() { authToken in
+            let spotifyConnected = authToken != nil
             let urlSuffix = spotifyConnected ? ".original" : ".noir"
             
             for (url, img) in self.imagesByUrl {
@@ -602,7 +600,7 @@ class AppState: ObservableObject {
                 return
             }
             
-            self.spotifyWebAuthorized = false
+            self.spotifyWebAuth = nil
         }
     }
     
