@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3C16733723C7D4B400CF3131 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		920086FE245BB0F6008D81F1 /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
+		920086FE245BB0F6008D81F1 /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		92061A84236B0175007FC6F1 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92061A83236B0175007FC6F1 /* Extensions.swift */; };
 		920F872D23CD374D008F18E0 /* ServiceAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920F872C23CD374D008F18E0 /* ServiceAlert.swift */; };
 		921AAD5223AF88F000243335 /* Spotify_Icon_RGB_Green.png in Resources */ = {isa = PBXBuildFile; fileRef = 921AAD5123AF88F000243335 /* Spotify_Icon_RGB_Green.png */; };
@@ -156,6 +156,10 @@
 		9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomCreateView.swift; sourceTree = "<group>"; };
 		9273FD4D2463417E00F7FE66 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
 		9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = joil_icon_rounded.png; sourceTree = "<group>"; };
+		9273FD5224664F6000F7FE66 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
+		9273FD5424664F8C00F7FE66 /* Production.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Production.xcconfig; sourceTree = "<group>"; };
+		9273FD562466503500F7FE66 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
+		9273FD582466504700F7FE66 /* Development.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Development.xcconfig; sourceTree = "<group>"; };
 		9274D920238DE71400A43752 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		928F6EB923761F7700FAC911 /* TrackSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSearchView.swift; sourceTree = "<group>"; };
 		92B0716C2364F8A80070EC73 /* MusicroomList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
@@ -268,9 +272,29 @@
 			name = "Supporting Views";
 			sourceTree = "<group>";
 		};
+		9273FD5124664F1C00F7FE66 /* Production */ = {
+			isa = PBXGroup;
+			children = (
+				9273FD5224664F6000F7FE66 /* Config.plist */,
+				9273FD5424664F8C00F7FE66 /* Production.xcconfig */,
+			);
+			path = Production;
+			sourceTree = "<group>";
+		};
+		9273FD552466502200F7FE66 /* Development */ = {
+			isa = PBXGroup;
+			children = (
+				9273FD562466503500F7FE66 /* Config.plist */,
+				9273FD582466504700F7FE66 /* Development.xcconfig */,
+			);
+			path = Development;
+			sourceTree = "<group>";
+		};
 		92D90BE8236C88B800EAAD31 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				9273FD552466502200F7FE66 /* Development */,
+				9273FD5124664F1C00F7FE66 /* Production */,
 				9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */,
 				921AAD5123AF88F000243335 /* Spotify_Icon_RGB_Green.png */,
 				925FC0982377793100A8A72C /* african_giant_cover.jpg */,
@@ -413,6 +437,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 92F37A092363534F005FE2AB /* Build configuration list for PBXNativeTarget "Joli" */;
 			buildPhases = (
+				9273FD5A2466527E00F7FE66 /* Copy Config */,
 				92F379DB2363534D005FE2AB /* Sources */,
 				92F379DC2363534D005FE2AB /* Frameworks */,
 				92F379DD2363534D005FE2AB /* Resources */,
@@ -595,6 +620,28 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		9273FD5A2466527E00F7FE66 /* Copy Config */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Config";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${SRCROOT}/Joli/Generated/Config/Config.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\ncp -fp \"${SRCROOT}/Joli/Resources/${XCC_CONFIG_PATH}\" \"${SRCROOT}/Joli/Generated/Config/Config.plist\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		9234320823BFD2F700E24E96 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -755,6 +802,7 @@
 		};
 		92F37A072363534F005FE2AB /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9273FD582466504700F7FE66 /* Development.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -815,6 +863,7 @@
 		};
 		92F37A082363534F005FE2AB /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9273FD5424664F8C00F7FE66 /* Production.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
