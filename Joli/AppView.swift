@@ -111,6 +111,7 @@ struct AppView: View {
             }
             //.colorScheme(.dark)
         }
+        .colorScheme(.light)
     }
         
     var currentPlayingView: some View {

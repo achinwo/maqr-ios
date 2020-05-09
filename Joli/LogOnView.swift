@@ -74,11 +74,11 @@ struct SignInView: View {
     }
     
     var body: some View {
-        
+        let img = #imageLiteral(resourceName: "joil_icon_rounded.png")
         return VStack() {
             VStack(alignment: .center) {
               
-                Image("AppIcon").resizable().aspectRatio(contentMode: ContentMode.fit)
+                Image(uiImage: img).resizable().aspectRatio(contentMode: ContentMode.fit)
                     .frame(width: CGFloat(74.0), height: CGFloat(74.0))
                     .padding(Edge.Set.bottom, 20)
                 

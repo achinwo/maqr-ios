@@ -29,6 +29,8 @@
 		925FC09D2378B81100A8A72C /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09C2378B81100A8A72C /* TrackView.swift */; };
 		925FC09F2379FE5900A8A72C /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09E2379FE5900A8A72C /* AppView.swift */; };
 		9271D42C239D3FCF00CE1425 /* MusicroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */; };
+		9273FD4E2463417E00F7FE66 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9273FD4D2463417E00F7FE66 /* ShareSheet.swift */; };
+		9273FD50246491B800F7FE66 /* joil_icon_rounded.png in Resources */ = {isa = PBXBuildFile; fileRef = 9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */; };
 		9274D921238DE71400A43752 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274D920238DE71400A43752 /* SettingsView.swift */; };
 		928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F6EB923761F7700FAC911 /* TrackSearchView.swift */; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
@@ -152,6 +154,8 @@
 		925FC09E2379FE5900A8A72C /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		9262E863239C993100891F6C /* Joli.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Joli.entitlements; sourceTree = "<group>"; };
 		9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomCreateView.swift; sourceTree = "<group>"; };
+		9273FD4D2463417E00F7FE66 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
+		9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = joil_icon_rounded.png; sourceTree = "<group>"; };
 		9274D920238DE71400A43752 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		928F6EB923761F7700FAC911 /* TrackSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSearchView.swift; sourceTree = "<group>"; };
 		92B0716C2364F8A80070EC73 /* MusicroomList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
@@ -259,6 +263,7 @@
 				928F6EB923761F7700FAC911 /* TrackSearchView.swift */,
 				921AAD5323B10CA700243335 /* FeedbackSettingsView.swift */,
 				92D19BA523BB9D66006D6B41 /* UserProfileView.swift */,
+				9273FD4D2463417E00F7FE66 /* ShareSheet.swift */,
 			);
 			name = "Supporting Views";
 			sourceTree = "<group>";
@@ -266,9 +271,11 @@
 		92D90BE8236C88B800EAAD31 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */,
 				921AAD5123AF88F000243335 /* Spotify_Icon_RGB_Green.png */,
 				925FC0982377793100A8A72C /* african_giant_cover.jpg */,
 				92D90BE9236C890B00EAAD31 /* party-people.jpg */,
+				92F379E82363534F005FE2AB /* Assets.xcassets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -310,7 +317,6 @@
 				925E5C6D2369D7E000D95AB7 /* Supporting Views */,
 				92F379E22363534D005FE2AB /* AppDelegate.swift */,
 				92F379E42363534D005FE2AB /* SceneDelegate.swift */,
-				92F379E82363534F005FE2AB /* Assets.xcassets */,
 				92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */,
 				92F379F02363534F005FE2AB /* Info.plist */,
 				92F379EA2363534F005FE2AB /* Preview Content */,
@@ -550,6 +556,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9273FD50246491B800F7FE66 /* joil_icon_rounded.png in Resources */,
 				92F379EF2363534F005FE2AB /* LaunchScreen.storyboard in Resources */,
 				921AAD5223AF88F000243335 /* Spotify_Icon_RGB_Green.png in Resources */,
 				92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */,
@@ -614,6 +621,7 @@
 				9274D921238DE71400A43752 /* SettingsView.swift in Sources */,
 				925774BC23AD66E4001DB707 /* ActivityView.swift in Sources */,
 				925E5C702369D85900D95AB7 /* MapView.swift in Sources */,
+				9273FD4E2463417E00F7FE66 /* ShareSheet.swift in Sources */,
 				92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */,
 				92B071762364FA2D0070EC73 /* AppState.swift in Sources */,
 				925E5C712369D85900D95AB7 /* CircleImage.swift in Sources */,

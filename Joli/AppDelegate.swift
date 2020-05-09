@@ -15,7 +15,7 @@ import UserNotifications
 let logger = JoliApi.getLogger()
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     #if DEBUG
     let debug = true
@@ -123,6 +123,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       }
     }
     
+    /// https://code.tutsplus.com/tutorials/an-introduction-to-the-usernotifications-framework--cms-27250
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let actionIdentifier = response.actionIdentifier
+        let content = response.notification.request.content
+         
+        switch actionIdentifier {
+        case UNNotificationDismissActionIdentifier: // Notification was dismissed by user
+            logger.info("[AppDelegate#userNotificationCenter] dismissed: \(content)")
+            completionHandler()
+        case UNNotificationDefaultActionIdentifier: // App was opened from notification
+            logger.info("[AppDelegate#userNotificationCenter] launched: \(content)")
+            completionHandler()
+        default:
+            completionHandler()
+        }
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        let content = notification.request.content
+        // Process notification content
+        logger.info("[AppDelegate#userNotificationCenter] willPresent: \(content.body)")
+        completionHandler([.alert]) // Display notification as regular alert and play sound
+    }
+    
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
       let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
       let token = tokenParts.joined()
@@ -147,6 +171,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         logger.error("Failed to register: \(error)")
     }
+    
+    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        
+        let cloud = SBPlatformDestination(appID: "Qxn1Mn", appSecret: "21jhvbtglMuzJhilb6m97owddeQdbjkq", encryptionKey: "xVDA8e89pdb7AuxldgYsNuezdqlHriko") // to cloud
+        cloud.analyticsUserName = UIDevice.current.name
+        cloud.sendingPoints.threshold = 2
+        
+        logger.addDestination(cloud)
+        
+        logger.debug("[AppDelegate#willFinishLaunchingWithOptions] notifOptions:\(String(describing: launchOptions))")
+        return true
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        do {
@@ -162,10 +199,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //            logger.debug("Failed to activate audio session")
 //        }
         
-        let cloud = SBPlatformDestination(appID: "Qxn1Mn", appSecret: "21jhvbtglMuzJhilb6m97owddeQdbjkq", encryptionKey: "xVDA8e89pdb7AuxldgYsNuezdqlHriko") // to cloud
-        
-        logger.addDestination(cloud)
-        
         if debug, let filePath = Bundle.main.path(forResource: "env", ofType: "json"),
             let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)),
             let json: [String: AnyObject] = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: AnyObject] {
@@ -174,18 +207,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             JoliApi.Environment.CACHED_ENV_CONFIG.merge(json) { (_, new) in new }
         }
         
-        logger.debug("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl), notifOptions:\(launchOptions)")
+        logger.debug("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl), notifOptions:\(String(describing: launchOptions))")
         
         self.appState = AppState(baseUrl: env.baseUrl)
         
-        let notificationOption = launchOptions?[.remoteNotification]
-
-        // 1
-        if let notification = notificationOption as? [String: AnyObject],
-          let aps = notification["aps"] as? [String: AnyObject] {
-            logger.info("[AppDelegate] launched with notification", context: aps)
-        }
-        
+//        getDeliveredNotifications(completionHandler:) provides you with an array of UNNotification objects in the completion handler. This array will contain all the notifications delivered for your app which are still visible in the user's Notification Centre.
+//        removeDeliveredNotifications(withIdentifiers:) removes all delivered notifications with identifiers
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { // Change `2.0` to the desired number of seconds.
            // Code you want to be delayed
