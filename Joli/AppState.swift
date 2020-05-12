@@ -303,10 +303,10 @@ class AppState: ObservableObject {
         }
     }
     
-    func triggerAndClearDeviceCallbacks(cancelled: Bool = false){
+    func triggerAndClearDeviceCallbacks(device: Spotify.Device? = nil, cancelled: Bool = false){
         for callback in self.deviceReadyCallbacks {
             do{
-                try callback(self.spotifyDevice, cancelled)
+                try callback(device ?? self.spotifyDevice, cancelled)
             }catch{
                 logger.error("[triggerAndClearDeviceCallbacks] \(error)")
             }
@@ -358,7 +358,10 @@ class AppState: ObservableObject {
         } else {
             existingAlerts.remove(alert)
         }
-        self.alerts = existingAlerts
+        
+        DispatchQueue.main.async {
+            self.alerts = existingAlerts
+        }
     }
     
     weak var timer: Timer?
@@ -370,7 +373,9 @@ class AppState: ObservableObject {
     
     // MARK: - onServerConnectionStateChanged
     func onServerConnectionStateChanged(_ state: ConnectionState){
-        self.serverConnectionState = state
+        DispatchQueue.main.async {
+            self.serverConnectionState = state
+        }
         
         timer?.invalidate()
         self.assertSpotifyAuthorized()
@@ -407,7 +412,10 @@ class AppState: ObservableObject {
     }
     
     func assertSpotifyAuthorized(caller: String = #function) {
-        self.spotifyAuthorizationInProgress = true
+        DispatchQueue.main.async {
+            self.spotifyAuthorizationInProgress = true
+        }
+        
         self.fetchSpotifyAuthToken()
         .then() { auth in
             self.spotifyWebAuth = auth
@@ -645,10 +653,31 @@ class AppState: ObservableObject {
         return Promise() { (resolve, reject) in
             self.assertSelectedDevice() { [weak self] (device, cancelled) in
                 logger.debug("[Track#play] assertion completed - \(String(describing: device))")
-                track.play(deviceId: device?.id, positionMs: positionMs, baseUrl: self?.api.baseUrl.http, urlSession: self?.api.urlSession, on: nil)
-                    .then { _ in
-                        resolve(())
-                }.catch(reject)
+                
+                guard !cancelled || device == nil else { return }
+                
+                guard self?.selectedSpotifyDeviceIdx == nil else {
+                    track.play(deviceId: device?.id, positionMs: positionMs, baseUrl: self?.api.baseUrl.http, urlSession: self?.api.urlSession, on: nil)
+                        .then { _ in
+                            resolve(())
+                    }.catch(reject)
+                    return
+                }
+                
+                guard let spotifyRemote = self?.spotifyRemote else {
+                    logger.debug("[playTrack] spotify remote is not initialized")
+                    return
+                }
+                
+                if spotifyRemote.isConnected {
+                    spotifyRemote.playerAPI?.play(track.uri){ info, error in
+                        logger.debug("[playTrack] \(String(describing: info)) - \(String(describing: error))")
+                    }
+                } else {
+                    logger.debug("[playTrack] spotify not connected")
+                    spotifyRemote.authorizeAndPlayURI(track.uri)
+                }
+                
             }
         }.catch() { error in
             logger.error("[playTrack] \(error)")

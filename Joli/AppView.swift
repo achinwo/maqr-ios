@@ -139,6 +139,13 @@ struct AppView: View {
             }
         }
         
+        if buttons.isEmpty && !self.appState.deviceReadyCallbacks.isEmpty {
+            buttons.append(.default(Text("iPhone")) {
+                let device = Spotify.Device(name: "iPhone", type: Spotify.DeviceType.smartphone, isActive: true, id: "__this_phone__")
+                self.appState.triggerAndClearDeviceCallbacks(device: device, cancelled: false)
+            })
+        }
+        
         buttons.append(.cancel() {
             self.appState.triggerAndClearDeviceCallbacks(cancelled: true)
         })
