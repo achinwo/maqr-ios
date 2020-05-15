@@ -113,10 +113,6 @@ struct MusicroomView: View {
             }
         }
     }
-    
-//    var alertBanner: some View {
-//        return
-//    }
     @State private var isSharePresented: Bool = false
     var body: some View {
         return VStack(alignment: .center, spacing: 0){
@@ -130,14 +126,17 @@ struct MusicroomView: View {
                 
                 Divider()
             }
-            Button("Share room details") {
-                           self.isSharePresented = true
-                        }
-                        .sheet(isPresented: $isSharePresented, onDismiss: {
-                            print("Dismiss")
-                        }, content: {
-                            ActivityViewController(activityItems: [URL(string: "https://www.apple.com")!])
-                        })
+            
+           Button(action: shareButton){
+                Image(systemName: "square.and.arrow.up")
+                    .font(.largeTitle)
+            }
+//            .sheet(isPresented: $isSharePresented, onDismiss: {
+//                print("Dismiss")
+//            }, content: {
+//                ActivityViewController(activityItems: ["Hello this is content to Body of my mail."])
+//            })
+            
             Picker(selection: self.$appState.selectedTabIdx, label: Text("Room")){
                 ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
                     Text("\(roomTab.emoji != nil ? "\(roomTab.emoji!) " : "")\(roomTab.title)")
@@ -157,6 +156,7 @@ struct MusicroomView: View {
             }else if self.appState.selectedTabIdx == MusicroomTab.activity.rawValue{
                 ActivityView(room: self.room)
             }
+
         }
         //.toast(isShowing: self.$appState.showToast, text: Text("Hello toast!"))
         
@@ -172,8 +172,18 @@ struct MusicroomView: View {
         .navigationBarItems(trailing:
             self.navTrailingItem
         )
-            .navigationBarTitle(Text(room.name), displayMode: .inline)
+        .navigationBarTitle(Text(room.name), displayMode: .inline)
+        
+        
     }
+    func shareButton(){
+        isSharePresented.toggle()
+        let text = "You have been invited to join room xxxxxx."
+        let av = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true, completion: nil)
+    }
+
+    
     
     @State var isSearching = false
 }
@@ -243,3 +253,9 @@ struct BubbleTabView<Content> : View where Content : View {
 //    }
 //}
 
+
+struct MusicroomView_Previews: PreviewProvider {
+    static var previews: some View {
+        /*@START_MENU_TOKEN@*/Text("Hello, World!")/*@END_MENU_TOKEN@*/
+    }
+}
