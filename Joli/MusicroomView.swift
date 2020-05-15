@@ -82,7 +82,7 @@ struct MusicroomView: View {
                 Button(action: {self.appState.isDeviceChooserPresented.toggle()}) {
                         Image(systemName: "hifispeaker")
                             .padding()
-                }
+                }.disabled(self.appState.spotifyDevices.isEmpty)
             }
             
             Button(action: action) {

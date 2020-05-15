@@ -654,7 +654,7 @@ class AppState: ObservableObject {
             self.assertSelectedDevice() { [weak self] (device, cancelled) in
                 logger.debug("[Track#play] assertion completed - \(String(describing: device))")
                 
-                guard !cancelled || device == nil else { return }
+                guard !cancelled else { return }
                 
                 guard self?.selectedSpotifyDeviceIdx == nil else {
                     track.play(deviceId: device?.id, positionMs: positionMs, baseUrl: self?.api.baseUrl.http, urlSession: self?.api.urlSession, on: nil)
