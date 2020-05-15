@@ -33,7 +33,7 @@ struct SignUpView: View {
 
 class LoginViewModel: ObservableObject {
     
-    @Published var email: String = "hawa@gmail.net"
+    @Published var email: String = "test@gmail.net"
     @Published var password: String = "Password@"
     
     func performLogin() {
