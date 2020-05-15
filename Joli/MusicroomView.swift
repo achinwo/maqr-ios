@@ -53,6 +53,22 @@ protocol MusicroomTabView: View {
     init(room: Musicroom)
 }
 
+//struct ActivityViewController: UIViewControllerRepresentable {
+//    typealias UIViewControllerType = <#type#>
+//
+//
+//    var activityItems: [Any]
+//    var applicationActivities: [UIActivity]? = nil
+//
+//    func makeUIViewController(context: UIViewControllerRepresentableContext<ActivityViewController>) -> UIActivityViewController {
+//        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+//        return controller
+//    }
+//
+//   func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ActivityViewController>)
+//{}
+//}
+
 struct MusicroomView: View {
     @EnvironmentObject var appState: AppState
     
@@ -83,7 +99,7 @@ struct MusicroomView: View {
                         Image(systemName: "hifispeaker")
                             .padding()
                 }.disabled(self.appState.spotifyDevices.isEmpty)
-            }
+                
             
             Button(action: action) {
                     Image(systemName: imageName)
@@ -95,13 +111,15 @@ struct MusicroomView: View {
                 }
                 .environmentObject(self.appState)
             }
+                Button(action: shareButton){
+                        Image(systemName: "square.and.arrow.up")
+                    .padding()
+                            //.font(.largeTitle)
+                    }
+                }
         }
     }
-    
-//    var alertBanner: some View {
-//        return
-//    }
-    
+    @State private var isSharePresented: Bool = false
     var body: some View {
         return VStack(alignment: .center, spacing: 0){
 
@@ -114,6 +132,13 @@ struct MusicroomView: View {
                 
                 Divider()
             }
+            
+           
+//            .sheet(isPresented: $isSharePresented, onDismiss: {
+//                print("Dismiss")
+//            }, content: {
+//                ActivityViewController(activityItems: ["Hello this is content to Body of my mail."])
+//            })
             
             Picker(selection: self.$appState.selectedTabIdx, label: Text("Room")){
                 ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
@@ -134,6 +159,7 @@ struct MusicroomView: View {
             }else if self.appState.selectedTabIdx == MusicroomTab.activity.rawValue{
                 ActivityView(room: self.room)
             }
+
         }
         //.toast(isShowing: self.$appState.showToast, text: Text("Hello toast!"))
         
@@ -149,8 +175,18 @@ struct MusicroomView: View {
         .navigationBarItems(trailing:
             self.navTrailingItem
         )
-            .navigationBarTitle(Text(room.name), displayMode: .inline)
+        .navigationBarTitle(Text(room.name), displayMode: .inline)
+        
+        
     }
+    func shareButton(){
+        isSharePresented.toggle()
+        let text = "You have been invited to join room xxxxxx."
+        let av = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true, completion: nil)
+    }
+
+    
     
     @State var isSearching = false
 }
@@ -219,3 +255,10 @@ struct BubbleTabView<Content> : View where Content : View {
 //        MusicroomView()
 //    }
 //}
+
+
+struct MusicroomView_Previews: PreviewProvider {
+    static var previews: some View {
+        /*@START_MENU_TOKEN@*/Text("Hello, World!")/*@END_MENU_TOKEN@*/
+    }
+}
