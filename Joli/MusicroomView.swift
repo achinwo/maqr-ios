@@ -53,6 +53,22 @@ protocol MusicroomTabView: View {
     init(room: Musicroom)
 }
 
+//struct ActivityViewController: UIViewControllerRepresentable {
+//    typealias UIViewControllerType = <#type#>
+//
+//
+//    var activityItems: [Any]
+//    var applicationActivities: [UIActivity]? = nil
+//
+//    func makeUIViewController(context: UIViewControllerRepresentableContext<ActivityViewController>) -> UIActivityViewController {
+//        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+//        return controller
+//    }
+//
+//   func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ActivityViewController>)
+//{}
+//}
+
 struct MusicroomView: View {
     @EnvironmentObject var appState: AppState
     
@@ -101,7 +117,7 @@ struct MusicroomView: View {
 //    var alertBanner: some View {
 //        return
 //    }
-    
+    @State private var isSharePresented: Bool = false
     var body: some View {
         return VStack(alignment: .center, spacing: 0){
 
@@ -114,7 +130,14 @@ struct MusicroomView: View {
                 
                 Divider()
             }
-            
+            Button("Share room details") {
+                           self.isSharePresented = true
+                        }
+                        .sheet(isPresented: $isSharePresented, onDismiss: {
+                            print("Dismiss")
+                        }, content: {
+                            ActivityViewController(activityItems: [URL(string: "https://www.apple.com")!])
+                        })
             Picker(selection: self.$appState.selectedTabIdx, label: Text("Room")){
                 ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
                     Text("\(roomTab.emoji != nil ? "\(roomTab.emoji!) " : "")\(roomTab.title)")
@@ -219,3 +242,4 @@ struct BubbleTabView<Content> : View where Content : View {
 //        MusicroomView()
 //    }
 //}
+
