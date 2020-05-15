@@ -99,7 +99,7 @@ struct MusicroomView: View {
                         Image(systemName: "hifispeaker")
                             .padding()
                 }.disabled(self.appState.spotifyDevices.isEmpty)
-            }
+                
             
             Button(action: action) {
                     Image(systemName: imageName)
@@ -111,6 +111,12 @@ struct MusicroomView: View {
                 }
                 .environmentObject(self.appState)
             }
+                Button(action: shareButton){
+                        Image(systemName: "square.and.arrow.up")
+                    .padding()
+                            //.font(.largeTitle)
+                    }
+                }
         }
     }
     @State private var isSharePresented: Bool = false
@@ -127,10 +133,7 @@ struct MusicroomView: View {
                 Divider()
             }
             
-           Button(action: shareButton){
-                Image(systemName: "square.and.arrow.up")
-                    .font(.largeTitle)
-            }
+           
 //            .sheet(isPresented: $isSharePresented, onDismiss: {
 //                print("Dismiss")
 //            }, content: {
