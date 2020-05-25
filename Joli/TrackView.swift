@@ -105,15 +105,24 @@ struct TrackView: View {
             votesText = ""
         }
         
+        var isTrackPlaying: Bool = false
+        if let curr = self.currentlyPlayingContent, curr.isPlaying {
+            isTrackPlaying = curr.uri == track.uri
+        }
+        
         return HStack(alignment: VerticalAlignment.center) {
             
-            CircleImage(url: track.thumbnailUrl)
-                .opacity(self.isRequestingPlay ? 0.85 : 1)
+            if !track.thumbnailUrl.isEmpty {
+                CircleImage(url: track.thumbnailUrl)
+                    .opacity(self.isRequestingPlay ? 0.85 : 1)
+            }
             
             VStack(alignment: .leading) {
                 Text(track.title)
                     .animation(.easeInOut)
-                    .font(.headline).lineLimit(2)
+                    .font(.headline)
+                    .foregroundColor(isTrackPlaying ? .green : .primary)
+                    .lineLimit(2)
                 
                 HStack {
                     

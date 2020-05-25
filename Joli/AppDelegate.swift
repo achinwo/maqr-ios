@@ -61,11 +61,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             
             let computedVolume = Int(volume * 100)
             
-//            if let deviceVol = appState.spotifyDevice?.volumePercent, (computedVolume - deviceVol) > 25 {
-//                computedVolume = (computedVolume - deviceVol) / 2 // half the requested volume
-//            }
-            
-            
             self.appState.api.fetchSpotifyDevices(on: DispatchQueue.main)
                 .then() { devices in
                     

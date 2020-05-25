@@ -117,6 +117,7 @@ struct PlayQueueView: MusicroomTabView {
         logger.debug("Appeared - 2!! Art is visible")
         
         appState.fetchQueuedTracks(room)
+        appState.fetchSpotifyDevices()
     }
     
 }

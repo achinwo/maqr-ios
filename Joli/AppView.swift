@@ -111,7 +111,6 @@ struct AppView: View {
             }
             //.colorScheme(.dark)
         }
-        .colorScheme(.light)
     }
         
     var currentPlayingView: some View {
@@ -139,6 +138,14 @@ struct AppView: View {
             }
         }
         
+        let showSyntheticDevice = buttons.isEmpty && !self.appState.deviceReadyCallbacks.isEmpty
+        if showSyntheticDevice {
+            buttons.append(.default(Text("iPhone")) {
+                let device = Spotify.Device(name: "iPhone", type: Spotify.DeviceType.smartphone, isActive: true, id: "__this_phone__")
+                self.appState.triggerAndClearDeviceCallbacks(device: device, cancelled: false)
+            })
+        }
+        
         buttons.append(.cancel() {
             self.appState.triggerAndClearDeviceCallbacks(cancelled: true)
         })
@@ -149,7 +156,7 @@ struct AppView: View {
             width = CGFloat(self.currentlyPlaying.progressPct / 100.0) * (UIScreen.main.bounds.width - 142)
         }
         
-        var deviceChooserMessage = Text(self.appState.spotifyDevices.count == 0 ? "You have no connected Spotify devices" : "Spotify connected devices")
+        var deviceChooserMessage = Text(self.appState.spotifyDevices.count == 0 && !showSyntheticDevice ? "You have no connected Spotify devices" : "Spotify connected devices")
         
         if self.appState.spotifyDevices.count == 0 {
             deviceChooserMessage = deviceChooserMessage.foregroundColor(.red).bold()
