@@ -53,21 +53,6 @@ protocol MusicroomTabView: View {
     init(room: Musicroom)
 }
 
-//struct ActivityViewController: UIViewControllerRepresentable {
-//    typealias UIViewControllerType = <#type#>
-//
-//
-//    var activityItems: [Any]
-//    var applicationActivities: [UIActivity]? = nil
-//
-//    func makeUIViewController(context: UIViewControllerRepresentableContext<ActivityViewController>) -> UIActivityViewController {
-//        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-//        return controller
-//    }
-//
-//   func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ActivityViewController>)
-//{}
-//}
 
 struct MusicroomView: View {
     @EnvironmentObject var appState: AppState
@@ -114,7 +99,6 @@ struct MusicroomView: View {
                 Button(action: shareButton){
                         Image(systemName: "square.and.arrow.up")
                     .padding()
-                            //.font(.largeTitle)
                     }
                 }
         }
@@ -132,13 +116,6 @@ struct MusicroomView: View {
                 
                 Divider()
             }
-            
-           
-//            .sheet(isPresented: $isSharePresented, onDismiss: {
-//                print("Dismiss")
-//            }, content: {
-//                ActivityViewController(activityItems: ["Hello this is content to Body of my mail."])
-//            })
             
             Picker(selection: self.$appState.selectedTabIdx, label: Text("Room")){
                 ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
@@ -181,7 +158,7 @@ struct MusicroomView: View {
     }
     func shareButton(){
         isSharePresented.toggle()
-        let text = "You have been invited to join room xxxxxx."
+        let text = "You have been invited to join the " + room.name + " room. Use https:://api.jolimc.com/join/" + String(room.id) + " to join the rool."
         let av = UIActivityViewController(activityItems: [text], applicationActivities: nil)
         UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true, completion: nil)
     }
@@ -248,14 +225,6 @@ struct BubbleTabView<Content> : View where Content : View {
         
     }
 }
-
-
-//struct MusicroomView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        MusicroomView()
-//    }
-//}
-
 
 struct MusicroomView_Previews: PreviewProvider {
     static var previews: some View {
