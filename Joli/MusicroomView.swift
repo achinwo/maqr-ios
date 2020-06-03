@@ -158,7 +158,7 @@ struct MusicroomView: View {
     }
     func shareButton(){
         isSharePresented.toggle()
-        let text = "You have been invited to join the " + room.name + " room. Use https:://api.jolimc.com/join/" + String(room.id) + " to join the rool."
+        let text = "You have been invited to join the " + room.name + " room. Use https:://api.jolimc.com/join/" + String(room.id) + " to join the room."
         let av = UIActivityViewController(activityItems: [text], applicationActivities: nil)
         UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true, completion: nil)
     }
