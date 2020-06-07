@@ -158,14 +158,30 @@ struct MusicroomView: View {
     }
     func shareButton(){
         isSharePresented.toggle()
-        let text = "You have been invited to join the " + room.name + " room. Use https:://api.jolimc.com/join/" + String(room.id) + " to join the room."
-        let av = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        let text = "You have been invited to join the " + room.name + " room. Use https://api.jolimc.com/join/" + String(room.id) + " to join the room."
+        let av = UIActivityViewController(activityItems: [text], applicationActivities: [ShareActivity()])
         UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true, completion: nil)
     }
 
     
     
     @State var isSearching = false
+}
+
+class ShareActivity: UIActivity {
+    
+    override var activityType: UIActivity.ActivityType {
+        return .message
+    }
+
+    override var activityTitle: String? {
+        return "Joli"
+    } // default returns nil. subclass must override and must return non-nil value
+
+    override var activityImage: UIImage? {
+        return UIImage(named: "joil_icon_rounded.png")
+    } // default #imageLiteral(resourceName: "joil_icon_rounded.png")returns nil. subclass must override and must return non-nil value
+
 }
 
 struct BubbleTabView<Content> : View where Content : View {

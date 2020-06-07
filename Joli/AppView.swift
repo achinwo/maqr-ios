@@ -23,96 +23,14 @@ struct ViewOffset {
     
 }
 
-
-struct AppView: View {
+struct CurrentlyPlayingView: View {
     
-    @EnvironmentObject var appState: AppState
     @EnvironmentObject var currentlyPlaying: AppCurrentlyPlayingState
     
-    @State var settingsViewOffset: ViewOffset = ViewOffset(x: nil, y: 0)
-    @State var settingsViewOffsetSize = CGSize(width: 0, height: 0)
-    @State var mainViewOffset = CGSize(width: 0, height: 0)
-    @State var activityIdx = 0
-    
-    
-    @State var isLogoutAlertPresented = false
-    @State var isRoomCreateFormPresented = false
-    @State var dragging = false
-    
-    @State var heightOffset: CGFloat = 0
-    
-    static let DEFAULT_PLAY_WIDGET_HIEGHTOFFSET: CGFloat = 200
-    
     var body: some View {
-        let settingsOffsetWidth: CGFloat? = appState.isSettingsPresented ? 0 : nil
-        
-        let logonButtonAction = {
-            if self.appState.auth == nil {
-                self.appState.isLogonViewPresented = true
-            } else {
-                self.isLogoutAlertPresented = true
-            }
-        }
-        
-        let roomsView = NavigationView {
-                MusicroomList()
-                    .sheet(isPresented: self.$appState.isLogonViewPresented) {
-                        NavigationView {
-                            LogOnView() { cancelled in
-                                logger.debug("[LogOnView] view dismissed")
-                            }
-                        }.environmentObject(self.appState).environmentObject(self.appState.keyboardState)
-                }
-            .navigationBarItems(leading:
-                Button(action: logonButtonAction) {
-                    
-                    if self.appState.auth != nil {
-                        UserProfileView(user: self.appState.auth!.user.builder())
-                    } else {
-                        Text("Sign In")
-                    }
-                }.alert(isPresented: self.$isLogoutAlertPresented) {
-                    Alert(title: Text("Sign out?").font(.title),
-                          message: Text("\(self.appState.auth!.user.name)").font(.subheadline),
-                          primaryButton: .cancel(),
-                          secondaryButton: .destructive(Text("Yes")) {
-                            self.appState.api.auth = nil
-                        }
-                    )
-                }
-                , trailing:
-                
-                HStack(){
-                    NavigationLink(destination: VStack() { RoomCreateFormView() }) {
-                        Image(systemName: "plus")
-                    }.padding()
-                    Button(action: {
-                        self.appState.isSettingsPresented.toggle()
-                    }) {
-                        Image(systemName: "gear")
-                            
-                    }.padding()
-                }
-            )
-        }
-        
-        return GeometryReader(){ geometry in
-            ZStack(alignment: .bottomTrailing) {
-                roomsView.animation(.spring())
-                
-                NavigationView {
-                    SettingsView()
-                }
-                .animation(.spring())
-                .offset(CGSize(width: settingsOffsetWidth ?? geometry.size.width, height: 0))
-                
-                self.currentPlayingView
-                
-            }
-            //.colorScheme(.dark)
-        }
+        return self.currentPlayingView
     }
-        
+    
     var currentPlayingView: some View {
         let gesture = DragGesture(minimumDistance: 10)
             .onEnded() { val in
@@ -124,42 +42,10 @@ struct AppView: View {
                 self.heightOffset = changeVal.location.y
             }
         
-        var buttons: [ActionSheet.Button] = appState.spotifyDevices.map() { device in
-            var suffix = ""
-            if let selectedDeviceIdx = self.appState.selectedSpotifyDeviceIdx,
-                device == self.appState.spotifyDevices[selectedDeviceIdx] {
-                suffix = " ✔️"
-            }
-            
-            return .default(Text("\(device.name)\(suffix)")) {
-                logger.debug("[spotifyDevices] selected device: \(device)")
-                self.appState.selectedSpotifyDeviceIdx = self.appState.spotifyDevices.firstIndex(of: device)
-                self.appState.triggerAndClearDeviceCallbacks(cancelled: false)
-            }
-        }
-        
-        let showSyntheticDevice = buttons.isEmpty && !self.appState.deviceReadyCallbacks.isEmpty
-        if showSyntheticDevice {
-            buttons.append(.default(Text("iPhone")) {
-                let device = Spotify.Device(name: "iPhone", type: Spotify.DeviceType.smartphone, isActive: true, id: "__this_phone__")
-                self.appState.triggerAndClearDeviceCallbacks(device: device, cancelled: false)
-            })
-        }
-        
-        buttons.append(.cancel() {
-            self.appState.triggerAndClearDeviceCallbacks(cancelled: true)
-        })
-        
         var width: CGFloat = .zero
             
         if self.currentlyPlaying.progressPct > 0 {
             width = CGFloat(self.currentlyPlaying.progressPct / 100.0) * (UIScreen.main.bounds.width - 142)
-        }
-        
-        var deviceChooserMessage = Text(self.appState.spotifyDevices.count == 0 && !showSyntheticDevice ? "You have no connected Spotify devices" : "Spotify connected devices")
-        
-        if self.appState.spotifyDevices.count == 0 {
-            deviceChooserMessage = deviceChooserMessage.foregroundColor(.red).bold()
         }
         
         return VStack(alignment: .leading){
@@ -227,11 +113,6 @@ struct AppView: View {
                     
                 }
             }
-            .actionSheet(isPresented: self.$appState.isDeviceChooserPresented){
-                ActionSheet(title: Text("Audio Device"),
-                            message: deviceChooserMessage,
-                            buttons: buttons)
-            }
              //   .animation(self.dragging ? .none : .easeInOut)
             .simultaneousGesture(gesture)
             .frame(width: UIScreen.main.bounds.width - 32, height: 116, alignment: .bottomLeading)
@@ -262,6 +143,141 @@ struct AppView: View {
         
         return CGSize(width: -16, height: heightOffset)
     }
+    
+    @EnvironmentObject var appState: AppState
+    @State var settingsViewOffset: ViewOffset = ViewOffset(x: nil, y: 0)
+    @State var settingsViewOffsetSize = CGSize(width: 0, height: 0)
+    @State var mainViewOffset = CGSize(width: 0, height: 0)
+    
+    @State var dragging = false
+    
+    @State var heightOffset: CGFloat = 0
+    
+}
+
+
+struct AppView: View {
+    
+    @EnvironmentObject var appState: AppState
+    
+    
+    @State var settingsViewOffset: ViewOffset = ViewOffset(x: nil, y: 0)
+    @State var settingsViewOffsetSize = CGSize(width: 0, height: 0)
+    @State var mainViewOffset = CGSize(width: 0, height: 0)
+    
+    
+    @State var isLogoutAlertPresented = false
+    
+    static let DEFAULT_PLAY_WIDGET_HIEGHTOFFSET: CGFloat = 200
+    
+    var body: some View {
+        var buttons: [ActionSheet.Button] = appState.spotifyDevices.map() { device in
+            var suffix = ""
+            if let selectedDeviceIdx = self.appState.selectedSpotifyDeviceIdx,
+                device == self.appState.spotifyDevices[selectedDeviceIdx] {
+                suffix = " ✔️"
+            }
+            
+            return .default(Text("\(device.name)\(suffix)")) {
+                logger.debug("[spotifyDevices] selected device: \(device)")
+                self.appState.selectedSpotifyDeviceIdx = self.appState.spotifyDevices.firstIndex(of: device)
+                self.appState.triggerAndClearDeviceCallbacks(cancelled: false)
+            }
+        }
+        
+        let showSyntheticDevice = buttons.isEmpty && !self.appState.deviceReadyCallbacks.isEmpty
+        if showSyntheticDevice {
+            buttons.append(.default(Text("iPhone")) {
+                let device = Spotify.Device(name: "iPhone", type: Spotify.DeviceType.smartphone, isActive: true, id: "__this_phone__")
+                self.appState.triggerAndClearDeviceCallbacks(device: device, cancelled: false)
+            })
+        }
+        
+        buttons.append(.cancel() {
+            self.appState.triggerAndClearDeviceCallbacks(cancelled: true)
+        })
+        
+        var deviceChooserMessage = Text(self.appState.spotifyDevices.count == 0 && !showSyntheticDevice ? "You have no connected Spotify devices" : "Spotify connected devices")
+        
+        if self.appState.spotifyDevices.count == 0 {
+            deviceChooserMessage = deviceChooserMessage.foregroundColor(.red).bold()
+        }
+        
+        let settingsOffsetWidth: CGFloat? = appState.isSettingsPresented ? 0 : nil
+        
+        let logonButtonAction = {
+            if self.appState.auth == nil {
+                self.appState.isLogonViewPresented = true
+            } else {
+                self.isLogoutAlertPresented = true
+            }
+        }
+        
+        let roomsView = NavigationView {
+                MusicroomList()
+                    .sheet(isPresented: self.$appState.isLogonViewPresented) {
+                        NavigationView {
+                            LogOnView() { cancelled in
+                                logger.debug("[LogOnView] view dismissed")
+                            }
+                        }.environmentObject(self.appState).environmentObject(self.appState.keyboardState)
+                }
+            .navigationBarItems(leading:
+                Button(action: logonButtonAction) {
+                    
+                    if self.appState.auth != nil {
+                        UserProfileView(user: self.appState.auth!.user.builder())
+                    } else {
+                        Text("Sign In")
+                    }
+                }.alert(isPresented: self.$isLogoutAlertPresented) {
+                    Alert(title: Text("Sign out?").font(.title),
+                          message: Text("\(self.appState.auth!.user.name)").font(.subheadline),
+                          primaryButton: .cancel(),
+                          secondaryButton: .destructive(Text("Yes")) {
+                            self.appState.api.auth = nil
+                        }
+                    )
+                }
+                , trailing:
+                
+                HStack(){
+                    NavigationLink(destination: VStack() { RoomCreateFormView() }) {
+                        Image(systemName: "plus")
+                    }.padding()
+                    Button(action: {
+                        self.appState.isSettingsPresented.toggle()
+                    }) {
+                        Image(systemName: "gear")
+                            
+                    }.padding()
+                }
+            )
+        }
+        
+        return GeometryReader(){ geometry in
+            ZStack(alignment: .bottomTrailing) {
+                roomsView.animation(.spring())
+                
+                NavigationView {
+                    SettingsView()
+                }
+                .animation(.spring())
+                .offset(CGSize(width: settingsOffsetWidth ?? geometry.size.width, height: 0))
+                
+                CurrentlyPlayingView()
+                
+            }
+            .actionSheet(isPresented: self.$appState.isDeviceChooserPresented){
+                ActionSheet(title: Text("Audio Device"),
+                            message: deviceChooserMessage,
+                            buttons: buttons)
+            }
+            //.colorScheme(.dark)
+        }
+    }
+        
+    
 }
 
 struct AppView_Previews: PreviewProvider {

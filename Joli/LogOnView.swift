@@ -33,8 +33,8 @@ struct SignUpView: View {
 
 class LoginViewModel: ObservableObject {
     
-    @Published var email: String = "test@gmail.net"
-    @Published var password: String = "Password@"
+    @Published var email: String = ""
+    @Published var password: String = ""
     
     func performLogin() {
         logger.info("[LoginViewModel] logging in!")
@@ -162,6 +162,8 @@ struct LogOnView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var appKeyboardState: AppKeyboardState
+    
+    var loginModel = LoginViewModel()
     @State var activityIdx = 0
     @State var offsetY: CGFloat = CGFloat(0)
     
@@ -201,13 +203,14 @@ struct LogOnView: View {
                 .padding()
                 
                 if self.activityIdx == 0 {
-                    SignInView(presentationMode: self.presentationMode).environmentObject(LoginViewModel())
+                    SignInView(presentationMode: self.presentationMode)
                     .keyboardAwarePadding()
                 } else {
                     SignUpView()
                     .keyboardAwarePadding()
                 }
             }
+            .environmentObject(self.loginModel)
             .animation(.spring())
             .offset(x: 0, y: self.appKeyboardState.keyboardHeight == 0 ? 0 : geometry.size.height / 3 * -1)
             .simultaneousGesture(gesture)

@@ -121,7 +121,7 @@ class AppState: ObservableObject {
     @Published var selectedTabIdx = 1
     
     let currentlyPlaying: AppCurrentlyPlayingState
-    let keyboardState = AppKeyboardState()
+    let keyboardState: AppKeyboardState
     
     private var currentlyPlayingAlbumUrl: String? = nil
     
@@ -437,6 +437,7 @@ class AppState: ObservableObject {
         self.baseUrl = baseUrl
         
         self.currentlyPlaying = AppCurrentlyPlayingState()
+        self.keyboardState = AppKeyboardState()
         
         let headers: [String: String] = ["X-PLATFORM": "ios",
                                          "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
