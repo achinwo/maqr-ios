@@ -59,7 +59,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
     }
     
     let SpotifyClientID = "e3966e30011d4895997ce89c797de5a5"
-    let SpotifyRedirectURL = URL(string: "spotify-ios-quick-start://spotify-login-callback")!
+    let SpotifyRedirectURL = URL(string: "joli://spotify-callback/")!
+    //URL(string: "spotify-ios-quick-start://spotify-login-callback")!
 
     lazy var configuration = SPTConfiguration(
       clientID: SpotifyClientID,
@@ -90,7 +91,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         //https://localhost:8080/spotify_callback/
         configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
         
-        configuration.playURI = ""
+        configuration.playURI = nil
         
         return SPTSessionManager(configuration: configuration, delegate: self)
     }()
@@ -166,6 +167,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
             appState.spotifyWebAuthorize(urlComp)
             .then() { auth in
                 logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
+                self.appRemote.connectionParameters.accessToken = auth.accessToken
+                self.accessToken = auth.accessToken
             }
             .catch() { error in
                 logger.error("[SceneDelegate] spotify auth error: \(error)")
@@ -173,7 +176,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
             return
         }
         
-        let parameters = appRemote.authorizationParameters(from: url);
+        let parameters = appRemote.authorizationParameters(from: url)
         logger.info("[\(#function)] spotify auth params: \(String(describing: parameters))")
         if let access_token = parameters?[SPTAppRemoteAccessTokenKey] {
             appRemote.connectionParameters.accessToken = access_token

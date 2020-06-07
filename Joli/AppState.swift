@@ -347,7 +347,8 @@ class AppState: ObservableObject {
             logger.warning("[assertSelectedDevice] spotify: \(message) - \(message == Spotify.ErrorMessage.invalidAccessToken.rawValue)")
             try? callback(nil, false)
             
-            self.openSpotifyWebAuthorization()
+            //self.openSpotifyWebAuthorization()
+            self.sceneDelegate?.requestSpotifyAccess()
         }
     }
     
