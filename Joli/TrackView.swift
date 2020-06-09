@@ -9,12 +9,48 @@
 import SwiftUI
 import JoliApi
 import JoliCore
+import Kingfisher
+//import UIKit
 
-struct TrackView: View {
+public struct NetworkImage: SwiftUI.View {
+
+  // swiftlint:disable:next redundant_optional_initialization
+  @State private var image: UIImage? = nil
+
+  public let imageURL: URL?
+  public let placeholderImage: UIImage
+    public let animation: Animation = .easeInOut
+
+  public var body: some SwiftUI.View {
+    SwiftUI.Image(uiImage: image ?? placeholderImage)
+    .resizable()
+        .frame(width: 64, height: 64, alignment: .center)
+        .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
+      .onAppear(perform: loadImage)
+      .transition(.opacity)
+      .id(image ?? placeholderImage)
+  }
+
+  private func loadImage() {
+    guard let imageURL = imageURL, image == nil else { return }
+    KingfisherManager.shared.retrieveImage(with: imageURL) { result in
+      switch result {
+      case .success(let imageResult):
+        withAnimation(self.animation) {
+          self.image = imageResult.image
+        }
+      case .failure:
+        break
+      }
+    }
+  }
+}
+
+struct TrackView: SwiftUI.View {
     
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var currentlyPlaying: AppCurrentlyPlayingState
-    @State var image: Image?
+    @State var image: SwiftUI.Image?
     
     var track: Playable
     @State var isPlaying = false
@@ -73,7 +109,7 @@ struct TrackView: View {
         self.track = track
     }
     
-    var explicitLabel: some View {
+    var explicitLabel: some SwiftUI.View {
         return Text(track.explicit == nil || !track.explicit! ? "" : "E")
         .padding(2)
         .background(Color.red)
@@ -96,7 +132,7 @@ struct TrackView: View {
     @State var isQueueing = false
     @State var isRequestingPlay = false
     
-    var body: some View {
+    var body: some SwiftUI.View {
         let votesText: String
         
         if let votes = votes, votes.count > 0 {
@@ -110,12 +146,12 @@ struct TrackView: View {
             isTrackPlaying = curr.uri == track.uri
         }
         
-        return HStack(alignment: VerticalAlignment.center) {
+        return HStack(alignment: VerticalAlignment.center, spacing: 2) {
             
-            if !track.thumbnailUrl.isEmpty {
-                CircleImage(url: track.thumbnailUrl)
-                    .opacity(self.isRequestingPlay ? 0.85 : 1)
-            }
+            NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
+                placeholderImage: UIImage(systemName: "bookmark")!)
+                .padding(.trailing, 4)
+            .opacity(self.isRequestingPlay ? 0.85 : 1)
             
             VStack(alignment: .leading) {
                 Text(track.title)
@@ -200,7 +236,7 @@ struct TrackView: View {
         .onTapGesture(perform: playTrack)
         .onAppear() {
             self.isPlaying = self.currentlyPlayingContent?.isPlaying ?? false
-        }
+        }//.background(Color.red)
         .contextMenu {
             
             if self.isQueueable {
@@ -243,7 +279,7 @@ struct TrackView: View {
     }
 }
 
-struct Toast<Presenting>: View where Presenting: View {
+struct Toast<Presenting>: SwiftUI.View where Presenting: SwiftUI.View {
 
     /// The binding that decides the appropriate drawing in the body.
     @Binding var isShowing: Bool
@@ -252,7 +288,7 @@ struct Toast<Presenting>: View where Presenting: View {
     /// The text to show
     let text: Text
 
-    var body: some View {
+    var body: some SwiftUI.View {
 
         GeometryReader { geometry in
 
@@ -287,9 +323,9 @@ struct Toast<Presenting>: View where Presenting: View {
 
 }
 
-extension View {
+extension SwiftUI.View {
 
-    func toast(isShowing: Binding<Bool>, text: Text) -> some View {
+    func toast(isShowing: Binding<Bool>, text: Text) -> some SwiftUI.View {
         Toast(isShowing: isShowing,
               presenting: { self },
               text: text)

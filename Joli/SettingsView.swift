@@ -82,6 +82,54 @@ struct SettingsView: View {
 //            //WebView(request: URLRequest(url: url)).padding(0)
 //            ExampleView()
 //            Text("Room Membership")
+            Button(action: {
+                //#imageLiteral(resourceName: "party-people.jpg")
+               let path = Bundle.main.path(forResource: "party-people", ofType: "jpg")
+                let url = URL.init(fileURLWithPath: path!)
+                let fileData = try! Data(contentsOf: url)
+                
+                
+                let boundary = "Boundary-\(UUID().uuidString)"
+                var req = URLRequest.init(url: URL(string: "/images", relativeTo: self.appState.api.baseUrl.http)!)
+                req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+                req.httpMethod = "POST"
+                //req.allHTTPHeaderFields = self.appState.api.urlSessionConfiguration.httpAdditionalHeaders as? [String : String]
+                logger.debug("Uploading \(req)")
+                
+                var httpBody = Data()
+                
+                func convertFileData(fieldName: String, fileName: String, mimeType: String, fileData: Data, using boundary: String) -> Data {
+                  var data = Data()
+
+                  data.appendString("--\(boundary)\r\n")
+                  data.appendString("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n")
+                  data.appendString("Content-Type: \(mimeType)\r\n\r\n")
+                  data.append(fileData)
+                  data.appendString("\r\n")
+
+                  return data as Data
+                }
+
+
+                httpBody.append(convertFileData(fieldName: "image_field",
+                                                fileName: "party-people.jpg",
+                                                mimeType: "image/jpg",
+                                                fileData: fileData,
+                                                using: boundary))
+
+                httpBody.appendString("--\(boundary)--")
+
+                req.httpBody = httpBody as Data
+                
+                let task = self.appState.api.urlSession.uploadTask(with: req, from: httpBody) { (data, resp, error) in
+                    logger.debug("data=\(data), resp=\(resp), error=\(error)")
+                }
+                task.resume()
+                
+            }) {
+                Text("Upload Image")
+            }.padding()
             
             Button(action: { self.appState.sceneDelegate?.requestSpotifyAccess() }) {
                 HStack(alignment: .center) {
@@ -107,6 +155,16 @@ struct SettingsView: View {
             Image(systemName: "xmark")
             Text("Close")
         })
+    }
+}
+
+extension Data {
+    
+    mutating func appendString(_ string: String) {
+        guard let data = string.data(using: .utf8) else {
+          return
+        }
+        self.append(data)
     }
 }
 
