@@ -7,6 +7,9 @@ build/
 DerivedData/
 Generated/
 
+.DS_Store
+**/.DS_Store
+
 Joli/env.json
 env.json
 
