@@ -15,10 +15,19 @@ struct PlayQueueView: MusicroomTabView {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var currentlyPlaying: AppCurrentlyPlayingState
     @State var queuedTracks: [QueuedTrack] = []
+    
+    var api: JoliApi {
+        return appState.api
+    }
+    
     var room: Musicroom
     
     var tracks: [QueuedTrack] {
-        let tracks = appState.queuedTracksByMusicrooms[room.id] ?? []
+        var tracks = appState.queuedTracksByMusicrooms[room.id] ?? []
+        
+        tracks = tracks.filter() { track in
+            return track.playEndedAt == nil
+        }
         
         return tracks.sorted(){ (track1, track2) -> Bool in
             let track1Votes = self.appState.votesByTrackId[track1.id]
@@ -26,12 +35,10 @@ struct PlayQueueView: MusicroomTabView {
             
             if let votes1 = track1Votes, let votes2 = track2Votes, votes1.count != votes2.count {
                 return votes1.count > votes2.count
-            } else if track1Votes != nil && track2Votes != nil {
-                return track1.title > track2.title
             } else if track1Votes != nil || track2Votes != nil {
                 return track1Votes != nil
             } else {
-                return track1.createdAt >= track2.createdAt
+                return track1.createdAt <= track2.createdAt
             }
         }
     }
@@ -119,8 +126,27 @@ struct PlayQueueView: MusicroomTabView {
             .foregroundColor(self.isRequestingPlay ? Color.gray : Color.primary)
             .frame(width: 64, height: 64, alignment: .bottomLeading)
             .onTapGesture() {
-                logger.debug("Play room \(self.room.id)")
                 
+                    self.appState.assertSelectedDevice() { (device, cancelled) in
+                        
+                        guard !cancelled else { return }
+                        
+                        guard let device = self.appState.spotifyDevice else {
+                            logger.debug("Cant play room \(self.room.id), no active device")
+                            return
+                        }
+                        
+                        logger.debug("Play room \(self.room.id)")
+                        self.isRequestingPlay = true
+                        self.api.playMusicroom(self.room, device: device)
+                            .catch() { error in
+                                logger.error("[PlayQueue] error playing room: \(error)")
+                        }
+                        .always {
+                            self.isRequestingPlay = false
+                        }
+                    }
+                    
             }
         }.padding(6)
     }

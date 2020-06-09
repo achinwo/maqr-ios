@@ -505,22 +505,6 @@ class AppState: ObservableObject {
             logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] playing: \(cPlaying.isPlaying)")
             
             self.setAudioSession(cPlaying.isPlaying)
-            
-            guard abs(cPlaying.progressMs - cPlaying.item.durationMs) < 3000
-                 else {
-                logger.info("[\(JoliApi.Subject.playerStateChanged.rawValue)] still playing: \(cPlaying.progressMs) - \(cPlaying.item.durationMs) ")
-                return
-            }
-            
-            self.fetchSpotifyRecommendations()
-                .then(){ recs in
-                    guard let track = recs.tracks.first else { return }
-                    logger.info("[NEXT] \(track)")
-                    track.play(deviceId: self.spotifyDevice?.id, baseUrl: self.api.baseUrl.rawValue.http, urlSession: self.api.urlSession)
-                }
-                .catch(){ error in
-                    logger.error("fetchSpotifyRecommendations error: \(error)")
-                }
         }
         
         api.subscribe(subject: .playerStateNowPlaying){ (result, error) in

@@ -9,9 +9,29 @@
 import Foundation
 import  JoliApi
 import SwiftUI
+import JoliCore
+import Promises
 
 extension JoliApi {
     
+    @discardableResult
+    func playMusicroom(_ room: Musicroom, device: Spotify.Device, on: DispatchQueue? = nil) -> Promise<Musicroom> {
+        return HttpMethod.post.fetch(urlString: "/api/musicrooms/\(room.id)/play?deviceId=\(device.id)", dataType: Musicroom.self, baseUrl: self.baseUrl.http, urlSession: self.urlSession, on: on)
+    }
+    
+    //fetch<T: Codable>(urlString: String, dataType: T.Type, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil)
+    
+    public func save<T>(_ model: T, on: DispatchQueue? = nil) -> Promise<T.PersistedType> where T: Persistable {
+        return model.save(baseUrl: self.baseUrl.rawValue.http, urlSession: urlSession, on: on)
+    }
+    
+    func fetchQueuedTracks(room: Musicroom, on: DispatchQueue? = nil) -> Promise<[QueuedTrack]> {
+        return HttpMethod.get.fetch(urlString: "/api/musicrooms/\(room.id)/queued", dataType: [QueuedTrack].self, baseUrl: self.baseUrl.http, urlSession: self.urlSession, on: on)
+    }
+    
+}
+
+extension Musicroom {
     
     
 }

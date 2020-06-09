@@ -149,8 +149,8 @@ struct TrackView: SwiftUI.View {
         return HStack(alignment: VerticalAlignment.center, spacing: 2) {
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
-                placeholderImage: UIImage(systemName: "bookmark")!)
-                .padding(.trailing, 4)
+                placeholderImage: UIImage(systemName: "xmark.octagon")!)
+                .padding(.trailing, 6)
             .opacity(self.isRequestingPlay ? 0.85 : 1)
             
             VStack(alignment: .leading) {
