@@ -616,7 +616,7 @@ class AppState: ObservableObject {
     
     // MARK: - fetchSpotifyAuth
     public func fetchSpotifyAuthToken() -> Promise<AuthToken> {
-        return HttpMethod.get.fetch(urlString: "/api/spotify/auth", dataType: AuthToken.self,
+        return HttpMethod.post.fetch(urlString: "/api/spotify/auth", dataType: AuthToken.self,
                                     baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
     

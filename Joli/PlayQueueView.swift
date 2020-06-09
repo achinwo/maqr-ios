@@ -84,11 +84,8 @@ struct PlayQueueView: MusicroomTabView {
                     .animation(.easeInOut)
                     .frame(width: UIScreen.main.bounds.width, height: track == nil ? 0 : 4, alignment: .leading)
                     
-                    if self.currentlyPlaying.content != nil {
-                        TrackView(track: self.currentlyPlaying.content!)
-                            .padding()
-                        Divider()
-                    }
+                    self.controlsView
+                    Divider()
                     
                     VStack(alignment: .leading){
 
@@ -107,6 +104,26 @@ struct PlayQueueView: MusicroomTabView {
     }
     
     @State var showPopover = false
+    @State var isRequestingPlay = false
+    @State var isPlaying = false
+    
+    var controlsView: some View {
+        return HStack(alignment: .center, spacing: 4) {
+//            NetworkImage(imageURL: URL(string: "https://i.scdn.co/image/ab67616d0000485155375ff19ae4e7ab60da3cac")!,
+//                         placeholderImage: UIImage(systemName: "bookmark")!)
+            
+            Spacer()
+            
+            Image(systemName: self.isPlaying ? "pause.circle" : "play.circle")
+            .resizable().padding(.trailing, 10).padding(.bottom, 10)
+            .foregroundColor(self.isRequestingPlay ? Color.gray : Color.primary)
+            .frame(width: 64, height: 64, alignment: .bottomLeading)
+            .onTapGesture() {
+                logger.debug("Play room \(self.room.id)")
+                
+            }
+        }.padding(6)
+    }
     
     func onDisappear(){
         logger.debug("Disappeared!! Art is not  visible")

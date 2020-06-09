@@ -38,6 +38,8 @@
 		92BCCBE22403FBD5001AEF25 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92BCCBE12403FBD5001AEF25 /* JoliApi */; };
 		92D19BA623BB9D66006D6B41 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D19BA523BB9D66006D6B41 /* UserProfileView.swift */; };
 		92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92D90BE9236C890B00EAAD31 /* party-people.jpg */; };
+		92E518D0248EEF3E00722A83 /* KingfisherSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 92E518CF248EEF3E00722A83 /* KingfisherSwiftUI */; };
+		92E518D2248EEF3E00722A83 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92E518D1248EEF3E00722A83 /* Kingfisher */; };
 		92F35AF2238A0AAB0081E30A /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 92F35AF1238A0AAB0081E30A /* env.json */; };
 		92F379E32363534D005FE2AB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E22363534D005FE2AB /* AppDelegate.swift */; };
 		92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E42363534D005FE2AB /* SceneDelegate.swift */; };
@@ -100,6 +102,16 @@
 				9234321823BFD2F700E24E96 /* JoliWidget.appex in Embed PlugIns */,
 			);
 			name = "Embed PlugIns";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		929314CC248EE65F00B7AFBD /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		92FF317223DCDE9C009EAF7D /* Embed Watch Content */ = {
@@ -209,7 +221,9 @@
 			files = (
 				92BCCBE22403FBD5001AEF25 /* JoliApi in Frameworks */,
 				920086FE245BB0F6008D81F1 /* SpotifyiOS.framework in Frameworks */,
+				92E518D0248EEF3E00722A83 /* KingfisherSwiftUI in Frameworks */,
 				3C16733723C7D4B400CF3131 /* (null) in Frameworks */,
+				92E518D2248EEF3E00722A83 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -443,6 +457,7 @@
 				92F379DD2363534D005FE2AB /* Resources */,
 				925FC0A6237EA25100A8A72C /* Embed PlugIns */,
 				92FF317223DCDE9C009EAF7D /* Embed Watch Content */,
+				929314CC248EE65F00B7AFBD /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -453,6 +468,8 @@
 			name = Joli;
 			packageProductDependencies = (
 				92BCCBE12403FBD5001AEF25 /* JoliApi */,
+				92E518CF248EEF3E00722A83 /* KingfisherSwiftUI */,
+				92E518D1248EEF3E00722A83 /* Kingfisher */,
 			);
 			productName = Joli;
 			productReference = 92F379DF2363534D005FE2AB /* Joli.app */;
@@ -554,6 +571,7 @@
 			mainGroup = 92F379D62363534D005FE2AB;
 			packageReferences = (
 				92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */,
+				92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1207,6 +1225,14 @@
 				kind = branch;
 			};
 		};
+		92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.14.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1214,6 +1240,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */;
 			productName = JoliApi;
+		};
+		92E518CF248EEF3E00722A83 /* KingfisherSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = KingfisherSwiftUI;
+		};
+		92E518D1248EEF3E00722A83 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
