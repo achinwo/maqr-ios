@@ -107,7 +107,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
                                          .userReadBirthDate,
                                          .userReadEmail,
                                          .userReadRecentlyPlayed,
-                                         .userReadPrivate
+                                         .userReadPrivate,
+                                         .playlistModifyPrivate,
+                                         .playlistModifyPublic,
+                                         .playlistReadPrivate
+                                         
         ]
         self.spotifySessionManager.alwaysShowAuthorizationDialog = true
         //self.spotifySessionManager.

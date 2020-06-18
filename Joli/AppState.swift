@@ -12,7 +12,7 @@ import JoliCore
 import SwiftUI
 import Combine
 import Promises
-
+import PackageDescription
 
 enum FetchError: Error {
     case cancelled
@@ -153,6 +153,15 @@ class AppState: ObservableObject {
         return self.appDelegate.env
     }
     
+    static var version: Version {
+        
+        guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
+            return Version(stringLiteral: "1.0.0")
+        }
+        
+        return Version(stringLiteral: "\(appVersion).\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0")")
+    }
+    
     var spotifyRemote: SPTAppRemote? {
         return sceneDelegate?.appRemote
     }
@@ -191,7 +200,7 @@ class AppState: ObservableObject {
     }
     
     public var spotifyDevice: Spotify.Device? {
-        guard let selectedSpotifyDeviceIdx = selectedSpotifyDeviceIdx else { return nil }
+        guard let selectedSpotifyDeviceIdx = selectedSpotifyDeviceIdx, spotifyDevices.count > selectedSpotifyDeviceIdx else { return nil }
         return spotifyDevices[selectedSpotifyDeviceIdx]
     }
     
@@ -440,11 +449,14 @@ class AppState: ObservableObject {
         self.currentlyPlaying = AppCurrentlyPlayingState()
         self.keyboardState = AppKeyboardState()
         
-        let headers: [String: String] = ["X-PLATFORM": "ios",
-                                         "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
-                                         "X-DEVICE-MODEL": UIDevice.current.model,
-                                         "X-DEVICE-NAME": UIDevice.current.name,
+        let headers: [String: String] = [
+            "X-PLATFORM": "ios",
+            "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
+            "X-DEVICE-MODEL": UIDevice.current.model,
+            "X-DEVICE-NAME": UIDevice.current.name,
+            "X-APP-VERSION": AppState.version.description,
         ]
+        
         self.api = JoliApi(baseUrl: self.baseUrl, headers: headers)
         api.urlSessionConfiguration = api.urlSessionConfiguration.withAuthHeader(self.userSettings.authToken)
         

@@ -106,7 +106,7 @@ struct CurrentlyPlayingView: View {
                                 
                             Color.green.frame(width: width, height: 4, alignment: .leading)
                                 .cornerRadius(1)
-                                .animation(.spring())
+                                .animation(.interactiveSpring())
                         }.offset(x: -4, y: 0)
                         
                     }.frame(width: UIScreen.main.bounds.width - 32 - 116, height: 116, alignment: .bottomLeading)

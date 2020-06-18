@@ -32,10 +32,13 @@
 		9273FD4E2463417E00F7FE66 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9273FD4D2463417E00F7FE66 /* ShareSheet.swift */; };
 		9273FD50246491B800F7FE66 /* joil_icon_rounded.png in Resources */ = {isa = PBXBuildFile; fileRef = 9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */; };
 		9274D921238DE71400A43752 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274D920238DE71400A43752 /* SettingsView.swift */; };
+		927E882B249820B000FB8499 /* PackageDescription in Frameworks */ = {isa = PBXBuildFile; productRef = 927E882A249820B000FB8499 /* PackageDescription */; };
+		927E882C249820B000FB8499 /* PackageDescription in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 927E882A249820B000FB8499 /* PackageDescription */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F6EB923761F7700FAC911 /* TrackSearchView.swift */; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B071762364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
 		92BCCBE22403FBD5001AEF25 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92BCCBE12403FBD5001AEF25 /* JoliApi */; };
+		92C258B724939F780035A05B /* UIImageColors in Frameworks */ = {isa = PBXBuildFile; productRef = 92C258B624939F780035A05B /* UIImageColors */; };
 		92D19BA623BB9D66006D6B41 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D19BA523BB9D66006D6B41 /* UserProfileView.swift */; };
 		92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92D90BE9236C890B00EAAD31 /* party-people.jpg */; };
 		92E518D0248EEF3E00722A83 /* KingfisherSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 92E518CF248EEF3E00722A83 /* KingfisherSwiftUI */; };
@@ -110,6 +113,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				927E882C249820B000FB8499 /* PackageDescription in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -219,10 +223,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92C258B724939F780035A05B /* UIImageColors in Frameworks */,
 				92BCCBE22403FBD5001AEF25 /* JoliApi in Frameworks */,
 				920086FE245BB0F6008D81F1 /* SpotifyiOS.framework in Frameworks */,
 				92E518D0248EEF3E00722A83 /* KingfisherSwiftUI in Frameworks */,
 				3C16733723C7D4B400CF3131 /* (null) in Frameworks */,
+				927E882B249820B000FB8499 /* PackageDescription in Frameworks */,
 				92E518D2248EEF3E00722A83 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -470,6 +476,8 @@
 				92BCCBE12403FBD5001AEF25 /* JoliApi */,
 				92E518CF248EEF3E00722A83 /* KingfisherSwiftUI */,
 				92E518D1248EEF3E00722A83 /* Kingfisher */,
+				92C258B624939F780035A05B /* UIImageColors */,
+				927E882A249820B000FB8499 /* PackageDescription */,
 			);
 			productName = Joli;
 			productReference = 92F379DF2363534D005FE2AB /* Joli.app */;
@@ -572,6 +580,8 @@
 			packageReferences = (
 				92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */,
 				92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */,
+				927E8829249820AF00FB8499 /* XCRemoteSwiftPackageReference "swift-package-manager" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -777,7 +787,7 @@
 				CODE_SIGN_ENTITLEMENTS = JoliWidget/JoliWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				INFOPLIST_FILE = JoliWidget/Info.plist;
@@ -801,7 +811,7 @@
 				CODE_SIGN_ENTITLEMENTS = JoliWidget/JoliWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				INFOPLIST_FILE = JoliWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
@@ -942,7 +952,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli/Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_ASSET_PATHS = "\"Joli/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -982,7 +992,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli/Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_ASSET_PATHS = "\"Joli/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1070,7 +1080,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				IBSC_MODULE = JoliVote_Extension;
@@ -1092,7 +1102,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				IBSC_MODULE = JoliVote_Extension;
 				INFOPLIST_FILE = JoliVote/Info.plist;
@@ -1111,7 +1121,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliVote Extension/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1137,7 +1147,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliVote Extension/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1217,12 +1227,28 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		927E8829249820AF00FB8499 /* XCRemoteSwiftPackageReference "swift-package-manager" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-package-manager.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.6.0;
+			};
+		};
 		92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/achinwo/JoliApi.git";
 			requirement = {
 				branch = master;
 				kind = branch;
+			};
+		};
+		92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jathu/UIImageColors.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.0;
 			};
 		};
 		92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
@@ -1236,10 +1262,20 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		927E882A249820B000FB8499 /* PackageDescription */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 927E8829249820AF00FB8499 /* XCRemoteSwiftPackageReference "swift-package-manager" */;
+			productName = PackageDescription;
+		};
 		92BCCBE12403FBD5001AEF25 /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */;
 			productName = JoliApi;
+		};
+		92C258B624939F780035A05B /* UIImageColors */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */;
+			productName = UIImageColors;
 		};
 		92E518CF248EEF3E00722A83 /* KingfisherSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;

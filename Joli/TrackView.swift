@@ -149,7 +149,7 @@ struct TrackView: SwiftUI.View {
         return HStack(alignment: VerticalAlignment.center, spacing: 2) {
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
-                placeholderImage: UIImage(systemName: "xmark.octagon")!)
+                placeholderImage: UIImage(systemName: "timelapse")!)
                 .padding(.trailing, 6)
             .opacity(self.isRequestingPlay ? 0.85 : 1)
             
