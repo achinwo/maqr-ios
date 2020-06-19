@@ -196,6 +196,7 @@ struct TrackView: SwiftUI.View {
                 .animation(.spring())
                 .onTapGesture {
                     self.isVoting = true
+                    logger.info("voting for \(self.track.title)")
                     self.appState.voteTrack(self.track as! QueuedTrack)
                         .always {
                             self.isVoting = false
