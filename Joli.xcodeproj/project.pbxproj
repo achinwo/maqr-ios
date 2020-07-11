@@ -278,7 +278,7 @@
 			path = JoliWidget;
 			sourceTree = "<group>";
 		};
-		925E5C6D2369D7E000D95AB7 /* Supporting Views */ = {
+		925E5C6D2369D7E000D95AB7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				92B0716C2364F8A80070EC73 /* MusicroomList.swift */,
@@ -297,7 +297,7 @@
 				92D19BA523BB9D66006D6B41 /* UserProfileView.swift */,
 				9273FD4D2463417E00F7FE66 /* ShareSheet.swift */,
 			);
-			name = "Supporting Views";
+			name = Views;
 			sourceTree = "<group>";
 		};
 		9273FD5124664F1C00F7FE66 /* Production */ = {
@@ -377,13 +377,13 @@
 			isa = PBXGroup;
 			children = (
 				92C0DCE8249C1A98001780C2 /* State */,
-				9262E863239C993100891F6C /* Joli.entitlements */,
 				92D90BE8236C88B800EAAD31 /* Resources */,
-				925E5C6D2369D7E000D95AB7 /* Supporting Views */,
+				925E5C6D2369D7E000D95AB7 /* Views */,
 				92F379E22363534D005FE2AB /* AppDelegate.swift */,
 				92F379E42363534D005FE2AB /* SceneDelegate.swift */,
 				92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */,
 				92F379F02363534F005FE2AB /* Info.plist */,
+				9262E863239C993100891F6C /* Joli.entitlements */,
 				92F379EA2363534F005FE2AB /* Preview Content */,
 				92061A83236B0175007FC6F1 /* Extensions.swift */,
 				925FC09E2379FE5900A8A72C /* AppView.swift */,
