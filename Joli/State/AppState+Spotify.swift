@@ -23,7 +23,7 @@ extension AppState {
             URLQueryItem(name: "seed_artists", value: ""),
             URLQueryItem(name: "seed_tracks", value: "44SSviC4R1TkAdsyptjDpE"),
         ]
-        return HttpMethod.get.fetch(urlPath: path, dataType: Spotify.Recommendation.self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+        return HttpMethod.Fetch.get(url: path, dataType: Spotify.Recommendation.self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
     
     @discardableResult
@@ -47,7 +47,7 @@ extension AppState {
     func spotifyWebAuthorize(_ urlPath: URLComponents) -> Promise<AuthToken> {
         spotifyAuthorizationInProgress = true
         
-        return HttpMethod.Fetch.get(urlPath: urlPath,
+        return HttpMethod.Fetch.get(url: urlPath,
                                     dataType: AuthToken.self,
                                     baseUrl: api.baseUrl.rawValue.http,
                                     urlSession: api.urlSession)
@@ -95,7 +95,7 @@ extension AppState {
     
     // MARK: - fetchSpotifyAuth
     public func fetchSpotifyAuthToken() -> Promise<AuthToken> {
-        return HttpMethod.post.fetch(urlString: "/api/spotify/auth", dataType: AuthToken.self,
+        return HttpMethod.Fetch.post(url: "/api/spotify/auth", dataType: AuthToken.self,
                                     baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
     

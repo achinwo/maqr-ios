@@ -11,6 +11,7 @@ import AVKit
 import JoliApi
 import SwiftyBeaver
 import UserNotifications
+import Promises
 
 let logger = JoliApi.getLogger()
 
@@ -49,6 +50,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         guard observingChanges else { return }
         audioSession.removeObserver(self, forKeyPath: Observation.VolumeKey, context: &Observation.Context)
         observingChanges = false
+    }
+    
+    deinit {
+        self.stopObservingVolumeChanges()
     }
 
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) -> Void {
@@ -147,9 +152,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
       let token = tokenParts.joined()
         logger.info("Device Token: \(token)")
         
-        appState.api.setNotificationToken(token).then() { device in
-            logger.info("Token Saved: \(device)")
+        loadingPromise?.then() { appState in
+            appState.api.setNotificationToken(token).then() { device in
+                logger.info("Token Saved: \(device)")
+            }
         }
+        
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
@@ -176,9 +184,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         logger.addDestination(cloud)
         
+        if debug, let filePath = Bundle.main.path(forResource: "env", ofType: "json"),
+           let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)),
+           let json: [String: AnyObject] = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: AnyObject] {
+            logger.debug("[Debug mode] env config: \(json)")
+            
+            JoliApi.Environment.CACHED_ENV_CONFIG.merge(json) { (_, new) in new }
+        }
+        
+        self.loadingPromise = JoliApi.resolveServer(env.baseUrl.http)
+            .timeout(3.0)
+            .recover() { (error) -> Version in
+                logger.error("[serverResolve] error: \(error)", context: error)
+                return Version(major: 0, minor: 0, patch: 0)
+        }
+        .then(on: .main) { version -> AppState in
+            self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: version)
+            return self.appState
+        }
+        
         logger.debug("[AppDelegate#willFinishLaunchingWithOptions] notifOptions:\(String(describing: launchOptions))")
         return true
     }
+    
+    var loadingPromise: Promise<AppState>? = nil
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        do {
@@ -194,23 +223,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 //            logger.debug("Failed to activate audio session")
 //        }
         
-        if debug, let filePath = Bundle.main.path(forResource: "env", ofType: "json"),
-            let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)),
-            let json: [String: AnyObject] = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: AnyObject] {
-            logger.debug("[Debug mode] env config: \(json)")
-
-            JoliApi.Environment.CACHED_ENV_CONFIG.merge(json) { (_, new) in new }
-        }
-        
         logger.debug("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl), notifOptions:\(String(describing: launchOptions))")
         
-        self.appState = AppState(baseUrl: env.baseUrl)
+//        Promise<Void>() { (resolve, reject) in
+//
+//        }
         
 //        getDeliveredNotifications(completionHandler:) provides you with an array of UNNotification objects in the completion handler. This array will contain all the notifications delivered for your app which are still visible in the user's Notification Centre.
 //        removeDeliveredNotifications(withIdentifiers:) removes all delivered notifications with identifiers
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { // Change `2.0` to the desired number of seconds.
-           // Code you want to be delayed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             self.registerForPushNotifications()
         }
         
@@ -246,3 +268,53 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
 }
 
+import Version
+
+extension JoliApi {
+    
+    enum VersionResolveError: Error {
+        case unrecognisedResponseType
+        case noResponseReceived
+        case missingVersionField
+        case malformedString(String)
+        case malformedBaseUrl(URL)
+    }
+    
+    static func resolveServer(_ baseUrl: URL) -> Promise<Version> {
+        
+        logger.info("[resolveServer] baseUrl: \(baseUrl)")
+        
+        return Promise() { resolve, reject in
+            
+            guard let url = URL(string: "/status", relativeTo: baseUrl) else {
+                return reject(VersionResolveError.malformedBaseUrl(baseUrl))
+            }
+            
+            var req = URLRequest(url: url)
+            req.httpMethod = "HEAD"
+            
+            let task = JoliApi.sharedUrlSession.dataTask(with: baseUrl) { (data, response, error) in
+                guard error == nil else {
+                    return reject(error!)
+                }
+                
+                guard let resp = response as? HTTPURLResponse else {
+                    return reject(response == nil ? VersionResolveError.noResponseReceived : VersionResolveError.unrecognisedResponseType)
+                }
+                
+                guard let versionStr = resp.allHeaderFields["X-Server-Version"] as? String else {
+                    return reject(VersionResolveError.missingVersionField)
+                }
+                
+                guard let version = Version(versionStr) else {
+                    return reject(VersionResolveError.malformedString(versionStr))
+                }
+                
+                resolve(version)
+            }
+            
+            task.resume()
+        }
+    }
+    
+}

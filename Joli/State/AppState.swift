@@ -12,7 +12,7 @@ import JoliCore
 import SwiftUI
 import Combine
 import Promises
-import PackageDescription
+import Version
 
 enum FetchError: Error {
     case cancelled
@@ -52,6 +52,9 @@ class AppServerReconnectState: ObservableObject {
 
 class AppState: ObservableObject {
     
+    typealias DeviceReadyCallback = (Spotify.Device?, Bool) throws -> Void
+    typealias SpotifyReadyCallback = (Spotify.UserProfile?, Bool) throws -> String?
+    
     static let URL_SCHEME = "joli"
     static let SPOTIFY_URL_BASEPATH = "spotify-callback"
     
@@ -60,11 +63,6 @@ class AppState: ObservableObject {
     
     @Published var navbarColor: Color = .gray
     @Published var selectedTabIdx = 1
-    
-    let currentlyPlaying: AppCurrentlyPlayingState
-    let keyboardState: AppKeyboardState
-    
-    var currentlyPlayingAlbumUrl: String? = nil
     
     @Published var spotifyAuthorizationInProgress = false
     @Published var userSettings = UserSettings()
@@ -82,6 +80,24 @@ class AppState: ObservableObject {
     
     @Published var searchText: String = ""
     
+    @Published var auth: Auth?
+    @Published var serverConnectionState: ConnectionState = .stopped
+    @Published var serverReconnectState = AppServerReconnectState()
+    
+    @Published var spotifyDevices: [Spotify.Device] = []
+    @Published var selectedSpotifyDeviceIdx: Int? = nil
+    @Published var activeRoom: Musicroom? = nil
+    
+    @Published var spotifyWebAuth: AuthToken? = nil
+    @Published public var trackSearchResult: [Spotify.Track] = []
+    
+    @Published var isDeviceChooserPresented: Bool = false
+    @Published var isSpotifyConnectPresented: Bool = false
+    
+    var currentSearchFuture: Promise<Any>?
+    
+    var didChange = PassthroughSubject<AppState, Never>()
+    
     var appDelegate: AppDelegate {
         return UIApplication.shared.delegate as! AppDelegate
     }
@@ -96,11 +112,12 @@ class AppState: ObservableObject {
     
     static var version: Version {
         
-        guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
-            return Version(stringLiteral: "1.0.0")
+        guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+            let version = Version("\(appVersion).\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0")") else {
+            return Version.init(1, 0, 0)
         }
         
-        return Version(stringLiteral: "\(appVersion).\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0")")
+        return version
     }
     
     var spotifyRemote: SPTAppRemote? {
@@ -110,32 +127,16 @@ class AppState: ObservableObject {
     let baseUrl: JoliApi.BaseUrl
     
     let api: JoliApi
-    let serverVersion: Version? = nil
+    let serverVersion: Version
     
     var cancellableSet: Set<AnyCancellable> = []
-    @Published public var trackSearchResult: [Spotify.Track] = []
-    
-    var currentSearchFuture: Promise<Any>?
-
-    var didChange = PassthroughSubject<AppState, Never>()
-    
-    @Published var isDeviceChooserPresented: Bool = false
-    @Published var isSpotifyConnectPresented: Bool = false
-    
-    typealias DeviceReadyCallback = (Spotify.Device?, Bool) throws -> Void
-    typealias SpotifyReadyCallback = (Spotify.UserProfile?, Bool) throws -> String?
     
     var deviceReadyCallbacks: [DeviceReadyCallback] = []
     
-    @Published var auth: Auth?
-    @Published var serverConnectionState: ConnectionState = .stopped
-    @Published var serverReconnectState = AppServerReconnectState()
+    let currentlyPlaying: AppCurrentlyPlayingState
+    let keyboardState: AppKeyboardState
     
-    @Published var spotifyDevices: [Spotify.Device] = []
-    @Published var selectedSpotifyDeviceIdx: Int? = nil
-    @Published var activeRoom: Musicroom? = nil
-    
-    @Published var spotifyWebAuth: AuthToken? = nil
+    var currentlyPlayingAlbumUrl: String? = nil
     
     var spotifyWebAuthorized: Bool {
         return spotifyWebAuth != nil
@@ -207,11 +208,12 @@ class AppState: ObservableObject {
     
     
     // MARK: - initialize (Start)
-    init(baseUrl: JoliApi.BaseUrl) {
+    init(baseUrl: JoliApi.BaseUrl, serverVersion: Version) {
         self.baseUrl = baseUrl
         
         self.currentlyPlaying = AppCurrentlyPlayingState()
         self.keyboardState = AppKeyboardState()
+        self.serverVersion = serverVersion
         
         let headers: [String: String] = [
             "X-PLATFORM": "ios",
@@ -226,14 +228,12 @@ class AppState: ObservableObject {
         
         JoliApi.setDefault(self.api)
         
-        
-        
         if let authToken = self.userSettings.authToken {
             logger.info("[AppState] authenticating with token: \(authToken)")
             self.api.authenticate(token: authToken)
         }
         
-        
+        self.initReactive()
     }
     // MARK: initialize (End)
     

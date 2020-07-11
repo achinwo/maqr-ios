@@ -32,11 +32,10 @@
 		9273FD4E2463417E00F7FE66 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9273FD4D2463417E00F7FE66 /* ShareSheet.swift */; };
 		9273FD50246491B800F7FE66 /* joil_icon_rounded.png in Resources */ = {isa = PBXBuildFile; fileRef = 9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */; };
 		9274D921238DE71400A43752 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274D920238DE71400A43752 /* SettingsView.swift */; };
-		927E882B249820B000FB8499 /* PackageDescription in Frameworks */ = {isa = PBXBuildFile; productRef = 927E882A249820B000FB8499 /* PackageDescription */; };
-		927E882C249820B000FB8499 /* PackageDescription in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 927E882A249820B000FB8499 /* PackageDescription */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F6EB923761F7700FAC911 /* TrackSearchView.swift */; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B071762364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
+		92B353E624A503500064D2EC /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B353E524A503500064D2EC /* View.swift */; };
 		92BCCBE22403FBD5001AEF25 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92BCCBE12403FBD5001AEF25 /* JoliApi */; };
 		92C0DCEA249C1AF3001780C2 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C0DCE9249C1AF3001780C2 /* UserSettings.swift */; };
 		92C0DCEC249C3C71001780C2 /* AppState+Spotify.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C0DCEB249C3C71001780C2 /* AppState+Spotify.swift */; };
@@ -44,6 +43,7 @@
 		92C0DCF0249C4596001780C2 /* AppState+Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C0DCEF249C4596001780C2 /* AppState+Publisher.swift */; };
 		92C258B724939F780035A05B /* UIImageColors in Frameworks */ = {isa = PBXBuildFile; productRef = 92C258B624939F780035A05B /* UIImageColors */; };
 		92D19BA623BB9D66006D6B41 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D19BA523BB9D66006D6B41 /* UserProfileView.swift */; };
+		92D4E31924A0A4B400EF32A5 /* Version in Frameworks */ = {isa = PBXBuildFile; productRef = 92D4E31824A0A4B400EF32A5 /* Version */; };
 		92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92D90BE9236C890B00EAAD31 /* party-people.jpg */; };
 		92E518D0248EEF3E00722A83 /* KingfisherSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 92E518CF248EEF3E00722A83 /* KingfisherSwiftUI */; };
 		92E518D2248EEF3E00722A83 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92E518D1248EEF3E00722A83 /* Kingfisher */; };
@@ -117,7 +117,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				927E882C249820B000FB8499 /* PackageDescription in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -184,6 +183,7 @@
 		928F6EB923761F7700FAC911 /* TrackSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSearchView.swift; sourceTree = "<group>"; };
 		92B0716C2364F8A80070EC73 /* MusicroomList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
 		92B071752364FA2D0070EC73 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		92B353E524A503500064D2EC /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		92C0DCE9249C1AF3001780C2 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		92C0DCEB249C3C71001780C2 /* AppState+Spotify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+Spotify.swift"; sourceTree = "<group>"; };
 		92C0DCED249C3CC3001780C2 /* AppState+Methods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+Methods.swift"; sourceTree = "<group>"; };
@@ -236,7 +236,7 @@
 				920086FE245BB0F6008D81F1 /* SpotifyiOS.framework in Frameworks */,
 				92E518D0248EEF3E00722A83 /* KingfisherSwiftUI in Frameworks */,
 				3C16733723C7D4B400CF3131 /* (null) in Frameworks */,
-				927E882B249820B000FB8499 /* PackageDescription in Frameworks */,
+				92D4E31924A0A4B400EF32A5 /* Version in Frameworks */,
 				92E518D2248EEF3E00722A83 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -278,7 +278,7 @@
 			path = JoliWidget;
 			sourceTree = "<group>";
 		};
-		925E5C6D2369D7E000D95AB7 /* Supporting Views */ = {
+		925E5C6D2369D7E000D95AB7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				92B0716C2364F8A80070EC73 /* MusicroomList.swift */,
@@ -297,7 +297,7 @@
 				92D19BA523BB9D66006D6B41 /* UserProfileView.swift */,
 				9273FD4D2463417E00F7FE66 /* ShareSheet.swift */,
 			);
-			name = "Supporting Views";
+			name = Views;
 			sourceTree = "<group>";
 		};
 		9273FD5124664F1C00F7FE66 /* Production */ = {
@@ -377,17 +377,18 @@
 			isa = PBXGroup;
 			children = (
 				92C0DCE8249C1A98001780C2 /* State */,
-				9262E863239C993100891F6C /* Joli.entitlements */,
 				92D90BE8236C88B800EAAD31 /* Resources */,
-				925E5C6D2369D7E000D95AB7 /* Supporting Views */,
+				925E5C6D2369D7E000D95AB7 /* Views */,
 				92F379E22363534D005FE2AB /* AppDelegate.swift */,
 				92F379E42363534D005FE2AB /* SceneDelegate.swift */,
 				92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */,
 				92F379F02363534F005FE2AB /* Info.plist */,
+				9262E863239C993100891F6C /* Joli.entitlements */,
 				92F379EA2363534F005FE2AB /* Preview Content */,
 				92061A83236B0175007FC6F1 /* Extensions.swift */,
 				925FC09E2379FE5900A8A72C /* AppView.swift */,
 				920F872C23CD374D008F18E0 /* ServiceAlert.swift */,
+				92B353E524A503500064D2EC /* View.swift */,
 			);
 			path = Joli;
 			sourceTree = "<group>";
@@ -497,7 +498,7 @@
 				92E518CF248EEF3E00722A83 /* KingfisherSwiftUI */,
 				92E518D1248EEF3E00722A83 /* Kingfisher */,
 				92C258B624939F780035A05B /* UIImageColors */,
-				927E882A249820B000FB8499 /* PackageDescription */,
+				92D4E31824A0A4B400EF32A5 /* Version */,
 			);
 			productName = Joli;
 			productReference = 92F379DF2363534D005FE2AB /* Joli.app */;
@@ -601,7 +602,7 @@
 				92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */,
 				92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */,
-				927E8829249820AF00FB8499 /* XCRemoteSwiftPackageReference "swift-package-manager" */,
+				92D4E31724A0A4B400EF32A5 /* XCRemoteSwiftPackageReference "Version" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -703,6 +704,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92B353E624A503500064D2EC /* View.swift in Sources */,
 				925FC09F2379FE5900A8A72C /* AppView.swift in Sources */,
 				925FC09523775BB100A8A72C /* LogOnView.swift in Sources */,
 				92C0DCEE249C3CC3001780C2 /* AppState+Methods.swift in Sources */,
@@ -1251,14 +1253,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		927E8829249820AF00FB8499 /* XCRemoteSwiftPackageReference "swift-package-manager" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-package-manager.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.6.0;
-			};
-		};
 		92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/achinwo/JoliApi.git";
@@ -1275,6 +1269,14 @@
 				minimumVersion = 2.2.0;
 			};
 		};
+		92D4E31724A0A4B400EF32A5 /* XCRemoteSwiftPackageReference "Version" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mxcl/Version.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 		92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
@@ -1286,11 +1288,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		927E882A249820B000FB8499 /* PackageDescription */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 927E8829249820AF00FB8499 /* XCRemoteSwiftPackageReference "swift-package-manager" */;
-			productName = PackageDescription;
-		};
 		92BCCBE12403FBD5001AEF25 /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */;
@@ -1300,6 +1297,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */;
 			productName = UIImageColors;
+		};
+		92D4E31824A0A4B400EF32A5 /* Version */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92D4E31724A0A4B400EF32A5 /* XCRemoteSwiftPackageReference "Version" */;
+			productName = Version;
 		};
 		92E518CF248EEF3E00722A83 /* KingfisherSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;

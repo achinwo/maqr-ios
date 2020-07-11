@@ -51,11 +51,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
 
     var window: UIWindow?
     var appState: AppState {
-        return (UIApplication.shared.delegate as! AppDelegate).appState
+        return appDelegate.appState
     }
     
     var appDelegate: AppDelegate {
-        (UIApplication.shared.delegate as! AppDelegate)
+        return (UIApplication.shared.delegate as! AppDelegate)
     }
     
     let SpotifyClientID = "e3966e30011d4895997ce89c797de5a5"
@@ -196,17 +196,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
 
         // Create the SwiftUI view that provides the window contents.
-        //let env: EnvironmentObject<AppState> = EnvironmentObject();
-        let contentView = AppView()
-            .environmentObject(appState)
-            .environmentObject(appState.currentlyPlaying)
-            .environmentObject(appState.keyboardState)
-            .environmentObject(appState.serverReconnectState)
+
 
         logger.debug("Spootify app installed: \(spotifySessionManager.isSpotifyAppInstalled)")
         
         // Use a UIHostingController as window root view controller.
-        if let windowScene = scene as? UIWindowScene {
+        guard let windowScene = scene as? UIWindowScene else {
+            return
+        }
+        
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = UIHostingController(rootView: Text("Loading...").foregroundColor(.secondary))
+        self.window = window
+        window.makeKeyAndVisible()
+        
+        appDelegate.loadingPromise?.then(on: .main) { appState in
+            let contentView = AppView()
+                .environmentObject(appState)
+                .environmentObject(appState.currentlyPlaying)
+                .environmentObject(appState.keyboardState)
+                .environmentObject(appState.serverReconnectState)
+            
             let window = UIWindow(windowScene: windowScene)
             window.rootViewController = UIHostingController(rootView: contentView)
             self.window = window
@@ -256,8 +266,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
         logger.debug("[SceneDelegate] App is active")
-        appState.api.wsClient.connect() { connectionState in
-            self.appState.onServerConnectionStateChanged(connectionState)
+        appDelegate.loadingPromise?.then(on: .main) { appState in
+            appState.api.wsClient.connect() { connectionState in
+                self.appState.onServerConnectionStateChanged(connectionState)
+            }
         }
         
 //        do {
