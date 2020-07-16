@@ -7,144 +7,22 @@
 		<key>Joli Development.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>3</integer>
 		</dict>
 		<key>Joli Production.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>2</integer>
-		</dict>
-		<key>Joli.xcscheme</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>4</integer>
 		</dict>
 		<key>JoliVote (Complication).xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>9</integer>
-		</dict>
-		<key>JoliVote (Notification).xcscheme</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>10</integer>
-		</dict>
-		<key>JoliVote.xcscheme</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>7</integer>
-		</dict>
-		<key>JoliWidget.xcscheme</key>
-		<dict>
-			<key>orderHint</key>
 			<integer>5</integer>
 		</dict>
-		<key>Promises (Playground) 1.xcscheme</key>
+		<key>JoliWidget.xcscheme_^#shared#^_</key>
 		<dict>
-			<key>isShown</key>
-			<false/>
 			<key>orderHint</key>
-			<integer>15</integer>
-		</dict>
-		<key>Promises (Playground) 2.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>16</integer>
-		</dict>
-		<key>Promises (Playground) 3.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>15</integer>
-		</dict>
-		<key>Promises (Playground) 4.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>16</integer>
-		</dict>
-		<key>Promises (Playground) 5.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>17</integer>
-		</dict>
-		<key>Promises (Playground).xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>14</integer>
-		</dict>
-		<key>Spectre (Playground) 1.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>12</integer>
-		</dict>
-		<key>Spectre (Playground) 2.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>13</integer>
-		</dict>
-		<key>Spectre (Playground) 3.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>18</integer>
-		</dict>
-		<key>Spectre (Playground) 4.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>19</integer>
-		</dict>
-		<key>Spectre (Playground) 5.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>20</integer>
-		</dict>
-		<key>Spectre (Playground).xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-			<key>orderHint</key>
-			<integer>11</integer>
-		</dict>
-	</dict>
-	<key>SuppressBuildableAutocreation</key>
-	<dict>
-		<key>9234320B23BFD2F700E24E96</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>92F379DE2363534D005FE2AB</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>92F379FF2363534F005FE2AB</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>92FF314A23DCDE94009EAF7D</key>
-		<dict>
-			<key>primary</key>
-			<true/>
+			<integer>6</integer>
 		</dict>
 	</dict>
 </dict>
