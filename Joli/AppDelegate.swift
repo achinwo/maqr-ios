@@ -14,8 +14,9 @@ import UserNotifications
 import Promises
 
 let logger = JoliApi.getLogger()
+var appDelegateSingleton: AppDelegate!
 
-@UIApplicationMain
+//@UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     #if DEBUG
@@ -176,6 +177,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        appDelegateSingleton = self
+        
         UNUserNotificationCenter.current().delegate = self
         
         let cloud = SBPlatformDestination(appID: "Qxn1Mn", appSecret: "21jhvbtglMuzJhilb6m97owddeQdbjkq", encryptionKey: "xVDA8e89pdb7AuxldgYsNuezdqlHriko") // to cloud
@@ -199,6 +202,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 return Version(major: 0, minor: 0, patch: 0)
         }
         .then(on: .main) { version -> AppState in
+            logger.info("[AppDelegate#willFinishLaunchingWithOptions] server version: \(version)")
             self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: version)
             return self.appState
         }

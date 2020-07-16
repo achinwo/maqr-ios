@@ -95,6 +95,11 @@ extension AppState {
     
     // MARK: - fetchSpotifyAuth
     public func fetchSpotifyAuthToken() -> Promise<AuthToken> {
+        
+        guard self.auth != nil else {
+            return Promise<AuthToken>(SpotifyError.unathorized)
+        }
+        
         return HttpMethod.Fetch.post(url: "/api/spotify/auth", dataType: AuthToken.self,
                                     baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
@@ -121,4 +126,9 @@ extension AppState {
         }
     }
     
+}
+
+
+enum SpotifyError: Error {
+    case unathorized
 }

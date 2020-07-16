@@ -23,31 +23,7 @@ extension MPVolumeView {
     }
 }
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate, SPTSessionManagerDelegate {
-    
-    func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
-        logger.debug("Spotify: created session \(session)")
-        
-        self.appRemote.connectionParameters.accessToken = session.accessToken
-        self.appRemote.connect()
-        
-        let builder = Builder<AuthToken>.init(properties: [
-            AuthToken.CodingKeys.accessToken: session.accessToken as AnyObject,
-            AuthToken.CodingKeys.refreshToken: session.refreshToken as AnyObject,
-            AuthToken.CodingKeys.scope: session.scope as AnyObject,
-            AuthToken.CodingKeys.expiresIn: 3016 as AnyObject,
-            AuthToken.CodingKeys.tokenType: "Bearer" as AnyObject,
-        ])
-        
-        builder.save()
-            .then(){ auth in
-                logger.info("[\(#function)] AUth: \(auth)")
-        }.catch(appState.errorHandler())
-    }
-    
-    func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
-        logger.debug("Spotify: session failure \(error)")
-    }
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     var appState: AppState {
@@ -55,17 +31,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
     }
     
     var appDelegate: AppDelegate {
-        return (UIApplication.shared.delegate as! AppDelegate)
+        return appDelegateSingleton
     }
     
     let SpotifyClientID = "e3966e30011d4895997ce89c797de5a5"
     let SpotifyRedirectURL = URL(string: "joli://spotify-callback/")!
     //URL(string: "spotify-ios-quick-start://spotify-login-callback")!
 
-    lazy var configuration = SPTConfiguration(
-      clientID: SpotifyClientID,
-      redirectURL: SpotifyRedirectURL
-    )
+    lazy var configuration = SPTConfiguration(clientID: SpotifyClientID, redirectURL: SpotifyRedirectURL)
     
     let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
     
@@ -96,28 +69,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         return SPTSessionManager(configuration: configuration, delegate: self)
     }()
     
-    func requestSpotifyAccess() {
-        //"app-remote-control streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-birthdate user-read-email user-read-private"
-        let requestedScopes: SPTScope = [
-                                         .appRemoteControl,
-                                         .streaming,
-                                         .userModifyPlaybackState,
-                                         .userReadPlaybackState,
-                                         .userReadCurrentlyPlaying,
-                                         .userReadBirthDate,
-                                         .userReadEmail,
-                                         .userReadRecentlyPlayed,
-                                         .userReadPrivate,
-                                         .playlistModifyPrivate,
-                                         .playlistModifyPublic,
-                                         .playlistReadPrivate
-                                         
-        ]
-        self.spotifySessionManager.alwaysShowAuthorizationDialog = true
-        //self.spotifySessionManager.
-        self.spotifySessionManager.initiateSession(with: requestedScopes, options: .default)
-    }
-    
     lazy var isSpotifyAppInstalled = {
         return spotifySessionManager.isSpotifyAppInstalled
     }()
@@ -129,35 +80,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
             let defaults = UserDefaults.standard
             defaults.set(accessToken, forKey: SceneDelegate.kAccessTokenKey)
         }
-    }
-    
-    func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
-      logger.debug("Spotify connected!")
-        //let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
-        //self.appRemote.authorizeAndPlayURI(playURI)
-        
-        self.appRemote.playerAPI?.delegate = self
-        self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
-            if let error = error {
-                logger.debug("Spotify: playstae subsrcibe error: \(error)")
-                logger.debug(error.localizedDescription)
-                return
-            }
-            
-            logger.info("[PlayerState] \(String(describing: result))")
-        })
-    }
-    
-    func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
-      logger.debug("Spotify: disconnected \(String(describing: error))")
-    }
-    func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
-        logger.debug("Spotify: failed: \(String(describing: error))")
-    }
-    func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
-      logger.debug("player state changed")
-        
-        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(playerState)")
     }
     
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
@@ -216,7 +138,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
                 .environmentObject(appState.currentlyPlaying)
                 .environmentObject(appState.keyboardState)
                 .environmentObject(appState.serverReconnectState)
-            
+
             let window = UIWindow(windowScene: windowScene)
             window.rootViewController = UIHostingController(rootView: contentView)
             self.window = window
@@ -232,8 +154,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
         logger.debug("[SceneDelegate] App is inactive")
         appState.api.wsClient.disconnect()
     }
-
-    
     
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
@@ -294,3 +214,83 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, SPTAppRemoteDelegate, S
 
 }
 
+extension SceneDelegate: SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate, SPTSessionManagerDelegate {
+    
+    func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
+        logger.debug("Spotify: created session \(session)")
+        
+        self.appRemote.connectionParameters.accessToken = session.accessToken
+        self.appRemote.connect()
+        
+        let builder = Builder<AuthToken>.init(properties: [
+            AuthToken.CodingKeys.accessToken: session.accessToken as AnyObject,
+            AuthToken.CodingKeys.refreshToken: session.refreshToken as AnyObject,
+            AuthToken.CodingKeys.scope: session.scope as AnyObject,
+            AuthToken.CodingKeys.expiresIn: 3016 as AnyObject,
+            AuthToken.CodingKeys.tokenType: "Bearer" as AnyObject,
+        ])
+        
+        builder.save()
+            .then(){ auth in
+                logger.info("[\(#function)] AUth: \(auth)")
+            }.catch(appState.errorHandler())
+    }
+    
+    func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
+        logger.debug("Spotify: session failure \(error)")
+    }
+    
+    func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
+        logger.debug("Spotify connected!")
+        //let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
+        //self.appRemote.authorizeAndPlayURI(playURI)
+        
+        self.appRemote.playerAPI?.delegate = self
+        self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
+            if let error = error {
+                logger.debug("Spotify: playstae subsrcibe error: \(error)")
+                logger.debug(error.localizedDescription)
+                return
+            }
+            
+            logger.info("[PlayerState] \(String(describing: result))")
+        })
+    }
+    
+    func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
+        logger.debug("Spotify: disconnected \(String(describing: error))")
+    }
+    
+    func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
+        logger.debug("Spotify: failed: \(String(describing: error))")
+    }
+    
+    func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
+        logger.debug("player state changed")
+        
+        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(playerState)")
+    }
+    
+    func requestSpotifyAccess() {
+        //"app-remote-control streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-birthdate user-read-email user-read-private"
+        let requestedScopes: SPTScope = [
+            .appRemoteControl,
+            .streaming,
+            .userModifyPlaybackState,
+            .userReadPlaybackState,
+            .userReadCurrentlyPlaying,
+            .userReadBirthDate,
+            .userReadEmail,
+            .userReadRecentlyPlayed,
+            .userReadPrivate,
+            .playlistModifyPrivate,
+            .playlistModifyPublic,
+            .playlistReadPrivate
+            
+        ]
+        self.spotifySessionManager.alwaysShowAuthorizationDialog = true
+        //self.spotifySessionManager.
+        self.spotifySessionManager.initiateSession(with: requestedScopes, options: .default)
+    }
+    
+}

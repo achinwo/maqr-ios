@@ -99,7 +99,7 @@ class AppState: ObservableObject {
     var didChange = PassthroughSubject<AppState, Never>()
     
     var appDelegate: AppDelegate {
-        return UIApplication.shared.delegate as! AppDelegate
+        return appDelegateSingleton
     }
     
     var sceneDelegate: SceneDelegate? {
