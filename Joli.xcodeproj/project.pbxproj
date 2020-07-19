@@ -17,6 +17,7 @@
 		9234321423BFD2F700E24E96 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9234321223BFD2F700E24E96 /* MainInterface.storyboard */; };
 		9234321823BFD2F700E24E96 /* JoliWidget.appex in Embed PlugIns */ = {isa = PBXBuildFile; fileRef = 9234320C23BFD2F700E24E96 /* JoliWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9234323723C680E600E24E96 /* JoliApi in Resources */ = {isa = PBXBuildFile; fileRef = 9234323623C680E500E24E96 /* JoliApi */; };
+		9236F8B524C4B68700059100 /* PeopleGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9236F8B424C4B68700059100 /* PeopleGridView.swift */; };
 		925774BA23AD3DC3001DB707 /* MusicLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774B923AD3DC3001DB707 /* MusicLibraryView.swift */; };
 		925774BC23AD66E4001DB707 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774BB23AD66E4001DB707 /* ActivityView.swift */; };
 		925E5C712369D85900D95AB7 /* CircleImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925E5C6F2369D85900D95AB7 /* CircleImage.swift */; };
@@ -31,6 +32,7 @@
 		9273FD50246491B800F7FE66 /* joil_icon_rounded.png in Resources */ = {isa = PBXBuildFile; fileRef = 9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */; };
 		9274D921238DE71400A43752 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274D920238DE71400A43752 /* SettingsView.swift */; };
 		928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F6EB923761F7700FAC911 /* TrackSearchView.swift */; };
+		929BD6D724C4DF9400446DBE /* LetterAvatarKit in Frameworks */ = {isa = PBXBuildFile; productRef = 929BD6D624C4DF9400446DBE /* LetterAvatarKit */; };
 		929D155624BB612F00229A9F /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929D155524BB612F00229A9F /* App.swift */; };
 		92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B0716C2364F8A80070EC73 /* MusicroomList.swift */; };
 		92B071762364FA2D0070EC73 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B071752364FA2D0070EC73 /* AppState.swift */; };
@@ -156,6 +158,7 @@
 		9234321523BFD2F700E24E96 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9234322F23C0D5B800E24E96 /* JoliWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JoliWidget.entitlements; sourceTree = "<group>"; };
 		9234323623C680E500E24E96 /* JoliApi */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JoliApi; sourceTree = "<group>"; };
+		9236F8B424C4B68700059100 /* PeopleGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleGridView.swift; sourceTree = "<group>"; };
 		925774B923AD3DC3001DB707 /* MusicLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicLibraryView.swift; sourceTree = "<group>"; };
 		925774BB23AD66E4001DB707 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		925E5C6F2369D85900D95AB7 /* CircleImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircleImage.swift; sourceTree = "<group>"; };
@@ -231,6 +234,7 @@
 				92BCCBE22403FBD5001AEF25 /* JoliApi in Frameworks */,
 				920086FE245BB0F6008D81F1 /* SpotifyiOS.framework in Frameworks */,
 				92D4E31924A0A4B400EF32A5 /* Version in Frameworks */,
+				929BD6D724C4DF9400446DBE /* LetterAvatarKit in Frameworks */,
 				92E518D2248EEF3E00722A83 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -270,6 +274,14 @@
 				9234321523BFD2F700E24E96 /* Info.plist */,
 			);
 			path = JoliWidget;
+			sourceTree = "<group>";
+		};
+		9236F8B324C4B62300059100 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				9236F8B424C4B68700059100 /* PeopleGridView.swift */,
+			);
+			name = Components;
 			sourceTree = "<group>";
 		};
 		925E5C6D2369D7E000D95AB7 /* Views */ = {
@@ -369,6 +381,7 @@
 		92F379E12363534D005FE2AB /* Joli */ = {
 			isa = PBXGroup;
 			children = (
+				9236F8B324C4B62300059100 /* Components */,
 				92C0DCE8249C1A98001780C2 /* State */,
 				92D90BE8236C88B800EAAD31 /* Resources */,
 				925E5C6D2369D7E000D95AB7 /* Views */,
@@ -491,6 +504,7 @@
 				92E518D1248EEF3E00722A83 /* Kingfisher */,
 				92C258B624939F780035A05B /* UIImageColors */,
 				92D4E31824A0A4B400EF32A5 /* Version */,
+				929BD6D624C4DF9400446DBE /* LetterAvatarKit */,
 			);
 			productName = Joli;
 			productReference = 92F379DF2363534D005FE2AB /* Joli.app */;
@@ -595,6 +609,7 @@
 				92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */,
 				92D4E31724A0A4B400EF32A5 /* XCRemoteSwiftPackageReference "Version" */,
+				929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -709,6 +724,7 @@
 				928F6EBA23761F7700FAC911 /* TrackSearchView.swift in Sources */,
 				921AAD5423B10CA700243335 /* FeedbackSettingsView.swift in Sources */,
 				9274D921238DE71400A43752 /* SettingsView.swift in Sources */,
+				9236F8B524C4B68700059100 /* PeopleGridView.swift in Sources */,
 				925774BC23AD66E4001DB707 /* ActivityView.swift in Sources */,
 				9273FD4E2463417E00F7FE66 /* ShareSheet.swift in Sources */,
 				92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */,
@@ -1244,6 +1260,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/vpeschenkov/LetterAvatarKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.3;
+			};
+		};
 		92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/achinwo/JoliApi.git";
@@ -1279,6 +1303,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		929BD6D624C4DF9400446DBE /* LetterAvatarKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */;
+			productName = LetterAvatarKit;
+		};
 		92BCCBE12403FBD5001AEF25 /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 92BCCBE02403FBD5001AEF25 /* XCRemoteSwiftPackageReference "JoliApi" */;

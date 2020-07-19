@@ -220,7 +220,9 @@ struct AppView: View {
                             LogOnView() { cancelled in
                                 logger.debug("[LogOnView] view dismissed")
                             }
-                        }.environmentObject(self.appState).environmentObject(self.appState.keyboardState)
+                        }
+                        .environmentObject(self.appState)
+                        .environmentObject(self.appState.keyboardState)
                 }
             .navigationBarItems(leading:
                 Button(action: logonButtonAction) {
