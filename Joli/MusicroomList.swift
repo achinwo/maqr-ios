@@ -115,7 +115,8 @@ struct MusicroomList: View {
                 }
             }
         }
-        .navigationBarTitle(Text("J❍li").foregroundColor(.green), displayMode: .large)
+        .listStyle(PlainListStyle())
+        .navigationBarTitle("J❍li", displayMode: .large)
         .accentColor(appState.navbarColor)
         .onAppear() {
             logger.debug("[Musicroom❖] fetchMusicrooms")
@@ -135,3 +136,9 @@ struct MusicroomList: View {
 //    }
 //}
 //
+
+struct MusicroomList_Previews: PreviewProvider {
+    static var previews: some View {
+        /*@START_MENU_TOKEN@*/Text("Hello, World!")/*@END_MENU_TOKEN@*/
+    }
+}
