@@ -91,5 +91,7 @@
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Capture images for playrooms and user profile </string>
 </dict>
 </plist>

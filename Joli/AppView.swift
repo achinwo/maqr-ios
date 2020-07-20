@@ -165,7 +165,7 @@ struct AppView: View {
     @State var settingsViewOffsetSize = CGSize(width: 0, height: 0)
     @State var mainViewOffset = CGSize(width: 0, height: 0)
     
-    
+    @State var image: Image? = nil
     @State var isLogoutAlertPresented = false
     
     static let DEFAULT_PLAY_WIDGET_HIEGHTOFFSET: CGFloat = 200
@@ -216,6 +216,7 @@ struct AppView: View {
         let roomsView = NavigationView {
                 MusicroomList()
                     .sheet(isPresented: self.$appState.isLogonViewPresented) {
+                        //ImagePickerCamera(isShown: self.$appState.isLogonViewPresented, image: self.$image)
                         NavigationView {
                             LogOnView() { cancelled in
                                 logger.debug("[LogOnView] view dismissed")
