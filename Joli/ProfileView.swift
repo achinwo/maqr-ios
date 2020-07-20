@@ -13,108 +13,84 @@ import JoliApi
 import UIKit
 import PhotosUI
 
-class ImagePickerCoordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+class ImagePickerCoordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate, PHPickerViewControllerDelegate {
     
-    @Binding var isShown: Bool
-    @Binding var image: Image?
+    var callback: (UIImage?, Error?) -> Void
     
-    init(isShown: Binding<Bool>, image: Binding<Image?>) {
-        _isShown = isShown
-        _image = image
+    init(callback: @escaping (UIImage?, Error?) -> Void) {
+        self.callback = callback
     }
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+    
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        // The client is responsible for presentation and dismissal
         
-        let uiImage = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
-        image = Image(uiImage: uiImage)
+        guard let itemProvider = results.first?.itemProvider, itemProvider.canLoadObject(ofClass: UIImage.self) else {
+            print("image: empty!")
+            self.callback(nil, nil)
+            return
+        }
         
-        print("Here's the image: \(image)")
+        itemProvider.loadObject(ofClass: UIImage.self) { (image: NSItemProviderReading?, error) in
+            self.callback(image as? UIImage, error)
+        }
         
-        isShown = false
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+        let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage
+        self.callback(image, nil)
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        isShown = false
+        callback(nil, nil)
     }
+    
 }
 
-struct ImagePickerCamera: UIViewControllerRepresentable {
+protocol ImagePickerRepresentable: UIViewControllerRepresentable {
+    associatedtype ImagePickerViewController: UIViewController
     
-    @Binding var isShown: Bool
-    @Binding var image: Image?
+    var callback: (UIImage?, Error?) -> Void { get set }
+    func makeUIViewController(context: UIViewControllerRepresentableContext<Self>) -> ImagePickerViewController
+}
+
+extension ImagePickerRepresentable {
     
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: UIViewControllerRepresentableContext<ImagePickerCamera>) {
-        uiViewController.view.backgroundColor = .black
+    func updateUIViewController(_ uiViewController: ImagePickerViewController, context: UIViewControllerRepresentableContext<Self>) {
     }
     
     func makeCoordinator() -> ImagePickerCoordinator {
-        return ImagePickerCoordinator(isShown: $isShown, image: $image)
+        return ImagePickerCoordinator(callback: callback)
     }
-    
-    func makeUIViewController(context: UIViewControllerRepresentableContext<ImagePickerCamera>) -> UIImagePickerController {
-        let picker = UIImagePickerController()
-        picker.delegate = context.coordinator
-//        if !UIImagePickerController.isSourceTypeAvailable(.camera){
-//            picker.sourceType = .photoLibrary
-//        } else {
-            picker.sourceType = .camera
-        //}
-        return picker
-    }
-    
 }
 
-class SingleSelectionPickerViewController: PHPickerViewControllerDelegate {
-
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        // The client is responsible for presentation and dismissal
-        picker.dismiss(animated: true)
-        
-        // Get the first item provider from the results, the configuration only allowed one image to be selected
-        let itemProvider = results.first?.itemProvider
-        
-        if let itemProvider = itemProvider, itemProvider.canLoadObject(ofClass: UIImage.self) {
-            itemProvider.loadObject(ofClass: UIImage.self) { (image, error) in
-                // TODO: Do something with the image or handle the error
-                print("image: \(image), error: \(error)")
-            }
-        } else {
-            // TODO: Handle empty results or item provider not being able load UIImage
-            print("image: empty!")
-        }
-    }
-
-
-}
-
-var pickerDelegate: SingleSelectionPickerViewController? = nil
-
-struct ImagePicker: UIViewControllerRepresentable {
-        
-    func makeUIViewController(context: UIViewControllerRepresentableContext<ImagePicker>) -> PHPickerViewController {
-        
+struct SingleImagePicker: ImagePickerRepresentable {
+    
+    var callback: (UIImage?, Error?) -> Void
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<SingleImagePicker>) -> PHPickerViewController {
         var configuration = PHPickerConfiguration()
         // Only wants images
         configuration.filter = .livePhotos
-        
-        
         let picker = PHPickerViewController(configuration: configuration)
-        
-        pickerDelegate = SingleSelectionPickerViewController()
-        picker.delegate = pickerDelegate
+        picker.delegate = context.coordinator
         return picker
     }
     
-    func updateUIViewController(_ uiViewController: PHPickerViewController, context: UIViewControllerRepresentableContext<ImagePicker>) {
-        print ("Update: \(uiViewController)")
-        
-    }
-    
-    
 }
 
-//
-//
-//
+struct CameraImagePicker: ImagePickerRepresentable {
+    
+    var callback: (UIImage?, Error?) -> Void
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<CameraImagePicker>) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.delegate = context.coordinator
+        picker.sourceType = .camera
+        return picker
+    }
+    
+}
 
 struct GradientBackgroundStyle: ButtonStyle {
     
@@ -148,8 +124,42 @@ struct UserProfileView2: View {
     
     var user: UserRecord
     @State var editProfilePresented = false
+    @State var sheetPresented = false
+    
+    @State var sourceType: UIImagePickerController.SourceType = .photoLibrary
+    
+    func aSheet() -> ActionSheet {
+        
+        let save = ActionSheet.Button.default(Text("Photo Library")) {
+            self.sourceType = .photoLibrary
+            self.editProfilePresented = true
+            print("hit save")
+        }
+        
+        let discard = ActionSheet.Button.default(Text("Camera")) {
+            self.sourceType = .camera
+            self.editProfilePresented = true
+            print("hit discard")
+        }
+        
+        // If the cancel label is omitted, the default "Cancel" text will be shown
+        let cancel = ActionSheet.Button.cancel(Text("Abort")) {
+            print("hit abort")
+        }
+        
+        let buttons: [ActionSheet.Button] = [save, discard, cancel]
+        
+        return ActionSheet(title: Text("Do Something"),
+                           message: Text("A whole bunch of things"),
+                           buttons: buttons)
+    }
     
     var body: some View {
+        
+        let callback: (UIImage?, Error?) -> Void = { (img: UIImage?, error: Error?) in
+            self.editProfilePresented.toggle()
+            print("image: \(img), error: \(error)")
+        }
         
         return VStack(alignment: .center) {
             
@@ -180,16 +190,25 @@ struct UserProfileView2: View {
             
             Spacer()
         }
+        .actionSheet(isPresented: self.$sheetPresented) {
+            self.aSheet()
+        }
         .sheet(isPresented: self.$editProfilePresented) {
             print("thing is dismissed!")
         } content: {
-            ImagePicker()
+            
+            if sourceType == .camera {
+                CameraImagePicker(callback: callback).edgesIgnoringSafeArea(.bottom)
+            } else {
+                SingleImagePicker(callback: callback).edgesIgnoringSafeArea(.bottom)
+            }
+            
 //            NavigationView(){
 //                ProfileEditView(user: user)
 //            }.navigationBarTitle("Update Photo")
         }
         .onTapGesture {
-            self.editProfilePresented.toggle()
+            self.sheetPresented.toggle()
         }
     }
     

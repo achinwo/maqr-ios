@@ -56,16 +56,39 @@ extension View {
 
 
 extension UIImage {
+    
     var noir: UIImage? {
         let context = CIContext(options: nil)
-        guard let currentFilter = CIFilter(name: "CIPhotoEffectNoir") else { return nil }
-        currentFilter.setValue(CIImage(image: self), forKey: kCIInputImageKey)
-        if let output = currentFilter.outputImage,
-            let cgImage = context.createCGImage(output, from: output.extent) {
-            return UIImage(cgImage: cgImage, scale: scale, orientation: imageOrientation)
+        
+        guard let currentFilter = CIFilter(name: "CIPhotoEffectNoir") else {
+            return nil
         }
-        return nil
+        
+        currentFilter.setValue(CIImage(image: self), forKey: kCIInputImageKey)
+        
+        guard let output = currentFilter.outputImage, let cgImage = context.createCGImage(output, from: output.extent) else {
+            return nil
+        }
+        
+        return UIImage(cgImage: cgImage, scale: scale, orientation: imageOrientation)
     }
+    
+    func resized(_ width: CGFloat = 640, _ height: CGFloat = 640) -> UIImage? {
+        let widthRatio  = width / size.width
+        let heightRatio = height / size.height
+        
+        let ratio = widthRatio > heightRatio ? heightRatio : widthRatio
+        let newSize = CGSize(width: size.width * ratio, height: size.height * ratio)
+        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+        
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        self.draw(in: rect)
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return newImage
+    }
+    
 }
 
 
