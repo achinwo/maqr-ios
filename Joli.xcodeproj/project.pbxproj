@@ -178,6 +178,8 @@
 		92A32DD924C79C07007C960E /* TrackView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
 		92A32DDA24C79C07007C960E /* ProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		92A32DDB24C79C07007C960E /* LogOnView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogOnView.swift; sourceTree = "<group>"; };
+		92A32E2324C7AF93007C960E /* Joli.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Joli.entitlements; sourceTree = "<group>"; };
+		92A32E2424C7B145007C960E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		92F379E42363534D005FE2AB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		92F379EE2363534F005FE2AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -368,6 +370,7 @@
 		92F379D62363534D005FE2AB = {
 			isa = PBXGroup;
 			children = (
+				92A32E2324C7AF93007C960E /* Joli.entitlements */,
 				929BA5CB24C7925F00B11188 /* env.json */,
 				925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */,
 				929BA5CA24C7925F00B11188 /* JoliApi */,
@@ -728,6 +731,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				92A32D9A24C79B3D007C960E /* fr */,
+				92A32E2424C7B145007C960E /* en */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
