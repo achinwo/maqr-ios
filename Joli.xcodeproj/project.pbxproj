@@ -10,12 +10,9 @@
 		920086FE245BB0F6008D81F1 /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		92061A84236B0175007FC6F1 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92061A83236B0175007FC6F1 /* Extensions.swift */; };
 		920F872D23CD374D008F18E0 /* ServiceAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920F872C23CD374D008F18E0 /* ServiceAlert.swift */; };
+		9218811D24C7805B00CBCCF1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9218811F24C7805B00CBCCF1 /* Localizable.strings */; };
 		921AAD5223AF88F000243335 /* Spotify_Icon_RGB_Green.png in Resources */ = {isa = PBXBuildFile; fileRef = 921AAD5123AF88F000243335 /* Spotify_Icon_RGB_Green.png */; };
 		921AAD5423B10CA700243335 /* FeedbackSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921AAD5323B10CA700243335 /* FeedbackSettingsView.swift */; };
-		9234320E23BFD2F700E24E96 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9234320D23BFD2F700E24E96 /* NotificationCenter.framework */; };
-		9234321123BFD2F700E24E96 /* TodayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9234321023BFD2F700E24E96 /* TodayViewController.swift */; };
-		9234321423BFD2F700E24E96 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9234321223BFD2F700E24E96 /* MainInterface.storyboard */; };
-		9234321823BFD2F700E24E96 /* JoliWidget.appex in Embed PlugIns */ = {isa = PBXBuildFile; fileRef = 9234320C23BFD2F700E24E96 /* JoliWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9234323723C680E600E24E96 /* JoliApi in Resources */ = {isa = PBXBuildFile; fileRef = 9234323623C680E500E24E96 /* JoliApi */; };
 		9236F8B524C4B68700059100 /* PeopleGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9236F8B424C4B68700059100 /* PeopleGridView.swift */; };
 		925774BA23AD3DC3001DB707 /* MusicLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925774B923AD3DC3001DB707 /* MusicLibraryView.swift */; };
@@ -27,6 +24,9 @@
 		925FC09B23777A0A00A8A72C /* MusicroomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09A23777A0A00A8A72C /* MusicroomView.swift */; };
 		925FC09D2378B81100A8A72C /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09C2378B81100A8A72C /* TrackView.swift */; };
 		925FC09F2379FE5900A8A72C /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925FC09E2379FE5900A8A72C /* AppView.swift */; };
+		926E8FDF24C76C1500378436 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FDE24C76C1500378436 /* ImagePicker.swift */; };
+		926E8FE124C76DE100378436 /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
+		926E8FE324C76E3800378436 /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE224C76E3800378436 /* ImageView.swift */; };
 		9271D42C239D3FCF00CE1425 /* MusicroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */; };
 		9273FD4E2463417E00F7FE66 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9273FD4D2463417E00F7FE66 /* ShareSheet.swift */; };
 		9273FD50246491B800F7FE66 /* joil_icon_rounded.png in Resources */ = {isa = PBXBuildFile; fileRef = 9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */; };
@@ -55,48 +55,15 @@
 		92F379EC2363534F005FE2AB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92F379EB2363534F005FE2AB /* Preview Assets.xcassets */; };
 		92F379EF2363534F005FE2AB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */; };
 		92F379FA2363534F005FE2AB /* JoliTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379F92363534F005FE2AB /* JoliTests.swift */; };
-		92FF314F23DCDE95009EAF7D /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92FF314D23DCDE95009EAF7D /* Interface.storyboard */; };
-		92FF315123DCDE9B009EAF7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92FF315023DCDE9B009EAF7D /* Assets.xcassets */; };
-		92FF315823DCDE9B009EAF7D /* JoliVote Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 92FF315723DCDE9B009EAF7D /* JoliVote Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		92FF315D23DCDE9B009EAF7D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF315C23DCDE9B009EAF7D /* ContentView.swift */; };
-		92FF315F23DCDE9B009EAF7D /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF315E23DCDE9B009EAF7D /* HostingController.swift */; };
-		92FF316123DCDE9B009EAF7D /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF316023DCDE9B009EAF7D /* ExtensionDelegate.swift */; };
-		92FF316323DCDE9B009EAF7D /* NotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF316223DCDE9B009EAF7D /* NotificationController.swift */; };
-		92FF316523DCDE9B009EAF7D /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF316423DCDE9B009EAF7D /* NotificationView.swift */; };
-		92FF316723DCDE9B009EAF7D /* ComplicationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF316623DCDE9B009EAF7D /* ComplicationController.swift */; };
-		92FF316923DCDE9C009EAF7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92FF316823DCDE9C009EAF7D /* Assets.xcassets */; };
-		92FF316C23DCDE9C009EAF7D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92FF316B23DCDE9C009EAF7D /* Preview Assets.xcassets */; };
-		92FF317123DCDE9C009EAF7D /* JoliVote.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 92FF314B23DCDE95009EAF7D /* JoliVote.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		9234321623BFD2F700E24E96 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 9234320B23BFD2F700E24E96;
-			remoteInfo = JoliWidget;
-		};
 		92F379F62363534F005FE2AB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 92F379DE2363534D005FE2AB;
 			remoteInfo = Joli;
-		};
-		92FF315923DCDE9B009EAF7D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 92FF315623DCDE9B009EAF7D;
-			remoteInfo = "JoliVote Extension";
-		};
-		92FF316F23DCDE9C009EAF7D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 92FF314A23DCDE94009EAF7D;
-			remoteInfo = JoliVote;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -107,7 +74,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				9234321823BFD2F700E24E96 /* JoliWidget.appex in Embed PlugIns */,
 			);
 			name = "Embed PlugIns";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -128,37 +94,19 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
-				92FF317123DCDE9C009EAF7D /* JoliVote.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		92FF317523DCDE9C009EAF7D /* Embed App Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				92FF315823DCDE9B009EAF7D /* JoliVote Extension.appex in Embed App Extensions */,
-			);
-			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		92061A83236B0175007FC6F1 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		920F872423C9147D008F18E0 /* JoliUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliUITests.swift; sourceTree = "<group>"; };
-		920F872623C9147D008F18E0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		920F872C23CD374D008F18E0 /* ServiceAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceAlert.swift; sourceTree = "<group>"; };
+		9218812024C7807D00CBCCF1 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		921AAD5123AF88F000243335 /* Spotify_Icon_RGB_Green.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Spotify_Icon_RGB_Green.png; sourceTree = "<group>"; };
 		921AAD5323B10CA700243335 /* FeedbackSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSettingsView.swift; sourceTree = "<group>"; };
-		9234320C23BFD2F700E24E96 /* JoliWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = JoliWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
-		9234321023BFD2F700E24E96 /* TodayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewController.swift; sourceTree = "<group>"; };
-		9234321323BFD2F700E24E96 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
-		9234321523BFD2F700E24E96 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9234322F23C0D5B800E24E96 /* JoliWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JoliWidget.entitlements; sourceTree = "<group>"; };
 		9234323623C680E500E24E96 /* JoliApi */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JoliApi; sourceTree = "<group>"; };
 		9236F8B424C4B68700059100 /* PeopleGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleGridView.swift; sourceTree = "<group>"; };
 		925774B923AD3DC3001DB707 /* MusicLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicLibraryView.swift; sourceTree = "<group>"; };
@@ -173,6 +121,9 @@
 		925FC09C2378B81100A8A72C /* TrackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
 		925FC09E2379FE5900A8A72C /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		9262E863239C993100891F6C /* Joli.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Joli.entitlements; sourceTree = "<group>"; };
+		926E8FDE24C76C1500378436 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		926E8FE024C76DE100378436 /* Styles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Styles.swift; sourceTree = "<group>"; };
+		926E8FE224C76E3800378436 /* ImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageView.swift; sourceTree = "<group>"; };
 		9271D42B239D3FCF00CE1425 /* MusicroomCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicroomCreateView.swift; sourceTree = "<group>"; };
 		9273FD4D2463417E00F7FE66 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
 		9273FD4F246491B800F7FE66 /* joil_icon_rounded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = joil_icon_rounded.png; sourceTree = "<group>"; };
@@ -204,32 +155,9 @@
 		92F379F52363534F005FE2AB /* JoliTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JoliTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		92F379F92363534F005FE2AB /* JoliTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliTests.swift; sourceTree = "<group>"; };
 		92F379FB2363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		92FF314B23DCDE95009EAF7D /* JoliVote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoliVote.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		92FF314E23DCDE95009EAF7D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
-		92FF315023DCDE9B009EAF7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		92FF315223DCDE9B009EAF7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		92FF315723DCDE9B009EAF7D /* JoliVote Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "JoliVote Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
-		92FF315C23DCDE9B009EAF7D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		92FF315E23DCDE9B009EAF7D /* HostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingController.swift; sourceTree = "<group>"; };
-		92FF316023DCDE9B009EAF7D /* ExtensionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDelegate.swift; sourceTree = "<group>"; };
-		92FF316223DCDE9B009EAF7D /* NotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationController.swift; sourceTree = "<group>"; };
-		92FF316423DCDE9B009EAF7D /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
-		92FF316623DCDE9B009EAF7D /* ComplicationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplicationController.swift; sourceTree = "<group>"; };
-		92FF316823DCDE9C009EAF7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		92FF316B23DCDE9C009EAF7D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		92FF316D23DCDE9C009EAF7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		92FF316E23DCDE9C009EAF7D /* PushNotificationPayload.apns */ = {isa = PBXFileReference; lastKnownFileType = text; path = PushNotificationPayload.apns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		9234320923BFD2F700E24E96 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9234320E23BFD2F700E24E96 /* NotificationCenter.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		92F379DC2363534D005FE2AB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -250,42 +178,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		92FF315423DCDE9B009EAF7D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		920F872323C9147D008F18E0 /* JoliUITests */ = {
-			isa = PBXGroup;
-			children = (
-				920F872423C9147D008F18E0 /* JoliUITests.swift */,
-				920F872623C9147D008F18E0 /* Info.plist */,
-			);
-			path = JoliUITests;
-			sourceTree = "<group>";
-		};
-		9234320F23BFD2F700E24E96 /* JoliWidget */ = {
-			isa = PBXGroup;
-			children = (
-				9234322F23C0D5B800E24E96 /* JoliWidget.entitlements */,
-				9234321023BFD2F700E24E96 /* TodayViewController.swift */,
-				9234321223BFD2F700E24E96 /* MainInterface.storyboard */,
-				9234321523BFD2F700E24E96 /* Info.plist */,
-			);
-			path = JoliWidget;
-			sourceTree = "<group>";
-		};
 		9236F8B324C4B62300059100 /* Components */ = {
 			isa = PBXGroup;
 			children = (
 				9236F8B424C4B68700059100 /* PeopleGridView.swift */,
 				929BD6D824C4EAB400446DBE /* TrackList.swift */,
 				929BD6DA24C5003100446DBE /* ProfileView.swift */,
+				926E8FDE24C76C1500378436 /* ImagePicker.swift */,
+				926E8FE224C76E3800378436 /* ImageView.swift */,
 			);
 			name = Components;
 			sourceTree = "<group>";
@@ -351,6 +254,7 @@
 				925FC0982377793100A8A72C /* african_giant_cover.jpg */,
 				92D90BE9236C890B00EAAD31 /* party-people.jpg */,
 				92F379E82363534F005FE2AB /* Assets.xcassets */,
+				9218811F24C7805B00CBCCF1 /* Localizable.strings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -363,10 +267,6 @@
 				925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */,
 				92F379E12363534D005FE2AB /* Joli */,
 				92F379F82363534F005FE2AB /* JoliTests */,
-				9234320F23BFD2F700E24E96 /* JoliWidget */,
-				920F872323C9147D008F18E0 /* JoliUITests */,
-				92FF314C23DCDE95009EAF7D /* JoliVote */,
-				92FF315B23DCDE9B009EAF7D /* JoliVote Extension */,
 				92F379E02363534D005FE2AB /* Products */,
 				92F37A18236458F2005FE2AB /* Frameworks */,
 			);
@@ -377,9 +277,6 @@
 			children = (
 				92F379DF2363534D005FE2AB /* Joli.app */,
 				92F379F52363534F005FE2AB /* JoliTests.xctest */,
-				9234320C23BFD2F700E24E96 /* JoliWidget.appex */,
-				92FF314B23DCDE95009EAF7D /* JoliVote.app */,
-				92FF315723DCDE9B009EAF7D /* JoliVote Extension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -387,6 +284,7 @@
 		92F379E12363534D005FE2AB /* Joli */ = {
 			isa = PBXGroup;
 			children = (
+				92F379EA2363534F005FE2AB /* Preview Content */,
 				9236F8B324C4B62300059100 /* Components */,
 				92C0DCE8249C1A98001780C2 /* State */,
 				92D90BE8236C88B800EAAD31 /* Resources */,
@@ -396,11 +294,11 @@
 				92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */,
 				92F379F02363534F005FE2AB /* Info.plist */,
 				9262E863239C993100891F6C /* Joli.entitlements */,
-				92F379EA2363534F005FE2AB /* Preview Content */,
 				92061A83236B0175007FC6F1 /* Extensions.swift */,
 				925FC09E2379FE5900A8A72C /* AppView.swift */,
 				920F872C23CD374D008F18E0 /* ServiceAlert.swift */,
 				929D155524BB612F00229A9F /* App.swift */,
+				926E8FE024C76DE100378436 /* Styles.swift */,
 			);
 			path = Joli;
 			sourceTree = "<group>";
@@ -431,61 +329,9 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		92FF314C23DCDE95009EAF7D /* JoliVote */ = {
-			isa = PBXGroup;
-			children = (
-				92FF314D23DCDE95009EAF7D /* Interface.storyboard */,
-				92FF315023DCDE9B009EAF7D /* Assets.xcassets */,
-				92FF315223DCDE9B009EAF7D /* Info.plist */,
-			);
-			path = JoliVote;
-			sourceTree = "<group>";
-		};
-		92FF315B23DCDE9B009EAF7D /* JoliVote Extension */ = {
-			isa = PBXGroup;
-			children = (
-				92FF315C23DCDE9B009EAF7D /* ContentView.swift */,
-				92FF315E23DCDE9B009EAF7D /* HostingController.swift */,
-				92FF316023DCDE9B009EAF7D /* ExtensionDelegate.swift */,
-				92FF316223DCDE9B009EAF7D /* NotificationController.swift */,
-				92FF316423DCDE9B009EAF7D /* NotificationView.swift */,
-				92FF316623DCDE9B009EAF7D /* ComplicationController.swift */,
-				92FF316823DCDE9C009EAF7D /* Assets.xcassets */,
-				92FF316D23DCDE9C009EAF7D /* Info.plist */,
-				92FF316E23DCDE9C009EAF7D /* PushNotificationPayload.apns */,
-				92FF316A23DCDE9C009EAF7D /* Preview Content */,
-			);
-			path = "JoliVote Extension";
-			sourceTree = "<group>";
-		};
-		92FF316A23DCDE9C009EAF7D /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				92FF316B23DCDE9C009EAF7D /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		9234320B23BFD2F700E24E96 /* JoliWidget */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 9234321923BFD2F700E24E96 /* Build configuration list for PBXNativeTarget "JoliWidget" */;
-			buildPhases = (
-				9234320823BFD2F700E24E96 /* Sources */,
-				9234320923BFD2F700E24E96 /* Frameworks */,
-				9234320A23BFD2F700E24E96 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = JoliWidget;
-			productName = JoliWidget;
-			productReference = 9234320C23BFD2F700E24E96 /* JoliWidget.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 		92F379DE2363534D005FE2AB /* Joli */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 92F37A092363534F005FE2AB /* Build configuration list for PBXNativeTarget "Joli" */;
@@ -501,8 +347,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				9234321723BFD2F700E24E96 /* PBXTargetDependency */,
-				92FF317023DCDE9C009EAF7D /* PBXTargetDependency */,
 			);
 			name = Joli;
 			packageProductDependencies = (
@@ -534,42 +378,6 @@
 			productReference = 92F379F52363534F005FE2AB /* JoliTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		92FF314A23DCDE94009EAF7D /* JoliVote */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 92FF317923DCDE9C009EAF7D /* Build configuration list for PBXNativeTarget "JoliVote" */;
-			buildPhases = (
-				92FF314923DCDE94009EAF7D /* Resources */,
-				92FF317523DCDE9C009EAF7D /* Embed App Extensions */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				92FF315A23DCDE9B009EAF7D /* PBXTargetDependency */,
-			);
-			name = JoliVote;
-			productName = JoliVote;
-			productReference = 92FF314B23DCDE95009EAF7D /* JoliVote.app */;
-			productType = "com.apple.product-type.application.watchapp2";
-		};
-		92FF315623DCDE9B009EAF7D /* JoliVote Extension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 92FF317823DCDE9C009EAF7D /* Build configuration list for PBXNativeTarget "JoliVote Extension" */;
-			buildPhases = (
-				92FF315323DCDE9B009EAF7D /* Sources */,
-				92FF315423DCDE9B009EAF7D /* Frameworks */,
-				92FF315523DCDE9B009EAF7D /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "JoliVote Extension";
-			packageProductDependencies = (
-			);
-			productName = "JoliVote Extension";
-			productReference = 92FF315723DCDE9B009EAF7D /* JoliVote Extension.appex */;
-			productType = "com.apple.product-type.watchkit2-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -583,21 +391,12 @@
 				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = "Anthony Chinwo";
 				TargetAttributes = {
-					9234320B23BFD2F700E24E96 = {
-						CreatedOnToolsVersion = 11.3;
-					};
 					92F379DE2363534D005FE2AB = {
 						CreatedOnToolsVersion = 11.1;
 					};
 					92F379F42363534F005FE2AB = {
 						CreatedOnToolsVersion = 11.1;
 						TestTargetID = 92F379DE2363534D005FE2AB;
-					};
-					92FF314A23DCDE94009EAF7D = {
-						CreatedOnToolsVersion = 11.3.1;
-					};
-					92FF315623DCDE9B009EAF7D = {
-						CreatedOnToolsVersion = 11.3.1;
 					};
 				};
 			};
@@ -608,6 +407,7 @@
 			knownRegions = (
 				en,
 				Base,
+				fr,
 			);
 			mainGroup = 92F379D62363534D005FE2AB;
 			packageReferences = (
@@ -623,22 +423,11 @@
 			targets = (
 				92F379DE2363534D005FE2AB /* Joli */,
 				92F379F42363534F005FE2AB /* JoliTests */,
-				9234320B23BFD2F700E24E96 /* JoliWidget */,
-				92FF314A23DCDE94009EAF7D /* JoliVote */,
-				92FF315623DCDE9B009EAF7D /* JoliVote Extension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		9234320A23BFD2F700E24E96 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9234321423BFD2F700E24E96 /* MainInterface.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		92F379DD2363534D005FE2AB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -648,6 +437,7 @@
 				921AAD5223AF88F000243335 /* Spotify_Icon_RGB_Green.png in Resources */,
 				92D90BEA236C890B00EAAD31 /* party-people.jpg in Resources */,
 				92F379EC2363534F005FE2AB /* Preview Assets.xcassets in Resources */,
+				9218811D24C7805B00CBCCF1 /* Localizable.strings in Resources */,
 				925FC0992377793100A8A72C /* african_giant_cover.jpg in Resources */,
 				92F379E92363534F005FE2AB /* Assets.xcassets in Resources */,
 				92F35AF2238A0AAB0081E30A /* env.json in Resources */,
@@ -659,24 +449,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		92FF314923DCDE94009EAF7D /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				92FF315123DCDE9B009EAF7D /* Assets.xcassets in Resources */,
-				92FF314F23DCDE95009EAF7D /* Interface.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		92FF315523DCDE9B009EAF7D /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				92FF316C23DCDE9C009EAF7D /* Preview Assets.xcassets in Resources */,
-				92FF316923DCDE9C009EAF7D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -705,20 +477,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		9234320823BFD2F700E24E96 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9234321123BFD2F700E24E96 /* TodayViewController.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		92F379DB2363534D005FE2AB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				925FC09F2379FE5900A8A72C /* AppView.swift in Sources */,
 				925FC09523775BB100A8A72C /* LogOnView.swift in Sources */,
+				926E8FE324C76E3800378436 /* ImageView.swift in Sources */,
 				92C0DCEE249C3CC3001780C2 /* AppState+Methods.swift in Sources */,
 				925774BA23AD3DC3001DB707 /* MusicLibraryView.swift in Sources */,
 				92B0716D2364F8A80070EC73 /* MusicroomList.swift in Sources */,
@@ -734,9 +499,11 @@
 				9236F8B524C4B68700059100 /* PeopleGridView.swift in Sources */,
 				925774BC23AD66E4001DB707 /* ActivityView.swift in Sources */,
 				9273FD4E2463417E00F7FE66 /* ShareSheet.swift in Sources */,
+				926E8FDF24C76C1500378436 /* ImagePicker.swift in Sources */,
 				92F379E52363534D005FE2AB /* SceneDelegate.swift in Sources */,
 				92C0DCF0249C4596001780C2 /* AppState+Publisher.swift in Sources */,
 				929BD6D924C4EAB400446DBE /* TrackList.swift in Sources */,
+				926E8FE124C76DE100378436 /* Styles.swift in Sources */,
 				92B071762364FA2D0070EC73 /* AppState.swift in Sources */,
 				92C0DCEC249C3C71001780C2 /* AppState+Spotify.swift in Sources */,
 				925E5C712369D85900D95AB7 /* CircleImage.swift in Sources */,
@@ -756,51 +523,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		92FF315323DCDE9B009EAF7D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				92FF315F23DCDE9B009EAF7D /* HostingController.swift in Sources */,
-				92FF315D23DCDE9B009EAF7D /* ContentView.swift in Sources */,
-				92FF316323DCDE9B009EAF7D /* NotificationController.swift in Sources */,
-				92FF316123DCDE9B009EAF7D /* ExtensionDelegate.swift in Sources */,
-				92FF316523DCDE9B009EAF7D /* NotificationView.swift in Sources */,
-				92FF316723DCDE9B009EAF7D /* ComplicationController.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		9234321723BFD2F700E24E96 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 9234320B23BFD2F700E24E96 /* JoliWidget */;
-			targetProxy = 9234321623BFD2F700E24E96 /* PBXContainerItemProxy */;
-		};
 		92F379F72363534F005FE2AB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 92F379DE2363534D005FE2AB /* Joli */;
 			targetProxy = 92F379F62363534F005FE2AB /* PBXContainerItemProxy */;
 		};
-		92FF315A23DCDE9B009EAF7D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 92FF315623DCDE9B009EAF7D /* JoliVote Extension */;
-			targetProxy = 92FF315923DCDE9B009EAF7D /* PBXContainerItemProxy */;
-		};
-		92FF317023DCDE9C009EAF7D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 92FF314A23DCDE94009EAF7D /* JoliVote */;
-			targetProxy = 92FF316F23DCDE9C009EAF7D /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		9234321223BFD2F700E24E96 /* MainInterface.storyboard */ = {
+		9218811F24C7805B00CBCCF1 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				9234321323BFD2F700E24E96 /* Base */,
+				9218812024C7807D00CBCCF1 /* fr */,
 			);
-			name = MainInterface.storyboard;
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 		92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */ = {
@@ -811,69 +550,15 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
-		92FF314D23DCDE95009EAF7D /* Interface.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				92FF314E23DCDE95009EAF7D /* Base */,
-			);
-			name = Interface.storyboard;
-			sourceTree = "<group>";
-		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		9234321A23BFD2F700E24E96 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = JoliWidget/JoliWidget.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 2L26ZMA265;
-				INFOPLIST_FILE = JoliWidget/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.JoliWidget;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		9234321B23BFD2F700E24E96 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = JoliWidget/JoliWidget.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
-				DEVELOPMENT_TEAM = 2L26ZMA265;
-				INFOPLIST_FILE = JoliWidget/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.JoliWidget;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		92F37A072363534F005FE2AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9273FD582466504700F7FE66 /* Development.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -935,6 +620,7 @@
 			baseConfigurationReference = 9273FD5424664F8C00F7FE66 /* Production.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1114,112 +800,9 @@
 			};
 			name = Release;
 		};
-		92FF317323DCDE9C009EAF7D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 2L26ZMA265;
-				IBSC_MODULE = JoliVote_Extension;
-				INFOPLIST_FILE = JoliVote/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 6.1;
-			};
-			name = Debug;
-		};
-		92FF317423DCDE9C009EAF7D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
-				DEVELOPMENT_TEAM = 2L26ZMA265;
-				IBSC_MODULE = JoliVote_Extension;
-				INFOPLIST_FILE = JoliVote/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 6.1;
-			};
-			name = Release;
-		};
-		92FF317623DCDE9C009EAF7D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_ASSET_PATHS = "\"JoliVote Extension/Preview Content\"";
-				DEVELOPMENT_TEAM = 2L26ZMA265;
-				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "JoliVote Extension/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.watchkitapp.watchkitextension;
-				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 6.1;
-			};
-			name = Debug;
-		};
-		92FF317723DCDE9C009EAF7D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
-				DEVELOPMENT_ASSET_PATHS = "\"JoliVote Extension/Preview Content\"";
-				DEVELOPMENT_TEAM = 2L26ZMA265;
-				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "JoliVote Extension/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.watchkitapp.watchkitextension;
-				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 6.1;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9234321923BFD2F700E24E96 /* Build configuration list for PBXNativeTarget "JoliWidget" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9234321A23BFD2F700E24E96 /* Debug */,
-				9234321B23BFD2F700E24E96 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		92F379DA2363534D005FE2AB /* Build configuration list for PBXProject "Joli" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1243,24 +826,6 @@
 			buildConfigurations = (
 				92F37A0D2363534F005FE2AB /* Debug */,
 				92F37A0E2363534F005FE2AB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		92FF317823DCDE9C009EAF7D /* Build configuration list for PBXNativeTarget "JoliVote Extension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				92FF317623DCDE9C009EAF7D /* Debug */,
-				92FF317723DCDE9C009EAF7D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		92FF317923DCDE9C009EAF7D /* Build configuration list for PBXNativeTarget "JoliVote" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				92FF317323DCDE9C009EAF7D /* Debug */,
-				92FF317423DCDE9C009EAF7D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
