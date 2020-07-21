@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/google/promises.git",
         "state": {
           "branch": null,
-          "revision": "6b6f4fe3385ed37389fb231bc40be81de2f1230f",
-          "version": "1.2.8"
+          "revision": "e0a4763f8a73c481b0f4d4acb659cf62613cb2f4",
+          "version": "1.2.9"
         }
       },
       {
@@ -78,8 +78,8 @@
         "repositoryURL": "https://github.com/apple/swift-syntax.git",
         "state": {
           "branch": null,
-          "revision": "3e3eb191fcdbecc6031522660c4ed6ce25282c25",
-          "version": "0.50100.0"
+          "revision": "0688b9cfc4c3dd234e4f55f1f056b2affc849873",
+          "version": "0.50200.0"
         }
       },
       {
@@ -87,8 +87,8 @@
         "repositoryURL": "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
         "state": {
           "branch": null,
-          "revision": "2f2b7ac0b675e9d0ac696758f15bbff97eb65a31",
-          "version": "1.8.4"
+          "revision": "e0fb3a74cb993d7dcf1e56734cdc98ad6e6d8176",
+          "version": "1.9.1"
         }
       },
       {
