@@ -47,6 +47,8 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Capture images for playrooms and user profile </string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -64,8 +66,6 @@
 			</array>
 		</dict>
 	</dict>
-	<key>UIApplicationShortcutWidget</key>
-	<string>app.jolimc.Joli.JoliWidget</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
@@ -91,7 +91,5 @@
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Capture images for playrooms and user profile </string>
 </dict>
 </plist>
