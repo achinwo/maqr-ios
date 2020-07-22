@@ -51,7 +51,7 @@ struct UserProfileView2: View {
         } content: {
             NavigationView(){
                 ProfileEditView(user: user)
-            }.navigationBarTitle("Update Photo")
+            }.navigationBarTitle(Strings.photoUpload.rawValue)
         }
         .onTapGesture {
             self.editProfilePresented.toggle()
