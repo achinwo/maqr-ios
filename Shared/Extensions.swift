@@ -12,6 +12,13 @@ import SwiftUI
 import JoliCore
 import Promises
 
+extension Text {
+    
+    init(_ val: Strings) {
+        self.init(verbatim: val.rawValue)
+    }
+}
+
 extension JoliApi {
     
     @discardableResult

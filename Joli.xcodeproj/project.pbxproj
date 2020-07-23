@@ -100,8 +100,8 @@
 		92A32E1D24C7A4DF007C960E /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9234320D23BFD2F700E24E96 /* NotificationCenter.framework */; };
 		92A32E1E24C7A9F2007C960E /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92A32E1F24C7A9FC007C960E /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
-		92A32E2C24C7BB53007C960E /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Strings.swift */; };
-		92A32E2D24C7BB53007C960E /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Strings.swift */; };
+		92A32E2C24C7BB53007C960E /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
+		92A32E2D24C7BB53007C960E /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -182,7 +182,7 @@
 		92A32DDB24C79C07007C960E /* LogOnView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogOnView.swift; sourceTree = "<group>"; };
 		92A32E2324C7AF93007C960E /* Joli.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Joli.entitlements; sourceTree = "<group>"; };
 		92A32E2424C7B145007C960E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		92A32E2B24C7BB53007C960E /* Strings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
+		92A32E2B24C7BB53007C960E /* Consts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Consts.swift; sourceTree = "<group>"; };
 		92F379E42363534D005FE2AB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		92F379EE2363534F005FE2AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -244,7 +244,7 @@
 				92F379ED2363534F005FE2AB /* LaunchScreen.storyboard */,
 				926E8FE024C76DE100378436 /* Styles.swift */,
 				92A32D4D24C799B7007C960E /* ContentView.swift */,
-				92A32E2B24C7BB53007C960E /* Strings.swift */,
+				92A32E2B24C7BB53007C960E /* Consts.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -626,7 +626,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				92A32DE424C79C07007C960E /* TrackSearchView.swift in Sources */,
-				92A32E2C24C7BB53007C960E /* Strings.swift in Sources */,
+				92A32E2C24C7BB53007C960E /* Consts.swift in Sources */,
 				92A32DEC24C79C07007C960E /* UserProfileView.swift in Sources */,
 				92A32DF824C79C07007C960E /* MusicLibraryView.swift in Sources */,
 				92A32D7624C799B8007C960E /* ContentView.swift in Sources */,
@@ -666,7 +666,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				92A32DE524C79C07007C960E /* TrackSearchView.swift in Sources */,
-				92A32E2D24C7BB53007C960E /* Strings.swift in Sources */,
+				92A32E2D24C7BB53007C960E /* Consts.swift in Sources */,
 				92A32DED24C79C07007C960E /* UserProfileView.swift in Sources */,
 				92A32DF924C79C07007C960E /* MusicLibraryView.swift in Sources */,
 				92A32D7724C799B8007C960E /* ContentView.swift in Sources */,
