@@ -21,6 +21,7 @@
 		9203B32A24CB07FD00F465CC /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
 		9203B32B24CB080000F465CC /* LiveObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* LiveObject.swift */; };
 		9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9234320D23BFD2F700E24E96 /* NotificationCenter.framework */; platformFilter = ios; };
+		925C6FF324CB722A0016963F /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 925C6FF224CB722A0016963F /* FBLPromises */; };
 		92A32D6724C799B8007C960E /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D6624C799B8007C960E /* Tests_iOS.swift */; };
 		92A32D7224C799B8007C960E /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D7124C799B8007C960E /* Tests_macOS.swift */; };
 		92A32D7624C799B8007C960E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D4D24C799B7007C960E /* ContentView.swift */; };
@@ -239,6 +240,7 @@
 				92BD11D324CB104D00AAB7DE /* Kingfisher in Frameworks */,
 				9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */,
 				92BD11D724CB104D00AAB7DE /* Version in Frameworks */,
+				925C6FF324CB722A0016963F /* FBLPromises in Frameworks */,
 				92BD11D924CB104D00AAB7DE /* LetterAvatarKit in Frameworks */,
 				9203B31924CB079200F465CC /* JoliApi in Frameworks */,
 			);
@@ -509,6 +511,7 @@
 				92BD11D424CB104D00AAB7DE /* UIImageColors */,
 				92BD11D624CB104D00AAB7DE /* Version */,
 				92BD11D824CB104D00AAB7DE /* LetterAvatarKit */,
+				925C6FF224CB722A0016963F /* FBLPromises */,
 			);
 			productName = JoliPlayground;
 			productReference = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */;
@@ -641,6 +644,7 @@
 				92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */,
 				92D4E31724A0A4B400EF32A5 /* XCRemoteSwiftPackageReference "Version" */,
 				929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */,
+				925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1346,6 +1350,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/promises.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.9;
+			};
+		};
 		929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vpeschenkov/LetterAvatarKit.git";
@@ -1392,6 +1404,11 @@
 		9203B31824CB079200F465CC /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
+		};
+		925C6FF224CB722A0016963F /* FBLPromises */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
+			productName = FBLPromises;
 		};
 		92A32E1324C7A448007C960E /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;

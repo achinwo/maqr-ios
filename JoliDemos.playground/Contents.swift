@@ -1,10 +1,14 @@
 //: A UIKit based Playground for presenting user interface
+import JoliDemos_Sources
 import Foundation
 import UIKit
 import PlaygroundSupport
 import SwiftUI
 import JoliPlayground
 import JoliCore
+
+
+
 
 
 struct ContentView: View {
@@ -26,13 +30,14 @@ struct ContentView: View {
 //                alignment: .topLeading)
      }
 }
-//let parent = playgroundWrapper(
-//  child: UIHostingController(rootView: ContentView()),
-//  device: .phone4_7inch,
-//  orientation: .landscape,
-//  contentSizeCategory: .large)
+let parent = playgroundWrapper(
+  child: UIHostingController(rootView: ContentView()),
+  device: .phone4_7inch,
+    orientation: .portrait,
+  contentSizeCategory: .large)
 
 //print(aVeryLongString)
-
+//hello()
 // Present the view controller in the Live View window
-PlaygroundPage.current.liveView = UIHostingController(rootView: ContentView())//
+PlaygroundPage.current.liveView = parent //UIHostingController(rootView: ContentView())//
+
