@@ -10,16 +10,7 @@ import SwiftUI
 import JoliCore
 import JoliApi
 
-extension Builder where T == User {
-    
-    var ranking: DiscjockeyPosition {
-        guard let djPosition = self[.djRanking, Int?.self] as? Int else {
-            return DiscjockeyPosition.personal
-        }
-        
-        return DiscjockeyPosition(rawValue: djPosition) ?? DiscjockeyPosition.personal
-    }
-}
+
 
 struct UserProfileView: View {
     var user: UserRecord

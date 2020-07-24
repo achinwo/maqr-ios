@@ -13,7 +13,7 @@ import SwiftyBeaver
 import UserNotifications
 import Promises
 
-let logger = JoliApi.getLogger()
+
 var appDelegateSingleton: AppDelegate!
 
 //@UIApplicationMain

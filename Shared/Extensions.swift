@@ -7,15 +7,64 @@
 //
 
 import Foundation
-import  JoliApi
+import JoliApi
 import SwiftUI
 import JoliCore
 import Promises
+import Kingfisher
+//import UIKit
 
-extension Text {
+public extension Builder where T == User {
     
-    init(_ val: Strings) {
-        self.init(verbatim: val.rawValue)
+    var ranking: DiscjockeyPosition {
+        guard let djPosition = self[.djRanking, Int?.self] as? Int else {
+            return DiscjockeyPosition.personal
+        }
+        
+        return DiscjockeyPosition(rawValue: djPosition) ?? DiscjockeyPosition.personal
+    }
+}
+
+public struct NetworkImage: SwiftUI.View {
+    
+    var callback: ((UIImage?) -> Void)?
+    
+    @State private var image: UIImage? = nil
+    
+    public let imageURL: URL?
+    public let placeholderImage: UIImage
+    public let animation: Animation = .easeInOut
+    
+    init(imageURL: URL, placeholderImage: UIImage, onLoaded: ((UIImage?) -> Void)? = nil) {
+        self.imageURL = imageURL
+        self.placeholderImage = placeholderImage
+        self.callback = onLoaded
+    }
+    
+    public var body: some SwiftUI.View {
+        SwiftUI.Image(uiImage: image ?? placeholderImage)
+            .resizable()
+            .frame(width: 64, height: 64, alignment: .center)
+            .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
+            .onAppear(perform: loadImage)
+            .transition(.opacity)
+            .id(image ?? placeholderImage)
+    }
+    
+    private func loadImage() {
+        guard let imageURL = imageURL, image == nil else { return }
+        
+        KingfisherManager.shared.retrieveImage(with: imageURL) { result in
+            switch result {
+                case .success(let imageResult):
+                    withAnimation(self.animation) {
+                        self.image = imageResult.image
+                        self.callback?(self.image)
+                    }
+                case .failure:
+                    break
+            }
+        }
     }
 }
 
@@ -43,23 +92,7 @@ extension Musicroom {
     
 }
 
-struct KeyboardAwareModifier: ViewModifier {
-    
-    @State private var keyboardHeight: CGFloat = 0
 
-    func body(content: Content) -> some View {
-        content
-            .padding(.bottom, keyboardHeight)
-            .onReceive(AppState.keyboardHeightPublisher) { self.keyboardHeight = $0 }
-    }
-}
-
-extension View {
-    
-    func keyboardAwarePadding() -> some View {
-        ModifiedContent(content: self, modifier: KeyboardAwareModifier())
-    }
-}
 
 
 extension UIImage {
@@ -104,9 +137,6 @@ extension UIImage {
 }
 
 
-typealias Renderable = View
-
-
 public final class ImageStore {
     typealias _ImageDictionary = [String: CGImage]
     fileprivate var images: _ImageDictionary = [:]
@@ -115,7 +145,7 @@ public final class ImageStore {
     
     public static var shared = ImageStore()
     
-    public func image(name: String) -> Image {
+    public func image(name: String) -> SwiftUI.Image {
         let index = _guaranteeImage(name: name)
         
         return Image(images.values[index], scale: CGFloat(ImageStore.scale), label: Text(verbatim: name))

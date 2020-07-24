@@ -25,14 +25,14 @@ struct ProfileEditView: View {
     }
 }
 
-struct UserProfileView2: View {
+public struct UserProfileView2: View {
     
     var user: UserRecord
     @State var editProfilePresented = false
     @State var logoutPresented = false
     var callback: (() -> Void)?
     
-    init(user: UserRecord, callback: (() -> Void)? = nil){
+    public init(user: UserRecord, callback: (() -> Void)? = nil){
         self.callback = callback
         self.user = user
     }
@@ -95,8 +95,8 @@ struct UserProfileView2: View {
                     self.logoutPresented.toggle()
                 }
                 //.fontWeight(.semibold)
-                .padding(.all, Sizing.medium.rawValue)
-                .buttonStyle(BlackWhiteButtonStyle(white: Color(named: .lightGray)))
+                .padding(.all, Sizing.medium)
+                .buttonStyle(BlackWhiteButtonStyle(white: Colors.lightGray))
                 .alert(isPresented: self.$logoutPresented) {
                     self.logoutAlertView
                 }
@@ -114,7 +114,7 @@ struct UserProfileView2: View {
         }
     }
     
-    var body: some View {
+    public var body: some View {
         let view = self.formView
 //        .sheet(isPresented: self.$editProfilePresented) {
 //            print("thing is dismissed!")
@@ -126,7 +126,7 @@ struct UserProfileView2: View {
 //        .onTapGesture {
 //            self.editProfilePresented.toggle()
 //        }
-        .background(Color(named: .lightGray))
+        .background(Colors.lightGray)
         .clipped()
             .edgesIgnoringSafeArea(.bottom)
         

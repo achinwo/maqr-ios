@@ -18,6 +18,25 @@ enum FetchError: Error {
     case cancelled
 }
 
+struct KeyboardAwareModifier: ViewModifier {
+    
+    @State private var keyboardHeight: CGFloat = 0
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.bottom, keyboardHeight)
+            .onReceive(AppState.keyboardHeightPublisher) { self.keyboardHeight = $0 }
+    }
+}
+
+extension View {
+    
+    func keyboardAwarePadding() -> some View {
+        ModifiedContent(content: self, modifier: KeyboardAwareModifier())
+    }
+}
+
+
 class AppCurrentlyPlayingState: ObservableObject {
     
     @Published var progressPct = 0.0

@@ -39,8 +39,4 @@ struct JoliApp: App {
     }
 }
 
-//struct App_Previews: PreviewProvider {
-//    static var previews: some View {
-//        App()
-//    }
-//}
+

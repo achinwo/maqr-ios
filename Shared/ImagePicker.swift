@@ -10,15 +10,15 @@ import SwiftUI
 import UIKit
 import PhotosUI
 
-class ImagePickerCoordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate, PHPickerViewControllerDelegate {
+public class ImagePickerCoordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate, PHPickerViewControllerDelegate {
     
     var callback: (UIImage?, Error?) -> Void
     
-    init(callback: @escaping (UIImage?, Error?) -> Void) {
+    public init(callback: @escaping (UIImage?, Error?) -> Void) {
         self.callback = callback
     }
     
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+    public func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         // The client is responsible for presentation and dismissal
         
         guard let itemProvider = results.first?.itemProvider, itemProvider.canLoadObject(ofClass: UIImage.self) else {
@@ -32,18 +32,18 @@ class ImagePickerCoordinator: NSObject, UINavigationControllerDelegate, UIImageP
         
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage
         self.callback(image?.squared(), nil)
     }
     
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         callback(nil, nil)
     }
     
 }
 
-protocol ImagePickerRepresentable: UIViewControllerRepresentable {
+public protocol ImagePickerRepresentable: UIViewControllerRepresentable {
     associatedtype ImagePickerViewController: UIViewController
     
     var callback: (UIImage?, Error?) -> Void { get set }
@@ -52,19 +52,19 @@ protocol ImagePickerRepresentable: UIViewControllerRepresentable {
 
 extension ImagePickerRepresentable {
     
-    func updateUIViewController(_ uiViewController: ImagePickerViewController, context: UIViewControllerRepresentableContext<Self>) {
+    public func updateUIViewController(_ uiViewController: ImagePickerViewController, context: UIViewControllerRepresentableContext<Self>) {
     }
     
-    func makeCoordinator() -> ImagePickerCoordinator {
+    public func makeCoordinator() -> ImagePickerCoordinator {
         return ImagePickerCoordinator(callback: callback)
     }
 }
 
-struct SingleImagePicker: ImagePickerRepresentable {
+public struct SingleImagePicker: ImagePickerRepresentable {
     
-    var callback: (UIImage?, Error?) -> Void
+    public var callback: (UIImage?, Error?) -> Void
     
-    func makeUIViewController(context: UIViewControllerRepresentableContext<SingleImagePicker>) -> PHPickerViewController {
+    public func makeUIViewController(context: UIViewControllerRepresentableContext<SingleImagePicker>) -> PHPickerViewController {
         var configuration = PHPickerConfiguration()
         configuration.filter = .livePhotos
         
@@ -75,11 +75,11 @@ struct SingleImagePicker: ImagePickerRepresentable {
     
 }
 
-struct CameraImagePicker: ImagePickerRepresentable {
+public struct CameraImagePicker: ImagePickerRepresentable {
     
-    var callback: (UIImage?, Error?) -> Void
+    public var callback: (UIImage?, Error?) -> Void
     
-    func makeUIViewController(context: UIViewControllerRepresentableContext<CameraImagePicker>) -> UIImagePickerController {
+    public func makeUIViewController(context: UIViewControllerRepresentableContext<CameraImagePicker>) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         picker.sourceType = .camera

@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct ImageView: View {
+public struct ImageView: View {
     
     var buttons: [ActionSheet.Button] {
         let buttons: [ActionSheet.Button] = [
@@ -39,13 +39,13 @@ struct ImageView: View {
     
     var callback: ((UIImage?, Error?) -> Void)? = nil
     
-    init(uiImage: UIImage, isCircular: Bool = true, callback: ((UIImage?, Error?) -> Void)? = nil){
+    public init(uiImage: UIImage, isCircular: Bool = true, callback: ((UIImage?, Error?) -> Void)? = nil){
         self._uiImage = State(initialValue: uiImage)
         self.isCircular = isCircular
         self.callback = callback
     }
     
-    var body: some View {
+    public var body: some View {
         return VStack(alignment: .center) {
                     self.imageView
             }.overlay(

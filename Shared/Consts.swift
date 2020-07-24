@@ -9,64 +9,27 @@
 import Foundation
 import SwiftUI
 import UIKit
+import JoliApi
 // genstrings -o en.lproj ../*.swift && genstrings -o fr.lproj ../*.swift
 //
+let logger = JoliApi.getLogger()
 
-enum Strings: String {
+public enum Strings {
     
-    case profile
-    case photoUpload
-    case reallyLogoutTitle
-    case reallyLogoutMessage
-    
-    var rawValue: String {
-        switch self {
-        case .profile:
-            return NSLocalizedString("profile", comment: "User Profile Label")
-        case .photoUpload:
-            return NSLocalizedString("photoUpload", comment: "Upload picture")
-        case .reallyLogoutTitle:
-            return NSLocalizedString("reallyLogoutTitle", comment: "Confirm user really wants to log out")
-        case .reallyLogoutMessage:
-            return NSLocalizedString("reallyLogoutMessage", comment: "Confirm user really wants to log out")
-        }
-    }
+    public static let profile = NSLocalizedString("profile", comment: "User Profile Label")
+    public static let photoUpload = NSLocalizedString("photoUpload", comment: "Upload picture")
+    public static let reallyLogoutTitle = NSLocalizedString("reallyLogoutTitle", comment: "Confirm user really wants to log out")
+    public static let reallyLogoutMessage = NSLocalizedString("reallyLogoutMessage", comment: "Confirm user really wants to log out")
     
 }
 
-enum Sizing: RawRepresentable {
+public enum Sizing {
     
-    init?(rawValue: CGFloat) {
-        self = .literal(rawValue)
-    }
-    
-    case large
-    case medium
-    case literal(CGFloat)
-    
-    static func fromFont(_ font: UIFont.TextStyle) -> CGFloat {
-        return UIFont.preferredFont(forTextStyle: font).pointSize
-    }
-    
-    var rawValue: CGFloat {
-        switch self {
-        case .large:
-            return Sizing.fromFont(.title1)
-        case .medium:
-            return Sizing.fromFont(.headline)
-        case .literal(let raw):
-            return raw
-        }
-    }
+    public static let large = UIFont.preferredFont(forTextStyle: .title1).pointSize
+    public static let medium = UIFont.preferredFont(forTextStyle: .headline).pointSize
     
 }
 
-enum NamedColor: String {
-    case lightGray = "light_gray"
-}
-
-extension Color {
-    init(named: NamedColor) {
-        self.init(named.rawValue)
-    }
+public enum Colors {
+    public static let lightGray = Color("light_gray")
 }
