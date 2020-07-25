@@ -12,7 +12,7 @@ import SwiftUI
 import JoliCore
 import Promises
 import Kingfisher
-//import UIKit
+import UIKit
 
 public extension Builder where T == User {
     
@@ -22,6 +22,42 @@ public extension Builder where T == User {
         }
         
         return DiscjockeyPosition(rawValue: djPosition) ?? DiscjockeyPosition.personal
+    }
+}
+
+extension SwiftUI.View {
+    
+    var screenSize: CGSize {
+        return UIScreen.main.bounds.size
+    }
+    
+    var screenWidth: CGFloat {
+        return screenSize.width
+    }
+    
+    var screenHeight: CGFloat {
+        return screenSize.height
+    }
+    
+}
+
+extension Spotify.Device {
+    
+    var imageName: String {
+        switch type {
+            case .smartphone:
+                return "iphone"
+            case .computer:
+                return "laptopcomputer"
+            case .automobile:
+                return "car"
+            case .tablet:
+                return "ipad"
+            case .tv:
+                return "tv"
+            default:
+                return "hifispeaker"
+        }
     }
 }
 

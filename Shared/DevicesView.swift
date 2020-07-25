@@ -9,49 +9,22 @@
 import SwiftUI
 import JoliCore
 import UIKit
+import Combine
 import PartialSheet
 
-extension View {
-    
-    var screenSize: CGSize {
-        return UIScreen.main.bounds.size
-    }
-    
-    var screenWidth: CGFloat {
-        return screenSize.width
-    }
-    
-    var screenHeight: CGFloat {
-        return screenSize.height
-    }
-    
-}
-
-extension Spotify.Device {
-    
-    var imageName: String {
-        switch type {
-        case .smartphone:
-            return "iphone"
-        case .computer:
-            return "laptopcomputer"
-        case .automobile:
-            return "car"
-        case .tablet:
-            return "ipad"
-        case .tv:
-            return "tv"
-        default:
-            return "hifispeaker"
-        }
-    }
-}
-
 public struct DevicesView: View {
-    @State var idx = 0
-    @State var volume = CGFloat(30)
+    
     @Binding var activeDevice: Spotify.Device?
+    @Binding var volume: CGFloat
     @State var devices: [Spotify.Device] = []
+    
+    @Environment(\.presentationMode) var presentationMode
+    
+    public init(activeDevice: Binding<Spotify.Device?>, volume: Binding<CGFloat>, devices: [Spotify.Device] = []){
+        self._volume = volume
+        self._activeDevice = activeDevice
+        self.devices = devices
+    }
     
     var volumeImageName: String {
         var volumeImage: String
@@ -80,7 +53,7 @@ public struct DevicesView: View {
     }
     
     public var body: some View {
-        VStack(){
+        let view = VStack(){
             HStack(){
                 Image(systemName: volumeImageName)
                     .frame(width: Sizing.large, height: Sizing.large)
@@ -98,7 +71,12 @@ public struct DevicesView: View {
                     
                     ForEach(devices) { device in
                         Button(){
-                            
+                            guard let idx = self.devices.firstIndex(of: device) else {
+                                return
+                            }
+                            logger.debug("[DevicesView] setting active device: \(self.devices[idx])")
+                            self.activeDevice = self.devices[idx]
+                            presentationMode.wrappedValue.dismiss()
                         } label: {
                             VStack {
                                 Image(systemName: device.imageName)
@@ -110,24 +88,22 @@ public struct DevicesView: View {
                         .padding()
                         .cornerRadius(20)
                         .background(device == activeDevice ? Color.yellow : Colors.lightGray)
-                        .onTapGesture() {
-                            guard let idx = self.devices.firstIndex(of: device) else {
-                                return
-                            }
-                            
-                            self.activeDevice = self.devices[idx]
-                        }
                     }
                 }.padding()
             }
-        }
+            
+        }//.frame(width: .infinity, height: self.screenHeight / 3)
+        return view
     }
 }
 
-public struct SampleView: View {
+public struct DevicesSampleView: View {
+    
     @State var chooserPresented: Bool = false
     @State var activeDevice: Spotify.Device?
-    //@EnvironmentObject var partialSheetManager: PartialSheetManager
+    @State var volume: CGFloat = 30
+    
+    @EnvironmentObject var partialSheetManager: PartialSheetManager
     
     public init(){
         
@@ -148,27 +124,30 @@ public struct SampleView: View {
         return VStack() {
             Text("Some stuff")
         }
+        .addPartialSheet()
+        .padding()
         .background(Color.pink)
-        .sheet(isPresented: self.$chooserPresented) {
-            DevicesView(activeDevice: self.$activeDevice,
-                               devices: devices)//.environmentObject(partialSheetManager)
-        }
         .onTapGesture() {
-            self.chooserPresented.toggle()
-//            self.partialSheetManager.showPartialSheet({
-//                    print("Partial sheet dismissed")
-//                }) {
-//                     Text("This is a Partial Sheet")
-//                }
+            //self.chooserPresented.toggle()
+            
+            self.partialSheetManager.showPartialSheet(){
+                print("Partial sheet dismissed")
+            } content: {
+                DevicesView(activeDevice: self.$activeDevice, volume: self.$volume,
+                        devices: devices)
+            }
         }
     }
 }
 
 struct DevicesView_Previews: PreviewProvider {
+    
+    static var partialManager = PartialSheetManager()
+    
     static var previews: some View {
         
         return NavigationView(){
-            SampleView()//.environmentObject(PartialSheetManager())
-        }
+            DevicesSampleView()
+        }.environmentObject(DevicesView_Previews.partialManager)
     }
 }

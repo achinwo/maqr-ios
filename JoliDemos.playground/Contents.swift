@@ -1,5 +1,4 @@
 //: A UIKit based Playground for presenting user interface
-import JoliDemos_Sources
 import Foundation
 import UIKit
 import PlaygroundSupport
@@ -10,13 +9,35 @@ import JoliApi
 @testable import Promises
 import PartialSheet
 import CancellationToken
-
-protocol LiveObject: ObservableObject {
-    associatedtype DataModel
+import Combine
+//Publishers
+protocol LiveObject: ObservableObject, ConnectablePublisher {
     
-    var api: JoliApi { get }
+    typealias Locator = URLComponents
+    typealias Attemp = (locator: Locator, payload: Any)
+    
+    enum ConnectionState {
+        case initiating
+        case connected
+        case disconnected
+        case errored(Error, Attempt?)
+    }
+
+    protocol Api {
+        
+    }
+    
+    associatedtype DataModel
+    associatedtype ApiObject: Api
+    
+    var connectionState: Publisher<ConnectionState, Never>
+    var api: ApiObject { get }
     var lastValue: DataModel? { get }
     var lastUpdatedAt: Date? { get }
+    static func fromUri(_ url: URLComponents) -> Self
+    static var cancellableSet: Set<AnyCancellable>
+    
+    
     
     //var state: DataModel {set}
     
@@ -132,22 +153,37 @@ func logicMain() -> Void {
     
 }
 
-
 struct ContentView: View {
+    
+    @EnvironmentObject var partial: PartialSheetManager
+    
      var body: some View {
         let user = SEED_DATA.users.first!
+        print("partial: \(partial)")
         //Text("Hello World \(user.name)")//
-        return SampleView()
-                .addPartialSheet()//UserProfileView2(user: user.builder()).offset(x: 0, y: 1)
+        return DevicesSampleView()
+            .addPartialSheet()
+        
+            //
+        //        .addPartialSheet()
+        //UserProfileView2(user: user.builder()).offset(x: 0, y: 1)
      }
 }
 
+
+
 func uiMain() -> Void {
+    
+    let view = NavigationView(){
+        ContentView()
+    }.environmentObject(PartialSheetManager())
+    
     let parent = playgroundWrapper(
-      child: UIHostingController(rootView: ContentView().environmentObject(PartialSheetManager())),
+        child: UIHostingController(rootView: view),
         device: .phone4inch,
         orientation: .portrait,
-      contentSizeCategory: .large)
+        contentSizeCategory: .large)
+    
     PlaygroundPage.current.liveView = parent
 }
 

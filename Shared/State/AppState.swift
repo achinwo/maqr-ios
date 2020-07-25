@@ -98,13 +98,23 @@ class AppState: ObservableObject {
     @Published var isSettingsPresented = false
     
     @Published var searchText: String = ""
+    @Published var deviceVolume: CGFloat = 30
     
     @Published var auth: Auth?
     @Published var serverConnectionState: ConnectionState = .stopped
     @Published var serverReconnectState = AppServerReconnectState()
     
     @Published var spotifyDevices: [Spotify.Device] = []
-    @Published var selectedSpotifyDeviceIdx: Int? = nil
+    @Published var selectedSpotifyDeviceIdx: Int? = nil {
+        didSet {
+            guard let idx = self.selectedSpotifyDeviceIdx, idx < self.spotifyDevices.count else {
+                return
+            }
+            
+            self.deviceVolume = CGFloat(self.spotifyDevices[idx].volumePercent)
+        }
+    }
+    
     @Published var activeRoom: Musicroom? = nil
     
     @Published var spotifyWebAuth: AuthToken? = nil
