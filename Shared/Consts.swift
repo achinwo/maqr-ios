@@ -10,12 +10,13 @@ import Foundation
 import SwiftUI
 import UIKit
 import JoliApi
-// genstrings -o en.lproj ../*.swift && genstrings -o fr.lproj ../*.swift
+// genstrings -a -o en.lproj ../*.swift && genstrings -a -o fr.lproj ../*.swift
 //
-let logger = JoliApi.getLogger()
+public let logger = JoliApi.getLogger()
 
 public enum Strings {
     
+    public static let volume = NSLocalizedString("volume", comment: "Sound volume")
     public static let profile = NSLocalizedString("profile", comment: "User Profile Label")
     public static let photoUpload = NSLocalizedString("photoUpload", comment: "Upload picture")
     public static let reallyLogoutTitle = NSLocalizedString("reallyLogoutTitle", comment: "Confirm user really wants to log out")
