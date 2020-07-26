@@ -11,7 +11,6 @@ import JoliCore
 import JoliApi
 
 
-
 struct UserProfileView: View {
     var user: UserRecord
     

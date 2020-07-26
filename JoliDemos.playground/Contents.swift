@@ -10,32 +10,34 @@ import JoliApi
 import PartialSheet
 import CancellationToken
 import Combine
+import Starscream
 //Publishers
-protocol LiveObject: ObservableObject, ConnectablePublisher {
-    
-    typealias Locator = URLComponents
-    typealias Attemp = (locator: Locator, payload: Any)
-    
-    enum ConnectionState {
-        case initiating
-        case connected
-        case disconnected
-        case errored(Error, Attempt?)
-    }
 
-    protocol Api {
-        
-    }
+protocol Api {
+    
+}
+
+typealias Locator = URLComponents
+typealias Attempt = (locator: Locator, payload: Any)
+
+enum ConnectionState {
+    case initiating
+    case connected
+    case disconnected
+    case errored(Error, Attempt?)
+}
+
+protocol LiveObject: ObservableObject, ConnectablePublisher {
     
     associatedtype DataModel
     associatedtype ApiObject: Api
     
-    var connectionState: Publisher<ConnectionState, Never>
+    var connectionState: ConnectionState { get }
     var api: ApiObject { get }
     var lastValue: DataModel? { get }
     var lastUpdatedAt: Date? { get }
     static func fromUri(_ url: URLComponents) -> Self
-    static var cancellableSet: Set<AnyCancellable>
+    static var cancellableSet: Set<AnyCancellable> { get }
     
     
     
@@ -155,14 +157,14 @@ func logicMain() -> Void {
 
 struct ContentView: View {
     
-    @EnvironmentObject var partial: PartialSheetManager
+    //@EnvironmentObject var partial: PartialSheetManager
     
      var body: some View {
         let user = SEED_DATA.users.first!
-        print("partial: \(partial)")
-        //Text("Hello World \(user.name)")//
-        return DevicesSampleView()
-            .addPartialSheet()
+        //print("partial: \(partial)")
+        Text("Hello World \(user.name)")//
+        //return DevicesSampleView()
+            //.addPartialSheet()
         
             //
         //        .addPartialSheet()
@@ -175,8 +177,8 @@ struct ContentView: View {
 func uiMain() -> Void {
     
     let view = NavigationView(){
-        ContentView()
-    }.environmentObject(PartialSheetManager())
+        ExploreView()
+    }//.environmentObject(PartialSheetManager())
     
     let parent = playgroundWrapper(
         child: UIHostingController(rootView: view),
