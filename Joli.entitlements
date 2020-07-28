@@ -8,5 +8,9 @@
 	<array>
 		<string>applinks:dev.jolimc.com</string>
 	</array>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.app.jolimc.Joli</string>
+	</array>
 </dict>
 </plist>
