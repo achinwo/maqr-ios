@@ -44,6 +44,7 @@
 		9274A81D24CDE6AB00B45EDF /* SpotifyiOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		92A2EDDE24CE0A4B00D6640A /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
 		92A2EDDF24CE0A4B00D6640A /* SpotifyiOS.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		92A2EDE124D001EE00D6640A /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A2EDE024D001EE00D6640A /* MapKit.framework */; };
 		92A32D6724C799B8007C960E /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D6624C799B8007C960E /* Tests_iOS.swift */; };
 		92A32D7224C799B8007C960E /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D7124C799B8007C960E /* Tests_macOS.swift */; };
 		92A32D7624C799B8007C960E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D4D24C799B7007C960E /* ContentView.swift */; };
@@ -270,6 +271,7 @@
 		9274A80624CDB29800B45EDF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		929BA5CA24C7925F00B11188 /* JoliApi */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JoliApi; sourceTree = "<group>"; };
 		929BA5CB24C7925F00B11188 /* env.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = env.json; sourceTree = "<group>"; };
+		92A2EDE024D001EE00D6640A /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		92A32D4D24C799B7007C960E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		92A32D5324C799B8007C960E /* Joli.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Joli.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92A32D5A24C799B8007C960E /* Joli.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Joli.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -374,6 +376,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */,
+				92A2EDE124D001EE00D6640A /* MapKit.framework in Frameworks */,
 				92A2EDDE24CE0A4B00D6640A /* SpotifyiOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -635,6 +638,7 @@
 		92F37A18236458F2005FE2AB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				92A2EDE024D001EE00D6640A /* MapKit.framework */,
 				925E5C72236A742100D95AB7 /* SpotifyiOS.framework */,
 				9234320D23BFD2F700E24E96 /* NotificationCenter.framework */,
 			);
