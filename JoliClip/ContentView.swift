@@ -7,10 +7,30 @@
 //
 
 import SwiftUI
+import JoliPlayground
+import JoliCore
+import StoreKit
 
 struct ContentView: View {
+    
+    @State var showRecommended = false
+    
     var body: some View {
-        Text("Hello, world!").padding()
+        return NavigationView(){
+            VStack() {
+                Button("Show Recommended App") {
+                            self.showRecommended.toggle()
+                        }
+                        
+                Text("Browse Songs").font(.title)
+                TrackList(tracks: SEED_DATA.tracks)
+            }.edgesIgnoringSafeArea(.bottom)
+        }.navigationTitle("Tracks")
+        .navigationViewStyle(DefaultNavigationViewStyle())
+        .appStoreOverlay(isPresented: $showRecommended) {
+            SKOverlay.AppConfiguration(appIdentifier: "1440611372", position: .bottom)
+        }
+        
     }
 }
 

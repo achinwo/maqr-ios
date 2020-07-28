@@ -10,7 +10,7 @@ import SwiftUI
 import JoliCore
 import UIImageColors
 
-extension UIImageColors {
+public extension UIImageColors {
     
     var primaryColor: Color {
         return Color(primary)
@@ -30,12 +30,17 @@ extension UIImageColors {
     
 }
 
-struct TrackView2: View {
+public struct TrackView2: View {
     
     @State var track: Track
     @State var colors: UIImageColors? = nil
     
-    var body: some View {
+    public init(track: Track, colors: UIImageColors? = nil){
+        _track = State(initialValue: track)
+        self.colors = colors
+    }
+    
+    public var body: some View {
         HStack(alignment: .center) {
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
@@ -79,11 +84,15 @@ struct TrackView2: View {
     }
 }
 
-struct TrackList: View {
+public struct TrackList: View {
     
     @State var tracks: [Track]
     
-    var body: some View {
+    public init(tracks: [Track]){
+        self._tracks = State(initialValue: tracks)
+    }
+    
+    public var body: some View {
         return ScrollView(.vertical, showsIndicators: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/) {
             VStack(alignment: .center, spacing: 0) {
                 ForEach(tracks) { track in
