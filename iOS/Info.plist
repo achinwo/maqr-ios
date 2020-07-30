@@ -63,10 +63,17 @@
 		<string>MKDirectionsModeBike</string>
 		<string>MKDirectionsModeBus</string>
 		<string>MKDirectionsModeCar</string>
-		<string>MKDirectionsModePedestrian</string>
+		<string>MKDirectionsModePlane</string>
+		<string>MKDirectionsModeSubway</string>
+		<string>MKDirectionsModeTaxi</string>
+		<string>MKDirectionsModeTrain</string>
 	</array>
+	<key>NFCReaderUsageDescription</key>
+	<string>Verify user is on location for Playroom access</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Capture images for playrooms and user profile </string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Determine user is at event location</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

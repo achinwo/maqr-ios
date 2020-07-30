@@ -156,7 +156,7 @@ class AppState: ObservableObject {
     let baseUrl: JoliApi.BaseUrl
     
     let api: JoliApi
-    let serverVersion: Version
+    var serverVersion: Version?
     
     var cancellableSet: Set<AnyCancellable> = []
     
@@ -237,7 +237,7 @@ class AppState: ObservableObject {
     
     
     // MARK: - initialize (Start)
-    init(baseUrl: JoliApi.BaseUrl, serverVersion: Version) {
+    init(baseUrl: JoliApi.BaseUrl, serverVersion: Version? = nil) {
         self.baseUrl = baseUrl
         
         self.currentlyPlaying = AppCurrentlyPlayingState()
@@ -263,10 +263,23 @@ class AppState: ObservableObject {
         }
         
         self.initReactive()
+        
+        guard self.serverVersion != nil else {
+            return
+        }
+        
+        JoliApi.resolveServer(self.baseUrl.http)
+            .timeout(3.0)
+            .then(on: .main) { version in
+                logger.info("[AppState#init] server version: \(version)")
+                self.serverVersion = version
+            }
+            .catch() { error in
+                logger.error("[serverResolve] error: \(error)", context: error)
+            }
+        
     }
     // MARK: initialize (End)
-    
-    
     
 }
 

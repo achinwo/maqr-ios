@@ -123,34 +123,25 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Create the SwiftUI view that provides the window contents.
 
 
-        logger.debug("Spootify app installed: \(spotifySessionManager.isSpotifyAppInstalled)")
+        logger.debug("Spotify app installed: NO_CHECK")//\(spotifySessionManager.isSpotifyAppInstalled)")
         
         // Use a UIHostingController as window root view controller.
         guard let windowScene = scene as? UIWindowScene else {
             return
         }
         
+            
+        let contentView = AppView()
+            .environmentObject(self.sheetManager)
+            .environmentObject(appState)
+            .environmentObject(appState.currentlyPlaying)
+            .environmentObject(appState.keyboardState)
+            .environmentObject(appState.serverReconnectState)
+
         let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = UIHostingController(rootView: Text("Loading...")
-                                                            .foregroundColor(.secondary)
-                                                            .environmentObject(sheetManager))
+        window.rootViewController = UIHostingController(rootView: contentView)
         self.window = window
         window.makeKeyAndVisible()
-        
-        appDelegate.loadingPromise?.then(on: .main) { appState in
-            
-            let contentView = AppView()
-                .environmentObject(self.sheetManager)
-                .environmentObject(appState)
-                .environmentObject(appState.currentlyPlaying)
-                .environmentObject(appState.keyboardState)
-                .environmentObject(appState.serverReconnectState)
-
-            let window = UIWindow(windowScene: windowScene)
-            window.rootViewController = UIHostingController(rootView: contentView)
-            self.window = window
-            window.makeKeyAndVisible()
-        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -168,7 +159,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         //appState.api.wsClient.connect()
         if let _ = self.appRemote.connectionParameters.accessToken {
+            logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote")
           self.appRemote.connect()
+        } else {
+            logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote aborted...")
         }
         
         //connect()
@@ -193,10 +187,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
         logger.debug("[SceneDelegate] App is active")
-        appDelegate.loadingPromise?.then(on: .main) { appState in
-            appState.api.wsClient.connect() { connectionState in
-                self.appState.onServerConnectionStateChanged(connectionState)
-            }
+        appState.api.wsClient.connect() { connectionState in
+            self.appState.onServerConnectionStateChanged(connectionState)
         }
         
 //        do {

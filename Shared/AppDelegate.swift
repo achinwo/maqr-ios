@@ -16,7 +16,6 @@ import Promises
 
 var appDelegateSingleton: AppDelegate!
 
-//@UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     #if DEBUG
@@ -153,10 +152,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
       let token = tokenParts.joined()
         logger.info("Device Token: \(token)")
         
-        loadingPromise?.then() { appState in
-            appState.api.setNotificationToken(token).then() { device in
-                logger.info("Token Saved: \(device)")
-            }
+        appState.api.setNotificationToken(token).then() { device in
+            logger.info("Token Saved: \(device)")
         }
         
     }
@@ -195,23 +192,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             JoliApi.Environment.CACHED_ENV_CONFIG.merge(json) { (_, new) in new }
         }
         
-        self.loadingPromise = JoliApi.resolveServer(env.baseUrl.http)
-            .timeout(3.0)
-            .recover() { (error) -> Version in
-                logger.error("[serverResolve] error: \(error)", context: error)
-                return Version(major: 0, minor: 0, patch: 0)
-        }
-        .then(on: .main) { version -> AppState in
-            logger.info("[AppDelegate#willFinishLaunchingWithOptions] server version: \(version)")
-            self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: version)
-            return self.appState
-        }
+        self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: nil)
         
         logger.debug("[AppDelegate#willFinishLaunchingWithOptions] notifOptions:\(String(describing: launchOptions))")
         return true
     }
-    
-    var loadingPromise: Promise<AppState>? = nil
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        do {
@@ -270,55 +255,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
 
-}
-
-import Version
-
-extension JoliApi {
-    
-    enum VersionResolveError: Error {
-        case unrecognisedResponseType
-        case noResponseReceived
-        case missingVersionField
-        case malformedString(String)
-        case malformedBaseUrl(URL)
-    }
-    
-    static func resolveServer(_ baseUrl: URL) -> Promise<Version> {
-        
-        logger.info("[resolveServer] baseUrl: \(baseUrl)")
-        
-        return Promise() { resolve, reject in
-            
-            guard let url = URL(string: "/status", relativeTo: baseUrl) else {
-                return reject(VersionResolveError.malformedBaseUrl(baseUrl))
-            }
-            
-            var req = URLRequest(url: url)
-            req.httpMethod = "HEAD"
-            
-            let task = JoliApi.sharedUrlSession.dataTask(with: baseUrl) { (data, response, error) in
-                guard error == nil else {
-                    return reject(error!)
-                }
-                
-                guard let resp = response as? HTTPURLResponse else {
-                    return reject(response == nil ? VersionResolveError.noResponseReceived : VersionResolveError.unrecognisedResponseType)
-                }
-                
-                guard let versionStr = resp.allHeaderFields["X-Server-Version"] as? String else {
-                    return reject(VersionResolveError.missingVersionField)
-                }
-                
-                guard let version = Version(versionStr) else {
-                    return reject(VersionResolveError.malformedString(versionStr))
-                }
-                
-                resolve(version)
-            }
-            
-            task.resume()
-        }
-    }
-    
 }
