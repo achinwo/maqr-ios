@@ -32,7 +32,7 @@
 		923C2B0624CC752E009E2380 /* JoliPlayground.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		925C6FF324CB722A0016963F /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 925C6FF224CB722A0016963F /* FBLPromises */; };
 		926663A624D0787000C5AEEB /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A2EDE024D001EE00D6640A /* MapKit.framework */; };
-		9274A7E724CDB29200B45EDF /* JoliClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274A7E624CDB29200B45EDF /* JoliClipApp.swift */; };
+		9274A7E724CDB29200B45EDF /* JoliClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274A7E624CDB29200B45EDF /* JoliClip.swift */; };
 		9274A7E924CDB29200B45EDF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274A7E824CDB29200B45EDF /* ContentView.swift */; };
 		9274A7EB24CDB29800B45EDF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9274A7EA24CDB29800B45EDF /* Assets.xcassets */; };
 		9274A7EE24CDB29800B45EDF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9274A7ED24CDB29800B45EDF /* Preview Assets.xcassets */; };
@@ -241,7 +241,7 @@
 		925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Joli-Bridging-Header.h"; sourceTree = "<group>"; };
 		926E8FE024C76DE100378436 /* Styles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Styles.swift; sourceTree = "<group>"; };
 		9274A7E424CDB29200B45EDF /* JoliClip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoliClip.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9274A7E624CDB29200B45EDF /* JoliClipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliClipApp.swift; sourceTree = "<group>"; };
+		9274A7E624CDB29200B45EDF /* JoliClip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliClip.swift; sourceTree = "<group>"; };
 		9274A7E824CDB29200B45EDF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9274A7EA24CDB29800B45EDF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9274A7ED24CDB29800B45EDF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -399,7 +399,7 @@
 		9274A7E524CDB29200B45EDF /* JoliClip */ = {
 			isa = PBXGroup;
 			children = (
-				9274A7E624CDB29200B45EDF /* JoliClipApp.swift */,
+				9274A7E624CDB29200B45EDF /* JoliClip.swift */,
 				9274A7E824CDB29200B45EDF /* ContentView.swift */,
 				9274A7EA24CDB29800B45EDF /* Assets.xcassets */,
 				9274A7EF24CDB29800B45EDF /* Info.plist */,
@@ -1009,7 +1009,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9274A7E924CDB29200B45EDF /* ContentView.swift in Sources */,
-				9274A7E724CDB29200B45EDF /* JoliClipApp.swift in Sources */,
+				9274A7E724CDB29200B45EDF /* JoliClip.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1492,6 +1492,10 @@
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = macOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1519,6 +1523,10 @@
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = macOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

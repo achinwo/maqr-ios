@@ -13,6 +13,8 @@ import JoliCore
 import Promises
 import Kingfisher
 import UIKit
+import PartialSheet
+import Combine
 
 public extension Builder where T == User {
     
@@ -168,6 +170,207 @@ extension UIImage {
         }
         //print("[UIImage] new size: \(cropRect)")
         return UIImage(cgImage: imageRef, scale: scale, orientation: imageOrientation)
+    }
+    
+}
+
+
+public extension String {
+    static var empty: String {
+        return ""
+    }
+}
+
+
+public enum AppStorageKey: String {
+    case authToken = "auth_token"
+    case location = "location"
+}
+
+
+public struct Regex: ExpressibleByStringLiteral, Equatable {
+
+    fileprivate let expression: NSRegularExpression
+    private let regexString: String
+
+    public init(stringLiteral: String) {
+        self.regexString = stringLiteral
+        do {
+            self.expression = try NSRegularExpression(pattern: stringLiteral, options: [])
+        } catch {
+            print("Failed to parse (stringLiteral) as a regular expression")
+            self.expression = try! NSRegularExpression(pattern: ".*", options: [])
+        }
+    }
+
+    public func match(_ input: String) -> Bool {
+        let result = expression.rangeOfFirstMatch(in: input, options: [],
+                                                  range: NSRange(input.startIndex..., in: input))
+        return !NSEqualRanges(result, NSMakeRange(NSNotFound, 0))
+    }
+    
+    public func matchGroups(_ string: String) -> [String: String]? {
+        guard let nameRegex = try? NSRegularExpression(pattern: "\\(\\?\\<(\\w+)\\>", options: []) else {
+            return nil
+        }
+        
+        let nameMatches = nameRegex.matches(in: regexString, options: [], range: NSMakeRange(0, regexString.count))
+        let names = nameMatches.map { (textCheckingResult) -> String in
+            return (regexString as NSString).substring(with: textCheckingResult.range(at: 1))
+        }
+        
+        guard let regex = try? NSRegularExpression(pattern: regexString, options: []) else {
+            return nil
+        }
+        
+        let result = regex.firstMatch(in: string, options: [], range: NSMakeRange(0, string.count))
+        var dict = [String: String]()
+        
+        for name in names {
+            guard let nsRange = result?.range(withName: name), let range = Range(nsRange, in: string) else {
+                continue
+            }
+            
+            dict[name] = String(string[range])
+        }
+        return dict.count > 0 ? dict : nil
+    }
+    
+    public static let phone: Regex = "^(\\+\\d{1,2}\\s)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$"
+}
+
+public extension Regex {
+    static func ~=(pattern: Regex, value: String) -> Bool {
+        return pattern.match(value)
+    }
+    
+}
+
+
+public enum AppLocation: RawRepresentable {
+    
+    case invited(String) // joli.live/r/abc
+    case playroom(String)
+    
+    case home
+    
+    static var `default` = "/"
+    
+    public init?(rawValue: String) {
+        let patterns = AppLocation.patterns
+        
+        if let matches = patterns.invited.matchGroups(rawValue), let inviteId = matches["inviteId"] {
+            self = .invited(inviteId)
+        } else if let matches = patterns.playroom.matchGroups(rawValue), let roomId = matches["roomId"] {
+            self = .playroom(roomId)
+        } else if rawValue.isEmpty || rawValue == AppLocation.default {
+            self = .home
+        } else {
+            return nil
+        }
+    }
+    
+    public var rawValue: String {
+        switch self {
+        case .invited(let inviteId):
+            return "/join/\(inviteId)"
+        case .playroom(let roomId):
+            return "/r/\(roomId)"
+        default:
+            return AppLocation.default
+        }
+    }
+    
+    static var patterns = (
+        home: Regex("^/$"),
+        invited: Regex("^/join/(?<inviteId>.+)$"),
+        playroom: Regex("^/r/(?<roomId>.+)$")
+    )
+    
+}
+
+public extension AppLocation {
+    
+    init?(_ activity: NSUserActivity){
+        guard let incomingUrl = activity.webpageURL,
+              let components = URLComponents(url: incomingUrl, resolvingAgainstBaseURL: true) else {
+            logger.info("[AppLocation] unable to resolve: \(activity)")
+            return nil
+        }
+        
+        self.init(rawValue: components.path)
+    }
+}
+
+
+public class AppCoordinator: ObservableObject {
+    public var sheetManager: PartialSheetManager = PartialSheetManager()
+    
+    public init(){
+        
+    }
+}
+
+
+public protocol AppClip: App {
+    associatedtype Content: SwiftUI.View
+    
+    var currentLocation: AppLocation { get nonmutating set }
+    var contentView: Content { get }
+    var scenePhase: ScenePhase { get }
+    var coordinator: AppCoordinator { get }
+    
+    func onUserActivity(_ activity: NSUserActivity) -> Void
+    
+}
+
+public extension AppClip {
+    
+    var body: some Scene {
+        WindowGroup {
+            self.contentView
+                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: self.onUserActivity)
+                .onChange(of: scenePhase, perform: self.onScenePhaseChange)
+                .environmentObject(coordinator)
+        }
+    }
+    
+    func onScenePhaseChange(_ phase: ScenePhase){
+        switch phase {
+            case .active:
+                print("App became active")
+            case .inactive:
+                print("App became inactive")
+            case .background:
+                print("App is running in the background")
+            @unknown default:
+            // Fallback for future cases
+                print("Unknown scene phase: \(phase)")
+        }
+    }
+    
+    func onUserActivity(_ activity: NSUserActivity) -> Void {
+        self.currentLocation = AppLocation(activity) ?? .home
+    }
+    
+}
+
+public extension UserDefaults {
+    
+    static var groupContainer: UserDefaults {
+        return UserDefaults(suiteName: "group.app.jolimc.Joli") ?? .init()
+    }
+    
+}
+
+public extension AppStorage {
+    
+    init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value == String {
+        self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
+    }
+    
+    init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value: RawRepresentable, Value.RawValue == String {
+        self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
     }
     
 }
