@@ -302,13 +302,20 @@ public extension AppLocation {
     }
 }
 
+public extension PartialSheetManager {
+    
+    func show<T>(_ onDismiss: (() -> Void)? = nil, @ViewBuilder content: @escaping () -> T) where T: SwiftUI.View {
+        self.showPartialSheet(onDismiss, content: content)
+    }
+}
 
 public class AppCoordinator: ObservableObject {
-    public var sheetManager: PartialSheetManager = PartialSheetManager()
+    public var sheet: PartialSheetManager = PartialSheetManager()
     
     public init(){
         
     }
+    
 }
 
 
@@ -328,10 +335,14 @@ public extension AppClip {
     
     var body: some Scene {
         WindowGroup {
-            self.contentView
-                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: self.onUserActivity)
-                .onChange(of: scenePhase, perform: self.onScenePhaseChange)
-                .environmentObject(coordinator)
+            ZStack(){
+                self.contentView
+                    .addPartialSheet()
+            }
+            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: self.onUserActivity)
+            .onChange(of: scenePhase, perform: self.onScenePhaseChange)
+            .environmentObject(coordinator)
+            .environmentObject(coordinator.sheet)
         }
     }
     

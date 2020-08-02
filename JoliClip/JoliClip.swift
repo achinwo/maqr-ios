@@ -8,7 +8,6 @@
 
 import SwiftUI
 import JoliPlayground
-import PartialSheet
 
 @main
 struct JoliClip: AppClip {

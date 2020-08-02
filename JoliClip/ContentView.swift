@@ -14,6 +14,7 @@ import StoreKit
 struct ContentView: View {
     
     @State var showRecommended = false
+    @EnvironmentObject var mgr: AppCoordinator
     
     var body: some View {
         return NavigationView(){
@@ -24,8 +25,17 @@ struct ContentView: View {
                         
                 Text("Browse Songs").font(.title)
                 TrackList(tracks: SEED_DATA.tracks)
-            }.edgesIgnoringSafeArea(.bottom)
-        }.navigationTitle("Tracks")
+                    .onTapGesture {
+                        self.mgr.sheet.show() {
+                            print("Partial sheet dismissed")
+                        } content: {
+                            Text("This is a Partial Sheet")
+                        }
+                    }
+            }
+            .edgesIgnoringSafeArea(.bottom)
+        }
+        .navigationTitle("Tracks")
         .navigationViewStyle(DefaultNavigationViewStyle())
         .appStoreOverlay(isPresented: $showRecommended) {
             SKOverlay.AppConfiguration(appIdentifier: "1440611372", position: .bottom)
