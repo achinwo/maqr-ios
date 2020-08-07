@@ -8,6 +8,10 @@
 
 import SwiftUI
 import JoliPlayground
+import JoliCore
+import CancellationToken
+import Combine
+
 
 @main
 struct JoliClip: AppClip {
@@ -24,6 +28,23 @@ struct JoliClip: AppClip {
     
     var contentView: some View {
         ContentView()
+    }
+    
+    init() {
+    }
+    
+    func onScenePhaseChange(_ phase: ScenePhase){
+        switch phase {
+            case .active:
+                print("App became active")
+            case .inactive:
+                print("App became inactive")
+            case .background:
+                print("App is running in the background")
+            @unknown default:
+            // Fallback for future cases
+                print("Unknown scene phase: \(phase)")
+        }
     }
     
 }

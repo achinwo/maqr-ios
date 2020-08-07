@@ -131,10 +131,6 @@ class AppState: ObservableObject {
         return appDelegateSingleton
     }
     
-    var sceneDelegate: SceneDelegate? {
-        return UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate
-    }
-    
     var env: JoliApi.Environment {
         return self.appDelegate.env
     }
@@ -149,8 +145,10 @@ class AppState: ObservableObject {
         return version
     }
     
+    var spotifyDelegate: SpotifyDelegate = spotifyDelegateInstance
+    
     var spotifyRemote: SPTAppRemote? {
-        return sceneDelegate?.appRemote
+        return spotifyDelegate.appRemote
     }
     
     let baseUrl: JoliApi.BaseUrl

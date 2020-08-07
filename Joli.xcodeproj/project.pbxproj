@@ -46,8 +46,6 @@
 		92A32D7224C799B8007C960E /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D7124C799B8007C960E /* Tests_macOS.swift */; };
 		92A32D7624C799B8007C960E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D4D24C799B7007C960E /* ContentView.swift */; };
 		92A32D7724C799B8007C960E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D4D24C799B7007C960E /* ContentView.swift */; };
-		92A32D8624C79A13007C960E /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E42363534D005FE2AB /* SceneDelegate.swift */; };
-		92A32D8724C79A13007C960E /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F379E42363534D005FE2AB /* SceneDelegate.swift */; };
 		92A32D8824C79A13007C960E /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
 		92A32D8924C79A13007C960E /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
 		92A32D9B24C79B3D007C960E /* african_giant_cover.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D8E24C79B3D007C960E /* african_giant_cover.jpg */; };
@@ -132,6 +130,10 @@
 		92A32E2D24C7BB53007C960E /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
 		92A32E3124CA22FA007C960E /* LiveObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* LiveObject.swift */; };
 		92A32E3224CA22FA007C960E /* LiveObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* LiveObject.swift */; };
+		92A7120D24D85EC500AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
+		92A7120E24D85EC500AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
+		92A7120F24D85EC600AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
+		92A7121024D85EC600AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
 		92BD11CE24CB0BCB00AAB7DE /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
 		92BD11CF24CB0BCF00AAB7DE /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD424C79C07007C960E /* ImageView.swift */; };
 		92BD11D024CB0BD200AAB7DE /* PeopleGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC424C79C06007C960E /* PeopleGridView.swift */; };
@@ -312,7 +314,7 @@
 		92A32E2424C7B145007C960E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		92A32E2B24C7BB53007C960E /* Consts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Consts.swift; sourceTree = "<group>"; };
 		92A32E3024CA22FA007C960E /* LiveObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveObject.swift; sourceTree = "<group>"; };
-		92F379E42363534D005FE2AB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		92A7120C24D85EC500AD6729 /* NetworkImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageView.swift; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -448,7 +450,6 @@
 				92A32DD624C79C07007C960E /* AppView.swift */,
 				92A32DD024C79C06007C960E /* Extensions.swift */,
 				92A32DC924C79C06007C960E /* ServiceAlert.swift */,
-				92F379E42363534D005FE2AB /* SceneDelegate.swift */,
 				926E8FE024C76DE100378436 /* Styles.swift */,
 				92A32D4D24C799B7007C960E /* ContentView.swift */,
 				92A32E2B24C7BB53007C960E /* Consts.swift */,
@@ -556,6 +557,7 @@
 				92A32DD124C79C06007C960E /* TrackList.swift */,
 				9208ACF224CC559400773730 /* DevicesView.swift */,
 				9222BE1724CD8A5800F19973 /* ExploreView.swift */,
+				92A7120C24D85EC500AD6729 /* NetworkImageView.swift */,
 			);
 			name = Components;
 			sourceTree = "<group>";
@@ -991,6 +993,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9222BE1824CD8A5800F19973 /* ExploreView.swift in Sources */,
+				92A7120D24D85EC500AD6729 /* NetworkImageView.swift in Sources */,
 				92BD11D124CB0BD800AAB7DE /* TrackList.swift in Sources */,
 				9203B32924CB07F800F465CC /* Styles.swift in Sources */,
 				9203B32A24CB07FD00F465CC /* Consts.swift in Sources */,
@@ -1009,6 +1012,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9274A7E924CDB29200B45EDF /* ContentView.swift in Sources */,
+				92A7120E24D85EC500AD6729 /* NetworkImageView.swift in Sources */,
 				9274A7E724CDB29200B45EDF /* JoliClip.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1043,6 +1047,7 @@
 				92A32DFC24C79C07007C960E /* ImageView.swift in Sources */,
 				92A32DB724C79B59007C960E /* UserSettings.swift in Sources */,
 				92A32DE624C79C07007C960E /* ServiceAlert.swift in Sources */,
+				92A7120F24D85EC600AD6729 /* NetworkImageView.swift in Sources */,
 				9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */,
 				92A32DBB24C79B59007C960E /* AppState+Methods.swift in Sources */,
 				92A32DF624C79C07007C960E /* TrackList.swift in Sources */,
@@ -1057,7 +1062,6 @@
 				92A32DF224C79C07007C960E /* PlayQueueView.swift in Sources */,
 				92A32DDE24C79C07007C960E /* PeopleGridView.swift in Sources */,
 				92A32DE024C79C07007C960E /* MusicroomView.swift in Sources */,
-				92A32D8724C79A13007C960E /* SceneDelegate.swift in Sources */,
 				92A32DDC24C79C07007C960E /* ImagePicker.swift in Sources */,
 				92A32E3124CA22FA007C960E /* LiveObject.swift in Sources */,
 				92A32D8924C79A13007C960E /* Styles.swift in Sources */,
@@ -1086,6 +1090,7 @@
 				92A32DFD24C79C07007C960E /* ImageView.swift in Sources */,
 				92A32DB824C79B59007C960E /* UserSettings.swift in Sources */,
 				92A32DE724C79C07007C960E /* ServiceAlert.swift in Sources */,
+				92A7121024D85EC600AD6729 /* NetworkImageView.swift in Sources */,
 				9222BE1A24CD8A5900F19973 /* ExploreView.swift in Sources */,
 				92A32DBC24C79B59007C960E /* AppState+Methods.swift in Sources */,
 				92A32DF724C79C07007C960E /* TrackList.swift in Sources */,
@@ -1100,7 +1105,6 @@
 				92A32DF324C79C07007C960E /* PlayQueueView.swift in Sources */,
 				92A32DDF24C79C07007C960E /* PeopleGridView.swift in Sources */,
 				92A32DE124C79C07007C960E /* MusicroomView.swift in Sources */,
-				92A32D8624C79A13007C960E /* SceneDelegate.swift in Sources */,
 				92A32DDD24C79C07007C960E /* ImagePicker.swift in Sources */,
 				92A32E3224CA22FA007C960E /* LiveObject.swift in Sources */,
 				92A32D8824C79A13007C960E /* Styles.swift in Sources */,

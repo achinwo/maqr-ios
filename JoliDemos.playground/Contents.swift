@@ -13,146 +13,112 @@ import Combine
 import Starscream
 //Publishers
 
-protocol Api {
+
+public enum SocketMessage {
+    case track(Track)
+}
+
+public enum SocketError: Error {
     
 }
 
-typealias Locator = URLComponents
-typealias Attempt = (locator: Locator, payload: Any)
-
-enum ConnectionState {
-    case initiating
-    case connected
-    case disconnected
-    case errored(Error, Attempt?)
-}
-
-protocol LiveObject: ObservableObject, ConnectablePublisher {
+public class Socket: ObservableObject, ConnectablePublisher {
     
-    associatedtype DataModel
-    associatedtype ApiObject: Api
+    let socket: WebSocket
+    var request: URLRequest
     
-    var connectionState: ConnectionState { get }
-    var api: ApiObject { get }
-    var lastValue: DataModel? { get }
-    var lastUpdatedAt: Date? { get }
-    static func fromUri(_ url: URLComponents) -> Self
-    static var cancellableSet: Set<AnyCancellable> { get }
+    @Published var isConnected: Bool = false
     
+    public init(){
+        request = URLRequest(url: URL(string: "wss://192.168.1.173:8080/ws")!)
+        request.timeoutInterval = 5
+        
+        let pinner = FoundationSecurity(allowSelfSigned: true) // don't validate SSL certificates
+        self.socket = WebSocket(request: request, certPinner: pinner)
+        self.socket.delegate = self
+        Swift.print("££££££££Creating socket called")
+        // 1) what you're about to do 2) Is this your first time? 3)
+    }
     
-    
-    //var state: DataModel {set}
-    
-    func connect(_ cancellation: CancellationToken, timeoutAfter: DispatchTimeInterval?) -> Self
-}
-
-
-
-extension LiveObject where DataModel: Persisted {
-    
-//    var currentTask: DispatchWorkItem? = nil {
-//        willSet {
-//            if newValue == nil {
-//                currentTask?.cancel()
-//            }
-//        }
-//    }
-//
-//    var timeout: DispatchTimeInterval = .seconds(60 * 2)
-    
-//    func scheduleDisconnect(_ timeoutAt: DispatchTime? = nil) {
-//        let dispatchTime = timeoutAt ?? DispatchTime.now().advanced(by: self.timeout)
-//
-//        guard let currentTask = self.currentTask else {
-//            return
-//        }
-//
-//        currentTask.cancel()
-//
-//        let task = DispatchWorkItem() {
-//            print("[LivePlayroom] scheduleDisconnect: \(self.initialValue.id)")
-////            api.wsClient.unsubscribe(subject) { (res, error) in
-////
-////            }
-//        }
-//        self.currentTask = task
-//
-//        DispatchQueue.main.asyncAfter(deadline: dispatchTime, execute: task)
-//    }
-    
-//    func connect(_ cancellation: CancellationToken, timeoutAfter: DispatchTimeInterval? = nil) -> Self {
-//        self.timeout = timeoutAfter ?? self.timeout
-//
-//        scheduleDisconnect()
-//
-//        let subject = "musicrooms/\(initialValue.id)"
-//        api.wsClient.subscribe(subject) { (res, error) in
-//
-//        }
-//
-//        cancellation.register {
-//            //logger.debug("[LivePlayroom] unsubscribe: \(self.initialValue.name)")
-//            self.currentTask = nil
-//        }
-//
-//        return self
-//    }
-    
-    
-//    var api: JoliApi
-//    var initialValue: Persisted
-//    var lastValue: Persisted? = nil {
-//        didSet {
-//
-//        }
-//    }
-//
-//    var lastUpdatedAt: Date?  = nil
-    
-//    init(api: JoliApi, initialValue: Persisted) {
-//        self.api = api
-//        self.initialValue = initialValue
-//    }
-}
-
-extension LiveObject where DataModel: Playable {
+    public func connect() -> Cancellable {
+        logger.debug("Connect called")
+        socket.connect()
+        
+        return AnyCancellable() {
+            self.socket.disconnect()
+        }
+    }
     
 }
 
-extension LiveObject where DataModel: Persisted & Playable {
+extension Socket: WebSocketDelegate {
+    
+    public func didReceive(event: WebSocketEvent, client: WebSocket) {
+        Swift.print("websocket event: \(event)")
+        switch event {
+        case .connected(let headers):
+            isConnected = true
+            Swift.print("websocket is connected: \(headers)")
+            socket.write(string: "{\"topic\": \"Test\", data: {}}") {
+                Swift.print("Sent something")
+            }
+        case .disconnected(let reason, let code):
+            isConnected = false
+            Swift.print("websocket is disconnected: \(reason) with code: \(code)")
+        case .text(let string):
+            Swift.print("Received text: \(string)")
+        case .binary(let data):
+            Swift.print("Received data: \(data.count)")
+        case .ping(_):
+            break
+        case .pong(_):
+            break
+        case .viabilityChanged(_):
+            Swift.print("Received data: viabilityChanged")
+            break
+        case .reconnectSuggested(_):
+            Swift.print("Received data: reconnectSuggested")
+            break
+        case .cancelled:
+            isConnected = false
+        case .error(let error):
+            isConnected = false
+            Swift.print("Error: \(error)")
+        }
+    }
     
 }
 
-//extension LiveObject: Playable where DataModel: Playable {
+extension Socket: Publisher {
     
-//}
+    public func receive<S>(subscriber: S) where S:Subscriber, Failure == S.Failure, Output == S.Input {
+        Swift.print("[Socket] subscribe: \(subscriber)")
+    }
+    
+    public typealias Output = SocketMessage
+    public typealias Failure = SocketError
+}
 
-//extension Track {
-//
-//    func playLive() -> LiveTrack? {
-//        self.play()
-//        return nil
-//    }
-//
-//}
-//
-//class LiveTrack<T: Playable>: LiveObject {
-//    typealias DataModel = T
-//
-//    var initialValue: T
-//
-//    init(_ playable: T) {
-//        self.initialValue = playable
-//    }
-//}
+
+var soc: Socket!
+var cancellable: AnyCancellable? = nil
 
 func logicMain() -> Void {
     print("Logic main triggered")
     let track:Track = SEED_DATA.tracks.first!
     
-//    print("Live track: \(LiveTrack(track))")
-//    let liveTrack: LiveTrack = track.play()
+    soc = Socket()
+    soc.connect()
+    cancellable = soc
+        .sink(){ completion in
+            print("completion: \(completion)")
+        } receiveValue: { value in
+            print("value: \(value)")
+        }
     
+    print("Cancellable: \(cancellable)")
+//    let liveTrack: LiveTrack = track.play()
+    PlaygroundPage.current.needsIndefiniteExecution = true
 }
 
 struct ContentView: View {
@@ -165,14 +131,9 @@ struct ContentView: View {
         Text("Hello World \(user.name)")//
         //return DevicesSampleView()
             //.addPartialSheet()
-        
-            //
-        //        .addPartialSheet()
         //UserProfileView2(user: user.builder()).offset(x: 0, y: 1)
      }
 }
-
-
 
 func uiMain() -> Void {
     
@@ -189,7 +150,8 @@ func uiMain() -> Void {
     PlaygroundPage.current.liveView = parent
 }
 
-let main: () -> Void = uiMain
+
+let main: () -> Void = logicMain
 
 main()
 

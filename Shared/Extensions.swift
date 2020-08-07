@@ -11,7 +11,6 @@ import JoliApi
 import SwiftUI
 import JoliCore
 import Promises
-import Kingfisher
 import UIKit
 import PartialSheet
 import Combine
@@ -63,48 +62,6 @@ extension Spotify.Device {
     }
 }
 
-public struct NetworkImage: SwiftUI.View {
-    
-    var callback: ((UIImage?) -> Void)?
-    
-    @State private var image: UIImage? = nil
-    
-    public let imageURL: URL?
-    public let placeholderImage: UIImage
-    public let animation: Animation = .easeInOut
-    
-    init(imageURL: URL, placeholderImage: UIImage, onLoaded: ((UIImage?) -> Void)? = nil) {
-        self.imageURL = imageURL
-        self.placeholderImage = placeholderImage
-        self.callback = onLoaded
-    }
-    
-    public var body: some SwiftUI.View {
-        SwiftUI.Image(uiImage: image ?? placeholderImage)
-            .resizable()
-            .frame(width: 64, height: 64, alignment: .center)
-            .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-            .onAppear(perform: loadImage)
-            .transition(.opacity)
-            .id(image ?? placeholderImage)
-    }
-    
-    private func loadImage() {
-        guard let imageURL = imageURL, image == nil else { return }
-        
-        KingfisherManager.shared.retrieveImage(with: imageURL) { result in
-            switch result {
-                case .success(let imageResult):
-                    withAnimation(self.animation) {
-                        self.image = imageResult.image
-                        self.callback?(self.image)
-                    }
-                case .failure:
-                    break
-            }
-        }
-    }
-}
 
 extension JoliApi {
     
@@ -124,14 +81,6 @@ extension JoliApi {
     }
     
 }
-
-extension Musicroom {
-    
-    
-}
-
-
-
 
 extension UIImage {
     
@@ -206,7 +155,7 @@ public struct Regex: ExpressibleByStringLiteral, Equatable {
     public func match(_ input: String) -> Bool {
         let result = expression.rangeOfFirstMatch(in: input, options: [],
                                                   range: NSRange(input.startIndex..., in: input))
-        return !NSEqualRanges(result, NSMakeRange(NSNotFound, 0))
+        return NSEqualRanges(result, NSMakeRange(NSNotFound, 0))
     }
     
     public func matchGroups(_ string: String) -> [String: String]? {
@@ -243,9 +192,7 @@ public extension Regex {
     static func ~=(pattern: Regex, value: String) -> Bool {
         return pattern.match(value)
     }
-    
 }
-
 
 public enum AppLocation: RawRepresentable {
     
@@ -309,20 +256,36 @@ public extension PartialSheetManager {
     }
 }
 
-public class AppCoordinator: ObservableObject {
+public final class AppCoordinator: ObservableObject {
+    
+    public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
     
     public init(){
         
     }
     
+    public struct Modifier: ViewModifier {
+        
+        let coordinator: AppCoordinator
+        
+        public init(_ coordinator: AppCoordinator){
+            self.coordinator = coordinator
+        }
+        
+        public func body(content: Content) -> some View {
+            return content
+                .environmentObject(self.coordinator)
+                .environmentObject(self.coordinator.sheet)
+        }
+        
+    }
+    
 }
 
-
 public protocol AppClip: App {
-    associatedtype Content: SwiftUI.View
+    associatedtype Content: View
     
-    var currentLocation: AppLocation { get nonmutating set }
     var contentView: Content { get }
     var scenePhase: ScenePhase { get }
     var coordinator: AppCoordinator { get }
@@ -341,8 +304,7 @@ public extension AppClip {
             }
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: self.onUserActivity)
             .onChange(of: scenePhase, perform: self.onScenePhaseChange)
-            .environmentObject(coordinator)
-            .environmentObject(coordinator.sheet)
+            .modifier(AppCoordinator.Modifier(coordinator))
         }
     }
     
@@ -361,7 +323,7 @@ public extension AppClip {
     }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void {
-        self.currentLocation = AppLocation(activity) ?? .home
+        self.coordinator.currentLocation = AppLocation(activity) ?? .home
     }
     
 }

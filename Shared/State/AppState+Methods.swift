@@ -66,7 +66,7 @@ extension AppState {
             try? callback(nil, false)
             
             //self.openSpotifyWebAuthorization()
-            self.sceneDelegate?.requestSpotifyAccess()
+            self.spotifyDelegate.requestSpotifyAccess()
         }
     }
     

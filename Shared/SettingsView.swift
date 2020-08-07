@@ -131,7 +131,7 @@ struct SettingsView: View {
                 Text("Upload Image")
             }.padding()
             
-            Button(action: { self.appState.sceneDelegate?.requestSpotifyAccess() }) {
+            Button(action: { self.appState.spotifyDelegate.requestSpotifyAccess() }) {
                 HStack(alignment: .center) {
                     Spacer()
                     

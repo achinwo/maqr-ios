@@ -68,7 +68,7 @@ enum ServiceAlert: Int {
             
             if self == .spotifyWebAuthRequired {
                 Button(action: {
-                    appState.sceneDelegate?.requestSpotifyAccess()//openSpotifyWebAuthorization()
+                    appState.spotifyDelegate.requestSpotifyAccess()//openSpotifyWebAuthorization()
                 }) {
                     
                     if appState.spotifyAuthorizationInProgress {
