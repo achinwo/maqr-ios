@@ -73,11 +73,7 @@ struct JoliApp: AppClip {
         }
     }
     
-    func onUserActivity(_ activity: NSUserActivity) {
-        guard let url = activity.webpageURL else {
-            return
-        }
-        
+    func onOpenUrl(url: URL){
         logger.info("[SceneDelegate] url: \(url)")
         
         if let redirectUrl = appState.resolveSpotifyRedirectUrl(url), let urlComp = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: false) {

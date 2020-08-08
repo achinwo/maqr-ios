@@ -302,10 +302,15 @@ public extension AppClip {
                 self.contentView
                     .addPartialSheet()
             }
+            .onOpenURL(perform: self.onOpenUrl)
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: self.onUserActivity)
             .onChange(of: scenePhase, perform: self.onScenePhaseChange)
             .modifier(AppCoordinator.Modifier(coordinator))
         }
+    }
+    
+    func onOpenUrl(url: URL){
+        logger.debug("[\(Self.self)] open URL: \(url)")
     }
     
     func onScenePhaseChange(_ phase: ScenePhase){
