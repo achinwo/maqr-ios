@@ -109,13 +109,11 @@ public struct TrackList: View {
     }
     
     public var body: some View {
-        return ScrollView(.vertical, showsIndicators: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/) {
-            VStack(alignment: .center, spacing: 0) {
+        return VStack(alignment: .center, spacing: 0) {
                 ForEach(tracks) { track in
                     TrackView2(track: track)
                 }
             }
-        }
     }
     
 }

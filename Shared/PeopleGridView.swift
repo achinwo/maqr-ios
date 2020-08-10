@@ -16,8 +16,13 @@ struct PeopleGridView: View {
         GridItem(.fixed(100)),
     ]
     
-    @State var isExpanded = true
+    @Binding var isExpanded: Bool
     @State var users: [User]
+    
+    public init(_ users: [User], isExpanded: Binding<Bool>? = nil){
+        self._users = State(initialValue: users)
+        self._isExpanded = isExpanded ?? .constant(true)
+    }
     
     var stickyHeaderView: some View {
         RoundedRectangle(cornerRadius: 25.0, style: .continuous)
@@ -35,11 +40,10 @@ struct PeopleGridView: View {
         var label = ""
         
         if !(self.isExpanded || users.isEmpty) {
-            label = "\(label) ᐧ \(users.count)"
-                
+            label = "\(label) \(users.count)" //•
         }
         
-        return DisclosureGroup(isExpanded: self.$isExpanded) {
+        return DisclosureGroup(isExpanded: self._isExpanded) {
             ScrollView(.horizontal) {
                 LazyHGrid(rows: rows, alignment: .center, pinnedViews: [.sectionHeaders]) {
                     
@@ -75,30 +79,36 @@ struct PeopleGridView: View {
                     }
                 }
             }
+            .padding()
         } label: {
             HStack(){
-                Image(systemName: "person.2.fill").font(.title)
+                Image(systemName: "person.2.fill").font(.headline)
                 Text(label)
                 Spacer()
             }
-            .frame(minWidth: screenWidth / 2, idealWidth: screenWidth)
-            //.background(Color.yellow)
-            .onTapGesture {
+            .padding()
+            .frame(idealWidth: screenWidth)
+            .background(Color.yellow)
+            .onTapGesture(){
+                print("[PeopleGrid] tapped")
                 withAnimation(){
                     self.isExpanded.toggle()
                 }
             }
         }
+        .padding(.trailing, Sizing.medium)
     }
     
 }
 
 struct PeopleGridView_Previews: PreviewProvider {
     
+    @State static var isExpanded = true
+    
     static var previews: some View {
         let users = SEED_DATA.users
         return VStack() {
-            PeopleGridView(users: users).padding()
+            PeopleGridView(users, isExpanded: Self.$isExpanded).padding()
             Spacer()
         }
     }

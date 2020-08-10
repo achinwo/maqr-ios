@@ -13,23 +13,55 @@ import JoliCore
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 
-struct Showerdoor<Content> : View where Content : View {
-    /// A kind of mobile view that can go into fullscreen by expanding sideways
-    let scrollProxy: ScrollViewProxy
-    let contentView: Content
-    
-    init(_ proxy: ScrollViewProxy, @ViewBuilder content: () -> Content){
-        scrollProxy = proxy
-        contentView = content()
-    }
-    
-    var body: some View {
-        return contentView
+//struct Showerdoor<Content> : View where Content : View {
+//    /// A kind of mobile view that can go into fullscreen by expanding sideways
+//    let scrollProxy: ScrollViewProxy
+//    let contentView: Content
+//
+//    init(_ proxy: ScrollViewProxy, @ViewBuilder content: () -> Content){
+//        scrollProxy = proxy
+//        contentView = content()
+//    }
+//
+//    var body: some View {
+//        return contentView
+//    }
+//}
+
+// 1. Define a data for holding the preference
+struct MyAnchorPreferenceData {
+    let bounds: Anchor<CGRect> // It can also be some kind of CGPoint data
+}
+
+// 2. Define a preference key
+struct MyAnchorPreferenceKey: PreferenceKey {
+    static var defaultValue: [MyAnchorPreferenceData] = []
+    static func reduce(value: inout [MyAnchorPreferenceData], nextValue: () -> [MyAnchorPreferenceData]) {
+        value.append(contentsOf: nextValue())
     }
 }
 
+struct BlurView: UIViewRepresentable {
+    typealias UIViewType = UIVisualEffectView
+    
+    let style: UIBlurEffect.Style
+    
+    init(_ style: UIBlurEffect.Style = .systemMaterial) {
+        self.style = style
+    }
+    
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        return UIVisualEffectView(effect: UIBlurEffect(style: self.style))
+    }
+    
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+        uiView.effect = UIBlurEffect(style: self.style)
+        uiView.isUserInteractionEnabled = false
+    }
+    
+}
+
 struct AppView2: View {
-    @EnvironmentObject var appCoordinator: AppCoordinator
     
     enum ScrollPosition: Equatable {
         case leadingEdge
@@ -37,7 +69,18 @@ struct AppView2: View {
         case point(CGPoint)
     }
     
+    static let viewIds: (explore: String, listen: String) = ("views.explore", "views.listen")
+    
+    @EnvironmentObject var appCoordinator: AppCoordinator
     @State var scrollPosition: ScrollPosition = .leadingEdge
+    
+    @State var activeDevice: Spotify.Device?
+    @State var volume: CGFloat = 30
+    @State var isExpanded = false
+    
+    @State var selectedViewId: String? = nil
+    @State var peopleViewBounds: CGRect? = nil
+    @State var navbarViewBounds: CGRect? = nil
     
     var roomsView: some View {
         ScrollView(.horizontal) {
@@ -59,10 +102,20 @@ struct AppView2: View {
         }
     }
     
-    @State var activeDevice: Spotify.Device?
-    @State var volume: CGFloat = 30
+    func exploreView(geoProxy: GeometryProxy) -> some View {
+        VStack(){
+            ExploreView()
+            Spacer()
+        }
+        .padding(.top, geoProxy.safeAreaInsets.top)
+        .frame(maxWidth: screenWidth)
+        .onChange(of: self.scrollPosition) { value in
+            print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
+        }
+        .id(Self.viewIds.explore)
+    }
     
-    var body: some View {
+    func listenView(geoProxy: GeometryProxy, scrollProxy: ScrollViewProxy) -> some View {
         let devices: [Spotify.Device] = [
             Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
             Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
@@ -71,76 +124,103 @@ struct AppView2: View {
             Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
             Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
         ]
+        
+        return ZStack(){
+            ScrollView(.vertical, showsIndicators: true) {
+                TrackList(tracks: SEED_DATA.tracks)
+                    .padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds!.height)
+                    .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds!.height)
+            }
+            .frame(maxWidth: screenWidth)
+            
+            VStack() {
+                Spacer()
+                PeopleGridView(SEED_DATA.users, isExpanded: $isExpanded)
+                    .padding(.bottom, geoProxy.safeAreaInsets.bottom)
+                    .frame(width: screenWidth)
+                    .onFrameChange() { rect in
+                        DispatchQueue.main.async {
+                            self.peopleViewBounds = rect
+                        }
+                    }
+                    .background(BlurView(.systemUltraThinMaterialLight))
+                //Color.white.blur(radius: 20).opacity(0.9))
+                //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
+            }
+            
+            VStack() {
+                HStack(spacing: .zero){
+                    Spacer()
+                    Button(){
+                        self.appCoordinator.sheet.show(){
+                            DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: devices)
+                        }
+                    } label: {
+                        Image(systemName: "hifispeaker")
+                    }
+                    Button("Search") {
+                        print("[Insets] \(geoProxy.safeAreaInsets)")
+                        self.selectedViewId = Self.viewIds.explore
+                    }
+                    .font(.title2)
+                    .padding()
+                }
+                .frame(width: screenWidth)
+                .padding(.top, geoProxy.safeAreaInsets.top)
+                .background(Color.white.opacity(0.98))
+                .onFrameChange() { rect in
+                    DispatchQueue.main.async {
+                        self.navbarViewBounds = rect
+                    }
+                }
+                
+                Spacer()
+            }
+        }
+        .id(Self.viewIds.listen)
+    }
+    
+    var body: some View {
+        
         return GeometryReader() { geoProxy in
             ZStack(){
                 ScrollViewReader() { (proxy: ScrollViewProxy) in
                     ScrollView(.horizontal, showsIndicators: false){
                         HStack(alignment: .top, spacing: .zero){
-                            
-                            VStack(){
-                                ExploreView()
-                                Spacer()
-                            }
-                            .padding(.top, geoProxy.safeAreaInsets.top)
-                            .frame(maxWidth: screenWidth)
-                            .onChange(of: self.scrollPosition) { value in
-                                print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
-                            }.id(12344)
-                            
-                            VStack(spacing: .zero){
-                                HStack(spacing: .zero){
-                                    Spacer()
-                                    Button(){
-                                        self.appCoordinator.sheet.show(){
-                                            DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: devices)
-                                        }
-                                    } label: {
-                                        Image(systemName: "hifispeaker")
-                                    }
-                                    Button("Search") {
-                                        withAnimation(.spring()) {
-                                            proxy.scrollTo(12344)
-                                        }
-                                    }.font(.title2)
-                                    .padding()
-                                }
-                                .frame(width: screenWidth)
-                                .padding(.top, geoProxy.safeAreaInsets.top)
-                                .background(Color.white)
-                                
-                                roomsView.frame(width: screenWidth, height: 120, alignment: .center)
-                                
-                                TrackList(tracks: SEED_DATA.tracks)
-                                    .frame(maxWidth: screenWidth)
-                                
-                                PeopleGridView(users: SEED_DATA.users)
-                                    .padding()
-                                    .padding(.bottom, geoProxy.safeAreaInsets.bottom)
-                                    .frame(width: screenWidth)
-                            }
-                            .id(98765)
-                            //.frame(width: screenWidth, height: screenHeight)
-                            //.background(Color.blue)
-                            
-                            
+                            self.exploreView(geoProxy: geoProxy)
+                            self.listenView(geoProxy: geoProxy, scrollProxy: proxy)
                         }
                         //.background(Images.joliIconRounded.image.blur(radius: screenWidth, opaque: true))
                         .onFrameChange(){ frame in
                             DispatchQueue.main.async {
                                 switch (frame.origin.x, frame.origin.y) {
-                                case (0, _):
-                                    self.scrollPosition = .leadingEdge
-                                case (self.screenWidth * -1 , _):
-                                    self.scrollPosition = .trailingEdge
-                                default:
-                                    self.scrollPosition = .point(frame.origin)
+                                    case (0, _):
+                                        self.scrollPosition = .leadingEdge
+                                    case (self.screenWidth * -1 , _):
+                                        self.scrollPosition = .trailingEdge
+                                    default:
+                                        self.scrollPosition = .point(frame.origin)
                                 }
                             }
                         }
                     }
+                    .onChange(of: self.selectedViewId) { value in
+                        guard let scrollTarget = value else {
+                            return
+                        }
+                        
+                        withAnimation(){
+                            proxy.scrollTo(scrollTarget)
+                        }
+                    }
+                    .onAppear() {
+                        guard selectedViewId == nil else {
+                            return
+                        }
+                        
+                        self.selectedViewId = Self.viewIds.listen
+                    }
                 }
-                //.frame(maxWidth: screenWidth * 2 + Sizing.medium)
-                
             }
             .edgesIgnoringSafeArea([.top, .bottom])
         }
@@ -184,30 +264,30 @@ struct JoliApp: AppClip {
     
     func onScenePhaseChange(_ phase: ScenePhase){
         switch phase {
-        case .active:
-            print("App became active")
-            appState.api.wsClient.connect() { connectionState in
-                self.appState.onServerConnectionStateChanged(connectionState)
-            }
-            
-            if let _ = self.spotify.appRemote.connectionParameters.accessToken {
-                logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote")
-                self.spotify.appRemote.connect()
-            } else {
-                logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote aborted...")
-            }
-        case .inactive:
-            print("App became inactive")
-            if self.spotify.appRemote.isConnected {
-                self.spotify.appRemote.disconnect()
-            }
-            appState.api.wsClient.disconnect()
-            appDelegate.stopObservingVolumeChanges()
-        case .background:
-            print("App is running in the background")
-        @unknown default:
-            // Fallback for future cases
-            print("Unknown scene phase: \(phase)")
+            case .active:
+                print("App became active")
+                appState.api.wsClient.connect() { connectionState in
+                    self.appState.onServerConnectionStateChanged(connectionState)
+                }
+                
+                if let _ = self.spotify.appRemote.connectionParameters.accessToken {
+                    logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote")
+                    self.spotify.appRemote.connect()
+                } else {
+                    logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote aborted...")
+                }
+            case .inactive:
+                print("App became inactive")
+                if self.spotify.appRemote.isConnected {
+                    self.spotify.appRemote.disconnect()
+                }
+                appState.api.wsClient.disconnect()
+                appDelegate.stopObservingVolumeChanges()
+            case .background:
+                print("App is running in the background")
+            @unknown default:
+                // Fallback for future cases
+                print("Unknown scene phase: \(phase)")
         }
     }
     
