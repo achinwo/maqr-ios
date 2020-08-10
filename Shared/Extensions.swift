@@ -26,7 +26,7 @@ public extension Builder where T == User {
     }
 }
 
-extension SwiftUI.View {
+extension View {
     
     var screenSize: CGSize {
         return UIScreen.main.bounds.size
@@ -40,6 +40,29 @@ extension SwiftUI.View {
         return screenSize.height
     }
     
+}
+
+
+extension View {
+
+    
+    func onFrameChange(enabled isEnabled: Bool = true, _ frameHandler: @escaping (CGRect)->()) -> some View {
+
+        guard isEnabled else { return AnyView(self) }
+
+        return AnyView(self.background(GeometryReader() { (geometry: GeometryProxy) in
+
+            Color.clear.beforeReturn {
+
+                frameHandler(geometry.frame(in: .global))
+            }
+        }))
+    }
+
+    private func beforeReturn(_ onBeforeReturn: ()->()) -> Self {
+        onBeforeReturn()
+        return self
+    }
 }
 
 extension Spotify.Device {

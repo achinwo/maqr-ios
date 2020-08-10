@@ -13,6 +13,144 @@ import JoliCore
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 
+struct Showerdoor<Content> : View where Content : View {
+    /// A kind of mobile view that can go into fullscreen by expanding sideways
+    let scrollProxy: ScrollViewProxy
+    let contentView: Content
+    
+    init(_ proxy: ScrollViewProxy, @ViewBuilder content: () -> Content){
+        scrollProxy = proxy
+        contentView = content()
+    }
+    
+    var body: some View {
+        return contentView
+    }
+}
+
+struct AppView2: View {
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    
+    enum ScrollPosition: Equatable {
+        case leadingEdge
+        case trailingEdge
+        case point(CGPoint)
+    }
+    
+    @State var scrollPosition: ScrollPosition = .leadingEdge
+    
+    var roomsView: some View {
+        ScrollView(.horizontal) {
+            LazyHGrid(rows: [GridItem()], spacing: 8, pinnedViews: [.sectionHeaders]) {
+                Section(header: Text("Recent")) {
+                    ForEach(0..<10) { i in
+                        Text("Grid: \(i)").frame(width: 100, height: 100, alignment: .center).background(Color.gray).cornerRadius(10.0)
+                    }
+                }
+                Section(header: Text("Trending")) {
+                    ForEach(10..<20) { i in
+                        Text("Grid: \(i)")
+                            .frame(width: 100, height: 100, alignment: .center)
+                            .background(Color.gray)
+                            .cornerRadius(10.0)
+                    }
+                }
+            }
+        }
+    }
+    
+    @State var activeDevice: Spotify.Device?
+    @State var volume: CGFloat = 30
+    
+    var body: some View {
+        let devices: [Spotify.Device] = [
+            Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
+            Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
+            Spotify.Device(name: "Microwave", type: .speaker, isActive: true, id: "test_device4"),
+            
+            Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
+            Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
+        ]
+        return GeometryReader() { geoProxy in
+            ZStack(){
+                ScrollViewReader() { (proxy: ScrollViewProxy) in
+                    ScrollView(.horizontal, showsIndicators: false){
+                        HStack(alignment: .top, spacing: .zero){
+                            
+                            VStack(){
+                                ExploreView()
+                                Spacer()
+                            }
+                            .padding(.top, geoProxy.safeAreaInsets.top)
+                            .frame(maxWidth: screenWidth)
+                            .onChange(of: self.scrollPosition) { value in
+                                print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
+                            }.id(12344)
+                            
+                            VStack(spacing: .zero){
+                                HStack(spacing: .zero){
+                                    Spacer()
+                                    Button(){
+                                        self.appCoordinator.sheet.show(){
+                                            DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: devices)
+                                        }
+                                    } label: {
+                                        Image(systemName: "hifispeaker")
+                                    }
+                                    Button("Search") {
+                                        withAnimation(.spring()) {
+                                            proxy.scrollTo(12344)
+                                        }
+                                    }.font(.title2)
+                                    .padding()
+                                }
+                                .frame(width: screenWidth)
+                                .padding(.top, geoProxy.safeAreaInsets.top)
+                                .background(Color.white)
+                                
+                                roomsView.frame(width: screenWidth, height: 120, alignment: .center)
+                                
+                                TrackList(tracks: SEED_DATA.tracks)
+                                    .frame(maxWidth: screenWidth)
+                                
+                                PeopleGridView(users: SEED_DATA.users)
+                                    .padding()
+                                    .padding(.bottom, geoProxy.safeAreaInsets.bottom)
+                                    .frame(width: screenWidth)
+                            }
+                            .id(98765)
+                            //.frame(width: screenWidth, height: screenHeight)
+                            //.background(Color.blue)
+                            
+                            
+                        }
+                        //.background(Images.joliIconRounded.image.blur(radius: screenWidth, opaque: true))
+                        .onFrameChange(){ frame in
+                            DispatchQueue.main.async {
+                                switch (frame.origin.x, frame.origin.y) {
+                                case (0, _):
+                                    self.scrollPosition = .leadingEdge
+                                case (self.screenWidth * -1 , _):
+                                    self.scrollPosition = .trailingEdge
+                                default:
+                                    self.scrollPosition = .point(frame.origin)
+                                }
+                            }
+                        }
+                    }
+                }
+                //.frame(maxWidth: screenWidth * 2 + Sizing.medium)
+                
+            }
+            .edgesIgnoringSafeArea([.top, .bottom])
+        }
+        .frame(minWidth: screenWidth)
+        
+        //.frame(width: screenWidth, height: screenHeight)
+        //.background(Color.clear.blur(radius: 50, opaque: true))
+    }
+}
+
 @main
 struct JoliApp: AppClip {
     
@@ -36,7 +174,7 @@ struct JoliApp: AppClip {
     }
     
     var contentView: some View {
-        AppView()
+        AppView2()
             .environmentObject(self.sheetManager)
             .environmentObject(appState)
             .environmentObject(appState.currentlyPlaying)
@@ -46,30 +184,30 @@ struct JoliApp: AppClip {
     
     func onScenePhaseChange(_ phase: ScenePhase){
         switch phase {
-            case .active:
-                print("App became active")
-                appState.api.wsClient.connect() { connectionState in
-                    self.appState.onServerConnectionStateChanged(connectionState)
-                }
-                
-                if let _ = self.spotify.appRemote.connectionParameters.accessToken {
-                    logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote")
-                    self.spotify.appRemote.connect()
-                } else {
-                    logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote aborted...")
-                }
-            case .inactive:
-                print("App became inactive")
-                if self.spotify.appRemote.isConnected {
-                    self.spotify.appRemote.disconnect()
-                }
-                appState.api.wsClient.disconnect()
-                appDelegate.stopObservingVolumeChanges()
-            case .background:
-                print("App is running in the background")
-            @unknown default:
+        case .active:
+            print("App became active")
+            appState.api.wsClient.connect() { connectionState in
+                self.appState.onServerConnectionStateChanged(connectionState)
+            }
+            
+            if let _ = self.spotify.appRemote.connectionParameters.accessToken {
+                logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote")
+                self.spotify.appRemote.connect()
+            } else {
+                logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote aborted...")
+            }
+        case .inactive:
+            print("App became inactive")
+            if self.spotify.appRemote.isConnected {
+                self.spotify.appRemote.disconnect()
+            }
+            appState.api.wsClient.disconnect()
+            appDelegate.stopObservingVolumeChanges()
+        case .background:
+            print("App is running in the background")
+        @unknown default:
             // Fallback for future cases
-                print("Unknown scene phase: \(phase)")
+            print("Unknown scene phase: \(phase)")
         }
     }
     
@@ -78,14 +216,14 @@ struct JoliApp: AppClip {
         
         if let redirectUrl = appState.resolveSpotifyRedirectUrl(url), let urlComp = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: false) {
             appState.spotifyWebAuthorize(urlComp)
-            .then() { auth in
-                logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
-                self.spotify.appRemote.connectionParameters.accessToken = auth.accessToken
-                self.spotify.accessToken = auth.accessToken
-            }
-            .catch() { error in
-                logger.error("[SceneDelegate] spotify auth error: \(error)")
-            }
+                .then() { auth in
+                    logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
+                    self.spotify.appRemote.connectionParameters.accessToken = auth.accessToken
+                    self.spotify.accessToken = auth.accessToken
+                }
+                .catch() { error in
+                    logger.error("[SceneDelegate] spotify auth error: \(error)")
+                }
             return
         }
         
@@ -106,7 +244,7 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
     let SpotifyClientID = "e3966e30011d4895997ce89c797de5a5"
     let SpotifyRedirectURL = URL(string: "joli://spotify-callback/")!
     //URL(string: "spotify-ios-quick-start://spotify-login-callback")!
-
+    
     lazy var configuration = SPTConfiguration(clientID: SpotifyClientID, redirectURL: SpotifyRedirectURL)
     
     let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
@@ -115,7 +253,7 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
         
         self.configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!
         self.configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
-
+        
         let appRemote = SPTAppRemote(configuration: self.configuration, logLevel: .debug)
         appRemote.connectionParameters.accessToken = self.accessToken
         appRemote.delegate = self
@@ -156,7 +294,7 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
     }
     
     func connect() {
-      self.appRemote.authorizeAndPlayURI(self.playURI)
+        self.appRemote.authorizeAndPlayURI(self.playURI)
     }
     
     func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
@@ -193,8 +331,8 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
     lazy var spotifySessionManager: SPTSessionManager = {
         
         var configuration = SPTConfiguration(
-          clientID: SpotifyClientID,
-          redirectURL: SpotifyRedirectURL //URL(string: "joli://spotify-callback/")!
+            clientID: SpotifyClientID,
+            redirectURL: SpotifyRedirectURL //URL(string: "joli://spotify-callback/")!
         )
         
         configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!

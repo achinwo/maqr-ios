@@ -34,6 +34,20 @@ public struct TrackView2: View {
     
     @State var track: Track
     @State var colors: UIImageColors? = nil
+    @GestureState var isDetectingLongPress = false
+    @State var completedLongPress = false
+    
+    var longPress: some Gesture {
+            LongPressGesture(minimumDuration: 3)
+                .updating($isDetectingLongPress) { currentstate, gestureState,
+                        transaction in
+                    gestureState = currentstate
+                    transaction.animation = Animation.easeIn(duration: 2.0)
+                }
+                .onEnded { finished in
+                    self.completedLongPress = finished
+                }
+        }
     
     public init(track: Track, colors: UIImageColors? = nil){
         _track = State(initialValue: track)
@@ -80,7 +94,9 @@ public struct TrackView2: View {
                     Spacer()
                 }
             }
-        }.background(colors?.backgroundColor ?? Color.clear)
+        }
+        .animation(.easeIn)
+        .background(colors?.backgroundColor ?? Color.clear)
     }
 }
 

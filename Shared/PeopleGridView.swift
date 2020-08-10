@@ -32,13 +32,14 @@ struct PeopleGridView: View {
     }
     
     var body: some View {
-        var label = "People"
+        var label = ""
         
         if !(self.isExpanded || users.isEmpty) {
-            label = "\(label) (\(users.count))"
+            label = "\(label) ᐧ \(users.count)"
+                
         }
         
-        return DisclosureGroup(label, isExpanded: self.$isExpanded) {
+        return DisclosureGroup(isExpanded: self.$isExpanded) {
             ScrollView(.horizontal) {
                 LazyHGrid(rows: rows, alignment: .center, pinnedViews: [.sectionHeaders]) {
                     
@@ -72,6 +73,19 @@ struct PeopleGridView: View {
                                 .offset(x: 18, y: 18)
                             )
                     }
+                }
+            }
+        } label: {
+            HStack(){
+                Image(systemName: "person.2.fill").font(.title)
+                Text(label)
+                Spacer()
+            }
+            .frame(minWidth: screenWidth / 2, idealWidth: screenWidth)
+            //.background(Color.yellow)
+            .onTapGesture {
+                withAnimation(){
+                    self.isExpanded.toggle()
                 }
             }
         }

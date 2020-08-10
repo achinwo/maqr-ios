@@ -24,10 +24,24 @@ public enum Strings {
     
 }
 
+public enum Images: String {
+    case joliIconRounded = "joil_icon_rounded"
+    
+    var image: Image {
+        return Image(self.rawValue)
+    }
+    
+    var uiImage: UIImage? {
+        return UIImage(named: self.rawValue)
+    }
+    
+}
+
 public enum Sizing {
     
     public static let large = UIFont.preferredFont(forTextStyle: .title1).pointSize
     public static let medium = UIFont.preferredFont(forTextStyle: .headline).pointSize
+    public static let small = UIFont.preferredFont(forTextStyle: .body).pointSize
     
 }
 
