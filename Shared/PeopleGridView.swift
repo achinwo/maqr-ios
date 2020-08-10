@@ -40,7 +40,7 @@ struct PeopleGridView: View {
         var label = ""
         
         if !(self.isExpanded || users.isEmpty) {
-            label = "\(label) \(users.count)" //•
+            label = "\(label)\(users.count)" //•
         }
         
         return DisclosureGroup(isExpanded: self._isExpanded) {
@@ -82,15 +82,14 @@ struct PeopleGridView: View {
             .padding()
         } label: {
             HStack(){
-                Image(systemName: "person.2.fill").font(.headline)
+                Image(systemName: "person.2.fill").font(.title2)
                 Text(label)
                 Spacer()
             }
             .padding()
-            .frame(idealWidth: screenWidth)
-            .background(Color.yellow)
+            .frame(minWidth: screenWidth / 2)
+            .background(Color.gray.opacity(0.001))
             .onTapGesture(){
-                print("[PeopleGrid] tapped")
                 withAnimation(){
                     self.isExpanded.toggle()
                 }

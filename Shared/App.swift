@@ -28,21 +28,7 @@ let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 //    }
 //}
 
-// 1. Define a data for holding the preference
-struct MyAnchorPreferenceData {
-    let bounds: Anchor<CGRect> // It can also be some kind of CGPoint data
-}
-
-// 2. Define a preference key
-struct MyAnchorPreferenceKey: PreferenceKey {
-    static var defaultValue: [MyAnchorPreferenceData] = []
-    static func reduce(value: inout [MyAnchorPreferenceData], nextValue: () -> [MyAnchorPreferenceData]) {
-        value.append(contentsOf: nextValue())
-    }
-}
-
 struct BlurView: UIViewRepresentable {
-    typealias UIViewType = UIVisualEffectView
     
     let style: UIBlurEffect.Style
     

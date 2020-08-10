@@ -32,13 +32,29 @@ struct BlackWhiteButtonStyle: ButtonStyle {
     
     var white: Color = .white
     var black: Color = .black
+    var isInverted = false
+    
+    init(white: Color = .white, black: Color = .black){
+        self.white = white
+        self.black = black
+    }
+    
+    init(inverted: Bool) {
+        self.init()
+        isInverted = inverted
+    }
     
     func makeBody(configuration: Self.Configuration) -> some View {
-        configuration.label
+        let fgColor = isInverted ? self.white : self.black
+        return configuration.label
             //.frame(minWidth: 0, maxWidth: .infinity)
-            .foregroundColor(self.white)
-            .background(self.black)
-            .cornerRadius(.percent40)
+            .foregroundColor(fgColor)
+            //.cornerRadius(.percent40)
+            .overlay(Capsule()
+                        .stroke(Colors.lightGray, lineWidth: 1)
+                        .clipped())
+            .background(isInverted ? self.black : self.white)
+            .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? 0.9 : 1.0)
     }
 }

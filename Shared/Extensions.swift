@@ -284,6 +284,8 @@ public final class AppCoordinator: ObservableObject {
     public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
     
+    @Published var isSearching = true
+    
     public init(){
         
     }
