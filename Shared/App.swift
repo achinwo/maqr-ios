@@ -73,10 +73,7 @@ struct AppView2: View {
     }
     
     func exploreView(geoProxy: GeometryProxy) -> some View {
-        VStack(alignment: .center){
-            ExploreView()
-            Spacer()
-        }
+        ExploreView()
         .padding(.top, geoProxy.safeAreaInsets.top)
         .frame(maxWidth: screenWidth)
         .onChange(of: self.scrollPosition) { value in
@@ -103,8 +100,9 @@ struct AppView2: View {
             }
             .frame(maxWidth: screenWidth)
             
-            VStack() {
+            VStack(spacing: .zero) {
                 Spacer()
+                Divider()
                 PeopleGridView(SEED_DATA.users, isExpanded: $isExpanded)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)

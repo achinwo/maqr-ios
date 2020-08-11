@@ -32,6 +32,10 @@ struct BlurView: UIViewRepresentable {
 
 struct JoyMeterView: View {
     
+    @Binding var heartLevel: HeartLevel
+    @State var heartCount: Int = 0
+    @State var width: CGFloat = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
+    
     enum HeartLevel: CGFloat {
         case empty = 0
         case quarter = 26
@@ -59,13 +63,9 @@ struct JoyMeterView: View {
                 return self.rawValue
             }
             
-            
             return (self.rawValue / 100.0) * fullValue
         }
     }
-    
-    @Binding var heartLevel: HeartLevel
-    @State var width: CGFloat = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
     
     
     var body: some View {
@@ -87,6 +87,22 @@ struct JoyMeterView: View {
                     .frame(width: width, height: width)
                     .overlay(Rectangle().background(Color.primary).offset(x: offset, y: 0))
                     .mask(Image(systemName: "heart.fill").font(.system(size: width)))
+                    .onChange(of: self.heartLevel) { newLevel in
+                        guard self.heartLevel == .full else {
+                            return
+                        }
+                        
+                        self.heartCount += 1
+                    }
+            
+            if self.heartCount > 1 {
+                let offset = width / 1.16
+                Text("×\(self.heartCount)").foregroundColor(.gray).font(.footnote)
+                    .offset(x: offset, y: width / 4)
+                    .frame(minWidth: width)
+                    //.colorMultiply(.primary)
+                    .animation(.spring())
+            }
         }
         
     }
