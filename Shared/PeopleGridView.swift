@@ -190,6 +190,7 @@ struct PeopleGridView: View {
                 Image(systemName: "person.2.fill").font(.title2)
                 Text(label)
                 JoyMeterView(heartLevel: $heartLevel, width: UIFont.preferredFont(forTextStyle: .title2).pointSize)
+                    
                 Spacer()
             }
             .padding()
@@ -202,6 +203,7 @@ struct PeopleGridView: View {
             }
         }
         .padding(.trailing, Sizing.medium)
+        .animation(.spring())
     }
 }
 

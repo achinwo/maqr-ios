@@ -54,6 +54,9 @@ public struct TrackView2: View {
         self.colors = colors
     }
     
+    @State var heartLevel: JoyMeterView.HeartLevel = .empty
+    @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title1
+    
     public var body: some View {
         HStack(alignment: .center) {
             
@@ -94,6 +97,39 @@ public struct TrackView2: View {
                     Spacer()
                 }
             }
+            Spacer()
+            JoyMeterView(heartLevel: self.$heartLevel, heartCount: 1, width: UIFont.preferredFont(forTextStyle: self.heartIconFont).pointSize)
+                .padding()
+                .padding(.trailing, Sizing.large)
+                .foregroundColor(colors?.secondaryColor ?? Color.primary)
+                .onTapGesture {
+                    
+                    withAnimation() {
+                        self.heartIconFont = .largeTitle
+                    }
+                    
+                    defer {
+                        withAnimation() {
+                            self.heartIconFont = .title2
+                        }
+                    }
+                    
+                    guard self.heartLevel != .full else {
+                        withAnimation(.none) {
+                            self.heartLevel = .quarter
+                        }
+                        return
+                    }
+                    self.heartLevel = self.heartLevel.next
+                }
+                .onLongPressGesture {
+                    let impactHeavy = UIImpactFeedbackGenerator(style: .rigid)
+                    self.heartLevel = .full
+                    impactHeavy.impactOccurred()
+                    print("new count: \(self.heartLevel)")
+                }
+        }.onLongPressGesture {
+            
         }
         .animation(.easeIn)
         .background(colors?.backgroundColor ?? Color.clear)
