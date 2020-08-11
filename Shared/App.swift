@@ -28,24 +28,6 @@ let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 //    }
 //}
 
-struct BlurView: UIViewRepresentable {
-    
-    let style: UIBlurEffect.Style
-    
-    init(_ style: UIBlurEffect.Style = .systemMaterial) {
-        self.style = style
-    }
-    
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        return UIVisualEffectView(effect: UIBlurEffect(style: self.style))
-    }
-    
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
-        uiView.effect = UIBlurEffect(style: self.style)
-        uiView.isUserInteractionEnabled = false
-    }
-    
-}
 
 struct AppView2: View {
     
@@ -55,7 +37,7 @@ struct AppView2: View {
         case point(CGPoint)
     }
     
-    static let viewIds: (explore: String, listen: String) = ("views.explore", "views.listen")
+    static let viewIds: (explore: String, listen: String, notset: String) = ("views.explore", "views.listen", "views.none")
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     @State var scrollPosition: ScrollPosition = .leadingEdge
@@ -64,7 +46,9 @@ struct AppView2: View {
     @State var volume: CGFloat = 30
     @State var isExpanded = false
     
-    @State var selectedViewId: String? = nil
+    @State var heartLevel: JoyMeterView.HeartLevel = .full
+    
+    @AppStorage("selectedViewId") var selectedViewId: String = viewIds.notset
     @State var peopleViewBounds: CGRect? = nil
     @State var navbarViewBounds: CGRect? = nil
     
@@ -89,7 +73,7 @@ struct AppView2: View {
     }
     
     func exploreView(geoProxy: GeometryProxy) -> some View {
-        VStack(){
+        VStack(alignment: .center){
             ExploreView()
             Spacer()
         }
@@ -191,20 +175,28 @@ struct AppView2: View {
                         }
                     }
                     .onChange(of: self.selectedViewId) { value in
-                        guard let scrollTarget = value else {
-                            return
-                        }
                         
                         withAnimation(){
-                            proxy.scrollTo(scrollTarget)
+                            proxy.scrollTo(value)
                         }
                     }
-                    .onAppear() {
-                        guard selectedViewId == nil else {
-                            return
+                    .onDisappear(){
+                        switch self.scrollPosition {
+                        case .leadingEdge:
+                            self.selectedViewId = Self.viewIds.explore
+                        case .trailingEdge:
+                            self.selectedViewId = Self.viewIds.listen
+                        default:
+                            break
                         }
                         
-                        self.selectedViewId = Self.viewIds.listen
+                    }
+                    .onAppear() {
+                        var nextViewId = self.selectedViewId
+                        if nextViewId == Self.viewIds.notset {
+                            nextViewId = Self.viewIds.listen
+                        }
+                        self.selectedViewId = nextViewId
                     }
                 }
             }
