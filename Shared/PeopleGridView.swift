@@ -189,7 +189,9 @@ struct PeopleGridView: View {
             HStack(){
                 Image(systemName: "person.2.fill").font(.title2)
                 Text(label)
+                Spacer()
                 JoyMeterView(heartLevel: $heartLevel, width: UIFont.preferredFont(forTextStyle: .title2).pointSize)
+                    .foregroundColor(.red)
                     
                 Spacer()
             }
@@ -202,6 +204,7 @@ struct PeopleGridView: View {
                 }
             }
         }
+        .accentColor(.primary)
         .padding(.trailing, Sizing.medium)
         .animation(.spring())
     }

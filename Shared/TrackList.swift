@@ -104,16 +104,6 @@ public struct TrackView2: View {
                 .foregroundColor(colors?.secondaryColor ?? Color.primary)
                 .onTapGesture {
                     
-                    withAnimation() {
-                        self.heartIconFont = .largeTitle
-                    }
-                    
-                    defer {
-                        withAnimation() {
-                            self.heartIconFont = .title2
-                        }
-                    }
-                    
                     guard self.heartLevel != .full else {
                         withAnimation(.none) {
                             self.heartLevel = .quarter
@@ -123,13 +113,11 @@ public struct TrackView2: View {
                     self.heartLevel = self.heartLevel.next
                 }
                 .onLongPressGesture {
-                    let impactHeavy = UIImpactFeedbackGenerator(style: .rigid)
+                    let impactHeavy = UIImpactFeedbackGenerator(style: .medium)
                     self.heartLevel = .full
                     impactHeavy.impactOccurred()
                     print("new count: \(self.heartLevel)")
                 }
-        }.onLongPressGesture {
-            
         }
         .animation(.easeIn)
         .background(colors?.backgroundColor ?? Color.clear)
