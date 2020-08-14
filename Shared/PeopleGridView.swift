@@ -35,6 +35,18 @@ struct JoyMeterView: View {
     @Binding var heartLevel: HeartLevel
     @State var heartCount: Int = 0
     @State var width: CGFloat = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
+    @State var labelColor: Color = .gray
+    
+    init(_ heartLevel: Binding<HeartLevel>, heartCount: Int = 0, width: CGFloat? = nil, labelColor: Color? = nil){
+        self._heartLevel = heartLevel
+        self.heartCount = heartCount
+        self.width = width ?? UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
+        self.labelColor = labelColor ?? .gray
+    }
+    
+    init(_ heartLevel: Binding<HeartLevel>, heartCount: Int = 0, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil){
+        self.init(heartLevel, heartCount: heartCount, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor)
+    }
     
     enum HeartLevel: CGFloat {
         case empty = 0
@@ -97,7 +109,7 @@ struct JoyMeterView: View {
             
             if self.heartCount > 1 {
                 let offset = width / 1.16
-                Text("×\(self.heartCount)").foregroundColor(.gray).font(.footnote)
+                Text("×\(self.heartCount)").foregroundColor(labelColor).font(.footnote)
                     .offset(x: offset, y: width / 4)
                     .frame(minWidth: width)
                     //.colorMultiply(.primary)
@@ -116,10 +128,18 @@ struct PeopleGridView: View {
     
     @Binding var isExpanded: Bool
     @State var users: [User]
+    @Binding var searchText: String
     
-    public init(_ users: [User], isExpanded: Binding<Bool>? = nil){
+    @State var isSearching = false
+    @State var searchbarActive = false
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    @State var activeDevice: Spotify.Device?
+    @State var volume: CGFloat = 30
+    
+    public init(_ users: [User], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil){
         self._users = State(initialValue: users)
         self._isExpanded = isExpanded ?? .constant(true)
+        self._searchText = searchText ?? .constant("")
     }
     
     var stickyHeaderView: some View {
@@ -144,58 +164,99 @@ struct PeopleGridView: View {
             label = "\(label)\(users.count)" //•
         }
         
-        return DisclosureGroup(isExpanded: self._isExpanded) {
+        let mainView = DisclosureGroup(isExpanded: self._isExpanded) {
+            
+            let width = Sizing.xxxLarge
+            
             ScrollView(.horizontal) {
-                LazyHGrid(rows: rows, alignment: .center, pinnedViews: [.sectionHeaders]) {
+                LazyHGrid(rows: rows, alignment: .center) {
                     
                     Image(systemName: "plus.circle")
-                        .resizable()
                         .renderingMode(.original)
-                        .frame(width: 50, height: 50)
+                        .resizable()
+                        .font(.system(size: width, weight: Font.Weight.thin, design: .default))
+                        .frame(width: width, height: width)
                         .foregroundColor(.gray)
                     
                     ForEach(users, id: \.self) { user in
                         Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.name)!)
                             .resizable()
                             .renderingMode(.original)
-                            .frame(width: 50, height: 50)
+                            .frame(width: width, height: width)
                             .clipShape(Circle())
                             .overlay(
                                 Group() {
                                     if user.id == 3 {
                                         Text("invited")
-                                            .padding([.leading, .trailing], 3)
+                                            .fontWeight(.thin)
+                                            .padding([.leading, .trailing], 4)
                                             .foregroundColor(.white)
-                                            .background(Color.gray)
+                                            .background(Color.secondary)
                                             .font(.footnote)
                                             .clipShape(Capsule())
                                     } else {
                                         Circle()
                                             .fill(Color.green)
-                                            .frame(width: 14, height: 14)
+                                            .frame(width: max(width / 4, 15), height: max(width / 4, 15))
                                     }
                                 }
-                                .offset(x: 18, y: 18)
+                                .offset(x: width / 3, y: width / 3)
                             ).onTapGesture {
                                 self.heartLevel = self.heartLevel != .full ? self.heartLevel.next : .empty
                                 
-                                print("Tapping Image")
+                                print("Tapping Image: \(Sizing.xxLarge)")
                             }
                     }
                 }
+                .padding()
             }
-            .padding()
+            .background(Colors.lightGray.opacity(0.3))
+            .cornerRadius(Sizing.large)
+            .animation(.spring())
         } label: {
+            
+            let devices: [Spotify.Device] = [
+                Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
+                Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
+                Spotify.Device(name: "Microwave", type: .speaker, isActive: true, id: "test_device4"),
+                
+                Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
+                Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
+            ]
+            
             HStack(){
                 Image(systemName: "person.2.fill").font(.title2)
                 Text(label)
+                    .font(Font.caption.weight(.light))
+                    .offset(x: -4, y: 0)
                 Spacer()
-                JoyMeterView(heartLevel: $heartLevel, width: UIFont.preferredFont(forTextStyle: .title2).pointSize)
+                Button(){
+                    self.appCoordinator.sheet.show(){
+                        DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: devices)
+                    }
+                } label: {
+                    Image(systemName: "hifispeaker")
+                }
+                .font(Font.title.weight(.ultraLight))
+                
+                Spacer()
+                JoyMeterView($heartLevel, textStyle: .title3)
                     .foregroundColor(.red)
-                    
+                    .font(Font.title.weight(.ultraLight))
+                    .offset(x: !(self.isExpanded || users.isEmpty) ? Sizing.small / 2 * -1 : 0, y: 0)
+                //.alignmentGuide(.custom) { dims in dims[.custom] }
+                
+                Spacer()
+                Button(){
+                    self.searchbarActive.toggle()
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(Font.title.weight(.ultraLight))
+                }
                 Spacer()
             }
             .padding()
+            .padding(.leading, .zero)
             .frame(minWidth: screenWidth / 2)
             .background(Color.gray.opacity(0.001))
             .onTapGesture(){
@@ -204,11 +265,36 @@ struct PeopleGridView: View {
                 }
             }
         }
+        
+        
+        return VStack(alignment: .center, spacing: .zero){
+            
+            if self.searchbarActive {
+                SearchBar(text: self.$searchText, isEditing: self.$isSearching)
+                    .cornerRadius(8)
+                    .overlay(RoundedRectangle(cornerRadius: 8)
+                                .stroke(Colors.lightGray.opacity(self.isSearching ? 0 : 0.9), lineWidth: 1))
+                    .padding(.top, Sizing.medium)
+                    .background(Color.clear)
+            }
+            mainView
+        }
+        .onChange(of: self.isSearching) { value in
+            if self.searchbarActive && !value {
+                self.searchbarActive = false
+            }
+        }
         .accentColor(.primary)
         .padding(.trailing, Sizing.medium)
+        .padding(.leading, Sizing.medium)
         .animation(.spring())
+        
     }
+    
+    
 }
+
+
 
 struct PeopleGridView_Previews: PreviewProvider {
     

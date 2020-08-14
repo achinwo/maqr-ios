@@ -39,9 +39,13 @@ public enum Images: String {
 
 public enum Sizing {
     
-    public static let large = UIFont.preferredFont(forTextStyle: .title1).pointSize
+    public static let xxLarge = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
+    public static let xLarge = UIFont.preferredFont(forTextStyle: .title1).pointSize
+    public static let large = UIFont.preferredFont(forTextStyle: .title2).pointSize
     public static let medium = UIFont.preferredFont(forTextStyle: .headline).pointSize
     public static let small = UIFont.preferredFont(forTextStyle: .body).pointSize
+    
+    public static let xxxLarge = xxLarge * 2.0
     
 }
 

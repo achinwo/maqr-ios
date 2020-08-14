@@ -42,8 +42,6 @@ struct AppView2: View {
     @EnvironmentObject var appCoordinator: AppCoordinator
     @State var scrollPosition: ScrollPosition = .leadingEdge
     
-    @State var activeDevice: Spotify.Device?
-    @State var volume: CGFloat = 30
     @State var isExpanded = false
     
     @State var heartLevel: JoyMeterView.HeartLevel = .full
@@ -51,6 +49,9 @@ struct AppView2: View {
     @AppStorage("selectedViewId") var selectedViewId: String = viewIds.notset
     @State var peopleViewBounds: CGRect? = nil
     @State var navbarViewBounds: CGRect? = nil
+    @State var filterText = ""
+    
+    public init(){}
     
     var roomsView: some View {
         ScrollView(.horizontal) {
@@ -78,32 +79,49 @@ struct AppView2: View {
         .frame(maxWidth: screenWidth)
         .onChange(of: self.scrollPosition) { value in
             print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
+            switch value {
+                case .leadingEdge:
+                    self.selectedViewId = Self.viewIds.explore
+                case .trailingEdge:
+                    self.selectedViewId = Self.viewIds.listen
+                default:
+                    break
+            }
         }
         .id(Self.viewIds.explore)
     }
     
+    @State var filteredTracks: [Track] = SEED_DATA.tracks
+    
     func listenView(geoProxy: GeometryProxy, scrollProxy: ScrollViewProxy) -> some View {
-        let devices: [Spotify.Device] = [
-            Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
-            Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
-            Spotify.Device(name: "Microwave", type: .speaker, isActive: true, id: "test_device4"),
-            
-            Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
-            Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
-        ]
+        
         
         return ZStack(){
             ScrollView(.vertical, showsIndicators: true) {
-                TrackList(tracks: SEED_DATA.tracks)
-                    .padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds!.height)
+                TrackList(tracks: self.$filteredTracks)
+                    .padding(.top, geoProxy.safeAreaInsets.top)
+                    //.padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds!.height)
                     .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds!.height)
             }
+            .onChange(of: self.filterText) { term in
+                let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                guard !self.filterText.isEmpty else {
+                    self.filteredTracks = SEED_DATA.tracks
+                    return
+                }
+                
+                self.filteredTracks = SEED_DATA.tracks.filter() { track in
+                    return track.artistName.lowercased().contains(term) || track.title.lowercased().contains(term)
+                }
+            }
+            //
             .frame(maxWidth: screenWidth)
             
             VStack(spacing: .zero) {
                 Spacer()
                 Divider()
-                PeopleGridView(SEED_DATA.users, isExpanded: $isExpanded)
+                PeopleGridView(SEED_DATA.users, isExpanded: $isExpanded, searchText: self.$filterText)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in
@@ -116,32 +134,29 @@ struct AppView2: View {
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
             
-            VStack() {
+            VStack(spacing: .zero) {
                 HStack(spacing: .zero){
                     Spacer()
-                    Button(){
-                        self.appCoordinator.sheet.show(){
-                            DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: devices)
-                        }
-                    } label: {
-                        Image(systemName: "hifispeaker")
-                    }
-                    Button("Search") {
-                        print("[Insets] \(geoProxy.safeAreaInsets)")
-                        self.selectedViewId = Self.viewIds.explore
-                    }
-                    .font(.title2)
-                    .padding()
+                    
+//                    Button("Search") {
+//                        withAnimation(){
+//                            self.selectedViewId = Self.viewIds.explore
+//                            scrollProxy.scrollTo(Self.viewIds.explore)
+//                        }
+//                    }
+//                    .font(.title2)
+//                    .padding()
                 }
-                .frame(width: screenWidth)
-                .padding(.top, geoProxy.safeAreaInsets.top)
-                .background(Color.white.opacity(0.98))
+                .frame(width: screenWidth, height: geoProxy.safeAreaInsets.top)
+                //.padding(.top, geoProxy.safeAreaInsets.top)
+                .background(Color.white.opacity(0.70))
                 .onFrameChange() { rect in
                     DispatchQueue.main.async {
                         self.navbarViewBounds = rect
                     }
                 }
-                
+                //.offset(x: 0, y: -200)
+                Divider()
                 Spacer()
             }
         }
@@ -173,28 +188,21 @@ struct AppView2: View {
                         }
                     }
                     .onChange(of: self.selectedViewId) { value in
-                        
                         withAnimation(){
+                            print("[AppView2] scrolling to: \(value)")
                             proxy.scrollTo(value)
                         }
                     }
-                    .onDisappear(){
-                        switch self.scrollPosition {
-                        case .leadingEdge:
-                            self.selectedViewId = Self.viewIds.explore
-                        case .trailingEdge:
+                    .onAppear() {
+                        
+                        guard self.selectedViewId != Self.viewIds.notset else {
                             self.selectedViewId = Self.viewIds.listen
-                        default:
-                            break
+                            return
                         }
                         
-                    }
-                    .onAppear() {
-                        var nextViewId = self.selectedViewId
-                        if nextViewId == Self.viewIds.notset {
-                            nextViewId = Self.viewIds.listen
+                        withAnimation(){
+                            proxy.scrollTo(self.selectedViewId)
                         }
-                        self.selectedViewId = nextViewId
                     }
                 }
             }

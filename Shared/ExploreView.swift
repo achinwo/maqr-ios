@@ -113,6 +113,8 @@ public struct SearchResultView: View {
         return VStack(){
             NetworkImage(imageURL: URL(string: track.albumCoverUrl)!, placeholderImage: UIImage(systemName: "heart")!)
             Text(track.title).font(.body)
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
     }
     
@@ -206,6 +208,7 @@ public struct ExploreView: View {
         return VStack(alignment: .center, spacing: 0) {
             SearchBar(text: $model.query)
                 .padding(.bottom, Sizing.small)
+                .padding(.horizontal, Sizing.medium)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(){
                     ForEach(Array(self.areasFiltered)) { area in
@@ -226,13 +229,15 @@ public struct ExploreView: View {
                     }
                 }
             }
-                .padding(.bottom, Sizing.small)
+            .padding(.bottom, Sizing.small)
             Divider()
-            if let searchResults = searchResults {
+            
+            if appCoordinator.isSearching {
+                ProgressView(value: nil, total: 100).padding()
+            }
+            
+            if !searchResults.isEmpty {
                 SearchResultView(sections)
-                    
-            } else if appCoordinator.isSearching {
-                ProgressView().padding()
             } else {
                 VStack(alignment: .center, spacing: .zero){
                     self.suggestionsView.padding()//.foregroundColor(.white)
@@ -245,15 +250,34 @@ public struct ExploreView: View {
     }
 }
 
+struct DarkBlueShadowProgressViewStyle: ProgressViewStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        ProgressView(configuration)
+            .shadow(color: Color(red: 0, green: 0, blue: 0.6),
+                    radius: 4.0, x: 1.0, y: 2.0)
+    }
+}
+
 public struct SearchBar: View {
     
     @Binding var text: String
-    @State private var isEditing = false
+    @Binding var isEditing: Bool
+    @State private var isEditing_ = false
+    
+    private let useInternalState: Bool
+    
+    public init(text: Binding<String>, isEditing: Binding<Bool>? = nil){
+        self.useInternalState = isEditing == nil
+        self._text = text
+        self._isEditing = isEditing ?? .constant(false)
+    }
  
     public var body: some View {
-        HStack {
+        let isEditing = self.useInternalState ? self.isEditing_ : self.isEditing
+        return HStack {
  
             TextField("Search", text: $text)
+                .font(Font.callout.weight(.light))
                 .padding(7)
                 .padding(.horizontal, 25)
                 .background(Color(.systemGray6))
@@ -276,14 +300,14 @@ public struct SearchBar: View {
                         }
                     }
                 )
-                .padding(.horizontal, 10)
+                //.padding(.horizontal, 10)
                 .onTapGesture {
-                    self.isEditing = true
+                    self.setIsEditing(true)
                 }
  
             if isEditing {
                 Button(action: {
-                    self.isEditing = false
+                    self.setIsEditing(false)
                     self.text = ""
  
                 }) {
@@ -294,6 +318,11 @@ public struct SearchBar: View {
                 .animation(.default)
             }
         }
+    }
+    
+    private func setIsEditing(_ value: Bool){
+        self.isEditing = value
+        self.isEditing_ = value
     }
 }
 

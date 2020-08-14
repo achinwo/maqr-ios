@@ -55,7 +55,7 @@ public struct TrackView2: View {
     }
     
     @State var heartLevel: JoyMeterView.HeartLevel = .empty
-    @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title1
+    @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
     
     public var body: some View {
         HStack(alignment: .center) {
@@ -98,7 +98,7 @@ public struct TrackView2: View {
                 }
             }
             Spacer()
-            JoyMeterView(heartLevel: self.$heartLevel, heartCount: 1, width: UIFont.preferredFont(forTextStyle: self.heartIconFont).pointSize)
+            JoyMeterView(self.$heartLevel, heartCount: 1, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary)
                 .padding()
                 .padding(.trailing, Sizing.large)
                 .foregroundColor(colors?.secondaryColor ?? Color.primary)
@@ -126,10 +126,10 @@ public struct TrackView2: View {
 
 public struct TrackList: View {
     
-    @State var tracks: [Track]
+    @Binding var tracks: [Track]
     
-    public init(tracks: [Track]){
-        self._tracks = State(initialValue: tracks)
+    public init(tracks: Binding<[Track]>){
+        self._tracks = tracks
     }
     
     public var body: some View {
@@ -145,7 +145,7 @@ public struct TrackList: View {
 struct TrackList_Previews: PreviewProvider {
     
     static var previews: some View {
-        TrackList(tracks: SEED_DATA.tracks)
+        TrackList(tracks: .constant(SEED_DATA.tracks))
     }
     
 }
