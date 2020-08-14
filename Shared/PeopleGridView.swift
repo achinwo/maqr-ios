@@ -225,7 +225,7 @@ struct PeopleGridView: View {
             ]
             
             HStack(){
-                Image(systemName: "person.2.fill").font(.title2)
+                Image(systemName: "person.2").font(Font.title2.weight(.thin))
                 Text(label)
                     .font(Font.caption.weight(.light))
                     .offset(x: -4, y: 0)
@@ -251,7 +251,7 @@ struct PeopleGridView: View {
                     self.searchbarActive.toggle()
                 } label: {
                     Image(systemName: "magnifyingglass")
-                        .font(Font.title.weight(.ultraLight))
+                        .font(Font.title2.weight(.ultraLight))
                 }
                 Spacer()
             }
