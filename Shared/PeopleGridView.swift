@@ -189,9 +189,29 @@ struct PeopleGridView: JoliView {
                         }
                         self.preview = .view() {
                             let view = VStack(alignment: .center){
-                                Text("Invite a Friend")
-                                    .font(Font.largeTitle.weight(.light))
+                                HStack(alignment: VerticalAlignment.top){
+                                    let width = UIFont.preferredFont(forTextStyle: .title2).pointSize
+                                    Spacer()
+                                    Image("joil_icon_rounded")
+                                        .resizable()
+                                        .frame(width: width * 2, height: width * 2)
+                                        .padding()
+                                    
+                                    VStack(alignment: .leading){
+                                        Text("Invite a friend")
+                                            .font(Font.largeTitle.weight(.light))
+                                        Text("to ")
+                                            .foregroundColor(.gray)
+                                            .fontWeight(.regular)
+                                            .font(Font.headline)
+                                            + Text("Wiz Party")
+                                            .fontWeight(.light)
+                                            .font(Font.headline)
+                                    }
                                     .padding(.bottom, Sizing.medium)
+                                    Spacer()
+                                    Spacer()
+                                }
                                 Divider()
                                 // Include
                                 Image(systemName: "person.fill")
@@ -229,15 +249,21 @@ struct PeopleGridView: JoliView {
                                     .alignmentGuide(.leading) { d in d[.leading] }
                                 }
                                 Divider().padding()
-                                Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle").font(Font.footnote.weight(.light)).foregroundColor(.secondary)
-                                Image("appclip_barcode_clear_example")
-                                    .resizable()
-                                    .padding()
-                                    .padding(.top, Sizing.medium)
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: screenWidth / 2, height: screenWidth / 2, alignment: .center)
-                                    .cornerRadius(50)
-                                    .fixedSize()
+                                
+                                Link(destination: URL(string: "https://developer.apple.com/app-clips/")!) {
+                                    VStack(){
+                                        Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle").font(Font.footnote.weight(.light)).foregroundColor(.secondary)
+                                        Image("appclip_barcode_clear_example")
+                                            .resizable()
+                                            .padding()
+                                            .padding(.top, Sizing.medium)
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: screenWidth / 2, height: screenWidth / 2, alignment: .center)
+                                            .cornerRadius(50)
+                                            .fixedSize()
+                                    }
+                                    
+                                }
                                 Spacer()
                             }.padding(.top, Sizing.xLarge)
                             return AnyView(view)
@@ -321,6 +347,7 @@ struct PeopleGridView: JoliView {
                 
                 Spacer()
                 JoyMeterView($heartLevel, textStyle: .title3)
+                    .background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
                     .foregroundColor(.red)
                     .font(Font.title.weight(.ultraLight))
                     .offset(x: !(self.isExpanded || users.isEmpty) ? Sizing.small / 2 * -1 : 0, y: 0)

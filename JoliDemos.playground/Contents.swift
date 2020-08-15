@@ -121,6 +121,21 @@ func logicMain() -> Void {
     PlaygroundPage.current.needsIndefiniteExecution = true
 }
 
+struct MasterView: View {
+    @State private var showPopover: Bool = false
+
+    var body: some View {
+        VStack {
+            Button("Show popover") {
+                self.showPopover = true
+            }.popover(
+                isPresented: self.$showPopover,
+                arrowEdge: .bottom
+            ) { Text("Popover") }
+        }
+    }
+}
+
 struct ContentView: View {
     
     //@EnvironmentObject var partial: PartialSheetManager
@@ -128,17 +143,18 @@ struct ContentView: View {
      var body: some View {
         let user = SEED_DATA.users.first!
         //print("partial: \(partial)")
-        Text("Hello World \(user.name)")//
+        //Text("Hello World \(user.name)")//
         //return DevicesSampleView()
             //.addPartialSheet()
         //UserProfileView2(user: user.builder()).offset(x: 0, y: 1)
+        MasterView()
      }
 }
 
 func uiMain() -> Void {
     
     let view = NavigationView(){
-        ExploreView()
+        ContentView()
     }//.environmentObject(PartialSheetManager())
     
     let parent = playgroundWrapper(
@@ -151,7 +167,7 @@ func uiMain() -> Void {
 }
 
 
-let main: () -> Void = logicMain
+let main: () -> Void = uiMain
 
 main()
 

@@ -135,7 +135,7 @@ struct AppView2: View {
                     .background(BlurView(.systemUltraThinMaterialLight))
                 //Color.white.blur(radius: 20).opacity(0.9))
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
-            }
+            }.zIndex(100)
             
             VStack(spacing: .zero) {
                 HStack(spacing: .zero){
@@ -161,21 +161,26 @@ struct AppView2: View {
                 //.offset(x: 0, y: -200)
                 Divider()
                 
-                if let preview = self.preview {
+                
                     
                     ZStack(){
                         
                         VStack(spacing: .zero){
                             Divider()
                             Spacer(minLength: .zero)
-                            switch preview {
-                            case .userProfile(let user):
-                                UserProfileView2(user: user)
-                                    .background(Color.clear)
-                            case .view(let scrollAxis, let viewFunc):
-                                ScrollView(scrollAxis ?? .vertical){
-                                    viewFunc().clipped()
+                            
+                            if let preview = self.preview {
+                                switch preview {
+                                case .userProfile(let user):
+                                    UserProfileView2(user: user)
+                                        .background(Color.clear)
+                                case .view(let scrollAxis, let viewFunc):
+                                    ScrollView(scrollAxis ?? .vertical){
+                                        viewFunc().clipped()
+                                    }
                                 }
+                            } else {
+                                Text("No Preview.")
                             }
                             Spacer(minLength: .zero)
                             Divider()
@@ -209,10 +214,8 @@ struct AppView2: View {
                     .background(BlurView(.extraLight))
                     .padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
                     .padding(.top, 1)
+                    .offset(x: 0, y: self.preview == nil ? screenHeight : 0)
                     .animation(.spring())
-                } else {
-                    Spacer()
-                }
             }
         }
         .id(Self.viewIds.listen)
