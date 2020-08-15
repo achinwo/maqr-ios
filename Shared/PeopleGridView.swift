@@ -193,28 +193,51 @@ struct PeopleGridView: JoliView {
                                     .font(Font.largeTitle.weight(.light))
                                     .padding(.bottom, Sizing.medium)
                                 Divider()
+                                // Include
                                 Image(systemName: "person.fill")
                                     .resizable()
                                     .foregroundColor(.gray)
                                     .padding()
-                                    .frame(idealWidth: screenWidth / 1.6, idealHeight: screenWidth / 1.6)
+                                    .frame(idealWidth: screenWidth / 1.9, idealHeight: screenWidth / 1.9)
                                     .fixedSize()
                                     .background(Colors.lightGray.opacity(0.7))
                                     .offset(x: 0, y: screenWidth / 10)
                                     .background(Colors.lightGray.opacity(0.7))
                                     .clipShape(Circle())
-                                    .padding(.top, Sizing.large)
-                                Button("Copy Link") {
-                                    print("Share view")
-                                    appCoordinator.share(text: "https://api.jolimc.com/join/")
+                                    .padding([.top, .bottom], Sizing.large)
+                                
+                                HStack(){
+                                    Button() {
+                                        print("Share view")
+                                        appCoordinator.share(text: "https://api.jolimc.com/join/")
+                                    } label: {
+                                        Label("Copy link", systemImage: "link")
+                                    }
+                                    .font(.headline)
+                                    .accentColor(.primary)
+                                    .padding()
+                                    
+                                    Button(){
+                                        print("share via email")
+                                    } label: {
+                                        Label("Enter email", systemImage: "envelope.circle.fill")
+                                        
+                                    }
+                                    .accentColor(.primary)
+                                    .font(.headline)
+                                    .padding()
+                                    .alignmentGuide(.leading) { d in d[.leading] }
                                 }
-                                .font(.title)
-                                .padding()
-                                Button("Email") {
-                                    print("share via email")
-                                }
-                                .font(.title)
-                                .padding()
+                                Divider().padding()
+                                Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle").font(Font.footnote.weight(.light)).foregroundColor(.secondary)
+                                Image("appclip_barcode_clear_example")
+                                    .resizable()
+                                    .padding()
+                                    .padding(.top, Sizing.medium)
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: screenWidth / 2, height: screenWidth / 2, alignment: .center)
+                                    .cornerRadius(50)
+                                    .fixedSize()
                                 Spacer()
                             }.padding(.top, Sizing.xLarge)
                             return AnyView(view)
