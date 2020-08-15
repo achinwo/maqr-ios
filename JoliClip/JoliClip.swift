@@ -16,7 +16,18 @@ import Combine
 @main
 struct JoliClip: AppClip {
     
-    var coordinator = AppCoordinator()
+    @Namespace var namespace {
+        didSet {
+            logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
+            coordinator.namespace = namespace
+        }
+    }
+    
+    
+    var coordinator: AppCoordinator = AppCoordinator()
+    
+    
+    
     @Environment(\.scenePhase) var scenePhase
     @AppStorage(key: .authToken, store: .groupContainer) var authToken: String = .empty
     
@@ -31,6 +42,7 @@ struct JoliClip: AppClip {
     }
     
     init() {
+        
     }
     
     func onScenePhaseChange(_ phase: ScenePhase){

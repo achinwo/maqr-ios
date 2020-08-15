@@ -133,7 +133,6 @@ struct AppView2: View {
                         }
                     }
                     .background(BlurView(.systemUltraThinMaterialLight))
-                    //.matchedGeometryEffect(id: "peoplegrid", in: animation)
                 //Color.white.blur(radius: 20).opacity(0.9))
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
@@ -168,12 +167,17 @@ struct AppView2: View {
                         
                         VStack(spacing: .zero){
                             Divider()
+                            Spacer(minLength: .zero)
                             switch preview {
                             case .userProfile(let user):
                                 UserProfileView2(user: user)
                                     .background(Color.clear)
+                            case .view(let scrollAxis, let viewFunc):
+                                ScrollView(scrollAxis ?? .vertical){
+                                    viewFunc().clipped()
+                                }
                             }
-                            
+                            Spacer(minLength: .zero)
                             Divider()
                         }
                         
@@ -200,6 +204,7 @@ struct AppView2: View {
                         }
                     }
                     .matchedGeometryEffect(id: "peoplegrid", in: animation)
+                    .frame(maxWidth: screenWidth)
                     .frame(minWidth: screenWidth, maxHeight: screenHeight)
                     .background(BlurView(.extraLight))
                     .padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
@@ -270,6 +275,13 @@ struct AppView2: View {
 
 @main
 struct JoliApp: AppClip {
+    
+    @Namespace var namespace {
+        didSet {
+            logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
+            coordinator.namespace = namespace
+        }
+    }
     
     var coordinator: AppCoordinator = AppCoordinator()
     

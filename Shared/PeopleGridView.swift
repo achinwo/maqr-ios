@@ -122,9 +122,10 @@ struct JoyMeterView: View {
 
 public enum AppPreview {
     case userProfile(UserRecord)
+    case view(Axis.Set? = nil, () -> AnyView)
 }
 
-struct PeopleGridView: View {
+struct PeopleGridView: JoliView {
     
     let rows = [
         GridItem(.fixed(100)),
@@ -162,6 +163,7 @@ struct PeopleGridView: View {
     
     
     @State var heartLevel: JoyMeterView.HeartLevel = .full
+    @Namespace var localNamespace
     
     var body: some View {
         var label = ""
@@ -173,61 +175,97 @@ struct PeopleGridView: View {
         let mainView = DisclosureGroup(isExpanded: self._isExpanded) {
             
             let width = Sizing.xxxLarge
-            
-            ScrollView(.horizontal) {
-                LazyHGrid(rows: rows, alignment: .center) {
-                    
-                    Image(systemName: "plus.circle")
-                        .renderingMode(.original)
+            let grid = LazyHGrid(rows: rows, alignment: .center) {
+                
+                Image(systemName: "plus.circle")
+                    .renderingMode(.original)
+                    .resizable()
+                    .font(.system(size: width, weight: Font.Weight.ultraLight, design: .default))
+                    .frame(width: width, height: width)
+                    .foregroundColor(.gray)
+                    .onTapGesture(){
+                        withAnimation(){
+                            self.isExpanded = false
+                        }
+                        self.preview = .view() {
+                            let view = VStack(alignment: .center){
+                                Text("Invite a Friend")
+                                    .font(Font.largeTitle.weight(.light))
+                                    .padding(.bottom, Sizing.medium)
+                                Divider()
+                                Image(systemName: "person.fill")
+                                    .resizable()
+                                    .foregroundColor(.gray)
+                                    .padding()
+                                    .frame(idealWidth: screenWidth / 1.6, idealHeight: screenWidth / 1.6)
+                                    .fixedSize()
+                                    .background(Colors.lightGray.opacity(0.7))
+                                    .offset(x: 0, y: screenWidth / 10)
+                                    .background(Colors.lightGray.opacity(0.7))
+                                    .clipShape(Circle())
+                                    .padding(.top, Sizing.large)
+                                Button("Copy Link") {
+                                    print("Share view")
+                                    appCoordinator.share(text: "https://api.jolimc.com/join/")
+                                }
+                                .font(.title)
+                                .padding()
+                                Button("Email") {
+                                    print("share via email")
+                                }
+                                .font(.title)
+                                .padding()
+                                Spacer()
+                            }.padding(.top, Sizing.xLarge)
+                            return AnyView(view)
+                        }
+                    }
+                
+                ForEach(users, id: \.self) { user in
+                    Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.name)!)
                         .resizable()
-                        .font(.system(size: width, weight: Font.Weight.ultraLight, design: .default))
+                        .renderingMode(.original)
                         .frame(width: width, height: width)
-                        .foregroundColor(.gray)
-                        .onTapGesture(){
-                            withAnimation(){
-                                
-                                //self.isExpanded = false
-                                //self.preview = .userProfile(UserRecord())
+                        .clipShape(Circle())
+                        .overlay(
+                            Group() {
+                                if user.id == 3 {
+                                    Text("Invited")
+                                        .fontWeight(.thin)
+                                        .padding([.leading, .trailing], 4)
+                                        .foregroundColor(.white)
+                                        .background(Color.secondary)
+                                        .font(.footnote)
+                                        .clipShape(Capsule())
+                                } else {
+                                    Circle()
+                                        .fill(Color.green)
+                                        .frame(width: max(width / 4, 15), height: max(width / 4, 15))
+                                }
+                            }
+                            .offset(x: width / 3, y: width / 3)
+                        ).onTapGesture {
+                            //self.heartLevel = self.heartLevel != .full ? self.heartLevel.next : .empty
+                            print("Tapping Image: \(Sizing.xxLarge)")
+                            
+                            if case .userProfile(let currentUser) = self.preview, currentUser.email == user.email
+                            {
+                                self.preview = nil
+                            } else {
+                                self.preview = .userProfile(user.builder())
+                            }
+                        }.onLongPressGesture {
+                            withImpact(.medium, animated: .spring()) {
+                                self.preview = .userProfile(user.builder())
+                                self.isExpanded = false
                             }
                         }
-                    
-                    ForEach(users, id: \.self) { user in
-                        Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.name)!)
-                            .resizable()
-                            .renderingMode(.original)
-                            .frame(width: width, height: width)
-                            .clipShape(Circle())
-                            .overlay(
-                                Group() {
-                                    if user.id == 3 {
-                                        Text("Invited")
-                                            .fontWeight(.thin)
-                                            .padding([.leading, .trailing], 4)
-                                            .foregroundColor(.white)
-                                            .background(Color.secondary)
-                                            .font(.footnote)
-                                            .clipShape(Capsule())
-                                    } else {
-                                        Circle()
-                                            .fill(Color.green)
-                                            .frame(width: max(width / 4, 15), height: max(width / 4, 15))
-                                    }
-                                }
-                                .offset(x: width / 3, y: width / 3)
-                            ).onTapGesture {
-                                //self.heartLevel = self.heartLevel != .full ? self.heartLevel.next : .empty
-                                print("Tapping Image: \(Sizing.xxLarge)")
-                                
-                                if case .userProfile(let currentUser) = self.preview, currentUser.email == user.email
-                                       {
-                                    self.preview = nil
-                                } else {
-                                    self.preview = .userProfile(user.builder())
-                                }
-                            }
-                    }
                 }
-                .padding()
+            }
+            ScrollView(.horizontal) {
+                grid
+                    .padding()
+                    .matchedGeometryEffect(id: "preview", in: appCoordinator.namespace ?? localNamespace)
             }
             .background(Colors.lightGray.opacity(0.3))
             .cornerRadius(Sizing.large)

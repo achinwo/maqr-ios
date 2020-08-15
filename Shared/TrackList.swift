@@ -56,6 +56,7 @@ public struct TrackView2: View {
     
     @State var heartLevel: JoyMeterView.HeartLevel = .empty
     @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
+    @EnvironmentObject var appCoordinator: AppCoordinator
     
     public var body: some View {
         HStack(alignment: .center) {
@@ -113,9 +114,10 @@ public struct TrackView2: View {
                     self.heartLevel = self.heartLevel.next
                 }
                 .onLongPressGesture {
-                    let impactHeavy = UIImpactFeedbackGenerator(style: .medium)
-                    self.heartLevel = .full
-                    impactHeavy.impactOccurred()
+                    
+                    appCoordinator.withImpact(.medium) {
+                        self.heartLevel = .quarter
+                    }
                     print("new count: \(self.heartLevel)")
                 }
         }

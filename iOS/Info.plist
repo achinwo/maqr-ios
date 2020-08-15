@@ -91,7 +91,7 @@
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIImageName</key>
-		<string>joil_icon_rounded.png</string>
+		<string>joil_icon.png</string>
 	</dict>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>

@@ -279,15 +279,98 @@ public extension PartialSheetManager {
     }
 }
 
+public protocol JoliView: View {
+    var appCoordinator: AppCoordinator { get }
+}
+
+extension JoliView {
+
+    public func withImpact(_ impact: UIImpactFeedbackGenerator.FeedbackStyle = .soft, animated: Animation? = nil, _ action: () -> Void){
+        if let animation = animated {
+            withAnimation(animation) {
+                appCoordinator.withImpact(impact, action)
+            }
+        } else {
+            appCoordinator.withImpact(impact, action)
+        }
+    }
+}
+
+//@available(iOS 7.0, *)
+//open class var activityCategory: UIActivity.Category { get } // default is UIActivityCategoryAction.
+//
+//
+//open var activityType: UIActivity.ActivityType? { get } // default returns nil. subclass may override to return custom activity type that is reported to completion handler
+//
+//open var activityTitle: String? { get } // default returns nil. subclass must override and must return non-nil value
+//
+//open var activityImage: UIImage? { get } // default returns nil. subclass must override and must return non-nil value
+//
+//
+//open func canPerform(withActivityItems activityItems: [Any]) -> Bool // override this to return availability of activity based on items. default returns NO
+//
+//open func prepare(withActivityItems activityItems: [Any]) // override to extract items and set up your HI. default does nothing
+//
+//
+//open var activityViewController: UIViewController? { get } // return non-nil to have view controller presented modally. call activityDidFinish at end. default returns nil
+//
+//open func perform() // if no view controller, this method is called. call activityDidFinish when done. default calls [self activityDidFinish:NO]
+//
+//
+//// state method
+//
+//open func activityDidFinish(_ completed: Bool) // activity must call this when activity is finished
+
+class ShareActivity: UIActivity {
+    
+    override var activityType: UIActivity.ActivityType {
+        return .copyToPasteboard
+    }
+    
+    override var activityTitle: String? {
+        return "Joli"
+    } // default returns nil. subclass must override and must return non-nil value
+    
+    override var activityImage: UIImage? {
+        return UIImage(named: "joli_icon.png")!
+    } // default #imageLiteral(resourceName: "joil_icon_rounded.png")returns nil. subclass must override and must return non-nil value
+    
+    override func perform() {
+        self.activityDidFinish(false)
+    }
+    
+    override func activityDidFinish(_ completed: Bool) {
+        logger.debug("[ShareActivity] finished: \(completed)")
+    }
+}
+
 public final class AppCoordinator: ObservableObject {
     
     public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
     
     @Published var isSearching = true
+    @Published var isSharePresented = false
+    public var namespace: Namespace.ID? = nil
     
-    public init(){
-        
+    public init(namespace: Namespace.ID? = nil){
+        self.namespace = namespace
+    }
+    
+    public func share(text: String){
+        isSharePresented.toggle()
+        //
+        let text = "You have been invited to join the room. Go to https://api.jolimc.com/join/abcd to join the room."
+        let av = UIActivityViewController(activityItems: [text], applicationActivities: [ShareActivity()])
+        UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true) {
+            print("[AppCoordinator#share] share view presented")
+        }
+    }
+    
+    public func withImpact(_ impact: UIImpactFeedbackGenerator.FeedbackStyle = .soft, _ action: () -> Void){
+        let impactHeavy = UIImpactFeedbackGenerator(style: impact)
+        action()
+        impactHeavy.impactOccurred()
     }
     
     public struct Modifier: ViewModifier {
@@ -314,6 +397,7 @@ public protocol AppClip: App {
     var contentView: Content { get }
     var scenePhase: ScenePhase { get }
     var coordinator: AppCoordinator { get }
+    var namespace: Namespace.ID { get }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void
     
