@@ -120,6 +120,10 @@ struct JoyMeterView: View {
     }
 }
 
+public enum AppPreview {
+    case userProfile(UserRecord)
+}
+
 struct PeopleGridView: View {
     
     let rows = [
@@ -127,6 +131,7 @@ struct PeopleGridView: View {
     ]
     
     @Binding var isExpanded: Bool
+    @Binding var preview: AppPreview?
     @State var users: [User]
     @Binding var searchText: String
     
@@ -136,10 +141,11 @@ struct PeopleGridView: View {
     @State var activeDevice: Spotify.Device?
     @State var volume: CGFloat = 30
     
-    public init(_ users: [User], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil){
+    public init(_ users: [User], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil){
         self._users = State(initialValue: users)
         self._isExpanded = isExpanded ?? .constant(true)
         self._searchText = searchText ?? .constant("")
+        self._preview = preview ?? .constant(.userProfile(SEED_DATA.users.first!.builder()))
     }
     
     var stickyHeaderView: some View {
@@ -174,9 +180,16 @@ struct PeopleGridView: View {
                     Image(systemName: "plus.circle")
                         .renderingMode(.original)
                         .resizable()
-                        .font(.system(size: width, weight: Font.Weight.thin, design: .default))
+                        .font(.system(size: width, weight: Font.Weight.ultraLight, design: .default))
                         .frame(width: width, height: width)
                         .foregroundColor(.gray)
+                        .onTapGesture(){
+                            withAnimation(){
+                                
+                                //self.isExpanded = false
+                                //self.preview = .userProfile(UserRecord())
+                            }
+                        }
                     
                     ForEach(users, id: \.self) { user in
                         Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.name)!)
@@ -187,7 +200,7 @@ struct PeopleGridView: View {
                             .overlay(
                                 Group() {
                                     if user.id == 3 {
-                                        Text("invited")
+                                        Text("Invited")
                                             .fontWeight(.thin)
                                             .padding([.leading, .trailing], 4)
                                             .foregroundColor(.white)
@@ -202,9 +215,15 @@ struct PeopleGridView: View {
                                 }
                                 .offset(x: width / 3, y: width / 3)
                             ).onTapGesture {
-                                self.heartLevel = self.heartLevel != .full ? self.heartLevel.next : .empty
-                                
+                                //self.heartLevel = self.heartLevel != .full ? self.heartLevel.next : .empty
                                 print("Tapping Image: \(Sizing.xxLarge)")
+                                
+                                if case .userProfile(let currentUser) = self.preview, currentUser.email == user.email
+                                       {
+                                    self.preview = nil
+                                } else {
+                                    self.preview = .userProfile(user.builder())
+                                }
                             }
                     }
                 }
@@ -225,7 +244,7 @@ struct PeopleGridView: View {
             ]
             
             HStack(){
-                Image(systemName: "person.2").font(Font.title2.weight(.thin))
+                Image(systemName: "person.2").font(Font.title2.weight(self.isExpanded ? .light : .thin))
                 Text(label)
                     .font(Font.caption.weight(.light))
                     .offset(x: -4, y: 0)
@@ -251,7 +270,7 @@ struct PeopleGridView: View {
                     self.searchbarActive.toggle()
                 } label: {
                     Image(systemName: "magnifyingglass")
-                        .font(Font.title2.weight(.ultraLight))
+                        .font(Font.title2.weight(self.searchbarActive ? .light : .ultraLight))
                 }
                 Spacer()
             }

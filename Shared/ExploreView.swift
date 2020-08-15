@@ -311,7 +311,7 @@ public struct SearchBar: View {
                     self.text = ""
  
                 }) {
-                    Text("Cancel")
+                    Text("Cancel").fontWeight(.light)
                 }
                 .padding(.trailing, Sizing.medium)
                 .transition(.move(edge: .trailing))

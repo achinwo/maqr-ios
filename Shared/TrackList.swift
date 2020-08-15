@@ -80,7 +80,7 @@ public struct TrackView2: View {
                 Text(track.title)
                     .foregroundColor(colors?.primaryColor ?? Color.primary)
                     .animation(.easeInOut)
-                    .font(.headline)
+                    .font(Font.headline.weight(.light))
                     .lineLimit(2)
                 
                 HStack {
@@ -88,12 +88,12 @@ public struct TrackView2: View {
                     Text(track.artistName)
                         .foregroundColor(colors?.secondaryColor ?? Color.primary)
                         .animation(.easeInOut)
-                        .font(.subheadline)
+                        .font(Font.subheadline.weight(.semibold))
                     Text("•").foregroundColor(colors?.detailColor ?? Color.primary)
                     Text("2003")
                         .foregroundColor(colors?.detailColor ?? Color.primary)
                         .animation(.easeInOut)
-                        .font(.subheadline)
+                        .font(Font.subheadline.weight(.light))
                     Spacer()
                 }
             }

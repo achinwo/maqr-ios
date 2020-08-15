@@ -126,7 +126,7 @@ public struct UserProfileView2: View {
 //        .onTapGesture {
 //            self.editProfilePresented.toggle()
 //        }
-        .background(Colors.lightGray)
+            .background(Color.clear)
         .clipped()
             .edgesIgnoringSafeArea(.bottom)
         

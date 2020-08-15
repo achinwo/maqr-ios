@@ -29,6 +29,7 @@ let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 //}
 
 
+
 struct AppView2: View {
     
     enum ScrollPosition: Equatable {
@@ -50,6 +51,8 @@ struct AppView2: View {
     @State var peopleViewBounds: CGRect? = nil
     @State var navbarViewBounds: CGRect? = nil
     @State var filterText = ""
+    
+    @Namespace var animation
     
     public init(){}
     
@@ -121,7 +124,7 @@ struct AppView2: View {
             VStack(spacing: .zero) {
                 Spacer()
                 Divider()
-                PeopleGridView(SEED_DATA.users, isExpanded: $isExpanded, searchText: self.$filterText)
+                PeopleGridView(SEED_DATA.users, isExpanded: $isExpanded, searchText: self.$filterText, preview: self.$preview)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in
@@ -130,6 +133,7 @@ struct AppView2: View {
                         }
                     }
                     .background(BlurView(.systemUltraThinMaterialLight))
+                    //.matchedGeometryEffect(id: "peoplegrid", in: animation)
                 //Color.white.blur(radius: 20).opacity(0.9))
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
@@ -157,11 +161,60 @@ struct AppView2: View {
                 }
                 //.offset(x: 0, y: -200)
                 Divider()
-                Spacer()
+                
+                if let preview = self.preview {
+                    
+                    ZStack(){
+                        
+                        VStack(spacing: .zero){
+                            Divider()
+                            switch preview {
+                            case .userProfile(let user):
+                                UserProfileView2(user: user)
+                                    .background(Color.clear)
+                            }
+                            
+                            Divider()
+                        }
+                        
+                        let largeTitleSize = UIFont.preferredFont(forTextStyle: .title1).pointSize
+                        VStack(alignment: .trailing){
+                            HStack(){
+                                Spacer()
+                                Image(systemName: "xmark")
+                                    .font(Font.title.weight(.light))
+                                    .foregroundColor(.gray)
+                                    .opacity(0.9)
+                                    .background(Circle()
+                                                    .frame(width: largeTitleSize * 1.4, height: largeTitleSize * 1.6)
+                                                    .foregroundColor(Colors.lightGray.opacity(0.8)))
+                                    
+                                    .padding([.top, .trailing], Sizing.medium)
+                            }
+                            .padding()
+                            .onTapGesture() {
+                                self.preview = nil
+                            }
+                            //.frame(maxWidth: Sizing.large, maxHeight: Sizing.large)
+                            Spacer()
+                        }
+                    }
+                    .matchedGeometryEffect(id: "peoplegrid", in: animation)
+                    .frame(minWidth: screenWidth, maxHeight: screenHeight)
+                    .background(BlurView(.extraLight))
+                    .padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
+                    .padding(.top, 1)
+                    .animation(.spring())
+                } else {
+                    Spacer()
+                }
             }
         }
         .id(Self.viewIds.listen)
     }
+    
+    @State var preview: AppPreview? = nil
+    
     
     var body: some View {
         
