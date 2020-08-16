@@ -255,11 +255,10 @@ struct PeopleGridView: JoliView {
                                         Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle").font(Font.footnote.weight(.light)).foregroundColor(.secondary)
                                         Image("appclip_barcode_clear_example")
                                             .resizable()
+                                            .aspectRatio(contentMode: ContentMode.fit)
                                             .padding()
-                                            .padding(.top, Sizing.medium)
-                                            .aspectRatio(contentMode: .fill)
+                                            //.padding(.top, Sizing.medium)
                                             .frame(width: screenWidth / 2, height: screenWidth / 2, alignment: .center)
-                                            .cornerRadius(50)
                                             .fixedSize()
                                     }
                                     
