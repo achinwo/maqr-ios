@@ -179,8 +179,8 @@ class ShareActivity2: UIActivity {
     } // default returns nil. subclass must override and must return non-nil value
 
     override var activityImage: UIImage? {
-        return UIImage(named: "joil_icon_rounded.png")
-    } // default #imageLiteral(resourceName: "joil_icon_rounded.png")returns nil. subclass must override and must return non-nil value
+        return Images.joliIconRounded.uiImage
+    }
 
 }
 

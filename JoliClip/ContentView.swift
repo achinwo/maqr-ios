@@ -19,28 +19,33 @@ struct ContentView: View {
     var body: some View {
         return NavigationView(){
             VStack() {
+                
+                
+                #if APPCLIP
                 Button("Show Recommended App") {
-                            self.showRecommended.toggle()
-                        }
+                    self.showRecommended.toggle()
+                }
+                .appStoreOverlay(isPresented: $showRecommended) {
+                    SKOverlay.AppConfiguration(appIdentifier: "1440611372", position: .bottom)
+                }
+                #endif
                         
                 Text("Browse Songs").font(.title)
-                TrackList(tracks: .constant(SEED_DATA.tracks))
-                    .onTapGesture {
-                        self.mgr.sheet.show() {
-                            print("Partial sheet dismissed")
-                        } content: {
-                            Text("This is a Partial Sheet")
+                ScrollView(){
+                    TrackList(tracks: .constant(SEED_DATA.tracks))
+                        .onTapGesture {
+                            self.mgr.sheet.show() {
+                                print("Partial sheet dismissed")
+                            } content: {
+                                Text("This is a Partial Sheet")
+                            }
                         }
-                    }
+                }
             }
             .edgesIgnoringSafeArea(.bottom)
         }
         .navigationTitle("Tracks")
         .navigationViewStyle(DefaultNavigationViewStyle())
-        .appStoreOverlay(isPresented: $showRecommended) {
-            SKOverlay.AppConfiguration(appIdentifier: "1440611372", position: .bottom)
-        }
-        
     }
 }
 

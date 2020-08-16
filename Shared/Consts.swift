@@ -25,14 +25,15 @@ public enum Strings {
 }
 
 public enum Images: String {
-    case joliIconRounded = "joil_icon_rounded"
+    
+    case joliIconRounded = "joli_icon_rounded"
     
     var image: Image {
         return Image(self.rawValue)
     }
     
-    var uiImage: UIImage? {
-        return UIImage(named: self.rawValue)
+    var uiImage: UIImage {
+        return UIImage(named: self.rawValue)!
     }
     
 }
@@ -51,4 +52,8 @@ public enum Sizing {
 
 public enum Colors {
     public static let lightGray = Color("light_gray")
+}
+
+public enum Urls {
+    public static let appclips = URL(string: "https://developer.apple.com/app-clips/")!
 }

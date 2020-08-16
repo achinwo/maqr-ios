@@ -54,7 +54,7 @@ public struct TrackView2: View {
         self.colors = colors
     }
     
-    @State var heartLevel: JoyMeterView.HeartLevel = .empty
+    @State var heartLevel: HeartLevel = .empty
     @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
     @EnvironmentObject var appCoordinator: AppCoordinator
     

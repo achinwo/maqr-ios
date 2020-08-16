@@ -74,7 +74,7 @@ struct SignInView: View {
     }
     
     var body: some View {
-        let img = #imageLiteral(resourceName: "joil_icon_rounded.png")
+        let img = Images.joliIconRounded.uiImage
         return VStack() {
             VStack(alignment: .center) {
               

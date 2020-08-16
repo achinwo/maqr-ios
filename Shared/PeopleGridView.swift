@@ -30,96 +30,6 @@ struct BlurView: UIViewRepresentable {
     
 }
 
-struct JoyMeterView: View {
-    
-    @Binding var heartLevel: HeartLevel
-    @State var heartCount: Int = 0
-    @State var width: CGFloat = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
-    @State var labelColor: Color = .gray
-    
-    init(_ heartLevel: Binding<HeartLevel>, heartCount: Int = 0, width: CGFloat? = nil, labelColor: Color? = nil){
-        self._heartLevel = heartLevel
-        self.heartCount = heartCount
-        self.width = width ?? UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
-        self.labelColor = labelColor ?? .gray
-    }
-    
-    init(_ heartLevel: Binding<HeartLevel>, heartCount: Int = 0, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil){
-        self.init(heartLevel, heartCount: heartCount, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor)
-    }
-    
-    enum HeartLevel: CGFloat {
-        case empty = 0
-        case quarter = 26
-        case half = 42
-        case third = 74
-        case full = 100
-        
-        var next: HeartLevel {
-            switch self {
-            case .empty:
-                return .quarter
-            case .quarter:
-                return .half
-            case .half:
-                return .third
-            case .third:
-                return .full
-            case .full:
-                return .full
-            }
-        }
-        
-        func actualOf(_ fullValue: CGFloat) -> CGFloat {
-            guard self == .empty else {
-                return self.rawValue
-            }
-            
-            return (self.rawValue / 100.0) * fullValue
-        }
-    }
-    
-    
-    var body: some View {
-        let getOffset = { () -> CGFloat in
-            guard heartLevel.rawValue > 0 else {
-                return width * -1
-            }
-            
-            let levelVal = heartLevel.rawValue / 100.0 * width
-            return (width - levelVal) * -1
-        }
-        
-        return ZStack(){
-                let offset: CGFloat = getOffset()
-                
-                Image(systemName: "heart")
-                    .resizable()
-                    .font(.system(size: width))
-                    .frame(width: width, height: width)
-                    .overlay(Rectangle().background(Color.primary).offset(x: offset, y: 0))
-                    .mask(Image(systemName: "heart.fill").font(.system(size: width)))
-                    .onChange(of: self.heartLevel) { newLevel in
-                        guard self.heartLevel == .full else {
-                            return
-                        }
-                        
-                        self.heartCount += 1
-                    }
-            
-            if self.heartCount > 1 {
-                let offset = width / 1.16
-                Text("×\(self.heartCount)").foregroundColor(labelColor).font(.footnote)
-                    .offset(x: offset, y: width / 4)
-                    .frame(minWidth: width)
-                    //.colorMultiply(.primary)
-                    .animation(.spring())
-            }
-        }
-        
-    }
-}
-
 public enum AppPreview {
     case userProfile(UserRecord)
     case view(Axis.Set? = nil, () -> AnyView)
@@ -162,7 +72,7 @@ struct PeopleGridView: JoliView {
     }
     
     
-    @State var heartLevel: JoyMeterView.HeartLevel = .full
+    @State var heartLevel: HeartLevel = .full
     @Namespace var localNamespace
     
     var body: some View {
@@ -192,7 +102,7 @@ struct PeopleGridView: JoliView {
                                 HStack(alignment: VerticalAlignment.top){
                                     let width = UIFont.preferredFont(forTextStyle: .title2).pointSize
                                     Spacer()
-                                    Image("joil_icon_rounded")
+                                    Images.joliIconRounded.image
                                         .resizable()
                                         .frame(width: width * 2, height: width * 2)
                                         .padding()
@@ -250,7 +160,7 @@ struct PeopleGridView: JoliView {
                                 }
                                 Divider().padding()
                                 
-                                Link(destination: URL(string: "https://developer.apple.com/app-clips/")!) {
+                                Link(destination: Urls.appclips) {
                                     VStack(){
                                         Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle").font(Font.footnote.weight(.light)).foregroundColor(.secondary)
                                         Image("appclip_barcode_clear_example")

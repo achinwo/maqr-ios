@@ -45,7 +45,7 @@ struct AppView2: View {
     
     @State var isExpanded = false
     
-    @State var heartLevel: JoyMeterView.HeartLevel = .full
+    @State var heartLevel: HeartLevel = .full
     
     @AppStorage("selectedViewId") var selectedViewId: String = viewIds.notset
     @State var peopleViewBounds: CGRect? = nil
@@ -56,170 +56,7 @@ struct AppView2: View {
     
     public init(){}
     
-    var roomsView: some View {
-        ScrollView(.horizontal) {
-            LazyHGrid(rows: [GridItem()], spacing: 8, pinnedViews: [.sectionHeaders]) {
-                Section(header: Text("Recent")) {
-                    ForEach(0..<10) { i in
-                        Text("Grid: \(i)").frame(width: 100, height: 100, alignment: .center).background(Color.gray).cornerRadius(10.0)
-                    }
-                }
-                Section(header: Text("Trending")) {
-                    ForEach(10..<20) { i in
-                        Text("Grid: \(i)")
-                            .frame(width: 100, height: 100, alignment: .center)
-                            .background(Color.gray)
-                            .cornerRadius(10.0)
-                    }
-                }
-            }
-        }
-    }
-    
-    func exploreView(geoProxy: GeometryProxy) -> some View {
-        ExploreView()
-        .padding(.top, geoProxy.safeAreaInsets.top)
-        .frame(maxWidth: screenWidth)
-        .onChange(of: self.scrollPosition) { value in
-            print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
-            switch value {
-                case .leadingEdge:
-                    self.selectedViewId = Self.viewIds.explore
-                case .trailingEdge:
-                    self.selectedViewId = Self.viewIds.listen
-                default:
-                    break
-            }
-        }
-        .id(Self.viewIds.explore)
-    }
-    
     @State var filteredTracks: [Track] = SEED_DATA.tracks
-    
-    func listenView(geoProxy: GeometryProxy, scrollProxy: ScrollViewProxy) -> some View {
-        
-        
-        return ZStack(){
-            ScrollView(.vertical, showsIndicators: true) {
-                TrackList(tracks: self.$filteredTracks)
-                    .padding(.top, geoProxy.safeAreaInsets.top)
-                    //.padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds!.height)
-                    .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds!.height)
-            }
-            .onChange(of: self.filterText) { term in
-                let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                
-                guard !self.filterText.isEmpty else {
-                    self.filteredTracks = SEED_DATA.tracks
-                    return
-                }
-                
-                self.filteredTracks = SEED_DATA.tracks.filter() { track in
-                    return track.artistName.lowercased().contains(term) || track.title.lowercased().contains(term)
-                }
-            }
-            //
-            .frame(maxWidth: screenWidth)
-            
-            VStack(spacing: .zero) {
-                Spacer()
-                Divider()
-                PeopleGridView(SEED_DATA.users, isExpanded: $isExpanded, searchText: self.$filterText, preview: self.$preview)
-                    .padding(.bottom, geoProxy.safeAreaInsets.bottom)
-                    .frame(width: screenWidth)
-                    .onFrameChange() { rect in
-                        DispatchQueue.main.async {
-                            self.peopleViewBounds = rect
-                        }
-                    }
-                    .background(BlurView(.systemUltraThinMaterialLight))
-                //Color.white.blur(radius: 20).opacity(0.9))
-                //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
-            }.zIndex(100)
-            
-            VStack(spacing: .zero) {
-                HStack(spacing: .zero){
-                    Spacer()
-                    
-//                    Button("Search") {
-//                        withAnimation(){
-//                            self.selectedViewId = Self.viewIds.explore
-//                            scrollProxy.scrollTo(Self.viewIds.explore)
-//                        }
-//                    }
-//                    .font(.title2)
-//                    .padding()
-                }
-                .frame(width: screenWidth, height: geoProxy.safeAreaInsets.top)
-                //.padding(.top, geoProxy.safeAreaInsets.top)
-                .background(Color.white.opacity(0.70))
-                .onFrameChange() { rect in
-                    DispatchQueue.main.async {
-                        self.navbarViewBounds = rect
-                    }
-                }
-                //.offset(x: 0, y: -200)
-                Divider()
-                
-                
-                    
-                    ZStack(){
-                        
-                        VStack(spacing: .zero){
-                            Divider()
-                            Spacer(minLength: .zero)
-                            
-                            if let preview = self.preview {
-                                switch preview {
-                                case .userProfile(let user):
-                                    UserProfileView2(user: user)
-                                        .background(Color.clear)
-                                case .view(let scrollAxis, let viewFunc):
-                                    ScrollView(scrollAxis ?? .vertical){
-                                        viewFunc().clipped()
-                                    }
-                                }
-                            } else {
-                                Text("No Preview.")
-                            }
-                            Spacer(minLength: .zero)
-                            Divider()
-                        }
-                        
-                        let largeTitleSize = UIFont.preferredFont(forTextStyle: .title1).pointSize
-                        VStack(alignment: .trailing){
-                            HStack(){
-                                Spacer()
-                                Image(systemName: "xmark")
-                                    .font(Font.title.weight(.light))
-                                    .foregroundColor(.gray)
-                                    .opacity(0.9)
-                                    .background(Circle()
-                                                    .frame(width: largeTitleSize * 1.4, height: largeTitleSize * 1.6)
-                                                    .foregroundColor(Colors.lightGray.opacity(0.8)))
-                                    
-                                    .padding([.top, .trailing], Sizing.medium)
-                            }
-                            .padding()
-                            .onTapGesture() {
-                                self.preview = nil
-                            }
-                            //.frame(maxWidth: Sizing.large, maxHeight: Sizing.large)
-                            Spacer()
-                        }
-                    }
-                    .matchedGeometryEffect(id: "peoplegrid", in: animation)
-                    .frame(maxWidth: screenWidth)
-                    .frame(minWidth: screenWidth, maxHeight: screenHeight)
-                    .background(BlurView(.extraLight))
-                    .padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
-                    .padding(.top, 1)
-                    .offset(x: 0, y: self.preview == nil ? screenHeight : 0)
-                    .animation(.spring())
-            }
-        }
-        .id(Self.viewIds.listen)
-    }
     
     @State var preview: AppPreview? = nil
     
@@ -231,8 +68,38 @@ struct AppView2: View {
                 ScrollViewReader() { (proxy: ScrollViewProxy) in
                     ScrollView(.horizontal, showsIndicators: false){
                         HStack(alignment: .top, spacing: .zero){
-                            self.exploreView(geoProxy: geoProxy)
-                            self.listenView(geoProxy: geoProxy, scrollProxy: proxy)
+                            ExploreView()
+                                .padding(.top, geoProxy.safeAreaInsets.top)
+                                .frame(maxWidth: screenWidth)
+                                .onChange(of: self.scrollPosition) { value in
+                                    print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
+                                    switch value {
+                                        case .leadingEdge:
+                                            self.selectedViewId = Self.viewIds.explore
+                                        case .trailingEdge:
+                                            self.selectedViewId = Self.viewIds.listen
+                                        default:
+                                            break
+                                    }
+                                }
+                                .id(Self.viewIds.explore)
+                            
+                            
+                            ListenView(geoProxy: geoProxy, tracks: self.$filteredTracks, tabbarExpaned: self.$isExpanded, preview: self.$preview, filterText: self.$filterText, animation: animation)
+                                .frame(width: screenWidth)
+                                .onChange(of: self.filterText) { term in
+                                    let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                                    
+                                    guard !self.filterText.isEmpty else {
+                                        self.filteredTracks = SEED_DATA.tracks
+                                        return
+                                    }
+                                    
+                                    self.filteredTracks = SEED_DATA.tracks.filter() { track in
+                                        return track.artistName.lowercased().contains(term) || track.title.lowercased().contains(term)
+                                    }
+                                }
+                                .id(Self.viewIds.listen)
                         }
                         //.background(Images.joliIconRounded.image.blur(radius: screenWidth, opaque: true))
                         .onFrameChange(){ frame in
@@ -270,9 +137,6 @@ struct AppView2: View {
             .edgesIgnoringSafeArea([.top, .bottom])
         }
         .frame(minWidth: screenWidth)
-        
-        //.frame(width: screenWidth, height: screenHeight)
-        //.background(Color.clear.blur(radius: 50, opaque: true))
     }
 }
 
@@ -371,135 +235,3 @@ struct JoliApp: AppClip {
 }
 
 
-class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate, SPTSessionManagerDelegate {
-    
-    let SpotifyClientID = "e3966e30011d4895997ce89c797de5a5"
-    let SpotifyRedirectURL = URL(string: "joli://spotify-callback/")!
-    //URL(string: "spotify-ios-quick-start://spotify-login-callback")!
-    
-    lazy var configuration = SPTConfiguration(clientID: SpotifyClientID, redirectURL: SpotifyRedirectURL)
-    
-    let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
-    
-    lazy var appRemote: SPTAppRemote = {
-        
-        self.configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!
-        self.configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
-        
-        let appRemote = SPTAppRemote(configuration: self.configuration, logLevel: .debug)
-        appRemote.connectionParameters.accessToken = self.accessToken
-        appRemote.delegate = self
-        return appRemote
-    }()
-    
-    static private let kAccessTokenKey = "access-token-key"
-    
-    var accessToken = UserDefaults.standard.string(forKey: kAccessTokenKey) {
-        didSet {
-            let defaults = UserDefaults.standard
-            defaults.set(accessToken, forKey: Self.kAccessTokenKey)
-        }
-    }
-    
-    func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
-        logger.debug("Spotify: created session \(session)")
-        
-        self.appRemote.connectionParameters.accessToken = session.accessToken
-        self.appRemote.connect()
-        
-        let builder = Builder<AuthToken>.init(properties: [
-            AuthToken.CodingKeys.accessToken: session.accessToken as AnyObject,
-            AuthToken.CodingKeys.refreshToken: session.refreshToken as AnyObject,
-            AuthToken.CodingKeys.scope: session.scope as AnyObject,
-            AuthToken.CodingKeys.expiresIn: 3016 as AnyObject,
-            AuthToken.CodingKeys.tokenType: "Bearer" as AnyObject,
-        ])
-        
-        builder.save()
-            .then(){ auth in
-                logger.info("[\(#function)] AUth: \(auth)")
-            }//.catch(appState.errorHandler())
-    }
-    
-    func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
-        logger.debug("Spotify: session failure \(error)")
-    }
-    
-    func connect() {
-        self.appRemote.authorizeAndPlayURI(self.playURI)
-    }
-    
-    func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
-        logger.debug("Spotify connected!")
-        //let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
-        //self.appRemote.authorizeAndPlayURI(playURI)
-        
-        self.appRemote.playerAPI?.delegate = self
-        self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
-            if let error = error {
-                logger.debug("Spotify: playstae subsrcibe error: \(error)")
-                logger.debug(error.localizedDescription)
-                return
-            }
-            
-            logger.info("[PlayerState] \(String(describing: result))")
-        })
-    }
-    
-    func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
-        logger.debug("Spotify: disconnected \(String(describing: error))")
-    }
-    
-    func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
-        logger.debug("Spotify: failed: \(String(describing: error))")
-    }
-    
-    func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
-        logger.debug("player state changed")
-        
-        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(playerState)")
-    }
-    
-    lazy var spotifySessionManager: SPTSessionManager = {
-        
-        var configuration = SPTConfiguration(
-            clientID: SpotifyClientID,
-            redirectURL: SpotifyRedirectURL //URL(string: "joli://spotify-callback/")!
-        )
-        
-        configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!
-        //https://localhost:8080/spotify_callback/
-        configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
-        
-        configuration.playURI = nil
-        
-        return SPTSessionManager(configuration: configuration, delegate: self)
-    }()
-    
-    lazy var isSpotifyAppInstalled = {
-        return spotifySessionManager.isSpotifyAppInstalled
-    }()
-    
-    func requestSpotifyAccess() {
-        //"app-remote-control streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-birthdate user-read-email user-read-private"
-        let requestedScopes: SPTScope = [
-            .appRemoteControl,
-            .streaming,
-            .userModifyPlaybackState,
-            .userReadPlaybackState,
-            .userReadCurrentlyPlaying,
-            .userReadBirthDate,
-            .userReadEmail,
-            .userReadRecentlyPlayed,
-            .userReadPrivate,
-            .playlistModifyPrivate,
-            .playlistModifyPublic,
-            .playlistReadPrivate
-            
-        ]
-        self.spotifySessionManager.alwaysShowAuthorizationDialog = true
-        //self.spotifySessionManager.
-        self.spotifySessionManager.initiateSession(with: requestedScopes, options: .default)
-    }
-    
-}
