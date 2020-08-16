@@ -27,6 +27,7 @@ public enum Strings {
 public enum Images: String {
     
     case joliIconRounded = "joli_icon_rounded"
+    case joliIcon = "joli_icon"
     
     var image: Image {
         return Image(self.rawValue)

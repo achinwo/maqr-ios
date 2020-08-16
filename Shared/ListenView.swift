@@ -61,7 +61,6 @@ struct ListenView: View {
                 }
                 Divider()
                 AppPreviewView(preview: self.$preview, animation: animation)
-                    .matchedGeometryEffect(id: "peoplegrid", in: animation)
                     .frame(maxWidth: screenWidth)
                     .frame(minWidth: screenWidth, maxHeight: screenHeight)
                     .background(BlurView(.extraLight))

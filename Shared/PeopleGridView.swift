@@ -178,6 +178,7 @@ struct PeopleGridView: JoliView {
                             return AnyView(view)
                         }
                     }
+                    .matchedGeometryEffect(id: "preview", in: appCoordinator.namespace ?? localNamespace)
                 
                 ForEach(users, id: \.self) { user in
                     Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.name)!)
@@ -223,7 +224,6 @@ struct PeopleGridView: JoliView {
             ScrollView(.horizontal) {
                 grid
                     .padding()
-                    .matchedGeometryEffect(id: "preview", in: appCoordinator.namespace ?? localNamespace)
             }
             .background(Colors.lightGray.opacity(0.3))
             .cornerRadius(Sizing.large)

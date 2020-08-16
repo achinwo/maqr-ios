@@ -143,12 +143,7 @@ struct AppView2: View {
 @main
 struct JoliApp: AppClip {
     
-    @Namespace var namespace {
-        didSet {
-            logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
-            coordinator.namespace = namespace
-        }
-    }
+    @Namespace var namespace
     
     var coordinator: AppCoordinator = AppCoordinator()
     
@@ -176,6 +171,10 @@ struct JoliApp: AppClip {
             .environmentObject(appState.currentlyPlaying)
             .environmentObject(appState.keyboardState)
             .environmentObject(appState.serverReconnectState)
+            .onAppear() {
+                logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
+                coordinator.namespace = namespace
+            }
     }
     
     func onScenePhaseChange(_ phase: ScenePhase){

@@ -37,6 +37,7 @@ struct AppPreviewView: View {
                 Spacer(minLength: .zero)
                 Divider()
             }
+            .matchedGeometryEffect(id: "preview", in: animation)
             
             let largeTitleSize = UIFont.preferredFont(forTextStyle: .title1).pointSize
             VStack(alignment: .trailing){

@@ -163,7 +163,7 @@ class ShareActivity: UIActivity {
     } // default returns nil. subclass must override and must return non-nil value
     
     override var activityImage: UIImage? {
-        return UIImage(named: "joli_icon.png")!
+        return Images.joliIcon.uiImage
     } // default #imageLiteral(resourceName: "joil_icon_rounded.png")returns nil. subclass must override and must return non-nil value
     
     override func perform() {
@@ -180,9 +180,9 @@ public final class AppCoordinator: ObservableObject {
     public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
     
-    @Published var isSearching = true
-    @Published var isSharePresented = false
-    public var namespace: Namespace.ID? = nil
+    @Published public var isSearching = true
+    @Published public var isSharePresented = false
+    @Published public var namespace: Namespace.ID? = nil
     
     public init(namespace: Namespace.ID? = nil){
         self.namespace = namespace
