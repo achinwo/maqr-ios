@@ -8,16 +8,40 @@
 
 import SwiftUI
 
-
-
-enum HeartLevel: CGFloat {
+public enum HeartLevel: CGFloat {
+    
     case empty = 0
-    case quarter = 26
-    case half = 42
-    case third = 74
+    case quarter = 25
+    case half = 50
+    case third = 75
     case full = 100
     
-    var next: HeartLevel {
+    public init(score: CGFloat) {
+        guard score > 0 else {
+            self = .empty
+            return
+        }
+        
+        guard score < HeartLevel.full.rawValue else {
+            self = .full
+            return
+        }
+        
+        switch score {
+        case 0..<HeartLevel.quarter.rawValue:
+            self = .empty
+        case HeartLevel.quarter.rawValue..<HeartLevel.half.rawValue:
+            self = .quarter
+        case HeartLevel.half.rawValue..<HeartLevel.third.rawValue:
+            self = .half
+        case HeartLevel.third.rawValue..<HeartLevel.full.rawValue:
+            self = .third
+        default:
+            self = .half
+        }
+    }
+    
+    public var next: HeartLevel {
         switch self {
             case .empty:
                 return .quarter
@@ -31,13 +55,49 @@ enum HeartLevel: CGFloat {
                 return .full
         }
     }
+
+    public static func += (lhs: inout HeartLevel, rhs: HeartLevel) {
+
+    }
     
-    func actualOf(_ fullValue: CGFloat) -> CGFloat {
+    public static func + (lhs: HeartLevel, rhs: HeartLevel) {
+
+    }
+    
+    public func actualOf(_ fullValue: CGFloat) -> CGFloat {
         guard self == .empty else {
             return self.rawValue
         }
         
         return (self.rawValue / 100.0) * fullValue
+    }
+}
+
+public struct Hearts: CustomStringConvertible {
+    
+    public var description: String {
+        return "♥️(\(level))⨯\(count)"
+    }
+    
+    public var level: HeartLevel = .empty
+    public var count: Int = .zero
+    
+    public init(score: CGFloat){
+        self.count = Int(score / HeartLevel.full.rawValue)
+        let rem = abs(score).truncatingRemainder(dividingBy: HeartLevel.full.rawValue)
+        self.level = HeartLevel(score: rem)
+    }
+    
+    public var score: CGFloat {
+        return (HeartLevel.full.rawValue * CGFloat(count)) + level.rawValue
+    }
+    
+    public var isEmpty: Bool {
+        return score == .zero
+    }
+    
+    public static func -= (lhs: inout Hearts, rhs: HeartLevel) -> Hearts {
+        return Hearts(score: 0)
     }
 }
 
@@ -75,7 +135,7 @@ struct JoyMeterView: View {
             
             Image(systemName: "heart")
                 .resizable()
-                .font(.system(size: width))
+                .font(.system(size: width, weight: .light))
                 .frame(width: width, height: width)
                 .overlay(Rectangle().background(Color.primary).offset(x: offset, y: 0))
                 .mask(Image(systemName: "heart.fill").font(.system(size: width)))

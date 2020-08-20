@@ -152,6 +152,12 @@ class JoliClipTests: XCTestCase {
         
     }
     
+    func testHearts() throws {
+        // This is an example of a performance test case.
+        let x = Hearts(score: 200)
+        print("Hearts: \(x)")
+    }
+    
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
         self.measure {
