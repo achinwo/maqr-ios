@@ -10,6 +10,13 @@ import SwiftUI
 import JoliCore
 import LetterAvatarKit
 
+//protocol User {
+//    var name: String { get }
+//}
+//
+//extension JoliCore.User: User {
+//    
+//}
 
 struct BlurView: UIViewRepresentable {
     

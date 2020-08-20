@@ -154,8 +154,6 @@ struct JoliApp: AppClip {
     
     let spotify = spotifyDelegateInstance
     
-    let sheetManager: PartialSheetManager = PartialSheetManager()
-    
     var appState: AppState {
         return appDelegate.appState
     }
@@ -166,7 +164,6 @@ struct JoliApp: AppClip {
     
     var contentView: some View {
         AppView2()
-            .environmentObject(self.sheetManager)
             .environmentObject(appState)
             .environmentObject(appState.currentlyPlaying)
             .environmentObject(appState.keyboardState)

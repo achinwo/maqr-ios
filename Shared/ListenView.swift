@@ -26,9 +26,9 @@ struct ListenView: View {
         return ZStack(){
             ScrollView(.vertical, showsIndicators: true) {
                 TrackList(tracks: self.$tracks)
-                    .padding(.top, geoProxy.safeAreaInsets.top)
-                //.padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds!.height)
-                //.padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds!.height)
+                    //.padding(.top, geoProxy.safeAreaInsets.top)
+                    .padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds!.height)
+                    .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds!.height)
             }
             .frame(maxWidth: screenWidth)
             
