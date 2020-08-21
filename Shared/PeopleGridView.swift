@@ -37,11 +37,6 @@ struct BlurView: UIViewRepresentable {
     
 }
 
-public enum AppPreview {
-    case userProfile(UserRecord)
-    case view(Axis.Set? = nil, () -> AnyView)
-}
-
 struct PeopleGridView: JoliView {
     
     let rows = [
@@ -237,6 +232,29 @@ struct PeopleGridView: JoliView {
             .animation(.spring())
         } label: {
             
+            let dragGesture = DragGesture()
+                .onChanged { value in self.offset = value.translation }
+                .onEnded { _ in
+                    withAnimation {
+                        self.offset = .zero
+                        self.isDragging = false
+                    }
+                }
+            
+            // a long press gesture that enables isDragging
+            let pressGesture = LongPressGesture()
+                .onEnded { value in
+                    withImpact(.medium, animated: .interactiveSpring()) {
+                        self.isDragging = true
+                    }
+                }
+            
+            // a combined gesture that forces the user to long press then drag
+            let combined = pressGesture.sequenced(before: dragGesture)
+                .onEnded(){ gesture in
+                    self.isDragging = false
+                }
+            
             let devices: [Spotify.Device] = [
                 Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
                 Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
@@ -266,7 +284,15 @@ struct PeopleGridView: JoliView {
                     .background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
                     .foregroundColor(.red)
                     .font(Font.title.weight(.ultraLight))
-                    .offset(x: !(self.isExpanded || users.isEmpty) ? Sizing.small / 2 * -1 : 0, y: 0)
+                    .scaleEffect(isDragging ? 1.5 : 1)
+                    .offset(offset)
+                    .onTapGesture() {
+                        withImpact(.soft, animated: .spring()) {
+                            self.isExpanded.toggle()
+                        }
+                    }
+                    .gesture(combined)
+                    //.offset(x: !(self.isExpanded || users.isEmpty) ? Sizing.small / 2 * -1 : 0, y: 0)
                 //.alignmentGuide(.custom) { dims in dims[.custom] }
                 
                 Spacer()
@@ -314,6 +340,8 @@ struct PeopleGridView: JoliView {
         
     }
     
+    @State var isDragging = false
+    @State var offset: CGSize = .zero
     
 }
 
