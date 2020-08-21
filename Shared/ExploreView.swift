@@ -111,7 +111,9 @@ public struct SearchResultView: View {
     
     public func trackView(_ track: Playable) -> some View {
         return VStack(){
-            NetworkImage(imageURL: URL(string: track.albumCoverUrl)!, placeholderImage: UIImage(systemName: "heart")!)
+            NetworkImage(url: track.albumCoverUrl) {
+                ProgressView(value: nil, total: 100)
+            }
             Text(track.title).font(.body)
                 .lineLimit(1)
                 .truncationMode(.tail)

@@ -27,14 +27,14 @@ struct ProfileEditView: View {
 
 public struct UserProfileView2: View {
     
-    var user: UserRecord
+    @Binding var user: UserRecord
     @State var editProfilePresented = false
     @State var logoutPresented = false
     var callback: (() -> Void)?
     
-    public init(user: UserRecord, callback: (() -> Void)? = nil){
+    public init(user: Binding<UserRecord>, callback: (() -> Void)? = nil){
         self.callback = callback
-        self.user = user
+        self._user = user
     }
     
     var logoutAlertView: Alert {
@@ -141,7 +141,7 @@ struct UserProfileView2_Previews: PreviewProvider {
         let user = SEED_DATA.users.first!
         
         return NavigationView(){
-            UserProfileView2(user: user.builder()).offset(x: 0, y: 1)
+            UserProfileView2(user: .constant(user.builder())).offset(x: 0, y: 1)
         }
         .navigationBarItems(leading: Text("Save Changes"))
     }

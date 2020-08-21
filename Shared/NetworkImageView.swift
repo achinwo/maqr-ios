@@ -9,30 +9,43 @@
 import SwiftUI
 import Kingfisher
 
-public struct NetworkImage: SwiftUI.View {
+public struct NetworkImage<Content: SwiftUI.View>: SwiftUI.View {
     
     var callback: ((UIImage?) -> Void)?
     
     @State private var image: UIImage? = nil
+    @State public var imageURL: URL? = nil
     
-    public let imageURL: URL?
-    public let placeholderImage: UIImage
+    public let placeholderContent: Content
     public let animation: Animation = .easeInOut
     
-    init(imageURL: URL, placeholderImage: UIImage, onLoaded: ((UIImage?) -> Void)? = nil) {
-        self.imageURL = imageURL
-        self.placeholderImage = placeholderImage
+    init(url: String, onLoaded: ((UIImage?) -> Void)? = nil, @ViewBuilder content: () -> Content) {
+        //self.placeholderImage = placeholderImage
+        self.init(url: URL(string: url), onLoaded: onLoaded, content: content)
+    }
+    
+    init(url: URL? = nil, onLoaded: ((UIImage?) -> Void)? = nil, @ViewBuilder content: () -> Content) {
+        //self.placeholderImage = placeholderImage
         self.callback = onLoaded
+        self.placeholderContent = content()
+        
+        self._imageURL = State(initialValue: url)
     }
     
     public var body: some SwiftUI.View {
-        SwiftUI.Image(uiImage: image ?? placeholderImage)
-            .resizable()
+        
+        return ZStack(){
+                if let image = image {
+                    SwiftUI.Image(uiImage: image).resizable()
+                }else{
+                    placeholderContent
+                }
+            }
             .frame(width: 64, height: 64, alignment: .center)
             .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             .onAppear(perform: loadImage)
             .transition(.opacity)
-            .id(image ?? placeholderImage)
+            .id(image)
     }
     
     private func loadImage() {
@@ -42,12 +55,24 @@ public struct NetworkImage: SwiftUI.View {
             switch result {
                 case .success(let imageResult):
                     withAnimation(self.animation) {
-                        self.image = imageResult.image
-                        self.callback?(self.image)
+                        DispatchQueue.main.async {
+                            self.image = imageResult.image
+                            self.callback?(self.image)
+                        }
                     }
                 case .failure:
                     break
             }
         }
     }
+}
+
+extension NetworkImage where Content == SwiftUI.Image {
+    
+    init(imageURL: URL, placeholderImage: UIImage, onLoaded: ((UIImage?) -> Void)? = nil) {
+        self.placeholderContent = SwiftUI.Image(uiImage: placeholderImage)
+        self._imageURL = State(initialValue: imageURL)
+        self.callback = onLoaded
+    }
+    
 }

@@ -9,6 +9,25 @@ import UIKit
 import SwiftUI
 import JoliCore
 
+
+public enum AppPreview: View {
+    
+    public var body: some View {
+        switch self {
+            case .userProfile(let user):
+                UserProfileView2(user: .constant(user))
+                    .background(Color.clear)
+            case .view(let scrollAxis, let viewFunc):
+                ScrollView(scrollAxis ?? .vertical){
+                    viewFunc().clipped()
+                }
+        }
+    }
+    
+    case userProfile(UserRecord)
+    case view(Axis.Set? = nil, () -> AnyView)
+}
+
 struct AppPreviewView: View {
     
     @Binding var preview: AppPreview?
@@ -22,15 +41,7 @@ struct AppPreviewView: View {
                 Spacer(minLength: .zero)
                 
                 if let preview = self.preview {
-                    switch preview {
-                        case .userProfile(let user):
-                            UserProfileView2(user: user)
-                                .background(Color.clear)
-                        case .view(let scrollAxis, let viewFunc):
-                            ScrollView(scrollAxis ?? .vertical){
-                                viewFunc().clipped()
-                            }
-                    }
+                    preview
                 } else {
                     Text("No Preview.")
                 }

@@ -32,7 +32,7 @@ public extension UIImageColors {
 
 public struct TrackView2: View {
     
-    @State var track: Track
+    @Binding var track: Track
     @State var colors: UIImageColors? = nil
     @GestureState var isDetectingLongPress = false
     @State var completedLongPress = false
@@ -49,13 +49,14 @@ public struct TrackView2: View {
                 }
         }
     
-    public init(track: Track, colors: UIImageColors? = nil){
-        _track = State(initialValue: track)
+    public init(track: Binding<Track>, colors: UIImageColors? = nil){
+        _track = track
         self.colors = colors
     }
     
     @State var heartLevel: HeartLevel = .empty
     @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
+    
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     public var body: some View {
@@ -134,10 +135,21 @@ public struct TrackList: View {
         self._tracks = tracks
     }
     
+    func trackBinding(_ trackId: Array<Track>.Index) -> Binding<Track> {
+        let track: Binding<Track> = Binding() { () -> Track in
+                return tracks[trackId]
+            } set: { (track, trasacton) in
+                tracks[trackId] = track
+                print("Transaction: \(transaction)")
+                //transaction.
+            }
+        return track
+    }
+    
     public var body: some View {
         return VStack(alignment: .center, spacing: 0) {
                 ForEach(tracks) { track in
-                    TrackView2(track: track)
+                    TrackView2(track: self.trackBinding(tracks.firstIndex(of: track)!))
                 }
             }
     }
