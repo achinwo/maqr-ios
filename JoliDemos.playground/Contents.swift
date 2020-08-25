@@ -6,7 +6,7 @@ import SwiftUI
 import JoliPlayground
 import JoliCore
 import JoliApi
-@testable import Promises
+import Promises
 import PartialSheet
 import CancellationToken
 import Combine

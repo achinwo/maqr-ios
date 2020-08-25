@@ -10,281 +10,121 @@ import SwiftUI
 import JoliApi
 import JoliCore
 
-typealias Size = ()
-
-struct ViewOffset {
+public struct AppView2: View {
     
-    var x: CGFloat?
-    var y: CGFloat?
-    
-    func computedSize(geometry: GeometryProxy) -> CGSize {
-        return CGSize(width: x ?? geometry.size.width, height: y ?? geometry.size.height)
+    enum ScrollPosition: Equatable {
+        case leadingEdge
+        case trailingEdge
+        case point(CGPoint)
     }
     
-}
-
-struct CurrentlyPlayingView: View {
+    static let viewIds: (explore: String, listen: String, notset: String) = ("views.explore", "views.listen", "views.none")
     
-    @EnvironmentObject var currentlyPlaying: AppCurrentlyPlayingState
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    @State var scrollPosition: ScrollPosition = .leadingEdge
     
-    var body: some View {
-        return self.currentPlayingView
-    }
+    @State var isExpanded = false
     
-    var currentPlayingView: some View {
-        let gesture = DragGesture(minimumDistance: 10)
-            .onEnded() { val in
-                self.dragging = false
-                self.heightOffset = val.translation.height > 50 ? AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET : val.location.y
-            }
-            .onChanged() { changeVal in
-                self.dragging = true
-                self.heightOffset = changeVal.location.y
-            }
+    @State var heartLevel: HeartLevel = .full
+    
+    @AppStorage("selectedViewId") var selectedViewId: String = viewIds.notset
+    @State var peopleViewBounds: CGRect? = nil
+    @State var navbarViewBounds: CGRect? = nil
+    @State var filterText = ""
+    
+    @Namespace var animation
+    
+    public init(){}
+    
+    @State var filteredTracks: [Track] = SEED_DATA.tracks
+    
+    @State var preview: AppPreview? = nil
+    
+    
+    public var body: some View {
         
-        var width: CGFloat = .zero
-            
-        if self.currentlyPlaying.progressPct > 0 {
-            width = CGFloat(self.currentlyPlaying.progressPct / 100.0) * (UIScreen.main.bounds.width - 142)
-        }
-        
-        return VStack(alignment: .leading){
-                HStack(alignment: .center, spacing: 4){
-                    if self.currentlyPlaying.content != nil
-                        && self.appState.imagesByUrl[self.currentlyPlaying.track!.albumCoverUrl] != nil {
-                        self.appState.imagesByUrl[self.currentlyPlaying.track!.albumCoverUrl]?
-                            .resizable().frame(width: 116, height: 116, alignment: .bottomLeading)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 0){
-                        
-                        HStack(alignment: .top){
-
-                            Text(self.currentlyPlaying.track?.name ?? "No Name")
-                                .font(.headline)//.background(Color.blue)
-                        }
-                        HStack(alignment: .top){
-                            VStack(alignment: .leading){
-                                Text(self.currentlyPlaying.track == nil ? "" : "By \(self.currentlyPlaying.track!.artistName)").font(.subheadline)
-                                
-                                HStack(alignment: .center){
-                                    Image(systemName: "hand.thumbsup")
-                                    Text("4")
-                                    
-                                    if self.appState.spotifyDevice != nil {
-
-                                        Text("•").font(.title)
-                                        
-                                        Image(systemName: "hifispeaker")
-                                        Text(self.appState.spotifyDevice!.type.rawValue)
-                                        .lineLimit(1)
-                                            .font(.footnote)
+        return GeometryReader() { geoProxy in
+            ZStack(){
+                ScrollViewReader() { (proxy: ScrollViewProxy) in
+                    ScrollView(.horizontal, showsIndicators: false){
+                        HStack(alignment: .top, spacing: .zero){
+                            ExploreView()
+                                .padding(.top, geoProxy.safeAreaInsets.top)
+                                .frame(maxWidth: screenWidth)
+                                .onChange(of: self.scrollPosition) { value in
+                                    print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
+                                    switch value {
+                                        case .leadingEdge:
+                                            self.selectedViewId = Self.viewIds.explore
+                                        case .trailingEdge:
+                                            self.selectedViewId = Self.viewIds.listen
+                                        default:
+                                            break
                                     }
                                 }
-                            }
-                            Spacer()
-                            if self.currentlyPlaying.track != nil && self.currentlyPlaying.content!.isPlaying {
-                                Image(systemName: "pause.circle").resizable().padding(.trailing, 10).padding(.bottom, 10)
-                                    .frame(width: 64, height: 64, alignment: .bottomLeading)
-                                    .onTapGesture {
-                                        self.appState.pausePlayback()
-                                    }
-                            }else{
-                                Image(systemName: "play.circle").resizable().padding(.trailing, 10).padding(.bottom, 10)
-                                    .frame(width: 64, height: 64, alignment: .bottomLeading)
-                                .onTapGesture {
-                                    guard let track = self.currentlyPlaying.track else {
+                                .id(Self.viewIds.explore)
+                            
+                            
+                            ListenView(geoProxy: geoProxy, tracks: self.$filteredTracks, tabbarExpaned: self.$isExpanded, preview: self.$preview, filterText: self.$filterText, animation: animation)
+                                .frame(width: screenWidth)
+                                .onChange(of: self.filterText) { term in
+                                    let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                                    
+                                    guard !self.filterText.isEmpty else {
+                                        self.filteredTracks = SEED_DATA.tracks
                                         return
                                     }
-                                    self.appState.playTrack(track)
+                                    
+                                    self.filteredTracks = SEED_DATA.tracks.filter() { track in
+                                        return track.artistName.lowercased().contains(term) || track.title.lowercased().contains(term)
+                                    }
+                                }
+                                .id(Self.viewIds.listen)
+                        }
+                        //.background(Images.joliIconRounded.image.blur(radius: screenWidth, opaque: true))
+                        .onFrameChange(){ frame in
+                            DispatchQueue.main.async {
+                                switch (frame.origin.x, frame.origin.y) {
+                                    case (0, _):
+                                        self.scrollPosition = .leadingEdge
+                                    case (self.screenWidth * -1 , _):
+                                        self.scrollPosition = .trailingEdge
+                                    default:
+                                        self.scrollPosition = .point(frame.origin)
                                 }
                             }
-                        }//.background(Color.green)
-                        
-                        ZStack(alignment: .leading){
-                            Color.gray.frame(width: UIScreen.main.bounds.width - 142, height: 4, alignment: .leading)
-                                
-                            Color.green.frame(width: width, height: 4, alignment: .leading)
-                                .cornerRadius(1)
-                                .animation(.interactiveSpring())
-                        }.offset(x: -4, y: 0)
-                        
-                    }.frame(width: UIScreen.main.bounds.width - 32 - 116, height: 116, alignment: .bottomLeading)
-                    
-                }
-            }
-             //   .animation(self.dragging ? .none : .easeInOut)
-            .simultaneousGesture(gesture)
-            .frame(width: UIScreen.main.bounds.width - 32, height: 116, alignment: .bottomLeading)
-            .padding(.trailing, 8)
-            .background(Color.yellow)
-                .opacity(0.95)
-            .shadow(radius: 8)
-                
-            .cornerRadius(10)
-            .animation(.easeInOut)
-            .offset(self.currentlyPlayingViewOffset)
-            .edgesIgnoringSafeArea(.bottom)
-        
-    }
-
-    var currentlyPlayingViewOffset: CGSize {
-        guard let content = currentlyPlaying.content else {
-            return CGSize(width: -16, height: AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET)
-        }
-        
-        if self.appState.activeRoom != nil && self.appState.selectedTabIdx == MusicroomTab.playQueue.rawValue {
-            return CGSize(width: -16, height: AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET)
-        }
-        
-        if !content.isPlaying {
-            return CGSize(width: -16, height: AppView.DEFAULT_PLAY_WIDGET_HIEGHTOFFSET)
-        }
-        
-        return CGSize(width: -16, height: heightOffset)
-    }
-    
-    @EnvironmentObject var appState: AppState
-    @State var settingsViewOffset: ViewOffset = ViewOffset(x: nil, y: 0)
-    @State var settingsViewOffsetSize = CGSize(width: 0, height: 0)
-    @State var mainViewOffset = CGSize(width: 0, height: 0)
-    
-    @State var dragging = false
-    
-    @State var heightOffset: CGFloat = 0
-    
-}
-
-
-struct AppView: View {
-    
-    @EnvironmentObject var appState: AppState
-    
-    
-    @State var settingsViewOffset: ViewOffset = ViewOffset(x: nil, y: 0)
-    @State var settingsViewOffsetSize = CGSize(width: 0, height: 0)
-    @State var mainViewOffset = CGSize(width: 0, height: 0)
-    
-    @State var image: Image? = nil
-    @State var isLogoutAlertPresented = false
-    
-    static let DEFAULT_PLAY_WIDGET_HIEGHTOFFSET: CGFloat = 200
-    
-    var body: some View {
-        var buttons: [ActionSheet.Button] = appState.spotifyDevices.map() { device in
-            var suffix = ""
-            if let selectedDeviceIdx = self.appState.selectedSpotifyDeviceIdx,
-                device == self.appState.spotifyDevices[selectedDeviceIdx] {
-                suffix = " ✔️"
-            }
-            
-            return .default(Text("\(device.name)\(suffix)")) {
-                logger.debug("[spotifyDevices] selected device: \(device)")
-                self.appState.selectedSpotifyDeviceIdx = self.appState.spotifyDevices.firstIndex(of: device)
-                self.appState.triggerAndClearDeviceCallbacks(cancelled: false)
-            }
-        }
-        
-        let showSyntheticDevice = buttons.isEmpty && !self.appState.deviceReadyCallbacks.isEmpty
-        if showSyntheticDevice {
-            buttons.append(.default(Text("iPhone")) {
-                let device = Spotify.Device(name: "iPhone", type: Spotify.DeviceType.smartphone, isActive: true, id: "__this_phone__")
-                self.appState.triggerAndClearDeviceCallbacks(device: device, cancelled: false)
-            })
-        }
-        
-        buttons.append(.cancel() {
-            self.appState.triggerAndClearDeviceCallbacks(cancelled: true)
-        })
-        
-        var deviceChooserMessage = Text(self.appState.spotifyDevices.count == 0 && !showSyntheticDevice ? "You have no connected Spotify devices" : "Spotify connected devices")
-        
-        if self.appState.spotifyDevices.count == 0 {
-            deviceChooserMessage = deviceChooserMessage.foregroundColor(.red).bold()
-        }
-        
-        let settingsOffsetWidth: CGFloat? = appState.isSettingsPresented ? 0 : nil
-        
-        let logonButtonAction = {
-            if self.appState.auth == nil {
-                self.appState.isLogonViewPresented = true
-            } else {
-                self.isLogoutAlertPresented = true
-            }
-        }
-        
-        let roomsView = NavigationView {
-                MusicroomList()
-                    .sheet(isPresented: self.$appState.isLogonViewPresented) {
-                        //ImagePickerCamera(isShown: self.$appState.isLogonViewPresented, image: self.$image)
-                        NavigationView {
-                            LogOnView() { cancelled in
-                                logger.debug("[LogOnView] view dismissed")
-                            }
                         }
-                        .environmentObject(self.appState)
-                        .environmentObject(self.appState.keyboardState)
-                }
-            .navigationBarItems(leading:
-                Button(action: logonButtonAction) {
-                    
-                    if self.appState.auth != nil {
-                        UserProfileView(user: self.appState.auth!.user.builder())
-                    } else {
-                        Text("Sign In")
                     }
-                }.alert(isPresented: self.$isLogoutAlertPresented) {
-                    Alert(title: Text("Sign out?").font(.title),
-                          message: Text("\(self.appState.auth!.user.name)").font(.subheadline),
-                          primaryButton: .cancel(),
-                          secondaryButton: .destructive(Text("Yes")) {
-                            self.appState.api.auth = nil
+                    .onChange(of: self.selectedViewId) { value in
+                        withAnimation(){
+                            print("[AppView2] scrolling to: \(value)")
+                            proxy.scrollTo(value)
                         }
-                    )
+                    }
+                    .onAppear() {
+                        
+                        guard self.selectedViewId != Self.viewIds.notset else {
+                            self.selectedViewId = Self.viewIds.listen
+                            return
+                        }
+                        
+                        withAnimation(){
+                            proxy.scrollTo(self.selectedViewId)
+                        }
+                    }
                 }
-                , trailing:
-                
-                HStack(){
-                    NavigationLink(destination: VStack() { RoomCreateFormView() }) {
-                        Image(systemName: "plus")
-                    }.padding()
-                    Button(action: {
-                        self.appState.isSettingsPresented.toggle()
-                    }) {
-                        Image(systemName: "gear")
-                            
-                    }.padding()
-                }
-            )
-        }
-        
-        return GeometryReader(){ geometry in
-            ZStack(alignment: .bottomTrailing) {
-                roomsView.animation(.spring())
-                
-                NavigationView {
-                    SettingsView()
-                }
-                .animation(.spring())
-                .offset(CGSize(width: settingsOffsetWidth ?? geometry.size.width, height: 0))
-                
-                CurrentlyPlayingView()
-                
             }
-            .actionSheet(isPresented: self.$appState.isDeviceChooserPresented){
-                ActionSheet(title: Text("Audio Device"),
-                            message: deviceChooserMessage,
-                            buttons: buttons)
-            }
-            //.colorScheme(.dark)
+            .edgesIgnoringSafeArea([.top, .bottom])
         }
+        .frame(minWidth: screenWidth)
     }
-        
-    
 }
 
-struct AppView_Previews: PreviewProvider {
+
+struct AppView2_Previews: PreviewProvider {
     static var previews: some View {
-        AppView()
+        let coord = AppCoordinator()
+        AppView2()
+            .environmentObject(coord)
     }
 }

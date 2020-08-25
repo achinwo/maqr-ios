@@ -9,7 +9,9 @@
 import SwiftUI
 import JoliCore
 
-struct ListenView: View {
+struct ListenView: JoliView {
+    
+    @EnvironmentObject var appCoordinator: AppCoordinator
     
     let geoProxy: GeometryProxy
     @Binding var tracks: [Track]
@@ -35,7 +37,7 @@ struct ListenView: View {
             VStack(spacing: .zero) {
                 Spacer()
                 Divider()
-                PeopleGridView(SEED_DATA.users, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview)
+                ListenTabbarView(users: SEED_DATA.users, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in
@@ -46,7 +48,9 @@ struct ListenView: View {
                     .background(BlurView(.systemUltraThinMaterialLight))
                 //Color.white.blur(radius: 20).opacity(0.9))
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
-            }.zIndex(100)
+            }
+            //.offset(x: appCoordinator.tabbar., y: /*@START_MENU_TOKEN@*/10.0/*@END_MENU_TOKEN@*/)
+            .zIndex(100)
             
             VStack(spacing: .zero) {
                 HStack(spacing: .zero){

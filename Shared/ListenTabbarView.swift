@@ -2,20 +2,231 @@
 //  ListenTabbarView.swift
 //  Joli
 //
-//  Created by Anthony Chinwo on 21/08/2020.
+//  Created by Anthony Chinwo on 19/07/2020.
 //  Copyright © 2020 Anthony Chinwo. All rights reserved.
 //
 
 import SwiftUI
+import JoliCore
+import LetterAvatarKit
 
-struct ListenTabbarView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+//protocol User {
+//    var name: String { get }
+//}
+//
+//extension JoliCore.User: User {
+//
+//}
+
+
+struct BlurView: UIViewRepresentable {
+    
+    let style: UIBlurEffect.Style
+    
+    init(_ style: UIBlurEffect.Style = .systemMaterial) {
+        self.style = style
     }
+    
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        return UIVisualEffectView(effect: UIBlurEffect(style: self.style))
+    }
+    
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+        uiView.effect = UIBlurEffect(style: self.style)
+        uiView.isUserInteractionEnabled = false
+    }
+    
 }
 
-struct ListenTabbarView_Previews: PreviewProvider {
-    static var previews: some View {
-        ListenTabbarView()
+
+struct ListenTabbarView: JoliView {
+    
+    @Binding var isExpanded: Bool
+    @Binding var preview: AppPreview?
+    @State var users: [User]
+    @Binding var searchText: String
+    
+    @State var isSearching = false
+    @State var searchbarActive = false
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    @State var activeDevice: Spotify.Device?
+    @State var volume: CGFloat = 30
+    
+    public init(users: [User], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil){
+        self._users = State(initialValue: users)
+        self._isExpanded = isExpanded ?? .constant(true)
+        self._searchText = searchText ?? .constant("")
+        self._preview = preview ?? .constant(.userProfile(SEED_DATA.users.first!.builder()))
     }
+    
+    var stickyHeaderView: some View {
+        RoundedRectangle(cornerRadius: 25.0, style: .continuous)
+            .fill(Color.gray)
+            .frame(maxWidth: .infinity)
+            .frame(height: 64)
+            .overlay(
+                Text("Section")
+                    .foregroundColor(Color.white)
+                    .font(.largeTitle)
+            )
+    }
+    
+    
+    @State var heartLevel: HeartLevel = .full
+    @Namespace var localNamespace
+    
+    var body: some View {
+        var label = ""
+        
+        if !(self.isExpanded || users.isEmpty) {
+            label = "\(label)\(users.count)" //•
+        }
+        
+        let mainView = DisclosureGroup(isExpanded: self._isExpanded) {
+            
+            ScrollView(.horizontal) {
+                PeopleGridView(users: SEED_DATA.users) { (gestureType, user) in
+                    
+                        guard let user = user else {
+                            withImpact(.soft, animated: .spring()){
+                                self.preview = .view(.vertical) {
+                                    return AnyView(InvitePeopleView().padding(.top, Sizing.xLarge).environmentObject(self.appCoordinator))
+                                }
+                                self.isExpanded = false
+                            }
+                            return
+                        }
+                        
+                        switch gestureType {
+                            case .tap:
+                                if case .userProfile(let currentUser) = self.preview, currentUser.email == user.email {
+                                    self.preview = nil
+                                } else {
+                                    self.preview = .userProfile(user.builder())
+                                }
+                            case .longpress:
+                                withImpact(.medium, animated: .spring()) {
+                                    self.preview = .userProfile(user.builder())
+                                    self.isExpanded = false
+                                }
+                        }
+                    }
+                    .padding()
+            }
+            .background(Colors.lightGray.opacity(0.3))
+            .cornerRadius(Sizing.large)
+            .animation(.spring())
+        } label: {
+            
+            let dragGesture = DragGesture()
+                .onChanged { value in self.offset = value.translation }
+                .onEnded { _ in
+                    withAnimation {
+                        self.offset = .zero
+                        self.isDragging = false
+                    }
+                }
+            
+            // a long press gesture that enables isDragging
+            let pressGesture = LongPressGesture()
+                .onEnded { value in
+                    withImpact(.medium, animated: .interactiveSpring()) {
+                        self.isDragging = true
+                    }
+                }
+            
+            // a combined gesture that forces the user to long press then drag
+            let combined = pressGesture.sequenced(before: dragGesture)
+                .onEnded(){ gesture in
+                    self.isDragging = false
+                }
+            
+            let devices: [Spotify.Device] = [
+                Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
+                Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
+                Spotify.Device(name: "Microwave", type: .speaker, isActive: true, id: "test_device4"),
+                
+                Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
+                Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
+            ]
+            
+            HStack(){
+                Image(systemName: "person.2").font(Font.title2.weight(self.isExpanded ? .light : .thin))
+                Text(label)
+                    .font(Font.caption.weight(.light))
+                    .offset(x: -4, y: 0)
+                Spacer()
+                Button(){
+                    self.appCoordinator.sheet.show(){
+                        DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: devices)
+                    }
+                } label: {
+                    Image(systemName: "hifispeaker")
+                }
+                .font(Font.title.weight(.ultraLight))
+                
+                Spacer()
+                JoyMeterView($heartLevel, textStyle: .title3)
+                    .background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
+                    .foregroundColor(.red)
+                    .font(Font.title.weight(.ultraLight))
+                    .scaleEffect(isDragging ? 1.5 : 1)
+                    .offset(offset)
+                    .onTapGesture() {
+                        withImpact(.soft, animated: .spring()) {
+                            self.isExpanded.toggle()
+                        }
+                    }
+                    .gesture(combined)
+                //.offset(x: !(self.isExpanded || users.isEmpty) ? Sizing.small / 2 * -1 : 0, y: 0)
+                //.alignmentGuide(.custom) { dims in dims[.custom] }
+                
+                Spacer()
+                Button(){
+                    self.searchbarActive.toggle()
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(Font.title2.weight(self.searchbarActive ? .light : .ultraLight))
+                }
+                Spacer()
+            }
+            .padding()
+            .padding(.leading, .zero)
+            .frame(minWidth: screenWidth / 2)
+            .background(Color.gray.opacity(0.001))
+            .onTapGesture(){
+                withAnimation(){
+                    self.isExpanded.toggle()
+                }
+            }
+        }
+        
+        
+        return VStack(alignment: .center, spacing: .zero){
+            
+            if self.searchbarActive {
+                SearchBar(text: self.$searchText, isEditing: self.$isSearching)
+                    .cornerRadius(8)
+                    .overlay(RoundedRectangle(cornerRadius: 8)
+                                .stroke(Colors.lightGray.opacity(self.isSearching ? 0 : 0.9), lineWidth: 1))
+                    .padding(.top, Sizing.medium)
+                    .background(Color.clear)
+            }
+            mainView
+        }
+        .onChange(of: self.isSearching) { value in
+            if self.searchbarActive && !value {
+                self.searchbarActive = false
+            }
+        }
+        .accentColor(.primary)
+        .padding(.trailing, Sizing.medium)
+        .padding(.leading, Sizing.medium)
+        .animation(.spring())
+        
+    }
+    
+    @State var isDragging = false
+    @State var offset: CGSize = .zero
+    
 }
