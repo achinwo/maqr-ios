@@ -11,15 +11,36 @@ import Combine
 import JoliCore
 
 public enum SearchResult: Identifiable {
+    
     public var id: String {
         switch self {
         case .tracks(let tracks):
             return tracks.map { $0.uri }.joined(separator: "/")
+        case .users(let users):
+            return users.map { $0.name }.joined(separator: "/")
         }
     }
     
+    public var tracks: [Playable]? {
+        guard case let .tracks(tracks) = self else {
+            return nil
+        }
+        
+        return tracks
+    }
+    
+    public var users: [User]? {
+        guard case let .users(users) = self else {
+            return nil
+        }
+        
+        return users
+    }
+    
     case tracks([Playable])
+    case users([User])
 }
+
 extension Array {
     func chunked(into size: Int) -> [[Element]] {
         return stride(from: 0, to: count, by: size).map {
@@ -28,35 +49,119 @@ extension Array {
     }
 }
 
-public enum SearchResultLayout: Identifiable {
+extension Array where Element == SearchResult {
     
-    public var id: String {
-        switch self {
-        case .sixGrid(_):
-            return "sixGrid"
-        case .threeGrid(_):
-            return "threeGrid"
+    func toLayouts() -> [SearchResultLayout] {
+        var res: [SearchResultLayout] = []
+        for result in self {
+            switch result {
+                case .tracks(let tracks):
+                    for chunk in tracks.chunked(into: 6) {
+                        res.append(Int.random(in: 0...10) % 2 == 0 ? .sixGrid([.tracks(chunk)]) : .threeList([.tracks(chunk)]))
+                        //res.append(.threeGrid([.tracks(chunk)]))
+                    }
+                case .users(let users):
+                    for chunk in users.chunked(into: 3) {
+                        res.append(Int.random(in: 0...10) % 2 == 0 ? .sixGrid([.users(chunk)]) : .threeList([.users(chunk)]))
+                        //res.append(.threeGrid([.tracks(chunk)]))
+                    }
+            }
+        }
+        return res
+    }
+    
+}
+
+public enum SearchResultLayout: View {
+    
+    var columns: [GridItem] {
+        return [
+            GridItem(.adaptive(minimum: screenWidth / 6, maximum: screenWidth / 3)),
+            GridItem(.adaptive(minimum: screenWidth / 6, maximum: screenWidth / 3)),
+            GridItem(.adaptive(minimum: screenWidth / 6, maximum: screenWidth / 3))
+        ]
+    }
+    
+    public func trackView(_ track: Playable) -> some View {
+        return VStack(){
+            NetworkImage(url: track.albumCoverUrl) {
+                ProgressView(value: nil, total: 100)
+            }
+            Text(track.title).font(.body)
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
+    }
+    
+    public var body: some View {
+        return VStack(){
+            switch self {
+                case .sixGrid(let results), .threeGrid(let results):
+                    
+                    ForEach(results){ result in
+                        LazyVGrid(columns: columns) {
+                            if let tracks = result.tracks {
+                                ForEach(tracks, id: \.uri) { track in
+                                    self.trackView(track)
+                                }
+                            } else if let users = result.users {
+                                ForEach(users) { user in
+                                    Text("\(user.name)").font(.headline)
+                                    //CircleImage(url: user.im)
+                                }
+                            }
+                        }
+                    }
+                case .threeList(let results):
+                    ForEach(results){ result in
+                        if let tracks = result.tracks {
+                            TrackList(tracks: .constant(tracks as! [Track]))
+                        } else if let users = result.users {
+                            List {
+                                ForEach(users) { user in
+                                    Text("\(user.name)").font(.headline)
+                                    //CircleImage(url: user.im)
+                                }
+                            }
+                        }
+                    }
+            }
         }
     }
     
     case threeGrid([SearchResult])
     case sixGrid([SearchResult])
+    case threeList([SearchResult])
     
-    static func auto(_ results: [SearchResult]) -> [SearchResultLayout] {
-        var res: [SearchResultLayout] = []
-        for chunk in results.chunked(into: 6){
-            res.append(.sixGrid(chunk))
-        }
-        return res
-    }
 }
 
-public enum SearchResultSection: Identifiable {
+public enum SearchResultSection: Identifiable, View {
     
     public var id: String {
         switch self {
         case .basic(let name, _):
             return name
+        }
+    }
+    
+    public var body: some View {
+        switch self {
+            case .basic(let name, let layouts):
+                Section(header: Text(name)) {
+                    VStack(){
+                        ForEach(Array(layouts.enumerated()), id: \.offset) { idx, layout in
+                            layout//.background([Color.red, Color.yellow, Color.blue].randomElement())
+                            
+                            if idx + 1 < layouts.count {
+                                Divider().padding()
+                            }
+                        }
+                    }
+                    //.frame(width: screenWidth, height: screenWidth)
+                    //.fixedSize()
+                    .clipped()
+                }
+                .background(Color.clear)
         }
     }
     
@@ -79,13 +184,6 @@ enum SearchResultCategory: String, CaseIterable, Identifiable {
 
 public struct SearchResultView: View {
     
-    var columns: [GridItem] {
-        return [
-            GridItem(.adaptive(minimum: screenWidth / 6, maximum: screenWidth / 3)),
-            GridItem(.adaptive(minimum: screenWidth / 6, maximum: screenWidth / 3)),
-            GridItem(.adaptive(minimum: screenWidth / 6, maximum: screenWidth / 3))
-        ]
-    }
     
     @State var resultSections: [SearchResultSection]
     
@@ -96,7 +194,7 @@ public struct SearchResultView: View {
             case .basic(_, let layouts):
                 for layout in layouts {
                     switch layout {
-                    case .sixGrid(let results), .threeGrid(let results):
+                    case .sixGrid(let results), .threeGrid(let results), .threeList(let results):
                         res.append(contentsOf: results)
                     }
                 }
@@ -109,54 +207,12 @@ public struct SearchResultView: View {
         self._resultSections = State(initialValue: results)
     }
     
-    public func trackView(_ track: Playable) -> some View {
-        return VStack(){
-            NetworkImage(url: track.albumCoverUrl) {
-                ProgressView(value: nil, total: 100)
-            }
-            Text(track.title).font(.body)
-                .lineLimit(1)
-                .truncationMode(.tail)
-        }
-    }
-    
-    public func layoutContentBasic(_ layout: SearchResultLayout) -> some View {
-        return VStack(){
-            switch layout {
-            case .sixGrid(let results), .threeGrid(let results):
-                
-                ForEach(results){ result in
-                    switch result {
-                    case .tracks(let tracks):
-                        LazyVGrid(columns: columns) {
-                            ForEach(tracks, id: \.uri) { track in
-                                self.trackView(track)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     public var body: some View {
 //        ScrollView(.vertical, showsIndicators: true){
 //            ZStack(){
         return List(){
                     ForEach(resultSections) { section in
-                        switch section {
-                        case .basic(let name, let layouts):
-                            Section(header: Text(name)) {
-                                VStack(){
-                                    ForEach(layouts) { layout in
-                                        self.layoutContentBasic(layout)
-                                    }
-                                }
-                                .frame(width: screenWidth, height: screenWidth)
-                                .fixedSize()
-                                .clipped()
-                            }.background(Color.clear)
-                        }
+                        section
                     }
                 }.listStyle(GroupedListStyle())//.padding(.top, Sizing.medium)
     }
@@ -174,12 +230,19 @@ final class SearchStore: ObservableObject {
     }
 }
 
+extension Array: View where Element == SearchResultSection {
+    
+    public var body: some View {
+        return SearchResultView(self)
+    }
+}
+
 public struct ExploreView: View {
     
     @StateObject var model = SearchStore()
     @State var searchAreas: Set<SearchResultCategory> = Set(SearchResultCategory.allCases)
     @State var selectedAreas: Set<SearchResultCategory> = []
-    @State var searchResults: [SearchResult] = [.tracks(Array(SEED_DATA.tracks[0...10]))]
+    @State var searchResults: [SearchResult] = [.tracks(Array(SEED_DATA.tracks[50...60]))]
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
@@ -203,10 +266,12 @@ public struct ExploreView: View {
         let cs: [SearchResult] = [.tracks(Array(SEED_DATA.tracks[20...30]))]
         
         let sections: [SearchResultSection] = [
-            .basic(name: "Tracks", layout: SearchResultLayout.auto(searchResults)),
-            .basic(name: "Videos", layout: SearchResultLayout.auto(ts)),
-            .basic(name: "Podcasts", layout: SearchResultLayout.auto(cs)),
+            .basic(name: "Tracks", layout: searchResults.toLayouts()),
+            .basic(name: "Users", layout: [SearchResult.users(SEED_DATA.users)].toLayouts()),
+            .basic(name: "Videos", layout: ts.toLayouts()),
+            .basic(name: "Podcasts", layout: cs.toLayouts()),
         ]
+        
         return VStack(alignment: .center, spacing: 0) {
             SearchBar(text: $model.query)
                 .padding(.bottom, Sizing.small)
@@ -239,7 +304,7 @@ public struct ExploreView: View {
             }
             
             if !searchResults.isEmpty {
-                SearchResultView(sections)
+                sections
             } else {
                 VStack(alignment: .center, spacing: .zero){
                     self.suggestionsView.padding()//.foregroundColor(.white)

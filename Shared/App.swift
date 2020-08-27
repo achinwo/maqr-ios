@@ -13,32 +13,12 @@ import JoliCore
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 
-//struct Showerdoor<Content> : View where Content : View {
-//    /// A kind of mobile view that can go into fullscreen by expanding sideways
-//    let scrollProxy: ScrollViewProxy
-//    let contentView: Content
-//
-//    init(_ proxy: ScrollViewProxy, @ViewBuilder content: () -> Content){
-//        scrollProxy = proxy
-//        contentView = content()
-//    }
-//
-//    var body: some View {
-//        return contentView
-//    }
-//}
-
-
-
-
 @main
 struct JoliApp: AppClip {
     
     @Namespace var namespace
     
     var coordinator: AppCoordinator = AppCoordinator()
-    
-    //AppClip
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) var scenePhase
@@ -55,15 +35,14 @@ struct JoliApp: AppClip {
     
     var contentView: some View {
         AppView2()
-            .environmentObject(appState)
-            .environmentObject(appState.currentlyPlaying)
-            .environmentObject(appState.keyboardState)
-            .environmentObject(appState.serverReconnectState)
             .onAppear() {
                 logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
                 coordinator.namespace = namespace
             }
     }
+}
+
+extension JoliApp {
     
     func onScenePhaseChange(_ phase: ScenePhase){
         switch phase {
@@ -119,6 +98,5 @@ struct JoliApp: AppClip {
             logger.debug("Spotify error:", error_description)
         }
     }
+    
 }
-
-
