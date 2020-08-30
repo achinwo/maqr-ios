@@ -8,6 +8,7 @@
 
 import Foundation
 import JoliCore
+import UIKit
 
 enum DeviceUid {
     case unknown
@@ -75,7 +76,11 @@ extension Builder: UserIdentifiable where PersistedType == User {
     }
     
     var deviceUid: DeviceUid {
-        return .unknown
+        guard let deviceIdStr = self.activeDeviceUuid, let uuid = UUID.init(uuidString: deviceIdStr) else {
+            return .unknown
+        }
+        
+        return .uuid(uuid)
     }
     
 }
@@ -100,7 +105,11 @@ extension User: UserVerified {
     }
     
     var deviceUid: DeviceUid {
-        return .unknown
+        guard let deviceIdStr = self.activeDeviceUuid, let uuid = UUID.init(uuidString: deviceIdStr) else {
+            return .unknown
+        }
+        
+        return .uuid(uuid)
     }
     
     var emailApi: Any {
