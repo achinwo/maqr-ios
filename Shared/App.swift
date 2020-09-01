@@ -13,10 +13,18 @@ import JoliCore
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 
+#if DEBUG
+let TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAam9saW1jLmFwcCIsImNyZWF0ZWRBdCI6IjIwMjAtMDgtMjJUMTM6NDQ6NTUuODY2WiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0.OhxodQ0Zl0E_k_Su8CDwSB2scqteqfmyfUSMHwlfN00"
+#endif
+
 @main
 struct JoliApp: AppClip {
     
     @Namespace var namespace
+    
+    @State var currentUser: User? = SEED_DATA.users.first
+    @State var currentPlayroom: Musicroom? = nil
+    
     
     var coordinator: AppCoordinator = AppCoordinator()
     
@@ -34,10 +42,14 @@ struct JoliApp: AppClip {
     }
     
     var contentView: some View {
-        AppView2()
+        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser)
             .onAppear() {
                 logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
                 coordinator.namespace = namespace
+                appState.api.authenticate(token: TOKEN)
+                    .then() { auth in
+                        print("[LoggedIn] \(auth?.user)")
+                    }
             }
     }
 }

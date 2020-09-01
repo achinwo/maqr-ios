@@ -34,7 +34,13 @@ public struct AppView2: View {
     
     @Namespace var animation
     
-    public init(){}
+    @Binding var playroom: Musicroom?
+    @Binding var currentUser: User?
+    
+    public init(playroom: Binding<Musicroom?>, currentUser: Binding<User?>){
+        self._playroom = playroom
+        self._currentUser = currentUser
+    }
     
     @State var filteredTracks: [Track] = SEED_DATA.tracks
     
@@ -65,7 +71,9 @@ public struct AppView2: View {
                                 .id(Self.viewIds.explore)
                             
                             
-                            ListenView(geoProxy: geoProxy, tracks: self.$filteredTracks, tabbarExpaned: self.$isExpanded, preview: self.$preview, filterText: self.$filterText, animation: animation)
+                            ListenView(geoProxy: geoProxy, tracks: self.$filteredTracks, tabbarExpaned: self.$isExpanded,
+                                       preview: self.$preview, filterText: self.$filterText, animation: animation,
+                                       playroom: self.$playroom, currentUser: self.$currentUser)
                                 .frame(width: screenWidth)
                                 .onChange(of: self.filterText) { term in
                                     let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
@@ -124,7 +132,7 @@ public struct AppView2: View {
 struct AppView2_Previews: PreviewProvider {
     static var previews: some View {
         let coord = AppCoordinator()
-        AppView2()
+        AppView2(playroom: .constant(SEED_DATA.musicrooms.first), currentUser: .constant(SEED_DATA.users.first))
             .environmentObject(coord)
     }
 }

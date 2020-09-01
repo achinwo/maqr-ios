@@ -22,6 +22,8 @@ struct ListenView: JoliView {
     @State var peopleViewBounds: CGRect? = nil
     @State var navbarViewBounds: CGRect? = nil
     var animation: Namespace.ID
+    @Binding var playroom: Musicroom?
+    @Binding var currentUser: User?
     
     var body: some View {
         
@@ -37,7 +39,7 @@ struct ListenView: JoliView {
             VStack(spacing: .zero) {
                 Spacer()
                 Divider()
-                ListenTabbarView(users: SEED_DATA.users, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview)
+                ListenTabbarView(users: SEED_DATA.users, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview, playroom: self.$playroom)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in

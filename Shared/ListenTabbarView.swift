@@ -51,8 +51,11 @@ struct ListenTabbarView: JoliView {
     @EnvironmentObject var appCoordinator: AppCoordinator
     @State var activeDevice: Spotify.Device?
     @State var volume: CGFloat = 30
+    @Binding var playroom: Musicroom?
     
-    public init(users: [User], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil){
+    public init(users: [User], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>){
+        
+        self._playroom = playroom
         self._users = State(initialValue: users)
         self._isExpanded = isExpanded ?? .constant(true)
         self._searchText = searchText ?? .constant("")
@@ -151,10 +154,14 @@ struct ListenTabbarView: JoliView {
             ]
             
             HStack(){
-                Image(systemName: "person.2").font(Font.title2.weight(self.isExpanded ? .light : .thin))
-                Text(label)
-                    .font(Font.caption.weight(.light))
-                    .offset(x: -4, y: 0)
+                Image(systemName: "person.2")
+                    .font(Font.title2.weight(self.isExpanded ? .light : .thin))
+                    .overlay(
+                        Text(label)
+                            .font(Font.caption.weight(.light))
+                            .offset(x: UIFont.preferredFont(forTextStyle: .title2).pointSize, y: 0)
+                    )
+                
                 Spacer()
                 Button(){
                     self.appCoordinator.sheet.show(){
