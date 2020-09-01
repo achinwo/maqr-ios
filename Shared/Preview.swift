@@ -24,7 +24,7 @@ public enum AppPreview: View {
         }
     }
     
-    case userProfile(UserRecord)
+    case userProfile(UserIdentifiable)
     case view(Axis.Set? = nil, () -> AnyView)
 }
 

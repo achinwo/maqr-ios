@@ -26,7 +26,19 @@ struct ListenView: JoliView {
     @Binding var currentUser: User?
     
     var body: some View {
-        
+        let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
+            guard user.id != 3 else {
+                return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
+            }
+            
+            let act = [PlayroomMembership.ActivityStatus.offline,
+                       PlayroomMembership.ActivityStatus.online].randomElement()!
+            
+            let mem = PlayroomMembership(inviteStatus: .accepted,
+                                         activityStatus: act,
+                                         playroomId: 3, user: user)
+            return mem
+        }
         return ZStack(){
             ScrollView(.vertical, showsIndicators: true) {
                 TrackList(tracks: self.$tracks)
@@ -39,7 +51,7 @@ struct ListenView: JoliView {
             VStack(spacing: .zero) {
                 Spacer()
                 Divider()
-                ListenTabbarView(users: SEED_DATA.users, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview, playroom: self.$playroom)
+                ListenTabbarView(users: users, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview, playroom: self.$playroom)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in

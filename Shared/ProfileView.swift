@@ -27,12 +27,17 @@ struct ProfileEditView: View {
 
 public struct UserProfileView2: View {
     
-    @Binding var user: UserRecord
+    @Binding var user: UserIdentifiable
     @State var editProfilePresented = false
     @State var logoutPresented = false
+    
+    var userName: String {
+        return user.displayName.name ?? "Anonymous"
+    }
+    
     var callback: (() -> Void)?
     
-    public init(user: Binding<UserRecord>, callback: (() -> Void)? = nil){
+    public init(user: Binding<UserIdentifiable>, callback: (() -> Void)? = nil){
         self.callback = callback
         self._user = user
     }
@@ -54,7 +59,8 @@ public struct UserProfileView2: View {
     }
     
     var formView: some View {
-        let image = UIImage.makeLetterAvatar(withUsername: user.name)!
+        
+        let image = UIImage.makeLetterAvatar(withUsername: self.userName)!
         
         return Form() {
             ImageView(uiImage: image) { (img: UIImage?, error: Error?) in
@@ -63,7 +69,7 @@ public struct UserProfileView2: View {
             .padding()
             
             VStack(alignment: .leading){
-                Text(user.name!).font(.headline)
+                Text(userName).font(.headline)
                 Text(user.ranking.description.lowercased())
                     .font(.footnote)
                     .foregroundColor(.gray)

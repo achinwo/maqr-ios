@@ -10,30 +10,56 @@ import Foundation
 import JoliCore
 import UIKit
 
-enum DeviceUid {
+public enum DeviceUid {
     case unknown
     case uuid(UUID)
+    
+    var uuid: UUID? {
+        guard case let .uuid(uuid) = self else {
+            return nil
+        }
+        return uuid
+    }
 }
 
-enum EmailAddress: Equatable {
+public enum EmailAddress: Equatable {
     case unknown
     case email(String)
+    
+    var email: String? {
+        guard case let .email(email) = self else {
+            return nil
+        }
+        return email
+    }
 }
 
-enum UserName {
+public enum UserName: Equatable {
     case unknown
     case name(String)
+    
+    var name: String? {
+        guard case let .name(name) = self else {
+            return nil
+        }
+        return name
+    }
 }
 
-protocol UserIdentifiable {
+public protocol UserIdentifiable {
     var displayName: UserName { get }
     var emailAddress: EmailAddress { get }
     var deviceUid: DeviceUid { get }
     var isAnonymous: Bool { get }
     var isOwnDevice: Bool { get }
+    var imageLarge: String? { get }
+    var imageMedium: String? { get }
+    var imageSmall: String? { get }
+    
+    var ranking: DiscjockeyPosition { get }
 }
 
-extension UserIdentifiable {
+public extension UserIdentifiable {
     
     var isAnonymous: Bool {
         return emailAddress == .unknown
@@ -56,9 +82,62 @@ protocol UserVerified: UserIdentifiable, Identifiable {
     var emailApi: Any { get }
 }
 
+//@dynamicMemberLookup
+public struct PlayroomMembership: UserIdentifiable {
+    
+    public enum InviteStatus {
+        case pending
+        case accepted
+    }
+    
+    public enum ActivityStatus {
+        case online
+        case offline
+    }
+    
+    
+    public var inviteStatus: InviteStatus
+    public var activityStatus: ActivityStatus
+    
+    public var playroomId: Int
+    public var user: User
+    public var membership: Membership = .inviteOnly
+    
+    public var displayName: UserName {
+        return user.displayName
+    }
+    
+    public var emailAddress: EmailAddress {
+        return user.emailAddress
+    }
+    
+    public var deviceUid: DeviceUid {
+        return user.deviceUid
+    }
+    
+    public var imageLarge: String? {
+        return user.imageLarge
+    }
+    
+    public var imageMedium: String? {
+        return user.imageMedium
+    }
+    
+    public var imageSmall: String? {
+        return user.imageSmall
+    }
+    
+    public var ranking: DiscjockeyPosition {
+        return user.ranking
+    }
+    
+//    subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
+//        get { user[keyPath: keyPath] }
+//    }
+}
 
 extension Builder: UserIdentifiable where PersistedType == User {
-    var displayName: UserName {
+    public var displayName: UserName {
         guard let name = name else {
             return .unknown
         }
@@ -67,7 +146,7 @@ extension Builder: UserIdentifiable where PersistedType == User {
     }
     
     
-    var emailAddress: EmailAddress {
+    public var emailAddress: EmailAddress {
         guard let email = self.email else {
             return .unknown
         }
@@ -75,7 +154,7 @@ extension Builder: UserIdentifiable where PersistedType == User {
         return .email(email)
     }
     
-    var deviceUid: DeviceUid {
+    public var deviceUid: DeviceUid {
         guard let deviceIdStr = self.activeDeviceUuid, let uuid = UUID.init(uuidString: deviceIdStr) else {
             return .unknown
         }
@@ -87,7 +166,7 @@ extension Builder: UserIdentifiable where PersistedType == User {
 
 extension Builder: UserProtocol where PersistedType == User {
     
-    var emailApi: Any? {
+    public var emailApi: Any? {
         return self.email as Any
     }
     
@@ -96,15 +175,15 @@ extension Builder: UserProtocol where PersistedType == User {
 
 extension User: UserVerified {
     
-    var displayName: UserName {
+    public var displayName: UserName {
         return .name(name)
     }
     
-    var emailAddress: EmailAddress {
+    public var emailAddress: EmailAddress {
         return .email(email)
     }
     
-    var deviceUid: DeviceUid {
+    public var deviceUid: DeviceUid {
         guard let deviceIdStr = self.activeDeviceUuid, let uuid = UUID.init(uuidString: deviceIdStr) else {
             return .unknown
         }
@@ -112,7 +191,7 @@ extension User: UserVerified {
         return .uuid(uuid)
     }
     
-    var emailApi: Any {
+    public var emailApi: Any {
         return self.email as Any
     }
     

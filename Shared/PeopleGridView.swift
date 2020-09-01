@@ -111,7 +111,7 @@ struct PeopleGridView: JoliView {
         GridItem(.fixed(100)),
     ]
     
-    @State var users: [User]
+    @Binding var users: [UserIdentifiable]
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     
@@ -127,8 +127,8 @@ struct PeopleGridView: JoliView {
             )
     }
     
-    public init(users: [User], _ onUserTapGesture: ((GestureType, User?) -> Void)? = nil){
-        self._users = State(initialValue: users)
+    public init(users: Binding<[UserIdentifiable]>, _ onUserTapGesture: ((GestureType, UserIdentifiable?) -> Void)? = nil){
+        self._users = users
         self.gestureCallback = onUserTapGesture
     }
     
@@ -149,15 +149,18 @@ struct PeopleGridView: JoliView {
                 }
                 .matchedGeometryEffect(id: "preview", in: appCoordinator.namespace ?? localNamespace)
             
-            ForEach(users, id: \.self) { user in
-                Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.name)!)
+            ForEach(0 ..< users.count) { idx in
+                let user = users[idx]
+                
+                Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.displayName.name ?? "Anonymous")!)
                     .resizable()
                     .renderingMode(.original)
                     .frame(width: width, height: width)
                     .clipShape(Circle())
                     .overlay(
                         Group() {
-                            if user.id == 3 {
+                            
+                            if let member = user as? PlayroomMembership, member.inviteStatus == .pending {
                                 Text("Invited")
                                     .fontWeight(.thin)
                                     .padding([.leading, .trailing], 4)
@@ -165,9 +168,9 @@ struct PeopleGridView: JoliView {
                                     .background(Color.secondary)
                                     .font(.footnote)
                                     .clipShape(Capsule())
-                            } else {
+                            } else if let member = user as? PlayroomMembership {
                                 Circle()
-                                    .fill(Color.green)
+                                    .fill(member.activityStatus == .online ? Color.green : Color.gray)
                                     .frame(width: max(width / 4, 15), height: max(width / 4, 15))
                             }
                         }
@@ -191,7 +194,7 @@ struct PeopleGridView: JoliView {
         case longpress
     }
     
-    private var gestureCallback: ((GestureType, User?) -> Void)? = nil
+    private var gestureCallback: ((GestureType, UserIdentifiable?) -> Void)? = nil
     
     @State var isDragging = false
     @State var offset: CGSize = .zero
@@ -207,7 +210,7 @@ struct PeopleGridView_Previews: PreviewProvider {
     static var previews: some View {
         let users = SEED_DATA.users
         return VStack() {
-            PeopleGridView(users: users).padding()
+            PeopleGridView(users: .constant(users)).padding()
             Spacer()
         }
     }

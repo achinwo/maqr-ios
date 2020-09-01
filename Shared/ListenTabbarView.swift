@@ -43,7 +43,7 @@ struct ListenTabbarView: JoliView {
     
     @Binding var isExpanded: Bool
     @Binding var preview: AppPreview?
-    @State var users: [User]
+    @State var users: [UserIdentifiable]
     @Binding var searchText: String
     
     @State var isSearching = false
@@ -53,7 +53,7 @@ struct ListenTabbarView: JoliView {
     @State var volume: CGFloat = 30
     @Binding var playroom: Musicroom?
     
-    public init(users: [User], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>){
+    public init(users: [UserIdentifiable], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>){
         
         self._playroom = playroom
         self._users = State(initialValue: users)
@@ -88,7 +88,7 @@ struct ListenTabbarView: JoliView {
         let mainView = DisclosureGroup(isExpanded: self._isExpanded) {
             
             ScrollView(.horizontal) {
-                PeopleGridView(users: SEED_DATA.users) { (gestureType, user) in
+                PeopleGridView(users: self.$users) { (gestureType, user) in
                     
                         guard let user = user else {
                             withImpact(.soft, animated: .spring()){
@@ -102,14 +102,14 @@ struct ListenTabbarView: JoliView {
                         
                         switch gestureType {
                             case .tap:
-                                if case .userProfile(let currentUser) = self.preview, currentUser.email == user.email {
+                                if case .userProfile(let currentUser) = self.preview, currentUser.emailAddress.email == user.emailAddress.email {
                                     self.preview = nil
                                 } else {
-                                    self.preview = .userProfile(user.builder())
+                                    self.preview = .userProfile(user)
                                 }
                             case .longpress:
                                 withImpact(.medium, animated: .spring()) {
-                                    self.preview = .userProfile(user.builder())
+                                    self.preview = .userProfile(user)
                                     self.isExpanded = false
                                 }
                         }
