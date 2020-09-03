@@ -78,7 +78,7 @@ struct ListenView: JoliView {
                     }
                 }
                 Divider()
-                AppPreviewView(preview: self.$preview, animation: animation)
+                AppPreviewView(preview: self.$preview, currentUser: self.$currentUser, animation: animation)
                     .frame(maxWidth: screenWidth)
                     .frame(minWidth: screenWidth, maxHeight: screenHeight)
                     .background(BlurView(.extraLight))

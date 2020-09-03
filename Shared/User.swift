@@ -73,12 +73,11 @@ public extension UserIdentifiable {
     }
 }
 
-protocol UserProtocol: UserIdentifiable {
+public protocol UserProtocol: UserIdentifiable {
     var emailApi: Any? { get }
-    
 }
 
-protocol UserVerified: UserIdentifiable, Identifiable {
+public protocol UserVerified: UserIdentifiable, Identifiable {
     var emailApi: Any { get }
 }
 
@@ -137,6 +136,7 @@ public struct PlayroomMembership: UserIdentifiable {
 }
 
 extension Builder: UserIdentifiable where PersistedType == User {
+    
     public var displayName: UserName {
         guard let name = name else {
             return .unknown

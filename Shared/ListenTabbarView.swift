@@ -53,6 +53,12 @@ struct ListenTabbarView: JoliView {
     @State var volume: CGFloat = 30
     @Binding var playroom: Musicroom?
     
+    @State var heartLevel: HeartLevel = .full
+    @Namespace var localNamespace
+    
+    @State var isDragging = false
+    @State var offset: CGSize = .zero
+    
     public init(users: [UserIdentifiable], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>){
         
         self._playroom = playroom
@@ -73,10 +79,6 @@ struct ListenTabbarView: JoliView {
                     .font(.largeTitle)
             )
     }
-    
-    
-    @State var heartLevel: HeartLevel = .full
-    @Namespace var localNamespace
     
     var body: some View {
         var label = ""
@@ -102,7 +104,11 @@ struct ListenTabbarView: JoliView {
                         
                         switch gestureType {
                             case .tap:
-                                if case .userProfile(let currentUser) = self.preview, currentUser.emailAddress.email == user.emailAddress.email {
+                                if user.isOwnDevice {
+                                    self.preview = .userAccount
+                                    self.isExpanded = false
+                                } else if case .userProfile(let currentUser) = self.preview,
+                                          currentUser.emailAddress.email == user.emailAddress.email {
                                     self.preview = nil
                                 } else {
                                     self.preview = .userProfile(user)
@@ -154,13 +160,25 @@ struct ListenTabbarView: JoliView {
             ]
             
             HStack(){
-                Image(systemName: "person.2")
-                    .font(Font.title2.weight(self.isExpanded ? .light : .thin))
-                    .overlay(
-                        Text(label)
-                            .font(Font.caption.weight(.light))
-                            .offset(x: UIFont.preferredFont(forTextStyle: .title2).pointSize, y: 0)
-                    )
+                
+                if playroom == nil {
+                    Image(systemName: "person")
+                        .font(Font.title.weight(self.preview == .userAccount ? .light : .thin))
+                        .onTapGesture {
+                            withImpact {
+                                self.preview = .userAccount
+                                self.isExpanded = false
+                            }
+                        }
+                } else {
+                    Image(systemName: "person.2")
+                        .font(Font.title2.weight(self.isExpanded ? .light : .thin))
+                        .overlay(
+                            Text(label)
+                                .font(Font.caption.weight(.light))
+                                .offset(x: UIFont.preferredFont(forTextStyle: .title2).pointSize, y: 0)
+                        )
+                }
                 
                 Spacer()
                 Button(){
@@ -172,22 +190,23 @@ struct ListenTabbarView: JoliView {
                 }
                 .font(Font.title.weight(.ultraLight))
                 
-                Spacer()
-                JoyMeterView($heartLevel, textStyle: .title3)
-                    .background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
-                    .foregroundColor(.red)
-                    .font(Font.title.weight(.ultraLight))
-                    .scaleEffect(isDragging ? 1.5 : 1)
-                    .offset(offset)
-                    .onTapGesture() {
-                        withImpact(.soft, animated: .spring()) {
-                            self.isExpanded.toggle()
+                if playroom != nil {
+                    Spacer()
+                    JoyMeterView($heartLevel, textStyle: .title3)
+                        .background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
+                        .foregroundColor(.red)
+                        .font(Font.title.weight(.ultraLight))
+                        .scaleEffect(isDragging ? 1.5 : 1)
+                        .offset(offset)
+                        .onTapGesture() {
+                            withImpact(.soft, animated: .spring()) {
+                                self.isExpanded.toggle()
+                            }
                         }
-                    }
-                    .gesture(combined)
-                //.offset(x: !(self.isExpanded || users.isEmpty) ? Sizing.small / 2 * -1 : 0, y: 0)
-                //.alignmentGuide(.custom) { dims in dims[.custom] }
-                
+                        .gesture(combined)
+                    //.offset(x: !(self.isExpanded || users.isEmpty) ? Sizing.small / 2 * -1 : 0, y: 0)
+                    //.alignmentGuide(.custom) { dims in dims[.custom] }
+                }
                 Spacer()
                 Button(){
                     self.searchbarActive.toggle()
@@ -229,11 +248,9 @@ struct ListenTabbarView: JoliView {
         .accentColor(.primary)
         .padding(.trailing, Sizing.medium)
         .padding(.leading, Sizing.medium)
+        .padding(.bottom, isExpanded ? Sizing.medium : .zero)
         .animation(.spring())
         
     }
-    
-    @State var isDragging = false
-    @State var offset: CGSize = .zero
     
 }

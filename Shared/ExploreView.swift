@@ -14,10 +14,12 @@ public enum SearchResult: Identifiable {
     
     public var id: String {
         switch self {
+        case .playrooms(let rooms):
+            return rooms.map { $0.id.description }.joined(separator: "/")
         case .tracks(let tracks):
             return tracks.map { $0.uri }.joined(separator: "/")
         case .users(let users):
-            return users.map { $0.name }.joined(separator: "/")
+            return users.map { $0.id.description }.joined(separator: "/")
         }
     }
     
@@ -37,6 +39,15 @@ public enum SearchResult: Identifiable {
         return users
     }
     
+    public var playrooms: [Musicroom]? {
+        guard case let .playrooms(rooms) = self else {
+            return nil
+        }
+        
+        return rooms
+    }
+    
+    case playrooms([Musicroom])
     case tracks([Playable])
     case users([User])
 }
@@ -55,16 +66,19 @@ extension Array where Element == SearchResult {
         var res: [SearchResultLayout] = []
         for result in self {
             switch result {
-                case .tracks(let tracks):
-                    for chunk in tracks.chunked(into: 6) {
-                        res.append(Int.random(in: 0...10) % 2 == 0 ? .sixGrid([.tracks(chunk)]) : .threeList([.tracks(chunk)]))
-                        //res.append(.threeGrid([.tracks(chunk)]))
-                    }
-                case .users(let users):
-                    for chunk in users.chunked(into: 3) {
-                        res.append(Int.random(in: 0...10) % 2 == 0 ? .sixGrid([.users(chunk)]) : .threeList([.users(chunk)]))
-                        //res.append(.threeGrid([.tracks(chunk)]))
-                    }
+            case .playrooms(let rooms):
+                for chunk in rooms.chunked(into: 3) {
+                    res.append(Int.random(in: 0...10) % 2 == 0 ? .sixGrid([.playrooms(chunk)]) : .threeList([.playrooms(chunk)]))
+                }
+            case .tracks(let tracks):
+                for chunk in tracks.chunked(into: 6) {
+                    res.append(Int.random(in: 0...10) % 2 == 0 ? .sixGrid([.tracks(chunk)]) : .threeList([.tracks(chunk)]))
+                }
+            case .users(let users):
+                for chunk in users.chunked(into: 3) {
+                    res.append(Int.random(in: 0...10) % 2 == 0 ? .sixGrid([.users(chunk)]) : .threeList([.users(chunk)]))
+                    //res.append(.threeGrid([.tracks(chunk)]))
+                }
             }
         }
         return res
@@ -94,10 +108,12 @@ public enum SearchResultLayout: View {
     }
     
     public var body: some View {
+        let onRoomTap = {
+            
+        }
         return VStack(){
             switch self {
                 case .sixGrid(let results), .threeGrid(let results):
-                    
                     ForEach(results){ result in
                         LazyVGrid(columns: columns) {
                             if let tracks = result.tracks {
@@ -108,6 +124,15 @@ public enum SearchResultLayout: View {
                                 ForEach(users) { user in
                                     Text("\(user.name)").font(.headline)
                                     //CircleImage(url: user.im)
+                                }
+                            } else if let rooms = result.playrooms {
+                                ForEach(rooms) { room in
+                                    VStack(){
+                                        Images.stockPhotoPartyPeople.image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                        Text(room.name)
+                                    }.onTapGesture(perform: onRoomTap)
                                 }
                             }
                         }
@@ -122,6 +147,15 @@ public enum SearchResultLayout: View {
                                     Text("\(user.name)").font(.headline)
                                     //CircleImage(url: user.im)
                                 }
+                            }
+                        } else if let rooms = result.playrooms {
+                            ForEach(rooms) { room in
+                                VStack(){
+                                    Images.stockPhotoPartyPeople.image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                    Text(room.name)
+                                }.onTapGesture(perform: onRoomTap)
                             }
                         }
                     }
@@ -180,6 +214,7 @@ enum SearchResultCategory: String, CaseIterable, Identifiable {
     case culture
     case places
     case history
+    case playroom
 }
 
 public struct SearchResultView: View {
@@ -264,11 +299,13 @@ public struct ExploreView: View {
     public var body: some View {
         let ts: [SearchResult] = [.tracks(Array(SEED_DATA.tracks[10...20]))]
         let cs: [SearchResult] = [.tracks(Array(SEED_DATA.tracks[20...30]))]
+        let rooms: [SearchResult] = [.playrooms(Array(SEED_DATA.musicrooms))]
         
         let sections: [SearchResultSection] = [
             .basic(name: "Tracks", layout: searchResults.toLayouts()),
+            .basic(name: "Playrooms", layout: rooms.toLayouts()),
             .basic(name: "Users", layout: [SearchResult.users(SEED_DATA.users)].toLayouts()),
-            .basic(name: "Videos", layout: ts.toLayouts()),
+            .basic(name: "Playlists", layout: ts.toLayouts()),
             .basic(name: "Podcasts", layout: cs.toLayouts()),
         ]
         

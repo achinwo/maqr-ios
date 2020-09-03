@@ -28,6 +28,8 @@ public enum Images: String {
     
     case joliIconRounded = "joli_icon_rounded"
     case joliIcon = "joli_icon"
+    case appclipBarcodeClearExample = "appclip_barcode_clear_example"
+    case stockPhotoPartyPeople = "party-people"
     
     var image: Image {
         return Image(self.rawValue)

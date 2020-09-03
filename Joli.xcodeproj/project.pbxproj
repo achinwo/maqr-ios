@@ -11,10 +11,6 @@
 		9203B31724CB070200F465CC /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDA24C79C07007C960E /* ProfileView.swift */; };
 		9203B31924CB079200F465CC /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 9203B31824CB079200F465CC /* JoliApi */; };
 		9203B32224CB07D300F465CC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9424C79B3D007C960E /* Assets.xcassets */; };
-		9203B32324CB07E100F465CC /* african_giant_cover.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D8E24C79B3D007C960E /* african_giant_cover.jpg */; };
-		9203B32424CB07E400F465CC /* Spotify_Icon_RGB_Green.png in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9224C79B3D007C960E /* Spotify_Icon_RGB_Green.png */; };
-		9203B32524CB07E600F465CC /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9324C79B3D007C960E /* party-people.jpg */; };
-		9203B32624CB07EB00F465CC /* joil_icon_rounded.png in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9824C79B3D007C960E /* joil_icon_rounded.png */; };
 		9203B32724CB07EE00F465CC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9924C79B3D007C960E /* Localizable.strings */; };
 		9203B32824CB07F200F465CC /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD024C79C06007C960E /* Extensions.swift */; };
 		9203B32924CB07F800F465CC /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
@@ -73,16 +69,8 @@
 		92A32D7224C799B8007C960E /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D7124C799B8007C960E /* Tests_macOS.swift */; };
 		92A32D8824C79A13007C960E /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
 		92A32D8924C79A13007C960E /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
-		92A32D9B24C79B3D007C960E /* african_giant_cover.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D8E24C79B3D007C960E /* african_giant_cover.jpg */; };
-		92A32D9C24C79B3D007C960E /* african_giant_cover.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D8E24C79B3D007C960E /* african_giant_cover.jpg */; };
-		92A32DA124C79B3D007C960E /* Spotify_Icon_RGB_Green.png in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9224C79B3D007C960E /* Spotify_Icon_RGB_Green.png */; };
-		92A32DA224C79B3D007C960E /* Spotify_Icon_RGB_Green.png in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9224C79B3D007C960E /* Spotify_Icon_RGB_Green.png */; };
-		92A32DA324C79B3D007C960E /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9324C79B3D007C960E /* party-people.jpg */; };
-		92A32DA424C79B3D007C960E /* party-people.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9324C79B3D007C960E /* party-people.jpg */; };
 		92A32DA524C79B3D007C960E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9424C79B3D007C960E /* Assets.xcassets */; };
 		92A32DA624C79B3D007C960E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9424C79B3D007C960E /* Assets.xcassets */; };
-		92A32DAB24C79B3D007C960E /* joil_icon_rounded.png in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9824C79B3D007C960E /* joil_icon_rounded.png */; };
-		92A32DAC24C79B3D007C960E /* joil_icon_rounded.png in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9824C79B3D007C960E /* joil_icon_rounded.png */; };
 		92A32DAD24C79B3D007C960E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9924C79B3D007C960E /* Localizable.strings */; };
 		92A32DAE24C79B3D007C960E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9924C79B3D007C960E /* Localizable.strings */; };
 		92A32DB524C79B59007C960E /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DB024C79B59007C960E /* AppState.swift */; };
@@ -317,15 +305,11 @@
 		92A32D6D24C799B8007C960E /* Tests macOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests macOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		92A32D7124C799B8007C960E /* Tests_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_macOS.swift; sourceTree = "<group>"; };
 		92A32D7324C799B8007C960E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		92A32D8E24C79B3D007C960E /* african_giant_cover.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = african_giant_cover.jpg; sourceTree = "<group>"; };
 		92A32D9024C79B3D007C960E /* Development.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Development.xcconfig; sourceTree = "<group>"; };
 		92A32D9124C79B3D007C960E /* Config.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
-		92A32D9224C79B3D007C960E /* Spotify_Icon_RGB_Green.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Spotify_Icon_RGB_Green.png; sourceTree = "<group>"; };
-		92A32D9324C79B3D007C960E /* party-people.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "party-people.jpg"; sourceTree = "<group>"; };
 		92A32D9424C79B3D007C960E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		92A32D9624C79B3D007C960E /* Production.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Production.xcconfig; sourceTree = "<group>"; };
 		92A32D9724C79B3D007C960E /* Config.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
-		92A32D9824C79B3D007C960E /* joil_icon_rounded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = joil_icon_rounded.png; sourceTree = "<group>"; };
 		92A32D9A24C79B3D007C960E /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		92A32DB024C79B59007C960E /* AppState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		92A32DB124C79B59007C960E /* UserSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
@@ -560,11 +544,7 @@
 			children = (
 				92A32D8F24C79B3D007C960E /* Development */,
 				92A32D9524C79B3D007C960E /* Production */,
-				92A32D8E24C79B3D007C960E /* african_giant_cover.jpg */,
-				92A32D9224C79B3D007C960E /* Spotify_Icon_RGB_Green.png */,
-				92A32D9324C79B3D007C960E /* party-people.jpg */,
 				92A32D9424C79B3D007C960E /* Assets.xcassets */,
-				92A32D9824C79B3D007C960E /* joil_icon_rounded.png */,
 				92A32D9924C79B3D007C960E /* Localizable.strings */,
 			);
 			path = Resources;
@@ -952,11 +932,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9203B32324CB07E100F465CC /* african_giant_cover.jpg in Resources */,
 				9203B32724CB07EE00F465CC /* Localizable.strings in Resources */,
-				9203B32524CB07E600F465CC /* party-people.jpg in Resources */,
-				9203B32424CB07E400F465CC /* Spotify_Icon_RGB_Green.png in Resources */,
-				9203B32624CB07EB00F465CC /* joil_icon_rounded.png in Resources */,
 				9203B32224CB07D300F465CC /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -991,11 +967,7 @@
 				92A32DAD24C79B3D007C960E /* Localizable.strings in Resources */,
 				92A32DC124C79B6C007C960E /* Preview Assets.xcassets in Resources */,
 				92A32E1E24C7A9F2007C960E /* env.json in Resources */,
-				92A32DA324C79B3D007C960E /* party-people.jpg in Resources */,
-				92A32DA124C79B3D007C960E /* Spotify_Icon_RGB_Green.png in Resources */,
 				92A32DA524C79B3D007C960E /* Assets.xcassets in Resources */,
-				92A32D9B24C79B3D007C960E /* african_giant_cover.jpg in Resources */,
-				92A32DAB24C79B3D007C960E /* joil_icon_rounded.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1006,11 +978,7 @@
 				92A32DAE24C79B3D007C960E /* Localizable.strings in Resources */,
 				92A32DC224C79B6C007C960E /* Preview Assets.xcassets in Resources */,
 				92A32E1F24C7A9FC007C960E /* env.json in Resources */,
-				92A32DA424C79B3D007C960E /* party-people.jpg in Resources */,
-				92A32DA224C79B3D007C960E /* Spotify_Icon_RGB_Green.png in Resources */,
 				92A32DA624C79B3D007C960E /* Assets.xcassets in Resources */,
-				92A32D9C24C79B3D007C960E /* african_giant_cover.jpg in Resources */,
-				92A32DAC24C79B3D007C960E /* joil_icon_rounded.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

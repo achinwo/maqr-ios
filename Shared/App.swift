@@ -22,7 +22,7 @@ struct JoliApp: AppClip {
     
     @Namespace var namespace
     
-    @State var currentUser: User? = SEED_DATA.users.first
+    @State var currentUser: User? = nil
     @State var currentPlayroom: Musicroom? = nil
     
     
@@ -48,7 +48,8 @@ struct JoliApp: AppClip {
                 coordinator.namespace = namespace
                 appState.api.authenticate(token: TOKEN)
                     .then() { auth in
-                        print("[LoggedIn] \(auth?.user)")
+                        //print("[LoggedIn] \(auth?.user)")
+                        self.currentUser = auth?.user
                     }
             }
     }

@@ -10,7 +10,16 @@ import SwiftUI
 import JoliCore
 
 
-public enum AppPreview: View {
+public enum AppPreview: View, Equatable {
+    
+    public static func == (lhs: AppPreview, rhs: AppPreview) -> Bool {
+        switch (lhs, rhs) {
+        case (.userAccount, .userAccount):
+            return true
+        default:
+            return false
+        }
+    }
     
     public var body: some View {
         switch self {
@@ -21,9 +30,12 @@ public enum AppPreview: View {
                 ScrollView(scrollAxis ?? .vertical){
                     viewFunc().clipped()
                 }
+            default:
+                EmptyView()
         }
     }
     
+    case userAccount
     case userProfile(UserIdentifiable)
     case view(Axis.Set? = nil, () -> AnyView)
 }
@@ -31,6 +43,7 @@ public enum AppPreview: View {
 struct AppPreviewView: View {
     
     @Binding var preview: AppPreview?
+    @Binding var currentUser: User?
     var animation: Namespace.ID
     
     var body: some View {
@@ -40,7 +53,9 @@ struct AppPreviewView: View {
                 Divider()
                 Spacer(minLength: .zero)
                 
-                if let preview = self.preview {
+                if let currentUser = currentUser, preview == .userAccount {
+                    UserProfileView2(user: .constant(currentUser))
+                } else if let preview = self.preview {
                     preview
                 } else {
                     Text("No Preview.")
@@ -83,7 +98,9 @@ struct Preview_Previews: PreviewProvider {
         @State var preview: AppPreview? = .userProfile(SEED_DATA.users.first!.builder())
         
         var body: some View {
-            return AppPreviewView(preview: self.$preview, animation: namespace)
+            return AppPreviewView(preview: self.$preview,
+                                  currentUser: .constant(SEED_DATA.users.first),
+                                  animation: namespace)
         }
     }
     

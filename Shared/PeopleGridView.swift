@@ -88,7 +88,7 @@ public struct InvitePeopleView: JoliView {
             Link(destination: Urls.appclips) {
                 VStack(){
                     Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle").font(Font.footnote.weight(.light)).foregroundColor(.secondary)
-                    Image("appclip_barcode_clear_example")
+                    Images.appclipBarcodeClearExample.image
                         .resizable()
                         .aspectRatio(contentMode: ContentMode.fit)
                         .padding()
@@ -114,17 +114,10 @@ struct PeopleGridView: JoliView {
     @Binding var users: [UserIdentifiable]
     @EnvironmentObject var appCoordinator: AppCoordinator
     
+    @Namespace var localNamespace
     
-    var stickyHeaderView: some View {
-        RoundedRectangle(cornerRadius: 25.0, style: .continuous)
-            .fill(Color.gray)
-            .frame(maxWidth: .infinity)
-            .frame(height: 64)
-            .overlay(
-                Text("Section")
-                    .foregroundColor(Color.white)
-                    .font(.largeTitle)
-            )
+    var currentUser: UserIdentifiable? {
+        return users.first() { $0.isOwnDevice }
     }
     
     public init(users: Binding<[UserIdentifiable]>, _ onUserTapGesture: ((GestureType, UserIdentifiable?) -> Void)? = nil){
@@ -132,11 +125,21 @@ struct PeopleGridView: JoliView {
         self.gestureCallback = onUserTapGesture
     }
     
-    @Namespace var localNamespace
-    
     var body: some View {
-        let width = Sizing.xxxLarge
-        let grid = LazyHGrid(rows: rows, alignment: .center) {
+        let width = Sizing.xxxLarge * 0.7
+        let grid = HStack(alignment: .center) {
+            
+            if let currentUser = currentUser {
+                Image(systemName: "person.crop.circle")
+                    .renderingMode(.original)
+                    .resizable()
+                    .font(.system(size: width, weight: Font.Weight.ultraLight, design: .default))
+                    .frame(width: width, height: width)
+                    .onTapGesture {
+                        self.gestureCallback?(.tap, currentUser)
+                    }
+                Divider().accentColor(.primary)
+            }
             
             Image(systemName: "plus.circle")
                 .renderingMode(.original)
@@ -166,7 +169,7 @@ struct PeopleGridView: JoliView {
                                     .padding([.leading, .trailing], 4)
                                     .foregroundColor(.white)
                                     .background(Color.secondary)
-                                    .font(.footnote)
+                                    .font(.caption2)
                                     .clipShape(Capsule())
                             } else if let member = user as? PlayroomMembership {
                                 Circle()
