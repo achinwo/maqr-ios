@@ -483,21 +483,21 @@
 		92A32D4B24C799B7007C960E /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				92DBFB31250393500039FF4E /* Components */,
 				927E0E3424E9AD5300C8257D /* Extensions */,
-				92A32E0D24C79C87007C960E /* Views */,
-				92A32E0C24C79C3E007C960E /* Components */,
 				92A32DBF24C79B6B007C960E /* Preview Content */,
-				92A32DAF24C79B59007C960E /* State */,
 				92A32D8D24C79B3D007C960E /* Resources */,
+				92A32DAF24C79B59007C960E /* State */,
+				92DBFB32250393990039FF4E /* Views */,
 				92A32DCB24C79C06007C960E /* App.swift */,
 				927E0E3524E9ADC000C8257D /* AppClip.swift */,
 				92A32DCE24C79C06007C960E /* AppDelegate.swift */,
 				92A32DD624C79C07007C960E /* AppView.swift */,
-				92A32DC924C79C06007C960E /* ServiceAlert.swift */,
-				926E8FE024C76DE100378436 /* Styles.swift */,
 				92A32E2B24C7BB53007C960E /* Consts.swift */,
 				92A32E3024CA22FA007C960E /* LiveObject.swift */,
+				92A32DC924C79C06007C960E /* ServiceAlert.swift */,
 				928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */,
+				926E8FE024C76DE100378436 /* Styles.swift */,
 				929FFE1B24FAF096000BDCF0 /* User.swift */,
 			);
 			path = Shared;
@@ -588,27 +588,27 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		92A32E0C24C79C3E007C960E /* Components */ = {
+		92DBFB31250393500039FF4E /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				9263B87724F080E6008962EC /* ListenTabbarView.swift */,
-				92A32DC324C79C06007C960E /* ImagePicker.swift */,
-				92A32DD424C79C07007C960E /* ImageView.swift */,
-				92A32DC424C79C06007C960E /* PeopleGridView.swift */,
-				92A32DDA24C79C07007C960E /* ProfileView.swift */,
-				92A32DD124C79C06007C960E /* TrackList.swift */,
 				9208ACF224CC559400773730 /* DevicesView.swift */,
 				9222BE1724CD8A5800F19973 /* ExploreView.swift */,
-				92A7120C24D85EC500AD6729 /* NetworkImageView.swift */,
-				927E0E3924E9AFFF00C8257D /* Preview.swift */,
-				928A391B24E9DAE600A029A1 /* ListenView.swift */,
+				92A32DC324C79C06007C960E /* ImagePicker.swift */,
+				92A32DD424C79C07007C960E /* ImageView.swift */,
 				928A392324E9E2FA00A029A1 /* JoyMeterView.swift */,
+				9263B87724F080E6008962EC /* ListenTabbarView.swift */,
+				928A391B24E9DAE600A029A1 /* ListenView.swift */,
+				92A7120C24D85EC500AD6729 /* NetworkImageView.swift */,
+				92A32DC424C79C06007C960E /* PeopleGridView.swift */,
+				927E0E3924E9AFFF00C8257D /* Preview.swift */,
+				92A32DDA24C79C07007C960E /* ProfileView.swift */,
 				928F75F324F7B13400CF708B /* SearchView.swift */,
+				92A32DD124C79C06007C960E /* TrackList.swift */,
 			);
-			name = Components;
+			path = Components;
 			sourceTree = "<group>";
 		};
-		92A32E0D24C79C87007C960E /* Views */ = {
+		92DBFB32250393990039FF4E /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				92A32DD824C79C07007C960E /* ActivityView.swift */,
@@ -626,7 +626,7 @@
 				92A32DD224C79C06007C960E /* MusicLibraryView.swift */,
 				92A32DD724C79C07007C960E /* MusicroomCreateView.swift */,
 			);
-			name = Views;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		92F379D62363534D005FE2AB = {

@@ -180,7 +180,7 @@ public final class AppCoordinator: ObservableObject {
     public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
     
-    @Published public var isSearching = false
+    @Published public var isSearching = true
     @Published public var isSharePresented = false
     @Published public var namespace: Namespace.ID? = nil
     

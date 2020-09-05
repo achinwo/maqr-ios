@@ -47,6 +47,10 @@ public enum SearchResult: Identifiable {
         return rooms
     }
     
+    public var items: [Any] {
+        return self.playrooms ?? self.tracks ?? self.users ?? []
+    }
+    
     case playrooms([Musicroom])
     case tracks([Playable])
     case users([User])
@@ -211,10 +215,10 @@ enum SearchResultCategory: String, CaseIterable, Identifiable {
     case sports
     case movies
     case songs
-    case culture
+    //case culture
     case places
-    case history
-    case playroom
+    //case history
+    case playrooms
 }
 
 public struct SearchResultView: View {
@@ -272,14 +276,14 @@ extension Array: View where Element == SearchResultSection {
     }
 }
 
-public struct ExploreView: View {
+public struct ExploreView: JoliView {
     
     @StateObject var model = SearchStore()
     @State var searchAreas: Set<SearchResultCategory> = Set(SearchResultCategory.allCases)
     @State var selectedAreas: Set<SearchResultCategory> = []
     @State var searchResults: [SearchResult] = [.tracks(Array(SEED_DATA.tracks[50...60]))]
     
-    @EnvironmentObject var appCoordinator: AppCoordinator
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     
     var cancellSet: Set<AnyCancellable> = []
     
@@ -337,7 +341,8 @@ public struct ExploreView: View {
             Divider()
             
             if appCoordinator.isSearching {
-                ProgressView(value: nil, total: 100).padding()
+                ProgressView()
+                    .progressViewStyle(LinearProgressViewStyle(tint: Color.primary))
             }
             
             if !searchResults.isEmpty {

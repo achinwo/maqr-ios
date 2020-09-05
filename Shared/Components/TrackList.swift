@@ -70,10 +70,24 @@ public struct TrackView2: View {
                 }
                 
                 DispatchQueue.global(qos: .background).async {
-                    colors = loadedImage.getColors()
+                    let newColors = loadedImage.getColors()
                         
                     DispatchQueue.main.async {
-                        self.colors = colors
+                        self.colors = newColors
+                        
+//                        var builder = track//.builder()
+//                        builder.colorBackground = colors?.background.hexString
+//                        builder.colorDetail = colors?.detail.hexString
+//                        builder.colorSecondary = colors?.secondary.hexString
+//                        builder.colorPrimary = colors?.primary.hexString
+//
+//                        builder.save()
+//                            .catch(){ error in
+//                                logger.debug("[TrackView] colors update error: \(error)")
+//                            }
+//                            .then(){ newTrack in
+//                                logger.debug("[TrackView] created track: \(newTrack)")
+//                            }
                     }
                 }
             }.padding(.all, 2)
