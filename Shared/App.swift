@@ -10,6 +10,9 @@ import SwiftUI
 import UIKit
 import PartialSheet
 import JoliCore
+import JoliApi
+import Promises
+import Foundation
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 
@@ -22,9 +25,8 @@ struct JoliApp: AppClip {
     
     @Namespace var namespace
     
-    @State var currentUser: User? = nil
-    @State var currentPlayroom: Musicroom? = nil
-    
+    @State var currentUser: User? = SEED_DATA.users.first { $0.isOwnDevice }
+    @State var currentPlayroom: Musicroom? = nil//SEED_DATA.musicrooms.first
     
     var coordinator: AppCoordinator = AppCoordinator()
     
@@ -37,6 +39,10 @@ struct JoliApp: AppClip {
         return appDelegate.appState
     }
     
+    var api: JoliApi {
+        return appState.api
+    }
+    
     init() {
         UITableView.appearance().separatorStyle = .none
     }
@@ -45,7 +51,10 @@ struct JoliApp: AppClip {
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser)
             .onAppear() {
                 logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
-                coordinator.namespace = namespace
+                
+                self.coordinator.namespace = namespace
+                self.coordinator.api = api
+                
                 appState.api.authenticate(token: TOKEN)
                     .then() { auth in
                         //print("[LoggedIn] \(auth?.user)")

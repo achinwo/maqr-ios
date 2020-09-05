@@ -10,6 +10,98 @@ import Foundation
 import SwiftUI
 import UIKit
 import PartialSheet
+import JoliApi
+import JoliCore
+import Promises
+
+public struct ShortCodeGenerator {
+
+    private static let base62chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".unicodeScalars.map() {
+        Character($0)
+    }
+    
+    private static let maxBase: UInt32 = 62
+
+    static func getCode(withBase base: UInt32 = maxBase, length: Int = 16) -> String {
+        var code = ""
+        for _ in 0..<length {
+            let random = Int(arc4random_uniform(min(base, maxBase)))
+            code.append(base62chars[random])
+        }
+        return code
+    }
+}
+
+public enum ImageExtension: String, CaseIterable {
+    case jpeg = "jpg"
+    case png = "png"
+}
+
+public extension JoliApi {
+    
+    func createMultipartBody(data: Data, boundary: String, file: String) -> Data {
+        var body = Data()
+        let ln = "\r\n"
+        let boundaryPrefix = "--\(boundary)\(ln)"
+        body.append(boundaryPrefix)
+        body.append("Content-Disposition: form-data; name=\"\(file)\"; filename=\"\(file)\"\(ln)")
+        body.append("Content-Type: application/octet-stream;charset=utf-8\(ln + ln)")
+        body.append(data)
+        body.append(ln)
+        body.append("--\(boundary)--\(ln)")
+        return body
+    }
+    
+    func upload(_ image: UIImage, fileName: String? = nil, ext: ImageExtension = .jpeg, timeout: TimeInterval = 60.0) -> Promise<URL> {
+        
+        let fileName = fileName ?? "\(ShortCodeGenerator.getCode().lowercased()).\(ext.rawValue)"
+        
+        let fileExt = URL(fileURLWithPath: fileName).pathExtension
+        guard let extResolved = ImageExtension(rawValue: fileExt), extResolved == ext else {
+            return Promise(NetworkError.badRequest("Invalid file extension \"\(fileExt)\""))
+        }
+        
+        guard let imageData = (ext == .jpeg ? image.pngData() : image.jpegData(compressionQuality: 0.5)) else {
+            return Promise(NetworkError.badRequest("Unable to convert image to data"))
+        }
+        
+        let boundary = "Boundary-562F49C8-26CD-4D87-9C8F-DEA380DE4BF007"
+        let url = URL(string: "/images", relativeTo: baseUrl.http)!
+        
+        var urlRequest: URLRequest = URLRequest(url: url)
+        urlRequest.httpMethod = HttpMethod.post.rawValue
+        
+        let data = createMultipartBody(data: imageData, boundary: boundary, file: fileName)
+        urlRequest.httpBody = data
+        urlRequest.timeoutInterval = timeout
+        
+        urlRequest.addValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        urlRequest.addValue(data.count.description, forHTTPHeaderField: "Content-Length")
+        
+        return Promise() { (resolve, reject) in
+            let task = self.urlSession.dataTask(with: urlRequest) { (data: Data?, response: URLResponse?, error: Error?) in
+                
+                guard error == nil else {
+                    reject(NetworkError.badResponse(error!.localizedDescription))
+                    return
+                }
+                
+                guard let data = data,
+                      let json = try? JSONSerialization.jsonObject(with: data, options: []) as? Json,
+                      let fileName = json["fileName"] as? String,
+                      let url = URL(string: fileName, relativeTo: self.baseUrl.http) else {
+                    reject(NetworkError.badResponse("Deserialization error"))
+                    return
+                }
+                
+                resolve(url)
+            }
+            
+            task.resume()
+        }
+    }
+}
+
 
 public enum AppStorageKey: String {
     case authToken = "auth_token"
@@ -179,6 +271,7 @@ public final class AppCoordinator: ObservableObject {
     
     public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
+    public var api: JoliApi!
     
     @Published public var isSearching = true
     @Published public var isSharePresented = false
@@ -227,7 +320,7 @@ public protocol AppClip: App {
     
     var contentView: Content { get }
     var scenePhase: ScenePhase { get }
-    var coordinator: AppCoordinator { get }
+    var coordinator: AppCoordinator { nonmutating get }
     var namespace: Namespace.ID { get }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void

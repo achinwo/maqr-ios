@@ -9,6 +9,8 @@
 import SwiftUI
 import JoliCore
 import JoliApi
+import UIKit
+import Promises
 
 struct ProfileEditView: View {
     
@@ -25,7 +27,28 @@ struct ProfileEditView: View {
     }
 }
 
-public struct UserProfileView2: View {
+extension UIImage {
+    
+  func resizeImage(_ targetSize: CGSize) -> UIImage {
+    let size = self.size
+    let widthRatio  = targetSize.width  / size.width
+    let heightRatio = targetSize.height / size.height
+    let newSize = widthRatio > heightRatio ?  CGSize(width: size.width * heightRatio, height: size.height * heightRatio) : CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
+    let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+
+    UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+    self.draw(in: rect)
+    let newImage = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+
+    return newImage!
+  }
+    
+}
+
+public struct UserProfileView2: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @Binding var user: UserIdentifiable
     @State var editProfilePresented = false
@@ -58,13 +81,61 @@ public struct UserProfileView2: View {
                      secondaryButton: cancel)
     }
     
+    @State var isUploadingImage = false
+    
     var formView: some View {
         
-        let image = UIImage.makeLetterAvatar(withUsername: self.userName)!
+        let imageCallback = { (img: UIImage?, error: Error?) in
+            print("image: \(img), error: \(error)")
+            
+            guard var user = user as? User,
+                  let image = img?.resizeImage(CGSize(width: 640, height: 640)) else {
+                return
+            }
+            
+            isUploadingImage = true
+            
+            self.appCoordinator.api.upload(image)
+                .then() { (res: URL) -> Promise<User> in
+                    print("Result: \(res.absoluteString) - \(user)")
+                    
+                    user.imageLarge = res.lastPathComponent
+                    return user.save()
+                }
+                .then() { updatedUser in
+                    print("UpdatedUser: \(updatedUser)")
+                }
+                .catch { error in
+                    print("uploadImage: \(error)")
+                }
+                .always() {
+                    isUploadingImage = false
+                }
+        }
         
         return Form() {
-            ImageView(uiImage: image) { (img: UIImage?, error: Error?) in
-                print("image: \(img), error: \(error)")
+            ZStack(alignment: .center){
+                
+//                Group(){
+//                    if let imageFileName = user.imageLarge,
+//                       let imgUrl = URL(string: "/images/\(imageFileName)", relativeTo: appCoordinator.api.baseUrlHttp) {
+//                        ImageView(url: imgUrl, callback: imageCallback)
+//                    } else {
+//                        ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: imageCallback)
+//                    }
+//                }
+                ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: imageCallback)
+                .overlay(
+                    Group() {
+                        if isUploadingImage {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .background(Colors.lightGray.opacity(0.6))
+                )
+                
             }
             .padding()
             

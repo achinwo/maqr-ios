@@ -103,11 +103,11 @@ struct SettingsView: View {
                 func convertFileData(fieldName: String, fileName: String, mimeType: String, fileData: Data, using boundary: String) -> Data {
                   var data = Data()
 
-                  data.appendString("--\(boundary)\r\n")
-                  data.appendString("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n")
-                  data.appendString("Content-Type: \(mimeType)\r\n\r\n")
+                  data.append("--\(boundary)\r\n")
+                  data.append("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n")
+                  data.append("Content-Type: \(mimeType)\r\n\r\n")
                   data.append(fileData)
-                  data.appendString("\r\n")
+                  data.append("\r\n")
 
                   return data as Data
                 }
@@ -119,7 +119,7 @@ struct SettingsView: View {
                                                 fileData: fileData,
                                                 using: boundary))
 
-                httpBody.appendString("--\(boundary)--")
+                httpBody.append("--\(boundary)--")
 
                 req.httpBody = httpBody as Data
                 
@@ -156,16 +156,6 @@ struct SettingsView: View {
             Image(systemName: "xmark")
             Text("Close")
         })
-    }
-}
-
-extension Data {
-    
-    mutating func appendString(_ string: String) {
-        guard let data = string.data(using: .utf8) else {
-          return
-        }
-        self.append(data)
     }
 }
 

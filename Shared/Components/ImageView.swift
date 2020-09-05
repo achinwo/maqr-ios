@@ -45,6 +45,12 @@ public struct ImageView: View {
         self.callback = callback
     }
     
+//    public init(url: URL, isCircular: Bool = true, callback: ((UIImage?, Error?) -> Void)? = nil){
+//        self._uiImage = State(initialValue: nil)
+//        self.isCircular = isCircular
+//        self.callback = callback
+//    }
+    
     public var body: some View {
         return VStack(alignment: .center) {
                     self.imageView
@@ -98,7 +104,6 @@ public struct ImageView: View {
         let img = Image(uiImage: uiImage)
             .resizable()
             .renderingMode(.original)
-            //.padding()
             .aspectRatio(contentMode: .fit)
             .background(
                 EmptyView()
