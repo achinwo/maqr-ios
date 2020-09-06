@@ -63,7 +63,7 @@ public struct TrackView2: View {
         HStack(alignment: .center) {
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
-                         placeholderImage: UIImage(systemName: "timelapse")!) { loadedImage in
+                         placeholderImage: UIImage(systemName: "timelapse")!) { (loadedImage, error) in
                 
                 guard let loadedImage = loadedImage else {
                     return

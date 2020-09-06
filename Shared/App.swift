@@ -26,7 +26,7 @@ struct JoliApp: AppClip {
     @Namespace var namespace
     
     @State var currentUser: User? = SEED_DATA.users.first { $0.isOwnDevice }
-    @State var currentPlayroom: Musicroom? = nil//SEED_DATA.musicrooms.first
+    @State var currentPlayroom: Musicroom? = SEED_DATA.musicrooms.first
     
     var coordinator: AppCoordinator = AppCoordinator()
     

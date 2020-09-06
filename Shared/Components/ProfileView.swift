@@ -116,15 +116,18 @@ public struct UserProfileView2: JoliView {
         return Form() {
             ZStack(alignment: .center){
                 
-//                Group(){
-//                    if let imageFileName = user.imageLarge,
-//                       let imgUrl = URL(string: "/images/\(imageFileName)", relativeTo: appCoordinator.api.baseUrlHttp) {
-//                        ImageView(url: imgUrl, callback: imageCallback)
-//                    } else {
-//                        ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: imageCallback)
-//                    }
-//                }
-                ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: imageCallback)
+                Group(){
+                    if let imageFileName = user.imageLarge,
+                       let imgUrl = URL(string: "/images/\(imageFileName)", relativeTo: appCoordinator.api.baseUrlHttp) {
+                        
+                        ImageView(url: imgUrl, onSelected: imageCallback) {
+                            Text("Loading Image")
+                        }
+                    } else {
+                        ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: imageCallback)
+                    }
+                }
+                //ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: imageCallback)
                 .overlay(
                     Group() {
                         if isUploadingImage {

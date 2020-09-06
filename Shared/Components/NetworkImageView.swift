@@ -11,7 +11,9 @@ import Kingfisher
 
 public struct NetworkImage<Content: SwiftUI.View>: SwiftUI.View {
     
-    var callback: ((UIImage?) -> Void)?
+    public typealias Callback = (UIImage?, Error?) -> Void
+    
+    var callback: Callback?
     
     @State private var image: UIImage? = nil
     @State public var imageURL: URL? = nil
@@ -19,12 +21,12 @@ public struct NetworkImage<Content: SwiftUI.View>: SwiftUI.View {
     public let placeholderContent: Content
     public let animation: Animation = .easeInOut
     
-    init(url: String, onLoaded: ((UIImage?) -> Void)? = nil, @ViewBuilder content: () -> Content) {
+    init(url: String, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
         //self.placeholderImage = placeholderImage
         self.init(url: URL(string: url), onLoaded: onLoaded, content: content)
     }
     
-    init(url: URL? = nil, onLoaded: ((UIImage?) -> Void)? = nil, @ViewBuilder content: () -> Content) {
+    init(url: URL? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
         //self.placeholderImage = placeholderImage
         self.callback = onLoaded
         self.placeholderContent = content()
@@ -37,7 +39,7 @@ public struct NetworkImage<Content: SwiftUI.View>: SwiftUI.View {
         return ZStack(){
                 if let image = image {
                     SwiftUI.Image(uiImage: image).resizable()
-                }else{
+                } else {
                     placeholderContent
                 }
             }
@@ -51,17 +53,19 @@ public struct NetworkImage<Content: SwiftUI.View>: SwiftUI.View {
     private func loadImage() {
         guard let imageURL = imageURL, image == nil else { return }
         
+        KingfisherManager.shared.downloader.trustedHosts = Set(["192.168.1.173"])
+        
         KingfisherManager.shared.retrieveImage(with: imageURL) { result in
             switch result {
                 case .success(let imageResult):
                     withAnimation(self.animation) {
                         DispatchQueue.main.async {
                             self.image = imageResult.image
-                            self.callback?(self.image)
+                            self.callback?(self.image, nil)
                         }
                     }
-                case .failure:
-                    break
+                case .failure(let error):
+                    self.callback?(nil, error)
             }
         }
     }
@@ -69,7 +73,7 @@ public struct NetworkImage<Content: SwiftUI.View>: SwiftUI.View {
 
 extension NetworkImage where Content == SwiftUI.Image {
     
-    init(imageURL: URL, placeholderImage: UIImage, onLoaded: ((UIImage?) -> Void)? = nil) {
+    init(imageURL: URL, placeholderImage: UIImage, onLoaded: Callback? = nil) {
         self.placeholderContent = SwiftUI.Image(uiImage: placeholderImage)
         self._imageURL = State(initialValue: imageURL)
         self.callback = onLoaded
