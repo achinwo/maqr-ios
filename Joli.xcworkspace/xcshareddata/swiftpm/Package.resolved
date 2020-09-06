@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/onevcat/Kingfisher.git",
         "state": {
           "branch": null,
-          "revision": "910d808ade2a576e1a292ceb458a6fa43f67f594",
-          "version": "5.14.0"
+          "revision": "175eeb4618b0a6ef4d69a7409b6a74ddd235a093",
+          "version": "5.15.0"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/AndreaMiotto/PartialSheet.git",
         "state": {
           "branch": null,
-          "revision": "9b905dcaeedb96d8c1793de945489ed76df6754f",
-          "version": "2.1.6"
+          "revision": "1e89905fd71d0b39d6dbcd99d28f5522d5a4eeb9",
+          "version": "2.1.9"
         }
       },
       {
@@ -60,8 +60,8 @@
         "repositoryURL": "https://github.com/google/promises.git",
         "state": {
           "branch": null,
-          "revision": "e0a4763f8a73c481b0f4d4acb659cf62613cb2f4",
-          "version": "1.2.9"
+          "revision": "c5cdb6bdc2d3db8ef81e3bc71d55d31baf638837",
+          "version": "1.2.10"
         }
       },
       {
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/kylef/Spectre.git",
         "state": {
           "branch": null,
-          "revision": "f14ff47f45642aa5703900980b014c2e9394b6e5",
-          "version": "0.9.0"
+          "revision": "f717bbce0e19f0129fc001b2b6bed43b70fd8b87",
+          "version": "0.9.1"
         }
       },
       {
@@ -78,8 +78,8 @@
         "repositoryURL": "https://github.com/daltoniam/Starscream.git",
         "state": {
           "branch": null,
-          "revision": "85c84126469bb1c9468aba882c675719fda4a0fd",
-          "version": null
+          "revision": "df8d82047f6654d8e4b655d1b1525c64e1059d21",
+          "version": "4.0.4"
         }
       },
       {

@@ -113,6 +113,8 @@ public struct UserProfileView2: JoliView {
                 }
         }
         
+        let onSelectedCallback = user.isOwnDevice ? imageCallback : nil
+        
         return Form() {
             ZStack(alignment: .center){
                 
@@ -120,11 +122,11 @@ public struct UserProfileView2: JoliView {
                     if let imageFileName = user.imageLarge,
                        let imgUrl = URL(string: "/images/\(imageFileName)", relativeTo: appCoordinator.api.baseUrlHttp) {
                         
-                        ImageView(url: imgUrl, onSelected: imageCallback) {
+                        ImageView(url: imgUrl, onSelected: onSelectedCallback) {
                             Text("Loading Image")
                         }
                     } else {
-                        ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: imageCallback)
+                        ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: onSelectedCallback)
                     }
                 }
                 //ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: imageCallback)
