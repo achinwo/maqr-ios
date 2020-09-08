@@ -41,7 +41,7 @@ struct ListenView: JoliView {
         }
         return ZStack(){
             ScrollView(.vertical, showsIndicators: true) {
-                TrackList(tracks: self.$tracks)
+                TrackList(tracks: self.$tracks, preview: $preview)
                     //.padding(.top, geoProxy.safeAreaInsets.top)
                     .padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds!.height)
                     .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds!.height)

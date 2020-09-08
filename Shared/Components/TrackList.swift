@@ -56,10 +56,18 @@ public struct TrackView2: View {
     
     @State var heartLevel: HeartLevel = .empty
     @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
+    @State var requestingPlay = false
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     public var body: some View {
+        let cb: () -> () = {
+            self.requestingPlay = true
+            appCoordinator.play(track)
+                .always {
+                    self.requestingPlay = false
+                }
+        }
         HStack(alignment: .center) {
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
@@ -90,7 +98,11 @@ public struct TrackView2: View {
 //                            }
                     }
                 }
-            }.padding(.all, 2)
+            }
+            .frame(width: 64, height: 64, alignment: .center)
+            .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
+            .onTapGesture(perform: cb)
+            .padding(.all, 2)
             
             VStack(alignment: .leading) {
                 Text(track.title)
@@ -136,17 +148,24 @@ public struct TrackView2: View {
                     print("new count: \(self.heartLevel)")
                 }
         }
-        .animation(.easeIn)
+        //.rotation3DEffect(.degrees(45), axis: (x: 0.0, y: 0.0, z: self.requestingPlay ? 1.0 : 0.0))
+        .onTapGesture(perform: cb)
+        .scaleEffect(x: self.requestingPlay ? 0.98 : 1, y: self.requestingPlay ? 0.98 : 1, anchor: .center)
+        .animation(.interactiveSpring())
         .background(colors?.backgroundColor ?? Color.clear)
     }
 }
 
-public struct TrackList: View {
+public struct TrackList: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @Binding var tracks: [Track]
+    @Binding var preview: AppPreview?
     
-    public init(tracks: Binding<[Track]>){
+    public init(tracks: Binding<[Track]>, preview: Binding<AppPreview?> = .constant(nil)){
         self._tracks = tracks
+        self._preview = preview
     }
     
     func trackBinding(_ trackId: Array<Track>.Index) -> Binding<Track> {
@@ -164,6 +183,11 @@ public struct TrackList: View {
         return VStack(alignment: .center, spacing: 0) {
                 ForEach(tracks) { track in
                     TrackView2(track: self.trackBinding(tracks.firstIndex(of: track)!))
+                        .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 1) {
+                            withImpact {
+                                self.preview = .track(track)
+                            }
+                        }
                 }
             }
     }

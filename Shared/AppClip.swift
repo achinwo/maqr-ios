@@ -118,7 +118,7 @@ public struct Regex: ExpressibleByStringLiteral, Equatable {
         do {
             self.expression = try NSRegularExpression(pattern: stringLiteral, options: [])
         } catch {
-            print("Failed to parse (stringLiteral) as a regular expression")
+            print("Failed to parse \"\(stringLiteral)\" as a regular expression")
             self.expression = try! NSRegularExpression(pattern: ".*", options: [])
         }
     }
@@ -153,7 +153,7 @@ public struct Regex: ExpressibleByStringLiteral, Equatable {
             
             dict[name] = String(string[range])
         }
-        return dict.count > 0 ? dict : nil
+        return dict.isEmpty ? nil : dict
     }
     
     public static let phone: Regex = "^(\\+\\d{1,2}\\s)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$"
@@ -171,6 +171,7 @@ public enum AppLocation: RawRepresentable {
     case playroom(String)
     
     case home
+    case upgrade
     
     static var `default` = "/"
     
@@ -181,15 +182,20 @@ public enum AppLocation: RawRepresentable {
             self = .invited(inviteId)
         } else if let matches = patterns.playroom.matchGroups(rawValue), let roomId = matches["roomId"] {
             self = .playroom(roomId)
+        } else if rawValue == AppLocation.upgrade.rawValue {
+            self = .upgrade
         } else if rawValue.isEmpty || rawValue == AppLocation.default {
             self = .home
         } else {
             return nil
         }
+        
     }
     
     public var rawValue: String {
         switch self {
+        case .upgrade:
+            return "/upgrade"
             case .invited(let inviteId):
                 return "/join/\(inviteId)"
             case .playroom(let roomId):
@@ -229,9 +235,14 @@ public extension PartialSheetManager {
 
 public protocol JoliView: View {
     var appCoordinator: AppCoordinator { get }
+    var api: JoliApi { get }
 }
 
 extension JoliView {
+    
+    public var api: JoliApi {
+        return appCoordinator.api
+    }
     
     public func withImpact(_ impact: UIImpactFeedbackGenerator.FeedbackStyle = .soft, animated: Animation? = nil, _ action: () -> Void){
         if let animation = animated {
@@ -279,6 +290,22 @@ public final class AppCoordinator: ObservableObject {
     
     public init(namespace: Namespace.ID? = nil){
         self.namespace = namespace
+    }
+    
+    public func play(_ track: Playable, positionMs: Int? = nil) -> Promise<Json> {
+        return api.fetchSpotifyDevices(on: DispatchQueue.main)
+            .catch(){ error in
+                logger.error("[fetchSpotifyDevices] error: \(error)")
+            }
+            .then() { (devices) -> Promise<Json> in
+                logger.debug("Devices: \(devices)")
+                
+                guard let device = devices.first(where: { $0.isActive }) else {
+                    return Promise([:] as Json)
+                }
+                
+                return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.main)
+        }
     }
     
     public func share(text: String){

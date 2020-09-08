@@ -95,7 +95,7 @@ public struct UserProfileView2: JoliView {
             
             isUploadingImage = true
             
-            self.appCoordinator.api.upload(image)
+            self.api.upload(image)
                 .then() { (res: URL) -> Promise<User> in
                     print("Result: \(res.absoluteString) - \(user)")
                     
@@ -104,6 +104,7 @@ public struct UserProfileView2: JoliView {
                 }
                 .then() { updatedUser in
                     print("UpdatedUser: \(updatedUser)")
+                    self.user = updatedUser
                 }
                 .catch { error in
                     print("uploadImage: \(error)")

@@ -30,6 +30,7 @@
 		9263B87824F080E6008962EC /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
 		9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
 		9263B87A24F080E6008962EC /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
+		9266BDC92506EB8700DAE077 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 9266BDC82506EB8700DAE077 /* SFSafeSymbols */; };
 		9274A7E724CDB29200B45EDF /* JoliClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274A7E624CDB29200B45EDF /* JoliClip.swift */; };
 		9274A7E924CDB29200B45EDF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9274A7E824CDB29200B45EDF /* ContentView.swift */; };
 		9274A7EB24CDB29800B45EDF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9274A7EA24CDB29800B45EDF /* Assets.xcassets */; };
@@ -358,6 +359,7 @@
 				92BD11D524CB104D00AAB7DE /* UIImageColors in Frameworks */,
 				92BD11D324CB104D00AAB7DE /* Kingfisher in Frameworks */,
 				923C2B0424CC7506009E2380 /* PartialSheet in Frameworks */,
+				9266BDC92506EB8700DAE077 /* SFSafeSymbols in Frameworks */,
 				928A392A24E9EB5A00A029A1 /* MapKit.framework in Frameworks */,
 				9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */,
 				925C6FF324CB722A0016963F /* FBLPromises in Frameworks */,
@@ -711,6 +713,7 @@
 				92BD11D824CB104D00AAB7DE /* LetterAvatarKit */,
 				925C6FF224CB722A0016963F /* FBLPromises */,
 				923C2B0324CC7506009E2380 /* PartialSheet */,
+				9266BDC82506EB8700DAE077 /* SFSafeSymbols */,
 			);
 			productName = JoliPlayground;
 			productReference = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */;
@@ -910,6 +913,7 @@
 				929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */,
 				925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */,
 				923C2B0224CC7506009E2380 /* XCRemoteSwiftPackageReference "PartialSheet" */,
+				9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1926,6 +1930,14 @@
 				minimumVersion = 1.2.9;
 			};
 		};
+		9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/piknotech/SFSafeSymbols.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
 		929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vpeschenkov/LetterAvatarKit.git";
@@ -1974,6 +1986,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
 			productName = FBLPromises;
+		};
+		9266BDC82506EB8700DAE077 /* SFSafeSymbols */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */;
+			productName = SFSafeSymbols;
 		};
 		92BD11D224CB104D00AAB7DE /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

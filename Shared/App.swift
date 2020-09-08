@@ -25,8 +25,8 @@ struct JoliApp: AppClip {
     
     @Namespace var namespace
     
-    @State var currentUser: User? = SEED_DATA.users.first { $0.isOwnDevice }
-    @State var currentPlayroom: Musicroom? = SEED_DATA.musicrooms.first
+    @State var currentUser: User? = nil//SEED_DATA.users.first { $0.isOwnDevice }
+    @State var currentPlayroom: Musicroom? = nil//SEED_DATA.musicrooms.first
     
     var coordinator: AppCoordinator = AppCoordinator()
     
@@ -57,7 +57,7 @@ struct JoliApp: AppClip {
                 
                 appState.api.authenticate(token: TOKEN)
                     .then() { auth in
-                        //print("[LoggedIn] \(auth?.user)")
+                        print("[LoggedIn] \(auth?.user)")
                         self.currentUser = auth?.user
                     }
             }

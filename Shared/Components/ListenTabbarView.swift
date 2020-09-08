@@ -161,23 +161,11 @@ struct ListenTabbarView: JoliView {
             
             HStack(){
                 
-                if playroom == nil {
-                    Image(systemName: "person")
-                        .font(Font.title.weight(self.preview == .userAccount ? .light : .thin))
-                        .onTapGesture {
-                            withImpact {
-                                self.preview = .userAccount
-                                self.isExpanded = false
-                            }
-                        }
-                } else {
-                    Image(systemName: "person.2")
-                        .font(Font.title2.weight(self.isExpanded ? .light : .thin))
-                        .overlay(
-                            Text(label)
-                                .font(Font.caption.weight(.light))
-                                .offset(x: UIFont.preferredFont(forTextStyle: .title2).pointSize, y: 0)
-                        )
+                Button(){
+                    self.searchbarActive.toggle()
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(Font.title2.weight(self.searchbarActive ? .light : .ultraLight))
                 }
                 
                 Spacer()
@@ -208,11 +196,23 @@ struct ListenTabbarView: JoliView {
                     //.alignmentGuide(.custom) { dims in dims[.custom] }
                 }
                 Spacer()
-                Button(){
-                    self.searchbarActive.toggle()
-                } label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(Font.title2.weight(self.searchbarActive ? .light : .ultraLight))
+                if playroom == nil {
+                    Image(systemName: "person")
+                        .font(Font.title.weight(self.preview == .userAccount ? .light : .thin))
+                        .onTapGesture {
+                            withImpact {
+                                self.preview = .userAccount
+                                self.isExpanded = false
+                            }
+                        }
+                } else {
+                    Image(systemName: "person.2")
+                        .font(Font.title2.weight(self.isExpanded ? .light : .thin))
+                        .overlay(
+                            Text(label)
+                                .font(Font.caption.weight(.light))
+                                .offset(x: UIFont.preferredFont(forTextStyle: .title2).pointSize, y: 0)
+                        )
                 }
                 Spacer()
             }

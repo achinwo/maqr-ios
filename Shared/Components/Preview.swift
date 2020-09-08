@@ -30,6 +30,12 @@ public enum AppPreview: View, Equatable {
                 ScrollView(scrollAxis ?? .vertical){
                     viewFunc().clipped()
                 }
+        case .track(let track):
+            VStack() {
+                NetworkImage(url: track.albumCoverUrl) {
+                    Text("\(track.title)")
+                }
+            }
             default:
                 EmptyView()
         }
@@ -37,6 +43,7 @@ public enum AppPreview: View, Equatable {
     
     case userAccount
     case userProfile(UserIdentifiable)
+    case track(Track)
     case view(Axis.Set? = nil, () -> AnyView)
 }
 

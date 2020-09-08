@@ -43,8 +43,6 @@ public struct NetworkImage<Content: SwiftUI.View>: SwiftUI.View {
                     placeholderContent
                 }
             }
-            .frame(width: 64, height: 64, alignment: .center)
-            .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             .onAppear(perform: loadImage)
             .transition(.opacity)
             .id(image)
