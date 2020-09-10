@@ -18,6 +18,21 @@ import LetterAvatarKit
 //    
 //}
 
+public struct PersonGenericImage: View {
+    public var body: some View {
+        return GeometryReader() { proxy in
+            Image(systemName: "person.fill")
+            .resizable()
+                //.frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
+            .foregroundColor(.gray)
+            .background(Colors.lightGray.opacity(0.7))
+                .offset(x: 0, y: proxy.size.height * 0.2)
+            .background(Colors.lightGray.opacity(0.7))
+        }
+        .clipShape(Circle())
+    }
+}
+
 public struct InvitePeopleView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
@@ -49,16 +64,9 @@ public struct InvitePeopleView: JoliView {
             }
             Divider()
             // Include
-            Image(systemName: "person.fill")
-                .resizable()
-                .foregroundColor(.gray)
-                .padding()
+            PersonGenericImage()
                 .frame(idealWidth: screenWidth / 1.9, idealHeight: screenWidth / 1.9)
                 .fixedSize()
-                .background(Colors.lightGray.opacity(0.7))
-                .offset(x: 0, y: screenWidth / 10)
-                .background(Colors.lightGray.opacity(0.7))
-                .clipShape(Circle())
                 .padding([.top, .bottom], Sizing.large)
             
             HStack(){

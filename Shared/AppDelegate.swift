@@ -27,6 +27,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var appState: AppState!
     var audioSession = AVAudioSession.sharedInstance()
     
+    var window: UIWindow?
+
+    /// Temporary variable to hold a shortcut item from the launching or activation of the app.
+    @Published public var shortcutItemToProcess: UIApplicationShortcutItem?
+    
     private struct Observation {
         static let VolumeKey = "outputVolume"
         static var Context = 0
@@ -197,6 +202,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         logger.debug("[AppDelegate#willFinishLaunchingWithOptions] notifOptions:\(String(describing: launchOptions))")
         return true
     }
+    
+    /// - Tag: PerformAction
+    func application(_ application: UIApplication,
+             performActionFor shortcutItem: UIApplicationShortcutItem,
+             completionHandler: @escaping (Bool) -> Void) {
+        // Alternatively, a shortcut item may be passed in through this delegate method if the app was
+        // still in memory when the Home screen quick action was used. Again, store it for processing.
+        shortcutItemToProcess = shortcutItem
+        logger.debug("[AppDelegate] shortcutItemToProcess=\(String(describing: shortcutItemToProcess))")
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        do {
@@ -225,18 +240,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             self.registerForPushNotifications()
         }
         
+        if let shortcutItem = launchOptions?[UIApplication.LaunchOptionsKey.shortcutItem] as? UIApplicationShortcutItem {
+            shortcutItemToProcess = shortcutItem
+            logger.debug("[AppDelegate] shortcutItemToProcess=\(String(describing: shortcutItemToProcess))")
+        }
+        
         return true
-    }
-    
-    func applicationDidBecomeActive(_ application: UIApplication){
-        logger.debug("[AppDelegate] App is active")
-        appState.api.wsClient.connect()
-        
-    }
-
-    func applicationWillResignActive(_ application: UIApplication){
-        logger.debug("[AppDelegate] App is inactive")
-        
     }
 
 }

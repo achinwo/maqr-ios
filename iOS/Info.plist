@@ -112,5 +112,28 @@
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
+    <key>UIApplicationShortcutItems</key>
+        <array>
+            <dict>
+                <key>UIApplicationShortcutItemType</key>
+                <string>SearchAction</string>
+                <key>UIApplicationShortcutItemIconType</key>
+                <string>UIApplicationShortcutIconTypeSearch</string>
+                <key>UIApplicationShortcutItemTitle</key>
+                <string>Search</string>
+                <key>UIApplicationShortcutItemSubtitle</key>
+                <string>Explore an item</string>
+            </dict>
+            <dict>
+                <key>UIApplicationShortcutItemType</key>
+                <string>ShareAction</string>
+                <key>UIApplicationShortcutItemIconType</key>
+                <string>UIApplicationShortcutIconTypeShare</string>
+                <key>UIApplicationShortcutItemTitle</key>
+                <string>Share</string>
+                <key>UIApplicationShortcutItemSubtitle</key>
+                <string>Listen to an item</string>
+            </dict>
+        </array>
 </dict>
 </plist>

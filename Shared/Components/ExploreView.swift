@@ -105,6 +105,7 @@ public enum SearchResultLayout: View {
             NetworkImage(url: track.albumCoverUrl) {
                 ProgressView(value: nil, total: 100)
             }
+            .frame(width: 64, height: 64)
             Text(track.title).font(.body)
                 .lineLimit(1)
                 .truncationMode(.tail)
@@ -126,7 +127,23 @@ public enum SearchResultLayout: View {
                                 }
                             } else if let users = result.users {
                                 ForEach(users) { user in
-                                    Text("\(user.name)").font(.headline)
+                                    VStack() {
+                                        Group(){
+                                            if let urlStr = user.imageLarge,
+                                               let url = URL(string: "/images/\(urlStr)", relativeTo: URL(string: "https://192.168.1.173:8080")) {
+                                                NetworkImage(url: url) {
+                                                    PersonGenericImage()
+                                                        .frame(width: 64, height: 64)
+                                                }
+                                                .frame(width: 64, height: 64)
+                                            } else {
+                                                PersonGenericImage()
+                                                    .frame(width: 64, height: 64)
+                                            }
+                                        }
+                                        .clipShape(Circle())
+                                        Text(user.name).font(.subheadline)
+                                    }
                                     //CircleImage(url: user.im)
                                 }
                             } else if let rooms = result.playrooms {
