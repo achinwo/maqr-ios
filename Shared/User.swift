@@ -45,6 +45,23 @@ public enum UserName: Equatable {
         return name
     }
 }
+//
+//public enum ImageReference: Equatable, UrlConvertible {
+//    case small(String)
+//    case medium(String)
+//    case large(String)
+//
+//    var fileName: String? {
+//        switch self {
+//        case .small(let fileName), .large(let fileName), .medium(let fileName):
+//            return fileName
+//        }
+//    }
+//
+//    public func url(relativeTo: URL? = nil) -> URL? {
+//        return self.fileName?.url(relativeTo: relativeTo)
+//    }
+//}
 
 public protocol UserIdentifiable {
     var displayName: UserName { get }

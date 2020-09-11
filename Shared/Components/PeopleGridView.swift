@@ -120,9 +120,15 @@ struct PeopleGridView: JoliView {
     ]
     
     @Binding var users: [UserIdentifiable]
+    var otherUsers: [UserIdentifiable] {
+        return users.filter() { !$0.isOwnDevice }
+    }
+    @State var selectedUser: UserIdentifiable? = nil
+    
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     @Namespace var localNamespace
+    
     
     var currentUser: UserIdentifiable? {
         return users.first() { $0.isOwnDevice }
@@ -138,14 +144,21 @@ struct PeopleGridView: JoliView {
         let grid = HStack(alignment: .center) {
             
             if let currentUser = currentUser {
-                Image(systemName: "person.crop.circle")
-                    .renderingMode(.original)
-                    .resizable()
-                    .font(.system(size: width, weight: Font.Weight.ultraLight, design: .default))
-                    .frame(width: width, height: width)
-                    .onTapGesture {
-                        self.gestureCallback?(.tap, currentUser)
-                    }
+                let url = (currentUser.imageLarge != nil ?
+                            URL(string: "images/\(currentUser.imageLarge!)", relativeTo: api.baseUrlHttp)
+                            : nil)
+                NetworkImage(url: url) {
+                    Image(systemName: "person.crop.circle")
+                        .renderingMode(.original)
+                        .resizable()
+                        .font(.system(size: width, weight: Font.Weight.ultraLight, design: .default))
+                }
+                .frame(width: width, height: width)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.gray, lineWidth: 1))
+                .onTapGesture {
+                    self.gestureCallback?(.tap, currentUser)
+                }
                 Divider().accentColor(.primary)
             }
             
@@ -160,12 +173,19 @@ struct PeopleGridView: JoliView {
                 }
                 .matchedGeometryEffect(id: "preview", in: appCoordinator.namespace ?? localNamespace)
             
-            ForEach(0 ..< users.count) { idx in
-                let user = users[idx]
+            let others = self.otherUsers
+            
+            ForEach(0 ..< others.count) { idx in
+                let user = others[idx]
+                let url = (user.imageLarge != nil ?
+                            URL(string: "images/\(user.imageLarge!)", relativeTo: api.baseUrlHttp)
+                            : nil)
                 
-                Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.displayName.name ?? "Anonymous")!)
-                    .resizable()
-                    .renderingMode(.original)
+                NetworkImage(url: url) {
+                        Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.displayName.name ?? "Anonymous")!)
+                            .resizable()
+                            .renderingMode(.original)
+                    }
                     .frame(width: width, height: width)
                     .clipShape(Circle())
                     .overlay(
@@ -182,13 +202,23 @@ struct PeopleGridView: JoliView {
                             } else if let member = user as? PlayroomMembership {
                                 Circle()
                                     .fill(member.activityStatus == .online ? Color.green : Color.gray)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(member.activityStatus == .online ? Color.green : Color.white, lineWidth: 0.5)
+                                    )
                                     .frame(width: max(width / 4, 15), height: max(width / 4, 15))
                             }
                         }
                         .offset(x: width / 3, y: width / 3)
-                    ).onTapGesture {
+                    )
+                    .scaleEffect(selectedUser?.emailAddress.email == user.emailAddress.email ? 1.16 : 1)
+//                    .scaleEffect(x: selectedUser == user ? 1.2 : 1,
+//                                 y: selectedUser == user ? 1.2 : 1)
+                    .onTapGesture {
                         //self.heartLevel = self.heartLevel != .full ? self.heartLevel.next : .empty
                         print("Tapping Image: \(Sizing.xxLarge)")
+                        
+                        selectedUser = selectedUser?.emailAddress.email == user.emailAddress.email ? nil : user
                         self.gestureCallback?(.tap, user)
                     }.onLongPressGesture {
                         self.gestureCallback?(.longpress, user)

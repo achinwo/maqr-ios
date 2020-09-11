@@ -142,7 +142,7 @@ public enum SearchResultLayout: View {
                                             }
                                         }
                                         .clipShape(Circle())
-                                        Text(user.name).font(.subheadline)
+                                        Text(user.name).font(.body)
                                     }
                                     //CircleImage(url: user.im)
                                 }
@@ -165,7 +165,7 @@ public enum SearchResultLayout: View {
                         } else if let users = result.users {
                             List {
                                 ForEach(users) { user in
-                                    Text("\(user.name)").font(.headline)
+                                    Text("\(user.name)").font(.body)
                                     //CircleImage(url: user.im)
                                 }
                             }

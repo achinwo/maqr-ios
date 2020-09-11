@@ -180,7 +180,7 @@ public struct TrackList: JoliView {
     }
     
     public var body: some View {
-        return VStack(alignment: .center, spacing: 0) {
+        return LazyVStack(alignment: .center, spacing: 0) {
                 ForEach(tracks) { track in
                     TrackView2(track: self.trackBinding(tracks.firstIndex(of: track)!))
                         .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 1) {

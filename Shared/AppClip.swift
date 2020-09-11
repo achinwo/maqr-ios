@@ -300,7 +300,7 @@ public final class AppCoordinator: ObservableObject {
             .then() { (devices) -> Promise<Json> in
                 logger.debug("Devices: \(devices)")
                 
-                guard let device = devices.first(where: { $0.isActive }) else {
+                guard let device = devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }) else {
                     return Promise([:] as Json)
                 }
                 
