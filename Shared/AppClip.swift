@@ -284,7 +284,7 @@ public final class AppCoordinator: ObservableObject {
     public var sheet: PartialSheetManager = PartialSheetManager()
     public var api: JoliApi!
     
-    @Published public var isSearching = true
+    @Published public var isSearching = false
     @Published public var isSharePresented = false
     @Published public var namespace: Namespace.ID? = nil
     

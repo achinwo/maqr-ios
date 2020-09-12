@@ -141,7 +141,6 @@
 		92A32E3124CA22FA007C960E /* LiveObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* LiveObject.swift */; };
 		92A32E3224CA22FA007C960E /* LiveObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* LiveObject.swift */; };
 		92A7120D24D85EC500AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
-		92A7120E24D85EC500AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
 		92A7120F24D85EC600AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
 		92A7121024D85EC600AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
 		92BD11CE24CB0BCB00AAB7DE /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
@@ -151,6 +150,7 @@
 		92BD11D324CB104D00AAB7DE /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92BD11D224CB104D00AAB7DE /* Kingfisher */; };
 		92BD11D524CB104D00AAB7DE /* UIImageColors in Frameworks */ = {isa = PBXBuildFile; productRef = 92BD11D424CB104D00AAB7DE /* UIImageColors */; };
 		92BD11D924CB104D00AAB7DE /* LetterAvatarKit in Frameworks */ = {isa = PBXBuildFile; productRef = 92BD11D824CB104D00AAB7DE /* LetterAvatarKit */; };
+		92C294D5250BF9A000DDB73D /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3924E9AFFF00C8257D /* Preview.swift */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
 /* End PBXBuildFile section */
 
@@ -1056,7 +1056,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9274A7E924CDB29200B45EDF /* ContentView.swift in Sources */,
-				92A7120E24D85EC500AD6729 /* NetworkImageView.swift in Sources */,
 				9274A7E724CDB29200B45EDF /* JoliClip.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1171,6 +1170,7 @@
 				92A32DE324C79C07007C960E /* SettingsView.swift in Sources */,
 				92A32E0324C79C07007C960E /* MusicroomCreateView.swift in Sources */,
 				9263B87A24F080E6008962EC /* ListenTabbarView.swift in Sources */,
+				92C294D5250BF9A000DDB73D /* Preview.swift in Sources */,
 				92A32DFB24C79C07007C960E /* MusicroomList.swift in Sources */,
 				929FFE1E24FAF096000BDCF0 /* User.swift in Sources */,
 			);

@@ -10,6 +10,27 @@ import SwiftUI
 import Combine
 import JoliCore
 
+public protocol SearchResult2: JoliView {
+    
+}
+
+public struct PlayroomView: SearchResult2 {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    public var room: Musicroom
+    
+    public var body: some View {
+        return VStack(){
+            Images.stockPhotoPartyPeople.image
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+            Text(room.name)
+        }//.onTapGesture(perform: onRoomTap)
+    }
+    
+    
+}
+
 public enum SearchResult: Identifiable {
     
     public var id: String {
@@ -223,6 +244,21 @@ public enum SearchResultSection: Identifiable, View {
     case basic(name: String, layout: [SearchResultLayout])
 }
 
+struct BoundsPreferenceData {
+    let viewIdx: Int
+    let bounds: Anchor<CGRect>
+}
+
+struct BoundsPreferenceKey: PreferenceKey {
+    typealias Value = CGRect?
+
+    static var defaultValue: Value = nil///BoundsPreferenceData()
+
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        value = nextValue()
+    }
+}
+
 enum SearchResultCategory: String, CaseIterable, Identifiable {
     
     var id: String {
@@ -240,7 +276,7 @@ enum SearchResultCategory: String, CaseIterable, Identifiable {
 
 public struct SearchResultView: View {
     
-    
+    let edgeInsets: EdgeInsets
     @State var resultSections: [SearchResultSection]
     
     var results: [SearchResult] {
@@ -259,18 +295,27 @@ public struct SearchResultView: View {
         return res
     }
     
-    public init(_ results: [SearchResultSection]){
+    public init(_ results: [SearchResultSection], edgeInsets: EdgeInsets){
         self._resultSections = State(initialValue: results)
+        self.edgeInsets = edgeInsets
     }
+    
+    @State var searchBarBounds: CGRect? = nil
     
     public var body: some View {
 //        ScrollView(.vertical, showsIndicators: true){
 //            ZStack(){
         return List(){
-                    ForEach(resultSections) { section in
-                        section
+            ForEach(Array(resultSections.enumerated()), id: \.offset) { (offset, section) in
+                    if offset == 0 {
+                        Spacer()
+                            .frame(height: edgeInsets.top * 3)
+                            
                     }
-                }.listStyle(GroupedListStyle())//.padding(.top, Sizing.medium)
+                    section
+                }
+            }
+        .listStyle(GroupedListStyle())//.padding(.top, Sizing.medium)
     }
 }
 
@@ -285,16 +330,17 @@ final class SearchStore: ObservableObject {
 //            .sink { print($0) }
     }
 }
-
-extension Array: View where Element == SearchResultSection {
-    
-    public var body: some View {
-        return SearchResultView(self)
-    }
-}
+//
+//extension Array: View where Element == SearchResultSection {
+//
+//    public var body: some View {
+//        return SearchResultView(self)
+//    }
+//}
 
 public struct ExploreView: JoliView {
     
+    let geoProxy: GeometryProxy
     @StateObject var model = SearchStore()
     @State var searchAreas: Set<SearchResultCategory> = Set(SearchResultCategory.allCases)
     @State var selectedAreas: Set<SearchResultCategory> = []
@@ -303,11 +349,7 @@ public struct ExploreView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     var cancellSet: Set<AnyCancellable> = []
-    
-    public init(){
-        //let cancellable = $searchTxt
-            
-    }
+    @State var searchbarRect: CGRect? = nil
     
     var areasFiltered: Set<SearchResultCategory> {
         return self.searchAreas
@@ -330,7 +372,7 @@ public struct ExploreView: JoliView {
             .basic(name: "Podcasts", layout: cs.toLayouts()),
         ]
         
-        return VStack(alignment: .center, spacing: 0) {
+        let searchBar = VStack(alignment: .center, spacing: 0) {
             SearchBar(text: $model.query)
                 .padding(.bottom, Sizing.small)
                 .padding(.horizontal, Sizing.medium)
@@ -361,18 +403,40 @@ public struct ExploreView: JoliView {
                 ProgressView()
                     .progressViewStyle(LinearProgressViewStyle(tint: Color.primary))
             }
-            
-            if !searchResults.isEmpty {
-                sections
-            } else {
-                VStack(alignment: .center, spacing: .zero){
-                    self.suggestionsView.padding()//.foregroundColor(.white)
-                }
-                .frame(width: screenWidth)
-                //.background(Colors.lightGray)
-            }
         }
         
+        return ZStack(alignment: .top) {
+            VStack(alignment: .center, spacing: 0){
+                let top = (searchbarRect?.maxY ?? geoProxy.safeAreaInsets.top) - geoProxy.safeAreaInsets.top
+                let edges = EdgeInsets(top: top, leading: 0, bottom: 0, trailing: 0)
+                if !searchResults.isEmpty {
+                    SearchResultView(sections, edgeInsets: edges)
+                } else {
+                    VStack(alignment: .center, spacing: .zero){
+                        self.suggestionsView.padding()//.foregroundColor(.white)
+                    }
+                    .padding(.top, edges.top)
+                    .frame(width: screenWidth)
+                    //.background(Colors.lightGray)
+                }
+            }
+            
+            searchBar
+                .accentColor(.primary)
+                .padding(.top, geoProxy.safeAreaInsets.top)
+                //.anchorPreference(key: BoundsPreferenceKey.self, value: .bounds) { $0 }
+                .background(
+                    GeometryReader { geometry in
+                        //Rectangle()
+                        //.fill(Color.clear)
+                        return Color.white.opacity(0.86)
+                            .preference(key: BoundsPreferenceKey.self,
+                                        value: geometry.frame(in: .named("myZstack")))
+                    }
+                )
+            
+            
+        }.coordinateSpace(name: "myZstack")
     }
 }
 
@@ -454,6 +518,8 @@ public struct SearchBar: View {
 
 struct ExploreView_Previews: PreviewProvider {
     static var previews: some View {
-        ExploreView()
+        GeometryReader() { geoProxy in
+            ExploreView(geoProxy: geoProxy)
+        }
     }
 }
