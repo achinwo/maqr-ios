@@ -9,7 +9,9 @@
 import SwiftUI
 import Kingfisher
 
-public struct NetworkImage<Content: SwiftUI.View>: SwiftUI.View {
+public struct NetworkImage<Content: SwiftUI.View>: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     
     public typealias Callback = (UIImage?, Error?) -> Void
     
@@ -51,7 +53,7 @@ public struct NetworkImage<Content: SwiftUI.View>: SwiftUI.View {
     private func loadImage() {
         guard let imageURL = imageURL, image == nil else { return }
         
-        KingfisherManager.shared.downloader.trustedHosts = Set(["192.168.1.173"])
+        KingfisherManager.shared.downloader.trustedHosts = Set([appCoordinator.api.baseUrlHttp.host!])
         
         KingfisherManager.shared.retrieveImage(with: imageURL) { result in
             switch result {
