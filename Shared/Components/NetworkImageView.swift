@@ -24,7 +24,6 @@ public struct NetworkImage<Content: SwiftUI.View>: JoliView {
     public let animation: Animation = .easeInOut
     
     init(url: String, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
-        //self.placeholderImage = placeholderImage
         self.init(url: URL(string: url), onLoaded: onLoaded, content: content)
     }
     

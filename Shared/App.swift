@@ -13,12 +13,31 @@ import JoliCore
 import JoliApi
 import Promises
 import Foundation
+import SpriteKit
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 
 #if DEBUG
-let TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAam9saW1jLmFwcCIsImNyZWF0ZWRBdCI6IjIwMjAtMDgtMjJUMTM6NDQ6NTUuODY2WiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0.OhxodQ0Zl0E_k_Su8CDwSB2scqteqfmyfUSMHwlfN00"
+let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAam9saW1jLmFwcCIsImNyZWF0ZWRBdCI6IjIwMjAtMDgtMjJUMTM6NDQ6NTUuODY2WiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0.OhxodQ0Zl0E_k_Su8CDwSB2scqteqfmyfUSMHwlfN00"
+#else
+let TOKEN: String? = nil
 #endif
+
+class GameScene: SKScene {
+    
+    override func didMove(to view: SKView) {
+        physicsBody = SKPhysicsBody(edgeLoopFrom: frame)
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first else { return }
+        let location = touch.location(in: self)
+        let box = SKSpriteNode(color: [UIColor.red, UIColor.green, UIColor.systemPink, UIColor.blue, UIColor.purple, UIColor.yellow].randomElement()!, size: CGSize(width: 50, height: 50))
+        box.position = location
+        box.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 50, height: 50))
+        addChild(box)
+    }
+}
 
 @main
 struct JoliApp: AppClip {
@@ -48,8 +67,19 @@ struct JoliApp: AppClip {
         UITableView.appearance().separatorStyle = .none
     }
     
+    var scene: SKScene {
+        let scene = GameScene()
+        scene.size = CGSize(width: 400, height: 400)
+        scene.scaleMode = .fill
+        return scene
+    }
+    
     var contentView: some View {
+        //ZStack(){
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser)
+//            SpriteView(scene: scene)
+//                .frame(width: 300, height: 400)
+//        }
             .onReceive(appDelegate.$shortcutItemToProcess) { _ in
                 //print(appDelegate.shortcutItemType)
                 //Do something here
@@ -61,7 +91,11 @@ struct JoliApp: AppClip {
                 self.coordinator.namespace = namespace
                 self.coordinator.api = api
                 
-                appState.api.authenticate(token: TOKEN)
+                guard let token = TOKEN else {
+                    return
+                }
+                
+                appState.api.authenticate(token: token)
                     .then() { auth in
                         print("[LoggedIn] \(String(describing: auth?.user))")
                         self.currentUser = auth?.user
