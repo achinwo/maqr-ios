@@ -30,12 +30,14 @@ public extension UIImageColors {
     
 }
 
-public struct TrackView2: View {
+public struct TrackView2: JoliView {
     
     @Binding var track: Track
     @State var colors: UIImageColors? = nil
     @GestureState var isDetectingLongPress = false
     @State var completedLongPress = false
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     
     var longPress: some Gesture {
             LongPressGesture(minimumDuration: 3)
@@ -57,8 +59,6 @@ public struct TrackView2: View {
     @State var heartLevel: HeartLevel = .empty
     @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
     @State var requestingPlay = false
-    
-    @EnvironmentObject var appCoordinator: AppCoordinator
     
     public var body: some View {
         let cb: () -> () = {
