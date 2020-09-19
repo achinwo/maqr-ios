@@ -13,6 +13,7 @@ import PartialSheet
 import JoliApi
 import JoliCore
 import Promises
+import Combine
 
 public struct ShortCodeGenerator {
 
@@ -278,19 +279,109 @@ class ShareActivity: UIActivity {
     }
 }
 
+public extension View {
+    
+    func eraseToAnyView() -> AnyView {
+        return AnyView(self)
+    }
+    
+}
+
+
+
+
+public extension Search {
+    
+    struct ResultView: JoliView, Identifiable {
+        
+        @EnvironmentObject public var appCoordinator: AppCoordinator
+        
+        public var result: Result
+        
+        public var id: String {
+            return result.id
+        }
+        
+        private let content: () -> AnyView
+        
+        public init(result: Result, @ViewBuilder content: @escaping () -> AnyView){
+            self.result = result
+            self.content = content
+        }
+        
+        public var body: some View {
+            content()
+        }
+    }
+}
+
+public extension Search.Engine {
+    
+    func search(_ q: String, _ categories: Search.Category, api: JoliApi) -> AnyPublisher<[Search.ResultView], Never> {
+        
+        return Future<[Search.ResultView], Never>() { promise in
+            api.searchTracks(q: q)
+                .then(){ tracks in
+                    let res = tracks.enumerated()
+                        .map() { trackItem -> Search.ResultView in
+                            let res = Search.Result((trackItem.offset, tracks.count), q: q, category: .track, engine: self)
+                            
+                            return Search.ResultView(result: res){
+                                TrackView2(track: .constant(trackItem.element)).eraseToAnyView()
+                            }
+                        }
+                    promise(.success(res))
+                }
+                .catch() { error in
+                    print("[searchTracks] error: \(error)")
+                    promise(.success([]))
+                }
+        }.eraseToAnyPublisher()
+    }
+    
+}
+
+public enum SearchResultCategory: String, CaseIterable, Identifiable {
+    
+    public var id: String {
+        return self.rawValue
+    }
+    
+    case sports
+    case movies
+    case songs
+    //case culture
+    case places
+    //case history
+    case playrooms
+
+}
+
 public final class AppCoordinator: ObservableObject {
     
     public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
     public var api: JoliApi!
     
+    public var cancellableSet: Set<AnyCancellable> = []
+    
     @Published public var isSearching = false
     @Published public var isSharePresented = false
     @Published public var namespace: Namespace.ID? = nil
     
+    private var allSearchengines = [spotifyEngine]
+    
     public init(namespace: Namespace.ID? = nil){
         self.namespace = namespace
     }
+    
+//    public func search(_ query: String, positionMs: Int? = nil) -> Promise<SearchResultView> {
+//
+//    }
+//
+//    public func searchresults() -> {
+//
+//    }
     
     public func play(_ track: Playable, positionMs: Int? = nil) -> Promise<Json> {
         return api.fetchSpotifyDevices(on: DispatchQueue.main)

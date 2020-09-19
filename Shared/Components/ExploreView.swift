@@ -10,18 +10,26 @@ import SwiftUI
 import Combine
 import JoliCore
 
+let spotifyEngine = Search.Engine("FakeSpotify", categories: [.track])
+
 public struct ExploreView: JoliView {
     
     let geoProxy: GeometryProxy
     @StateObject var model = SearchStore()
     @State var searchAreas: Set<SearchResultCategory> = Set(SearchResultCategory.allCases)
     @State var selectedAreas: Set<SearchResultCategory> = []
-    @State var searchResults: [SearchResult] = [.tracks(Array(SEED_DATA.tracks[50...60]))]
+    
+    @State var searchResults: [Search.ResultView] = []
+    
+    @State var searchResultPublisher: AnyCancellable? = nil
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    var cancellSet: Set<AnyCancellable> = []
     @State var searchbarRect: CGRect? = nil
+    
+    public init(geoProxy: GeometryProxy) {
+        self.geoProxy = geoProxy
+    }
     
     var areasFiltered: Set<SearchResultCategory> {
         return self.searchAreas
@@ -31,18 +39,8 @@ public struct ExploreView: JoliView {
         return Label("Nothing here", systemImage: "magnifyingglass")
     }
     
+    
     public var body: some View {
-        let ts: [SearchResult] = [.tracks(Array(SEED_DATA.tracks[10...20]))]
-        let cs: [SearchResult] = [.tracks(Array(SEED_DATA.tracks[20...30]))]
-        let rooms: [SearchResult] = [.playrooms(Array(SEED_DATA.musicrooms))]
-        
-        let sections: [SearchResultSection] = [
-            .basic(name: "Tracks", layout: searchResults.toLayouts()),
-            .basic(name: "Playrooms", layout: rooms.toLayouts()),
-            .basic(name: "Users", layout: [SearchResult.users(SEED_DATA.users)].toLayouts()),
-            .basic(name: "Playlists", layout: ts.toLayouts()),
-            .basic(name: "Podcasts", layout: cs.toLayouts()),
-        ]
         
         let searchBar = VStack(alignment: .center, spacing: 0) {
             SearchBar(text: $model.query)
@@ -78,11 +76,18 @@ public struct ExploreView: JoliView {
         }
         
         return ZStack(alignment: .top) {
-            VStack(alignment: .center, spacing: 0){
-                let top = (searchbarRect?.maxY ?? geoProxy.safeAreaInsets.top) - geoProxy.safeAreaInsets.top
+            ScrollView(.vertical){
+                let top = (searchbarRect?.maxY ?? geoProxy.safeAreaInsets.top) //- geoProxy.safeAreaInsets.top
                 let edges = EdgeInsets(top: top, leading: 0, bottom: 0, trailing: 0)
                 if !searchResults.isEmpty {
-                    SearchResultView(sections, edgeInsets: edges)
+                    //SearchResultView(searchResults, edgeInsets: edges)
+                    
+                    LazyVStack(){
+                        ForEach(searchResults){ res in
+                            res
+                        }
+                    }
+                    .animation(.easeInOut)
                 } else {
                     VStack(alignment: .center, spacing: .zero){
                         self.suggestionsView.padding()//.foregroundColor(.white)
@@ -92,6 +97,7 @@ public struct ExploreView: JoliView {
                     //.background(Colors.lightGray)
                 }
             }
+            .offset(x: 0, y: 180)
             
             searchBar
                 .accentColor(.primary)
@@ -108,7 +114,32 @@ public struct ExploreView: JoliView {
                 )
             
             
-        }.coordinateSpace(name: "myZstack")
+        }
+        .coordinateSpace(name: "myZstack")
+        .onAppear(){
+            guard self.searchResultPublisher == nil else {
+                return
+            }
+            
+            self.searchResultPublisher = model.$query
+                .removeDuplicates()
+                .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInteractive))
+                .map() { q -> AnyPublisher<[Search.ResultView], Never> in
+                    
+                    guard !q.isEmpty else {
+                        return Just([]).eraseToAnyPublisher()
+                    }
+                    
+                    return spotifyEngine.search(q, .track, api: appCoordinator.api)
+                }
+                .switchToLatest()
+                .receive(on: RunLoop.main)
+                .assign(to: \.searchResults, on: self)
+                
+            
+            print("[searchResultPublisher] created: \(String(describing: searchResultPublisher))")
+        }
+        
     }
 }
 

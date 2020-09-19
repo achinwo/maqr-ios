@@ -267,20 +267,6 @@ struct BoundsPreferenceKey: PreferenceKey {
     }
 }
 
-enum SearchResultCategory: String, CaseIterable, Identifiable {
-    
-    var id: String {
-        return self.rawValue
-    }
-    
-    case sports
-    case movies
-    case songs
-    //case culture
-    case places
-    //case history
-    case playrooms
-}
 
 public struct SearchResultView: View {
     

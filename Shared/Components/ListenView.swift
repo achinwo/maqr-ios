@@ -14,7 +14,7 @@ struct ListenView: JoliView {
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     let geoProxy: GeometryProxy
-    @Binding var tracks: [Track]
+    @Binding var tracks: [Playable]
     @Binding var tabbarExpaned: Bool
     @Binding var preview: AppPreview?
     @Binding var filterText: String

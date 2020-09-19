@@ -32,7 +32,7 @@ public extension UIImageColors {
 
 public struct TrackView2: JoliView {
     
-    @Binding var track: Track
+    @Binding var track: Playable
     @State var colors: UIImageColors? = nil
     @GestureState var isDetectingLongPress = false
     @State var completedLongPress = false
@@ -51,7 +51,7 @@ public struct TrackView2: JoliView {
                 }
         }
     
-    public init(track: Binding<Track>, colors: UIImageColors? = nil){
+    public init(track: Binding<Playable>, colors: UIImageColors? = nil){
         _track = track
         self.colors = colors
     }
@@ -160,20 +160,20 @@ public struct TrackList: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    @Binding var tracks: [Track]
+    @Binding var tracks: [Playable]
     @Binding var preview: AppPreview?
     
-    public init(tracks: Binding<[Track]>, preview: Binding<AppPreview?> = .constant(nil)){
+    public init(tracks: Binding<[Playable]>, preview: Binding<AppPreview?> = .constant(nil)){
         self._tracks = tracks
         self._preview = preview
     }
     
-    func trackBinding(_ trackId: Array<Track>.Index) -> Binding<Track> {
-        let track: Binding<Track> = Binding() { () -> Track in
+    func trackBinding(_ trackId: Array<Playable>.Index) -> Binding<Playable> {
+        let track: Binding<Playable> = Binding() { () -> Playable in
                 return tracks[trackId]
             } set: { (track, trasacton) in
                 tracks[trackId] = track
-                print("Transaction: \(transaction)")
+                //print("Transaction: \(transaction)")
                 //transaction.
             }
         return track
@@ -181,11 +181,11 @@ public struct TrackList: JoliView {
     
     public var body: some View {
         return LazyVStack(alignment: .center, spacing: 0) {
-                ForEach(tracks) { track in
-                    TrackView2(track: self.trackBinding(tracks.firstIndex(of: track)!))
+            ForEach(Array(tracks.enumerated()), id: \.offset) { item in
+                TrackView2(track: self.trackBinding(item.offset))
                         .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 1) {
                             withImpact {
-                                self.preview = .track(track)
+                                self.preview = .track(item.element as! Track)
                             }
                         }
                 }

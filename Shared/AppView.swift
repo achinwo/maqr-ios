@@ -42,7 +42,7 @@ public struct AppView2: View {
         self._currentUser = currentUser
     }
     
-    @State var filteredTracks: [Track] = SEED_DATA.tracks
+    @State var filteredTracks: [Playable] = SEED_DATA.tracks
     
     @State var preview: AppPreview? = nil
     
@@ -68,7 +68,6 @@ public struct AppView2: View {
                                     }
                                 }
                                 .id(Self.viewIds.explore)
-                            
                             
                             ListenView(geoProxy: geoProxy, tracks: self.$filteredTracks, tabbarExpaned: self.$isExpanded,
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
