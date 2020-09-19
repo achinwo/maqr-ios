@@ -37,6 +37,10 @@ public struct TrackView2: JoliView {
     @GestureState var isDetectingLongPress = false
     @State var completedLongPress = false
     
+    @Binding var heartLevel: HeartLevel?
+    @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
+    @State var requestingPlay = false
+    
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     var longPress: some Gesture {
@@ -51,14 +55,11 @@ public struct TrackView2: JoliView {
                 }
         }
     
-    public init(track: Binding<Playable>, colors: UIImageColors? = nil){
-        _track = track
+    public init(track: Binding<Playable>, heartLevel: Binding<HeartLevel?> = .constant(nil), colors: UIImageColors? = nil){
+        self._heartLevel = heartLevel
+        self._track = track
         self.colors = colors
     }
-    
-    @State var heartLevel: HeartLevel = .empty
-    @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
-    @State var requestingPlay = false
     
     public var body: some View {
         let cb: () -> () = {
@@ -125,28 +126,31 @@ public struct TrackView2: JoliView {
                     Spacer()
                 }
             }
-            Spacer()
-            JoyMeterView(self.$heartLevel, heartCount: 1, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary)
-                .padding()
-                .padding(.trailing, Sizing.large)
-                .foregroundColor(colors?.secondaryColor ?? Color.primary)
-                .onTapGesture {
-                    
-                    guard self.heartLevel != .full else {
-                        withAnimation(.none) {
+            
+            if self.heartLevel != nil {
+                Spacer()
+                JoyMeterView(self.$heartLevel, heartCount: 1, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary)
+                    .padding()
+                    .padding(.trailing, Sizing.large)
+                    .foregroundColor(colors?.secondaryColor ?? Color.primary)
+                    .onTapGesture {
+                        
+                        guard self.heartLevel != .full else {
+                            withAnimation(.none) {
+                                self.heartLevel = .quarter
+                            }
+                            return
+                        }
+                        self.heartLevel = self.heartLevel?.next
+                    }
+                    .onLongPressGesture {
+                        
+                        appCoordinator.withImpact(.medium) {
                             self.heartLevel = .quarter
                         }
-                        return
+                        print("new count: \(self.heartLevel)")
                     }
-                    self.heartLevel = self.heartLevel.next
-                }
-                .onLongPressGesture {
-                    
-                    appCoordinator.withImpact(.medium) {
-                        self.heartLevel = .quarter
-                    }
-                    print("new count: \(self.heartLevel)")
-                }
+            }
         }
         //.rotation3DEffect(.degrees(45), axis: (x: 0.0, y: 0.0, z: self.requestingPlay ? 1.0 : 0.0))
         .onTapGesture(perform: cb)
@@ -156,10 +160,16 @@ public struct TrackView2: JoliView {
     }
 }
 
+public extension Playable {
+    
+    
+}
+
 public struct TrackList: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
+    @State var subscriptionCounts: [String: HeartLevel] = [:]
     @Binding var tracks: [Playable]
     @Binding var preview: AppPreview?
     
@@ -179,10 +189,41 @@ public struct TrackList: JoliView {
         return track
     }
     
+    func heartLevelBinding(_ trackId: Array<Playable>.Index) -> Binding<HeartLevel?> {
+        
+        
+        let heart: Binding<HeartLevel?> = Binding() { () -> HeartLevel? in
+            let track = tracks[trackId]
+            
+            guard let subscriptionCounts = self.subscriptionCounts[track.uri] else {
+                
+                let elem = [HeartLevel.empty, HeartLevel.full, HeartLevel.third, HeartLevel.half].randomElement()!
+                
+                DispatchQueue.main.async {
+                    self.subscriptionCounts[track.uri] = elem
+                }
+                
+                return elem
+            }
+            
+            return subscriptionCounts
+            
+        } set: { (heart, trasacton) in
+            withTransaction(trasacton) {
+                let track = tracks[trackId]
+                subscriptionCounts[track.uri] = heart
+                
+                //track.subscriptionCount = heart
+                print("[] failed to set hear \(String(describing: heart)) for \(trasacton)")
+            }
+        }
+        return heart
+    }
+    
     public var body: some View {
         return LazyVStack(alignment: .center, spacing: 0) {
             ForEach(Array(tracks.enumerated()), id: \.offset) { item in
-                TrackView2(track: self.trackBinding(item.offset))
+                TrackView2(track: self.trackBinding(item.offset), heartLevel: self.heartLevelBinding(item.offset))
                         .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 1) {
                             withImpact {
                                 self.preview = .track(item.element as! Track)

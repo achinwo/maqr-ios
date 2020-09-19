@@ -53,7 +53,7 @@ struct ListenTabbarView: JoliView {
     @State var volume: CGFloat = 30
     @Binding var playroom: Musicroom?
     
-    @State var heartLevel: HeartLevel = .full
+    @State var heartLevel: HeartLevel? = .full
     @Namespace var localNamespace
     
     @State var isDragging = false

@@ -315,32 +315,6 @@ public extension Search {
     }
 }
 
-public extension Search.Engine {
-    
-    func search(_ q: String, _ categories: Search.Category, api: JoliApi) -> AnyPublisher<[Search.ResultView], Never> {
-        
-        return Future<[Search.ResultView], Never>() { promise in
-            api.searchTracks(q: q)
-                .then(){ tracks in
-                    let res = tracks.enumerated()
-                        .map() { trackItem -> Search.ResultView in
-                            let res = Search.Result((trackItem.offset, tracks.count), q: q, category: .track, engine: self)
-                            
-                            return Search.ResultView(result: res){
-                                TrackView2(track: .constant(trackItem.element)).eraseToAnyView()
-                            }
-                        }
-                    promise(.success(res))
-                }
-                .catch() { error in
-                    print("[searchTracks] error: \(error)")
-                    promise(.success([]))
-                }
-        }.eraseToAnyPublisher()
-    }
-    
-}
-
 public enum SearchResultCategory: String, CaseIterable, Identifiable {
     
     public var id: String {

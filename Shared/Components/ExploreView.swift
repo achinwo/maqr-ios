@@ -9,15 +9,62 @@
 import SwiftUI
 import Combine
 import JoliCore
+import JoliApi
 
-let spotifyEngine = Search.Engine("FakeSpotify", categories: [.track])
+
+public extension Search.Engine {
+    
+    func search(_ q: String, _ categories: Set<Search.Category>, api: JoliApi) -> AnyPublisher<[Search.ResultView], Never> {
+        
+        return Future<[Search.ResultView], Never>() { promise in
+            api.searchTracks(q: q, categories: categories)
+                .then(){ res in
+                    let res = res.tracks.enumerated()
+                        .map() { trackItem -> Search.ResultView in
+                            let res = Search.Result((trackItem.offset, res.tracks.count), q: q, category: .tracks, engine: self)
+                            
+                            return Search.ResultView(result: res){
+                                TrackView2(track: .constant(trackItem.element)).eraseToAnyView()
+                            }
+                        }
+                    promise(.success(res))
+                }
+                .catch() { error in
+                    print("[searchTracks] error: \(error)")
+                    promise(.success([]))
+                }
+        }.eraseToAnyPublisher()
+    }
+    
+}
+
+let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlists])
 
 public struct ExploreView: JoliView {
     
+    static var searchengines: [Search.Engine] {
+        return [spotifyEngine, Search.Engine("Joli", categories: .playrooms)]
+    }
+    
     let geoProxy: GeometryProxy
     @StateObject var model = SearchStore()
-    @State var searchAreas: Set<SearchResultCategory> = Set(SearchResultCategory.allCases)
-    @State var selectedAreas: Set<SearchResultCategory> = []
+    
+    var searchAreas: Set<Search.Category> {
+        var categories: Set<Search.Category> = []
+        
+        for cat in Search.Category.allCases {
+            for engine in Self.searchengines {
+                guard engine.supportedCategories.contains(cat) else {
+                    continue
+                }
+                categories.insert(cat)
+            }
+        }
+        
+        return categories
+    }
+    
+    @State var selectedAreas: Set<Search.Category> = []
     
     @State var searchResults: [Search.ResultView] = []
     
@@ -27,11 +74,12 @@ public struct ExploreView: JoliView {
     
     @State var searchbarRect: CGRect? = nil
     
+    
     public init(geoProxy: GeometryProxy) {
         self.geoProxy = geoProxy
     }
     
-    var areasFiltered: Set<SearchResultCategory> {
+    var areasFiltered: Set<Search.Category> {
         return self.searchAreas
     }
     
@@ -48,7 +96,7 @@ public struct ExploreView: JoliView {
                 .padding(.horizontal, Sizing.medium)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(){
-                    ForEach(Array(self.areasFiltered)) { area in
+                    ForEach(Array(self.areasFiltered).sorted()) { area in
                         Button() {
                             guard !selectedAreas.contains(area) else {
                                 selectedAreas.remove(area)
@@ -58,10 +106,11 @@ public struct ExploreView: JoliView {
                             
                             print("Selected: \(selectedAreas)")
                         } label: {
-                            Text(area.rawValue.capitalized)
+                            Text(area.label)
                                 .padding()
                                 .tag(area).font(.headline)
                         }
+                        //.disabled(true)
                         .buttonStyle(BlackWhiteButtonStyle(inverted: selectedAreas.contains(area)))
                     }
                 }
@@ -130,7 +179,7 @@ public struct ExploreView: JoliView {
                         return Just([]).eraseToAnyPublisher()
                     }
                     
-                    return spotifyEngine.search(q, .track, api: appCoordinator.api)
+                    return spotifyEngine.search(q, [.tracks], api: appCoordinator.api)
                 }
                 .switchToLatest()
                 .receive(on: RunLoop.main)

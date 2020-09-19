@@ -103,19 +103,23 @@ public struct Hearts: CustomStringConvertible {
 
 struct JoyMeterView: View {
     
-    @Binding var heartLevel: HeartLevel
+    @Binding private var heartLevelBinding: HeartLevel?
     @State var heartCount: Int = 0
     @State var width: CGFloat = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
     @State var labelColor: Color = .gray
     
-    init(_ heartLevel: Binding<HeartLevel>, heartCount: Int = 0, width: CGFloat? = nil, labelColor: Color? = nil){
-        self._heartLevel = heartLevel
+    var heartLevel: HeartLevel {
+        return self.heartLevelBinding ?? .empty
+    }
+    
+    init(_ heartLevel: Binding<HeartLevel?>, heartCount: Int = 0, width: CGFloat? = nil, labelColor: Color? = nil){
+        self._heartLevelBinding = heartLevel
         self.heartCount = heartCount
         self.width = width ?? UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
         self.labelColor = labelColor ?? .gray
     }
     
-    init(_ heartLevel: Binding<HeartLevel>, heartCount: Int = 0, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil){
+    init(_ heartLevel: Binding<HeartLevel?>, heartCount: Int = 0, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil){
         self.init(heartLevel, heartCount: heartCount, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor)
     }
     
@@ -164,7 +168,7 @@ struct JoyMeterView: View {
 struct JoyMeterView_Previews: PreviewProvider {
     
     static var previews: some View {
-        let level: Binding<HeartLevel> = .constant(.full)
+        let level: Binding<HeartLevel?> = .constant(.full)
         return JoyMeterView(level, heartCount: 5, textStyle: .largeTitle)
     }
 }
