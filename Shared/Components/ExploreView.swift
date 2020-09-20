@@ -14,12 +14,12 @@ import JoliApi
 
 public extension Search.Engine {
     
-    func search(_ q: String, _ categories: Set<Search.Category>, api: JoliApi) -> AnyPublisher<[Search.ResultView], Never> {
+    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 10, api: JoliApi) -> AnyPublisher<[Search.ResultView], Never> {
         
         return Future<[Search.ResultView], Never>() { promise in
-            api.searchTracks(q: q, categories: categories)
+            api.searchTracks(q: q, categories: categories, limit: limit)
                 .then(){ res in
-                    let res = res.tracks.enumerated()
+                    let tracks = res.tracks.enumerated()
                         .map() { trackItem -> Search.ResultView in
                             let res = Search.Result((trackItem.offset, res.tracks.count), q: q, category: .tracks, engine: self)
                             
@@ -27,7 +27,27 @@ public extension Search.Engine {
                                 TrackView2(track: .constant(trackItem.element)).eraseToAnyView()
                             }
                         }
-                    promise(.success(res))
+                    
+                    let artists = res.artists.enumerated()
+                        .map() { item -> Search.ResultView in
+                            let artist = item.element
+                            let res = Search.Result((item.offset, res.artists.count), q: q, category: .artists, engine: self)
+                            
+                            return Search.ResultView(result: res){
+                                HStack(){
+                                    NetworkImage(url: artist.externalUrls.spotify){
+                                        PersonGenericImage()
+                                            .frame(width: 64, height: 64, alignment: .bottomLeading)
+                                    }
+                                    VStack(){
+                                        Text(artist.name).font(.body)
+                                    }
+                                }
+                                .eraseToAnyView()
+                            }
+                        }
+                    
+                    promise(.success(tracks + artists))
                 }
                 .catch() { error in
                     print("[searchTracks] error: \(error)")
@@ -38,7 +58,7 @@ public extension Search.Engine {
     
 }
 
-let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlists])
+let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlists, .artists])
 
 public struct ExploreView: JoliView {
     
@@ -64,7 +84,7 @@ public struct ExploreView: JoliView {
         return categories
     }
     
-    @State var selectedAreas: Set<Search.Category> = []
+    @State var selectedAreas: Set<Search.Category> = [.tracks, .artists]
     
     @State var searchResults: [Search.ResultView] = []
     
@@ -127,26 +147,28 @@ public struct ExploreView: JoliView {
         return ZStack(alignment: .top) {
             ScrollView(.vertical){
                 let top = (searchbarRect?.maxY ?? geoProxy.safeAreaInsets.top) //- geoProxy.safeAreaInsets.top
-                let edges = EdgeInsets(top: top, leading: 0, bottom: 0, trailing: 0)
+                let edges = EdgeInsets(top: 180, leading: 0, bottom: 0, trailing: 0)
                 if !searchResults.isEmpty {
                     //SearchResultView(searchResults, edgeInsets: edges)
                     
-                    LazyVStack(){
+                    VStack(){
                         ForEach(searchResults){ res in
                             res
                         }
                     }
+                    .padding(.top, edges.top)
                     .animation(.easeInOut)
                 } else {
                     VStack(alignment: .center, spacing: .zero){
                         self.suggestionsView.padding()//.foregroundColor(.white)
                     }
+                    .animation(.spring())
                     .padding(.top, edges.top)
                     .frame(width: screenWidth)
                     //.background(Colors.lightGray)
                 }
             }
-            .offset(x: 0, y: 180)
+            .padding(.bottom, geoProxy.safeAreaInsets.bottom)
             
             searchBar
                 .accentColor(.primary)
@@ -165,30 +187,38 @@ public struct ExploreView: JoliView {
             
         }
         .coordinateSpace(name: "myZstack")
+        .onChange(of: selectedAreas){ areas in
+            self.updateSubscriptions()
+        }
         .onAppear(){
-            guard self.searchResultPublisher == nil else {
-                return
-            }
-            
-            self.searchResultPublisher = model.$query
-                .removeDuplicates()
-                .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInteractive))
-                .map() { q -> AnyPublisher<[Search.ResultView], Never> in
-                    
-                    guard !q.isEmpty else {
-                        return Just([]).eraseToAnyPublisher()
-                    }
-                    
-                    return spotifyEngine.search(q, [.tracks], api: appCoordinator.api)
-                }
-                .switchToLatest()
-                .receive(on: RunLoop.main)
-                .assign(to: \.searchResults, on: self)
-                
-            
-            print("[searchResultPublisher] created: \(String(describing: searchResultPublisher))")
+            self.updateSubscriptions()
         }
         
+    }
+    
+    private func updateSubscriptions() {
+        if let cancel = self.searchResultPublisher {
+            cancel.cancel()
+            print("[searchResultPublisher] cancelled: \(cancel)")
+        }
+        
+        self.searchResultPublisher = model.$query
+            .removeDuplicates()
+            .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInteractive))
+            .map() { q -> AnyPublisher<[Search.ResultView], Never> in
+                
+                guard !q.isEmpty else {
+                    return Just([]).eraseToAnyPublisher()
+                }
+                
+                return spotifyEngine.search(q, self.selectedAreas, api: appCoordinator.api)
+            }
+            .switchToLatest()
+            .receive(on: RunLoop.main)
+            .assign(to: \.searchResults, on: self)
+            
+        
+        print("[searchResultPublisher] created: \(String(describing: searchResultPublisher))")
     }
 }
 
