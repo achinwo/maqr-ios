@@ -15,9 +15,14 @@ import JoliApi
 public extension Search.Engine {
     
     func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 10, api: JoliApi) -> AnyPublisher<[Search.ResultView], Never> {
+        let supported = categories.filter(){ supportedCategories.contains($0) }
+        
+        guard !supported.isEmpty else {
+            return Just([]).eraseToAnyPublisher()
+        }
         
         return Future<[Search.ResultView], Never>() { promise in
-            api.searchTracks(q: q, categories: categories, limit: limit)
+            api.searchTracks(q: q, categories: supported, limit: limit)
                 .then(){ res in
                     let tracks = res.tracks.enumerated()
                         .map() { trackItem -> Search.ResultView in
@@ -63,7 +68,7 @@ let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlist
 public struct ExploreView: JoliView {
     
     static var searchengines: [Search.Engine] {
-        return [spotifyEngine, Search.Engine("Joli", categories: .playrooms)]
+        return [spotifyEngine, Search.Engine("Joli", categories: [.playrooms])]
     }
     
     let geoProxy: GeometryProxy
@@ -146,18 +151,19 @@ public struct ExploreView: JoliView {
         
         return ZStack(alignment: .top) {
             ScrollView(.vertical){
-                let top = (searchbarRect?.maxY ?? geoProxy.safeAreaInsets.top) //- geoProxy.safeAreaInsets.top
+                //let top = (searchbarRect?.maxY ?? geoProxy.safeAreaInsets.top) //- geoProxy.safeAreaInsets.top
                 let edges = EdgeInsets(top: 180, leading: 0, bottom: 0, trailing: 0)
                 if !searchResults.isEmpty {
                     //SearchResultView(searchResults, edgeInsets: edges)
                     
-                    VStack(){
-                        ForEach(searchResults){ res in
+                    VStack(alignment: .leading) {
+                        ForEach(searchResults) { res in
                             res
                         }
                     }
                     .padding(.top, edges.top)
                     .animation(.easeInOut)
+                    .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                 } else {
                     VStack(alignment: .center, spacing: .zero){
                         self.suggestionsView.padding()//.foregroundColor(.white)
@@ -165,10 +171,10 @@ public struct ExploreView: JoliView {
                     .animation(.spring())
                     .padding(.top, edges.top)
                     .frame(width: screenWidth)
+                    .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     //.background(Colors.lightGray)
                 }
             }
-            .padding(.bottom, geoProxy.safeAreaInsets.bottom)
             
             searchBar
                 .accentColor(.primary)
