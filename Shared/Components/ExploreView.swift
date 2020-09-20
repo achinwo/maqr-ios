@@ -14,61 +14,28 @@ import JoliApi
 
 public extension Search.Engine {
     
-    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 10, api: JoliApi) -> AnyPublisher<[Search.ResultView], Never> {
+    typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[Search.ResultView], Never>
+    
+    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod) -> AnyPublisher<[Search.ResultView], Never> {
         let supported = categories.filter(){ supportedCategories.contains($0) }
         
         guard !supported.isEmpty else {
             return Just([]).eraseToAnyPublisher()
         }
         
-        return Future<[Search.ResultView], Never>() { promise in
-            api.searchTracks(q: q, categories: supported, limit: limit)
-                .then(){ res in
-                    let tracks = res.tracks.enumerated()
-                        .map() { trackItem -> Search.ResultView in
-                            let res = Search.Result((trackItem.offset, res.tracks.count), q: q, category: .tracks, engine: self)
-                            
-                            return Search.ResultView(result: res){
-                                TrackView2(track: .constant(trackItem.element)).eraseToAnyView()
-                            }
-                        }
-                    
-                    let artists = res.artists.enumerated()
-                        .map() { item -> Search.ResultView in
-                            let artist = item.element
-                            let res = Search.Result((item.offset, res.artists.count), q: q, category: .artists, engine: self)
-                            
-                            return Search.ResultView(result: res){
-                                HStack(){
-                                    NetworkImage(url: artist.externalUrls.spotify){
-                                        PersonGenericImage()
-                                            .frame(width: 64, height: 64, alignment: .bottomLeading)
-                                    }
-                                    VStack(){
-                                        Text(artist.name).font(.body)
-                                    }
-                                }
-                                .eraseToAnyView()
-                            }
-                        }
-                    
-                    promise(.success(tracks + artists))
-                }
-                .catch() { error in
-                    print("[searchTracks] error: \(error)")
-                    promise(.success([]))
-                }
-        }.eraseToAnyPublisher()
+        return searchFn(q, categories, limit)
     }
     
 }
 
-let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlists, .artists])
+let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlists, .artists, .shows, .episodes, .albums])
 
 public struct ExploreView: JoliView {
     
     static var searchengines: [Search.Engine] {
-        return [spotifyEngine, Search.Engine("Joli", categories: [.playrooms])]
+        return [spotifyEngine,
+        //        Search.Engine("Joli", categories: .playrooms)
+        ]
     }
     
     let geoProxy: GeometryProxy
@@ -112,6 +79,24 @@ public struct ExploreView: JoliView {
         return Label("Nothing here", systemImage: "magnifyingglass")
     }
     
+    var resultsByCategory: [Search.Category: [Search.ResultView]] {
+        //var res:  = [:]
+//        for resultView in self.searchResults {
+//            let result = resultView.result
+//
+//            if var catResults = res[result.category] {
+//                catResults.append(resultView)
+//            } else {
+//                res[result.category] = [resultView]
+//            }
+//        }
+        
+        let res = self.searchResults.reduce(into: [Search.Category: [Search.ResultView]]()) { store, res in
+            store[res.result.category, default: []].append(res)
+        }
+        
+        return res
+    }
     
     public var body: some View {
         
@@ -149,21 +134,46 @@ public struct ExploreView: JoliView {
             }
         }
         
+//        let x = VStack(alignment: .leading) {
+//            //Text("Testing test")
+//            ForEach(Array(resultsByCategory.sorted(by: >)), id: \.0) { key, value in
+//                value
+//            }
+//        }
+        
         return ZStack(alignment: .top) {
-            ScrollView(.vertical){
+            
                 //let top = (searchbarRect?.maxY ?? geoProxy.safeAreaInsets.top) //- geoProxy.safeAreaInsets.top
                 let edges = EdgeInsets(top: 180, leading: 0, bottom: 0, trailing: 0)
                 if !searchResults.isEmpty {
                     //SearchResultView(searchResults, edgeInsets: edges)
                     
-                    VStack(alignment: .leading) {
-                        ForEach(searchResults) { res in
-                            res
+                    List(){
+                        let array = Array(resultsByCategory.sorted(by: { $0.key > $1.key }).enumerated())
+                        
+                        ForEach(array, id: \.offset) { (idx, item) in
+                            let header = HStack(){
+                                Text("\(item.key.emoji ?? "")\(item.key.emoji == nil ? "" : " ")\(item.key.labelPlural)")
+                                Spacer()
+                                Button() {
+                                    print("[ExploreView] See all: \(item.key)")
+                                } label: {
+                                    Label("See All", systemImage: "arrow.up.left.and.arrow.down.right")
+                                }
+                            }
+                            .padding(.top, idx == 0 ? 185 : nil)
+                            
+                            Section(header: header) {
+                                self.renderContent(item.key, item.value).listRowInsets(EdgeInsets(top: Sizing.medium, leading: 0, bottom: Sizing.medium, trailing: 0))
+                            }
+                            //.clipped()
                         }
                     }
-                    .padding(.top, edges.top)
+                    //.frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                    .listStyle(GroupedListStyle())
+                    //.padding(.top, edges.top)
                     .animation(.easeInOut)
-                    .padding(.bottom, geoProxy.safeAreaInsets.bottom)
+                    .padding(.bottom, geoProxy.safeAreaInsets.bottom > screenHeight / 4 ? geoProxy.safeAreaInsets.bottom : 0)
                 } else {
                     VStack(alignment: .center, spacing: .zero){
                         self.suggestionsView.padding()//.foregroundColor(.white)
@@ -172,9 +182,7 @@ public struct ExploreView: JoliView {
                     .padding(.top, edges.top)
                     .frame(width: screenWidth)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
-                    //.background(Colors.lightGray)
                 }
-            }
             
             searchBar
                 .accentColor(.primary)
@@ -202,6 +210,24 @@ public struct ExploreView: JoliView {
         
     }
     
+    private func renderContent(_ key: Search.Category, _ views: [Search.ResultView]) -> some View {
+        return VStack(alignment: .leading, spacing: .zero){
+            ForEach(Array(views.enumerated()), id: \.offset) { itm in
+                
+                switch itm.element.result.category {
+                    case .tracks:
+                        itm.element.frame(width: UIScreen.main.bounds.width, height: 68)
+                    default:
+                        itm.element.frame(height: 65)
+                }
+                
+                //                                        if idx + 1 < resultViews.count {
+                //                                            Divider().padding()
+                //                                        }
+            }
+        }
+    }
+    
     private func updateSubscriptions() {
         if let cancel = self.searchResultPublisher {
             cancel.cancel()
@@ -217,7 +243,29 @@ public struct ExploreView: JoliView {
                     return Just([]).eraseToAnyPublisher()
                 }
                 
-                return spotifyEngine.search(q, self.selectedAreas, api: appCoordinator.api)
+                DispatchQueue.main.async {
+                    appCoordinator.isSearching = true
+                }
+                
+                return spotifyEngine.search(q, self.selectedAreas) { (q, categories, limit) in
+                    
+                    return Future<[Search.ResultView], Never>() { promise in
+                        api.searchTracks(q: q, categories: categories, limit: limit)
+                            .then(){ res in
+                                let views = self.makeResultViews(q: q, res: res)
+                                promise(.success(views))
+                            }
+                            .catch() { error in
+                                print("[searchTracks] error: \(error)")
+                                promise(.success([]))
+                            }
+                            .always() {
+                                DispatchQueue.main.async {
+                                    appCoordinator.isSearching = false
+                                }
+                            }
+                    }.eraseToAnyPublisher()
+                }
             }
             .switchToLatest()
             .receive(on: RunLoop.main)
@@ -226,6 +274,121 @@ public struct ExploreView: JoliView {
         
         print("[searchResultPublisher] created: \(String(describing: searchResultPublisher))")
     }
+    
+    func makeResultViews(q: Search.Query, res: Spotify.SearchResult) -> [Search.ResultView] {
+        let tracks = res.tracks.enumerated()
+            .map() { trackItem -> Search.ResultView in
+                let res = Search.Result((trackItem.offset, res.tracks.count), q: q, category: .tracks, engine: spotifyEngine)
+                
+                return Search.ResultView(result: res){
+                    GeometryReader() { proxy in
+                        TrackView2(track: .constant(trackItem.element)).eraseToAnyView()
+                    }//
+                }
+            }
+        
+        let albums = res.albums.enumerated()
+            .map() { item -> Search.ResultView in
+                let res = Search.Result((item.offset, res.albums.count), q: q, category: .albums, engine: spotifyEngine)
+                
+                return Search.ResultView(result: res){
+                    GeometryReader() { proxy in
+                        AlbumView(album: item.element).eraseToAnyView()
+                    }//
+                }
+            }
+        
+        let artists = res.artists.enumerated()
+            .map() { item -> Search.ResultView in
+                let artist = item.element
+                let res = Search.Result((item.offset, res.artists.count), q: q, category: .artists, engine: spotifyEngine)
+                
+                return Search.ResultView(result: res){
+                    GeometryReader() { proxy in
+                        ArtistView(artist: artist)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        //.background(Color.yellow)
+                        //.alignmentGuide(.top) { d in d[.leading] }
+                        .onAppear() {
+                            print("[makeResultViews] proxy=\(proxy.size)")
+                        }
+                        .eraseToAnyView()
+                    }
+                }
+            }
+        return tracks + artists + albums
+    }
+}
+
+public struct AlbumView: View {
+    @State var album: Spotify.Album
+    
+    public var body: some View {
+        HStack(){
+            NetworkImage(url: album.images.smallestImage?.url){
+                Image(systemName: "music.note.list")
+                    .resizable()
+                    .foregroundColor(.white)
+                    .background(Color.gray)
+                    .frame(width: 64, height: 64, alignment: .bottomLeading)
+            }
+            .frame(width: 64, height: 64, alignment: .bottomLeading)
+            
+            VStack(alignment: .leading){
+                Text(album.name).font(.body)
+                
+                Text(album.releaseDate)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+        }
+    }
+}
+
+public struct ArtistView: View {
+    @State var artist: Spotify.Artist
+    
+    public var body: some View {
+        HStack(){
+            NetworkImage(url: artist.images?.smallestImage?.url){
+                PersonGenericImage()
+                    .frame(width: 64, height: 64, alignment: .bottomLeading)
+            }
+            .frame(width: 64, height: 64, alignment: .bottomLeading)
+            .clipShape(Circle())
+            
+            VStack(alignment: .leading){
+                Text(artist.name).font(.body)
+                
+                if let genres = artist.genres {
+                    Text(genres.joined(separator: ", "))
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+            }
+            Spacer()
+        }
+    }
+}
+
+public extension Array where Element == Spotify.Image {
+    
+    var smallestImage: Spotify.Image? {
+        return self.last
+    }
+    
+    var largestImage: Spotify.Image? {
+        return self.first
+    }
+    
+    var mediumImage: Spotify.Image? {
+        guard count >= 2 else {
+            return self.largestImage
+        }
+        return self[1]
+    }
+    
 }
 
 struct DarkBlueShadowProgressViewStyle: ProgressViewStyle {

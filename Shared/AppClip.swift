@@ -302,9 +302,9 @@ public extension Search {
             return result.id
         }
         
-        private let content: () -> AnyView
+        private let content: () -> GeometryReader<AnyView>
         
-        public init(result: Result, @ViewBuilder content: @escaping () -> AnyView){
+        public init(result: Result, @ViewBuilder content: @escaping () -> GeometryReader<AnyView>){
             self.result = result
             self.content = content
         }
