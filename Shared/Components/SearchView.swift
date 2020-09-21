@@ -131,7 +131,7 @@ public enum SearchResultLayout: View {
     
     public func trackView(_ track: Playable) -> some View {
         return VStack(){
-            NetworkImage(url: track.albumCoverUrl) {
+            NetworkImage(string: track.albumCoverUrl) {
                 ProgressView(value: nil, total: 100)
             }
             .frame(width: 64, height: 64)

@@ -164,7 +164,8 @@ public struct ExploreView: JoliView {
                             .padding(.top, idx == 0 ? 185 : nil)
                             
                             Section(header: header) {
-                                self.renderContent(item.key, item.value).listRowInsets(EdgeInsets(top: Sizing.medium, leading: 0, bottom: Sizing.medium, trailing: 0))
+                                self.renderContent(item.key, item.value)
+                                    .listRowInsets(EdgeInsets(top: Sizing.medium, leading: 0, bottom: Sizing.medium, trailing: 0))
                             }
                             //.clipped()
                         }
@@ -216,9 +217,12 @@ public struct ExploreView: JoliView {
                 
                 switch itm.element.result.category {
                     case .tracks:
-                        itm.element.frame(width: UIScreen.main.bounds.width, height: 68)
+                        itm.element
+                            .frame(width: UIScreen.main.bounds.width, height: 68)
+                            .id(itm.element.id)
                     default:
                         itm.element.frame(height: 65)
+                            .id(itm.element.id)
                 }
                 
                 //                                        if idx + 1 < resultViews.count {
@@ -325,7 +329,7 @@ public struct AlbumView: View {
     
     public var body: some View {
         HStack(){
-            NetworkImage(url: album.images.smallestImage?.url){
+            NetworkImage(string: album.images.smallestImage?.url){
                 Image(systemName: "music.note.list")
                     .resizable()
                     .foregroundColor(.white)
@@ -351,7 +355,7 @@ public struct ArtistView: View {
     
     public var body: some View {
         HStack(){
-            NetworkImage(url: artist.images?.smallestImage?.url){
+            NetworkImage(string: artist.images?.smallestImage?.url){
                 PersonGenericImage()
                     .frame(width: 64, height: 64, alignment: .bottomLeading)
             }

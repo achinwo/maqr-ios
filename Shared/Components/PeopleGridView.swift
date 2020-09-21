@@ -36,6 +36,7 @@ public struct PersonGenericImage: View {
 public struct InvitePeopleView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
+    @State var playroom: Musicroom?
     
     public var body: some View {
         let view = VStack(alignment: .center){
@@ -50,11 +51,12 @@ public struct InvitePeopleView: JoliView {
                 VStack(alignment: .leading){
                     Text("Invite a friend")
                         .font(Font.largeTitle.weight(.light))
+                    
                     Text("to ")
                         .foregroundColor(.gray)
                         .fontWeight(.regular)
                         .font(Font.headline)
-                        + Text("Wiz Party")
+                        + Text(playroom?.name ?? Strings.appName)
                         .fontWeight(.light)
                         .font(Font.headline)
                 }
@@ -64,8 +66,27 @@ public struct InvitePeopleView: JoliView {
             }
             Divider()
             // Include
+            
+            Link(destination: Urls.appclips) {
+                VStack(){
+                    Images.appclipBarcodeClearExample.image
+                        .resizable()
+                        .aspectRatio(contentMode: ContentMode.fit)
+                        .padding()
+                        //.padding(.top, Sizing.medium)
+                        .frame(idealWidth: screenWidth / 1.6, idealHeight: screenWidth / 1.6)
+                    Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle")
+                        .font(Font.footnote.weight(.light))
+                        .foregroundColor(.secondary)
+                }
+                //.padding(.top, Sizing.medium)
+                
+            }
+            
+            Divider().padding()
+            
             PersonGenericImage()
-                .frame(idealWidth: screenWidth / 1.9, idealHeight: screenWidth / 1.9)
+                .frame(width: screenWidth / 3, height: screenWidth / 3, alignment: .center)
                 .fixedSize()
                 .padding([.top, .bottom], Sizing.large)
             
@@ -90,21 +111,6 @@ public struct InvitePeopleView: JoliView {
                 .font(.headline)
                 .padding()
                 .alignmentGuide(.leading) { d in d[.leading] }
-            }
-            Divider().padding()
-            
-            Link(destination: Urls.appclips) {
-                VStack(){
-                    Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle").font(Font.footnote.weight(.light)).foregroundColor(.secondary)
-                    Images.appclipBarcodeClearExample.image
-                        .resizable()
-                        .aspectRatio(contentMode: ContentMode.fit)
-                        .padding()
-                        //.padding(.top, Sizing.medium)
-                        .frame(width: screenWidth / 2, height: screenWidth / 2, alignment: .center)
-                        .fixedSize()
-                }
-                
             }
             Spacer()
         }

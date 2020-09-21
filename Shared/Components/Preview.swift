@@ -26,13 +26,14 @@ public enum AppPreview: View, Equatable {
             case .userProfile(let user):
                 UserProfileView2(user: .constant(user))
                     .background(Color.clear)
+                    .id(user.emailAddress.email)
             case .view(let scrollAxis, let viewFunc):
                 ScrollView(scrollAxis ?? .vertical){
                     viewFunc().clipped()
                 }
         case .track(let track):
             VStack() {
-                NetworkImage(url: track.albumCoverUrl) {
+                NetworkImage(string: track.albumCoverUrl) {
                     Text("\(track.title)")
                 }
             }

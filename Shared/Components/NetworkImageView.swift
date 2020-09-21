@@ -23,8 +23,12 @@ public struct NetworkImage<Content: SwiftUI.View>: JoliView {
     public let placeholderContent: Content
     public let animation: Animation = .easeInOut
     
-    init(url: String?, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
-        self.init(url: url == nil ? nil : URL(string: url!), onLoaded: onLoaded, content: content)
+    init(string: String?, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
+        guard let string = string else {
+            self.init(url: nil, onLoaded: onLoaded, content: content)
+            return
+        }
+        self.init(url: URL(string: string), onLoaded: onLoaded, content: content)
     }
     
     init(url: URL? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {

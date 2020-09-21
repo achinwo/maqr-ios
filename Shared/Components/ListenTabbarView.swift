@@ -95,7 +95,9 @@ struct ListenTabbarView: JoliView {
                         guard let user = user else {
                             withImpact(.soft, animated: .spring()){
                                 self.preview = .view(.vertical) {
-                                    return AnyView(InvitePeopleView().padding(.top, Sizing.xLarge).environmentObject(self.appCoordinator))
+                                    return InvitePeopleView(playroom: playroom)
+                                        .padding(.top, Sizing.xLarge)
+                                        .environmentObject(self.appCoordinator).eraseToAnyView()
                                 }
                                 self.isExpanded = false
                             }
