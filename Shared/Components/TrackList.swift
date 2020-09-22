@@ -193,6 +193,11 @@ public struct TrackList: JoliView {
         
         
         let heart: Binding<HeartLevel?> = Binding() { () -> HeartLevel? in
+            
+            guard trackId < tracks.count else {
+                return nil
+            }
+            
             let track = tracks[trackId]
             
             guard let subscriptionCounts = self.subscriptionCounts[track.uri] else {
@@ -209,7 +214,13 @@ public struct TrackList: JoliView {
             return subscriptionCounts
             
         } set: { (heart, trasacton) in
+            
             withTransaction(trasacton) {
+                
+                guard trackId < tracks.count else {
+                    return
+                }
+                
                 let track = tracks[trackId]
                 subscriptionCounts[track.uri] = heart
                 
@@ -224,6 +235,7 @@ public struct TrackList: JoliView {
         return LazyVStack(alignment: .center, spacing: 0) {
             ForEach(Array(tracks.enumerated()), id: \.offset) { item in
                 TrackView2(track: self.trackBinding(item.offset), heartLevel: self.heartLevelBinding(item.offset))
+                        .id(item.element.uri)
                         .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 1) {
                             withImpact {
                                 self.preview = .track(item.element as! Track)

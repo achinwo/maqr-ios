@@ -101,6 +101,36 @@ public struct AppView2: View {
                             }
                         }
                     }
+                    .simultaneousGesture(
+                        DragGesture()
+                            .onChanged { gesture in
+                                self.offset = gesture.translation
+                            }
+                            
+                            .onEnded { _ in
+                                
+                                defer {
+                                    self.offset = .zero
+                                }
+                                
+                                guard appCoordinator.keyboardHeight > 0 && self.offset.height < appCoordinator.keyboardHeight else {
+                                    return
+                                }
+                                
+                                appCoordinator.dismissKeyboard()
+                            }
+                    )
+                    .simultaneousGesture(
+                        TapGesture()
+                            .onEnded() { value in
+                                
+                                guard appCoordinator.keyboardHeight > 0 else {
+                                    return
+                                }
+                                
+                                appCoordinator.dismissKeyboard()
+                            }
+                    )
                     .onChange(of: self.selectedViewId) { value in
                         withAnimation(){
                             print("[AppView2] scrolling to: \(value)")
@@ -120,10 +150,14 @@ public struct AppView2: View {
                     }
                 }
             }
-            .edgesIgnoringSafeArea([.top, .bottom])
+            .ignoresSafeArea(.all, edges: [.top, .bottom])
+            //.edgesIgnoringSafeArea()
         }
         .frame(minWidth: screenWidth)
     }
+    
+    @State private var offset = CGSize.zero
+    
 }
 
 

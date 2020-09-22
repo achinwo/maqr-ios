@@ -11,23 +11,6 @@ import Combine
 import JoliCore
 import JoliApi
 
-
-public extension Search.Engine {
-    
-    typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[Search.ResultView], Never>
-    
-    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod) -> AnyPublisher<[Search.ResultView], Never> {
-        let supported = categories.filter(){ supportedCategories.contains($0) }
-        
-        guard !supported.isEmpty else {
-            return Just([]).eraseToAnyPublisher()
-        }
-        
-        return searchFn(q, categories, limit)
-    }
-    
-}
-
 let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlists, .artists, .shows, .episodes, .albums])
 
 public struct ExploreView: JoliView {

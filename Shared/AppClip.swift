@@ -279,74 +279,48 @@ class ShareActivity: UIActivity {
     }
 }
 
-public extension View {
-    
-    func eraseToAnyView() -> AnyView {
-        return AnyView(self)
-    }
-    
-}
 
-
-
-
-public extension Search {
-    
-    struct ResultView: JoliView, Identifiable {
-        
-        @EnvironmentObject public var appCoordinator: AppCoordinator
-        
-        public var result: Result
-        
-        public var id: String {
-            return result.id
-        }
-        
-        private let content: () -> GeometryReader<AnyView>
-        
-        public init(result: Result, @ViewBuilder content: @escaping () -> GeometryReader<AnyView>){
-            self.result = result
-            self.content = content
-        }
-        
-        public var body: some View {
-            content()
-        }
-    }
-}
-
-public enum SearchResultCategory: String, CaseIterable, Identifiable {
-    
-    public var id: String {
-        return self.rawValue
-    }
-    
-    case sports
-    case movies
-    case songs
-    //case culture
-    case places
-    //case history
-    case playrooms
-
-}
-
+// MARK: - Something
 public final class AppCoordinator: ObservableObject {
     
     public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
     public var api: JoliApi!
     
-    public var cancellableSet: Set<AnyCancellable> = []
+    private var cancellableSet: Set<AnyCancellable> = []
     
     @Published public var isSearching = false
     @Published public var isSharePresented = false
     @Published public var namespace: Namespace.ID? = nil
+    @Published public var keyboardHeight: CGFloat = 0
     
     private var allSearchengines = [spotifyEngine]
     
     public init(namespace: Namespace.ID? = nil){
         self.namespace = namespace
+        
+        let notificationCenter = NotificationCenter.default
+        
+        notificationCenter.publisher(for: UIWindow.keyboardWillShowNotification)
+            .map {
+                guard
+                    let info = $0.userInfo,
+                    let keyboardFrame = info[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+                else { return 0 }
+                
+                return keyboardFrame.height
+            }
+            .assign(to: \.keyboardHeight, on: self)
+            .store(in: &cancellableSet)
+        
+        notificationCenter.publisher(for: UIWindow.keyboardDidHideNotification)
+            .map { _ in 0 }
+            .assign(to: \.keyboardHeight, on: self)
+            .store(in: &cancellableSet)
+    }
+    
+    public func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
 //    public func search(_ query: String, positionMs: Int? = nil) -> Promise<SearchResultView> {

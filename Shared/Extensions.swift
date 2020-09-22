@@ -26,6 +26,56 @@ public extension Builder where T == User {
     }
 }
 
+
+public extension View {
+    
+    func eraseToAnyView() -> AnyView {
+        return AnyView(self)
+    }
+    
+}
+
+public extension Search.Engine {
+    
+    typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[Search.ResultView], Never>
+    
+    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod) -> AnyPublisher<[Search.ResultView], Never> {
+        let supported = categories.filter(){ supportedCategories.contains($0) }
+        
+        guard !supported.isEmpty else {
+            return Just([]).eraseToAnyPublisher()
+        }
+        
+        return searchFn(q, categories, limit)
+    }
+    
+}
+
+public extension Search {
+    
+    struct ResultView: JoliView, Identifiable {
+        
+        @EnvironmentObject public var appCoordinator: AppCoordinator
+        
+        public var result: Result
+        
+        public var id: String {
+            return result.id
+        }
+        
+        private let content: () -> GeometryReader<AnyView>
+        
+        public init(result: Result, @ViewBuilder content: @escaping () -> GeometryReader<AnyView>){
+            self.result = result
+            self.content = content
+        }
+        
+        public var body: some View {
+            content()
+        }
+    }
+}
+
 extension View {
     
     var screenSize: CGSize {
