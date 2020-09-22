@@ -289,7 +289,7 @@ public final class AppCoordinator: ObservableObject {
     
     private var cancellableSet: Set<AnyCancellable> = []
     
-    @Published public var isSearching = false
+    @Published public var isSearching: Search.Category = []
     @Published public var isSharePresented = false
     @Published public var namespace: Namespace.ID? = nil
     @Published public var keyboardHeight: CGFloat = 0

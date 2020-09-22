@@ -17,7 +17,7 @@ public struct ExploreView: JoliView {
     
     static var searchengines: [Search.Engine] {
         return [spotifyEngine,
-        //        Search.Engine("Joli", categories: .playrooms)
+                Search.Engine("Joli", categories: .playrooms)
         ]
     }
     
@@ -39,7 +39,7 @@ public struct ExploreView: JoliView {
         return categories
     }
     
-    @State var selectedAreas: Set<Search.Category> = [.tracks, .artists]
+    @State var selectedAreas: Set<Search.Category> = [.tracks, .artists, .albums]
     
     @State var searchResults: [Search.ResultView] = []
     
@@ -99,9 +99,18 @@ public struct ExploreView: JoliView {
                             
                             print("Selected: \(selectedAreas)")
                         } label: {
-                            Text(area.label)
-                                .padding()
-                                .tag(area).font(.headline)
+                            HStack(){
+                                if appCoordinator.isSearching.contains(area) && selectedAreas.contains(area) {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .frame(width: 4, height: 4)
+                                        .padding(.all, 2)
+                                }
+                                Text(area.labelPlural)
+                                    .tag(area).font(.subheadline)
+                            }
+                            .animation(.easeInOut)
+                            .padding()
                         }
                         //.disabled(true)
                         .buttonStyle(BlackWhiteButtonStyle(inverted: selectedAreas.contains(area)))
@@ -110,11 +119,6 @@ public struct ExploreView: JoliView {
             }
             .padding(.bottom, Sizing.small)
             Divider()
-            
-            if appCoordinator.isSearching {
-                ProgressView()
-                    .progressViewStyle(LinearProgressViewStyle(tint: Color.primary))
-            }
         }
         
 //        let x = VStack(alignment: .leading) {
@@ -132,7 +136,7 @@ public struct ExploreView: JoliView {
                     //SearchResultView(searchResults, edgeInsets: edges)
                     
                     List(){
-                        let array = Array(resultsByCategory.sorted(by: { $0.key > $1.key }).enumerated())
+                        let array = Array(resultsByCategory.sorted(by: { $0.key.label > $1.key.label }).enumerated())
                         
                         ForEach(array, id: \.offset) { (idx, item) in
                             let header = HStack(){
@@ -230,8 +234,18 @@ public struct ExploreView: JoliView {
                     return Just([]).eraseToAnyPublisher()
                 }
                 
+                var isSearching = appCoordinator.isSearching
+                
+                for opt in Search.Category.allCases {
+                    guard spotifyEngine.supportedCategories.contains(opt) else {
+                        continue
+                    }
+                    
+                    isSearching.insert(opt)
+                }
+                
                 DispatchQueue.main.async {
-                    appCoordinator.isSearching = true
+                    appCoordinator.isSearching = isSearching
                 }
                 
                 return spotifyEngine.search(q, self.selectedAreas) { (q, categories, limit) in
@@ -247,8 +261,15 @@ public struct ExploreView: JoliView {
                                 promise(.success([]))
                             }
                             .always() {
+                                
+                                var isSearching = appCoordinator.isSearching
+                                
+                                for opt in Search.Category.allCases {
+                                    isSearching.remove(opt)
+                                }
+                                
                                 DispatchQueue.main.async {
-                                    appCoordinator.isSearching = false
+                                    appCoordinator.isSearching = isSearching
                                 }
                             }
                     }.eraseToAnyPublisher()
