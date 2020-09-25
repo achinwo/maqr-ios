@@ -284,56 +284,101 @@ public struct ExploreView: JoliView {
     }
     
     func makeResultViews(q: Search.Query, res: Spotify.SearchResult) -> [Search.ResultView] {
-        let tracks = res.tracks.enumerated()
-            .map() { trackItem -> Search.ResultView in
-                let res = Search.Result((trackItem.offset, res.tracks.count), q: q, category: .tracks, engine: spotifyEngine)
-                
-                return Search.ResultView(result: res){
-                    GeometryReader() { proxy in
-                        TrackView2(track: .constant(trackItem.element)).eraseToAnyView()
-                    }//
-                }
-            }
         
-        let albums = res.albums.enumerated()
-            .map() { item -> Search.ResultView in
-                let res = Search.Result((item.offset, res.albums.count), q: q, category: .albums, engine: spotifyEngine)
-                
-                return Search.ResultView(result: res){
-                    GeometryReader() { proxy in
-                        AlbumView(album: item.element).eraseToAnyView()
-                    }//
-                }
-            }
+        var results: [Search.ResultView] = []
         
-        let artists = res.artists.enumerated()
-            .map() { item -> Search.ResultView in
-                let artist = item.element
-                let res = Search.Result((item.offset, res.artists.count), q: q, category: .artists, engine: spotifyEngine)
-                
-                return Search.ResultView(result: res){
-                    GeometryReader() { proxy in
-                        ArtistView(artist: artist)
-                        .frame(width: proxy.size.width, height: proxy.size.height)
-                        //.background(Color.yellow)
-                        //.alignmentGuide(.top) { d in d[.leading] }
-                        .onAppear() {
-                            print("[makeResultViews] proxy=\(proxy.size)")
-                        }
-                        .eraseToAnyView()
+        func appendViews<T>(_ items: [T], _ category: Search.Category, convert: (T, Search.Result) -> Search.ResultView?) {
+            items.enumerated()
+                .forEach() { item in
+                    let res = Search.Result((item.offset, items.count), q: q, category: category, engine: spotifyEngine)
+                    
+                    guard let view = convert(item.element, res) else {
+                        return
                     }
+                    
+                    results.append(view)
+                }
+        }
+        
+        appendViews(res.tracks, .tracks) { track, result in
+            Search.ResultView(result: result){
+                GeometryReader() { proxy in
+                    TrackView2(track: .constant(track)).eraseToAnyView()
                 }
             }
-        return tracks + artists + albums
+        }
+        
+        appendViews(res.albums, .albums) { album, result in
+            Search.ResultView(result: result){
+                GeometryReader() { proxy in
+                    SpotifyItemView(item: album,
+                                    images: album.images,
+                                    titleKeyPath: \.name,
+                                    subtitleKeyPath: \.releaseDate)
+                        .eraseToAnyView()
+                }
+            }
+        }
+        
+        appendViews(res.artists, .artists) { artist, result in
+            Search.ResultView(result: result){
+                GeometryReader() { proxy in
+                    ArtistView(artist: artist)
+                    .eraseToAnyView()
+                }
+            }
+        }
+        
+        appendViews(res.playlists, .playlists) { playlist, result in
+            Search.ResultView(result: result){
+                GeometryReader() { proxy in
+                    SpotifyItemView(item: playlist,
+                                    images: playlist.images,
+                                    titleKeyPath: \.name,
+                                    subtitleKeyPath: \.description)
+                    .eraseToAnyView()
+                }
+            }
+        }
+        
+        appendViews(res.episodes, .episodes) { episode, result in
+            Search.ResultView(result: result){
+                GeometryReader() { proxy in
+                    SpotifyItemView(item: episode,
+                                    images: episode.images,
+                                    titleKeyPath: \.name,
+                                    subtitleKeyPath: \.description)
+                    .eraseToAnyView()
+                }
+            }
+        }
+        
+        appendViews(res.shows, .shows) { show, result in
+            Search.ResultView(result: result){
+                GeometryReader() { proxy in
+                    SpotifyItemView(item: show,
+                                    images: show.images,
+                                    titleKeyPath: \.name,
+                                    subtitleKeyPath: \.description)
+                    .eraseToAnyView()
+                }
+            }
+        }
+        
+        return results
     }
 }
 
-public struct AlbumView: View {
-    @State var album: Spotify.Album
+public struct SpotifyItemView<Item>: View {
+    
+    @State var item: Item
+    let images: [Spotify.Image]?
+    let titleKeyPath: KeyPath<Item, String>
+    let subtitleKeyPath: KeyPath<Item, String>
     
     public var body: some View {
         HStack(){
-            NetworkImage(string: album.images.smallestImage?.url){
+            NetworkImage(string: images?.smallestImage?.url){
                 Image(systemName: "music.note.list")
                     .resizable()
                     .foregroundColor(.white)
@@ -341,11 +386,11 @@ public struct AlbumView: View {
                     .frame(width: 64, height: 64, alignment: .bottomLeading)
             }
             .frame(width: 64, height: 64, alignment: .bottomLeading)
-            
+
             VStack(alignment: .leading){
-                Text(album.name).font(.body)
-                
-                Text(album.releaseDate)
+                Text(item[keyPath: titleKeyPath]).font(.body)
+
+                Text(item[keyPath: subtitleKeyPath])
                     .font(.footnote)
                     .foregroundColor(.secondary)
             }

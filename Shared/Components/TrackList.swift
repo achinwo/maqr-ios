@@ -129,7 +129,7 @@ public struct TrackView2: JoliView {
             
             if self.heartLevel != nil {
                 Spacer()
-                JoyMeterView(self.$heartLevel, heartCount: 1, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary)
+                JoyMeterView(self.$heartLevel, heartCount: 1, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary, backgroundColor: Color.red.opacity(0.5))
                     .padding()
                     .padding(.trailing, Sizing.large)
                     .foregroundColor(colors?.secondaryColor ?? Color.primary)

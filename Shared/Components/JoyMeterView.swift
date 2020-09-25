@@ -107,20 +107,22 @@ struct JoyMeterView: View {
     @State var heartCount: Int = 0
     @State var width: CGFloat = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
     @State var labelColor: Color = .gray
+    @State var backgroundColor: Color = .clear
     
     var heartLevel: HeartLevel {
         return self.heartLevelBinding ?? .empty
     }
     
-    init(_ heartLevel: Binding<HeartLevel?>, heartCount: Int = 0, width: CGFloat? = nil, labelColor: Color? = nil){
+    init(_ heartLevel: Binding<HeartLevel?>, heartCount: Int = 0, width: CGFloat? = nil, labelColor: Color? = nil, backgroundColor: Color?  = nil){
         self._heartLevelBinding = heartLevel
         self.heartCount = heartCount
         self.width = width ?? UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
         self.labelColor = labelColor ?? .gray
+        self.backgroundColor = backgroundColor ?? self.backgroundColor
     }
     
-    init(_ heartLevel: Binding<HeartLevel?>, heartCount: Int = 0, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil){
-        self.init(heartLevel, heartCount: heartCount, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor)
+    init(_ heartLevel: Binding<HeartLevel?>, heartCount: Int = 0, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil, backgroundColor: Color? = nil){
+        self.init(heartLevel, heartCount: heartCount, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor, backgroundColor: backgroundColor)
     }
     
     
@@ -142,7 +144,8 @@ struct JoyMeterView: View {
                 .font(.system(size: width, weight: .light))
                 .frame(width: width, height: width)
                 .overlay(Rectangle().background(Color.primary).offset(x: offset, y: 0))
-                .mask(Image(systemName: "heart.fill").font(.system(size: width)))
+                .background(self.backgroundColor)
+                .mask(Image(systemName: "heart.fill").font(.system(size: width, weight: .light)))
                 .onChange(of: self.heartLevel) { newLevel in
                     guard self.heartLevel == .full else {
                         return
