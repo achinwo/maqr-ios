@@ -46,7 +46,7 @@ public extension Search.Engine {
             return Just([]).eraseToAnyPublisher()
         }
         
-        return searchFn(q, categories, limit)
+        return searchFn(q, supported, limit)
     }
     
 }

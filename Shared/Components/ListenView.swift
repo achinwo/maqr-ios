@@ -41,10 +41,20 @@ struct ListenView: JoliView {
         }
         return ZStack(){
             ScrollView(.vertical, showsIndicators: true) {
+//                VStack(){
+//                    Text("Playing View").font(.largeTitle)
+//                }
+//                .frame(width: screenWidth, height: screenWidth)
+//                .onAppear(){
+//                    print("[ListenView] playing view appeared")
+//                }
+//                .onDisappear() {
+//                    print("[ListenView] playing view disappeared")
+//                }
                 TrackList(tracks: self.$tracks, preview: $preview)
                     //.padding(.top, geoProxy.safeAreaInsets.top)
-                    .padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds!.height)
-                    .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds!.height)
+                    .padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds?.height)
+                    .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
             }
             .frame(maxWidth: screenWidth)
             
@@ -82,7 +92,7 @@ struct ListenView: JoliView {
                     .frame(maxWidth: screenWidth)
                     .frame(minWidth: screenWidth, maxHeight: screenHeight)
                     .background(BlurView(.extraLight))
-                    .padding(.top, 1)
+                    //.padding(.top, 1)
                     .padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
                     .offset(x: 0, y: self.preview == nil ? screenHeight : 0)
                     .animation(.spring())

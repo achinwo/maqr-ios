@@ -13,12 +13,12 @@ import JoliApi
 
 let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlists, .artists, .shows, .episodes, .albums])
 
+let joliEngine = Search.Engine("Joli", categories: .playrooms)
+
 public struct ExploreView: JoliView {
     
     static var searchengines: [Search.Engine] {
-        return [spotifyEngine,
-                Search.Engine("Joli", categories: .playrooms)
-        ]
+        return [spotifyEngine, joliEngine]
     }
     
     let geoProxy: GeometryProxy
@@ -221,6 +221,7 @@ public struct ExploreView: JoliView {
         }
     }
     
+    // MARK: - Spotify Search
     private func updateSubscriptions() {
         if let cancel = self.searchResultPublisher {
             cancel.cancel()
@@ -250,7 +251,7 @@ public struct ExploreView: JoliView {
                     appCoordinator.isSearching = isSearching
                 }
                 
-                return spotifyEngine.search(q, self.selectedAreas) { (q, categories, limit) in
+                let spotifyPub = spotifyEngine.search(q, self.selectedAreas) { (q, categories, limit) in
                     
                     return Future<[Search.ResultView], Never>() { promise in
                         api.searchTracks(q: q, categories: categories, limit: limit)
@@ -276,6 +277,54 @@ public struct ExploreView: JoliView {
                             }
                     }.eraseToAnyPublisher()
                 }
+                
+                let joliPub = joliEngine.search(q, self.selectedAreas) { (q, categories, limit) in
+                    
+                    return Future<[Search.ResultView], Never>() { promise in
+                        guard var url = URLComponents(string: "/api/search") else {
+                            return promise(.success([]))
+                        }
+                        
+                        let typeStr = Array(categories).map() { $0.label.lowercased() }.joined(separator: ",")
+                        url.queryItems = [
+                            URLQueryItem(name: "q", value: q),
+                            URLQueryItem(name: "type", value: typeStr),
+                            URLQueryItem(name: "limit", value: limit.description),
+                        ]
+                        
+                        HttpMethod.Fetch.get(url: url,
+                                             dataType: [Musicroom].self,
+                                             baseUrl: api.baseUrlHttp,
+                                             urlSession: api.urlSession,
+                                             on: .global(qos: .userInitiated))
+                            .then(){ rooms in
+                                let views = self.makeResultViews(q: q, playrooms: rooms, engine: joliEngine)
+                                promise(.success(views))
+                            }
+                            .catch() { error in
+                                print("[searchTracks] error: \(error)")
+                                promise(.success([]))
+                            }
+                            .always() {
+                                
+                                var isSearching = appCoordinator.isSearching
+                                
+                                for opt in Search.Category.allCases {
+                                    isSearching.remove(opt)
+                                }
+                                
+                                DispatchQueue.main.async {
+                                    appCoordinator.isSearching = isSearching
+                                }
+                            }
+                    }.eraseToAnyPublisher()
+                }
+                
+                return Publishers.CombineLatest(spotifyPub, joliPub)
+                    .scan([Search.ResultView]()) { current, pair -> [Search.ResultView] in
+                        return pair.0 + pair.1
+                    }
+                    .eraseToAnyPublisher()
             }
             .switchToLatest()
             .receive(on: RunLoop.main)
@@ -283,6 +332,37 @@ public struct ExploreView: JoliView {
             
         
         print("[searchResultPublisher] created: \(String(describing: searchResultPublisher))")
+    }
+    
+    func makeResultViews(q: Search.Query, playrooms: [Musicroom], engine: Search.Engine) -> [Search.ResultView] {
+        
+        var results: [Search.ResultView] = []
+        
+        func appendViews<T>(_ items: [T], _ category: Search.Category, convert: (T, Search.Result) -> Search.ResultView?) {
+            items.enumerated()
+                .forEach() { item in
+                    let res = Search.Result((item.offset, items.count), q: q, category: category, engine: spotifyEngine)
+                    
+                    guard let view = convert(item.element, res) else {
+                        return
+                    }
+                    
+                    results.append(view)
+                }
+        }
+        
+        appendViews(playrooms, .playrooms) { room, result -> Search.ResultView in
+            Search.ResultView(result: result){
+                GeometryReader() { proxy in
+                    SpotifyItemView(item: room,
+                                    images: [],
+                                    titleKeyPath: \.name,
+                                    subtitleKeyPath: \.details)
+                        .eraseToAnyView()
+                }
+            }
+        }
+        return results
     }
     
     func makeResultViews(q: Search.Query, res: Spotify.SearchResult) -> [Search.ResultView] {

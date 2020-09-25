@@ -215,7 +215,23 @@ struct ListenTabbarView: JoliView {
                                 .font(Font.caption.weight(.light))
                                 .offset(x: UIFont.preferredFont(forTextStyle: .title2).pointSize, y: 0)
                         )
+                        .onTapGesture(){
+                            withAnimation(){
+                                self.isExpanded.toggle()
+                            }
+                        }
+                        .onLongPressGesture {
+                            withImpact(.rigid) {
+                                self.preview = .view() {
+                                    InvitePeopleView(playroom: playroom)
+                                        .padding(.top, Sizing.xLarge)
+                                        .eraseToAnyView()
+                                }
+                            }
+                        }
                 }
+                
+                
                 Spacer()
             }
             .padding()
