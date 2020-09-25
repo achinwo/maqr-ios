@@ -34,6 +34,7 @@ public struct TrackView2: JoliView {
     
     @Binding var track: Playable
     @State var colors: UIImageColors? = nil
+    var useDynamicColors = false
     @GestureState var isDetectingLongPress = false
     @State var completedLongPress = false
     
@@ -55,10 +56,11 @@ public struct TrackView2: JoliView {
                 }
         }
     
-    public init(track: Binding<Playable>, heartLevel: Binding<HeartLevel?> = .constant(nil), colors: UIImageColors? = nil){
+    public init(track: Binding<Playable>, heartLevel: Binding<HeartLevel?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false){
         self._heartLevel = heartLevel
         self._track = track
         self.colors = colors
+        self.useDynamicColors = useDynamicColors
     }
     
     public var body: some View {
@@ -74,7 +76,7 @@ public struct TrackView2: JoliView {
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
                          placeholderImage: UIImage(systemName: "timelapse")!) { (loadedImage, error) in
                 
-                guard let loadedImage = loadedImage else {
+                guard let loadedImage = loadedImage, useDynamicColors else {
                     return
                 }
                 
@@ -234,7 +236,7 @@ public struct TrackList: JoliView {
     public var body: some View {
         return LazyVStack(alignment: .center, spacing: 0) {
             ForEach(Array(tracks.enumerated()), id: \.offset) { item in
-                TrackView2(track: self.trackBinding(item.offset), heartLevel: self.heartLevelBinding(item.offset))
+                TrackView2(track: self.trackBinding(item.offset), heartLevel: self.heartLevelBinding(item.offset), useDynamicColors: true)
                         .id(item.element.uri)
                         .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 1) {
                             withImpact {

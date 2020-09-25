@@ -103,10 +103,12 @@ public struct ExploreView: JoliView {
                                 if appCoordinator.isSearching.contains(area) && selectedAreas.contains(area) {
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .fixedSize()
                                         .frame(width: 4, height: 4)
                                         .padding(.all, 2)
                                 }
                                 Text(area.labelPlural)
+                                    .layoutPriority(1000)
                                     .tag(area).font(.subheadline)
                             }
                             .animation(.easeInOut)
