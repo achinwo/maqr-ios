@@ -138,7 +138,7 @@ public struct ExploreView: JoliView {
                     //SearchResultView(searchResults, edgeInsets: edges)
                     
                     List(){
-                        let array = Array(resultsByCategory.sorted(by: { $0.key.label > $1.key.label }).enumerated())
+                        let array = Array(resultsByCategory.sorted(by: { $0.key.rawValue < $1.key.rawValue }).enumerated())
                         
                         ForEach(array, id: \.offset) { (idx, item) in
                             let header = HStack(){
