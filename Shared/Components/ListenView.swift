@@ -28,20 +28,22 @@ struct ListenView: JoliView {
     @Binding var currentUser: User?
     @State var scrollProxy: ScrollViewProxy? = nil
     
+    @State private var membership: [PlayroomMembership] = []
+    
     var body: some View {
-        let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
-            guard user.id != 3 else {
-                return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
-            }
-            
-            let act = [PlayroomMembership.ActivityStatus.offline,
-                       PlayroomMembership.ActivityStatus.online].randomElement()!
-            
-            let mem = PlayroomMembership(inviteStatus: .accepted,
-                                         activityStatus: act,
-                                         playroomId: 3, user: user)
-            return mem
-        }
+//        let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
+//            guard user.id != 3 else {
+//                return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
+//            }
+//
+//            let act = [PlayroomMembership.ActivityStatus.offline,
+//                       PlayroomMembership.ActivityStatus.online].randomElement()!
+//
+//            let mem = PlayroomMembership(inviteStatus: .accepted,
+//                                         activityStatus: act,
+//                                         playroomId: 3, user: user)
+//            return mem
+//        }
         return ZStack(){
             ScrollViewReader() { scrollProxy in
                 GeometryReader() { proxy in
@@ -72,7 +74,7 @@ struct ListenView: JoliView {
             VStack(spacing: .zero) {
                 Spacer()
                 Divider()
-                ListenTabbarView(users: users, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview, playroom: self.$playroom)
+                ListenTabbarView(users: membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview, playroom: self.$playroom)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in
@@ -112,6 +114,7 @@ struct ListenView: JoliView {
                                 Text("Oops")
                             }
                             .frame(width: 56, height: 56)
+                            .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
                             .onTapGesture {
                                 withImpact(.soft, animated: .easeInOut) {
                                     scrollProxy?.scrollTo(a.uri, anchor: .center)
@@ -122,6 +125,7 @@ struct ListenView: JoliView {
                                 NetworkImage(string: b.albumCoverUrl) {
                                     Text("Oops 2")
                                 }
+                                .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
                                 .frame(width: 40, height: 40)
                                 Text("Up Next")
                                     .font(Font.footnote.weight(.thin))
@@ -138,6 +142,7 @@ struct ListenView: JoliView {
                                 NetworkImage(string: c.albumCoverUrl) {
                                     Text("Oops 3")
                                 }
+                                .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
                                 .frame(width: 40, height: 40)
                                 Text("Runner-up")
                                     .font(Font.footnote.weight(.thin))
