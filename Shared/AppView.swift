@@ -54,7 +54,7 @@ public struct AppView2: View {
                 ScrollViewReader() { (proxy: ScrollViewProxy) in
                     ScrollView(.horizontal, showsIndicators: false){
                         HStack(alignment: .top, spacing: .zero){
-                            ExploreView(geoProxy: geoProxy)
+                            ExploreView(geoProxy: geoProxy, playroom: self.$playroom, selectedViewId: self.$selectedViewId)
                                 .frame(width: screenWidth)
                                 .onChange(of: self.scrollPosition) { value in
                                     print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")

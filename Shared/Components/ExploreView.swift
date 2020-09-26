@@ -39,7 +39,7 @@ public struct ExploreView: JoliView {
         return categories
     }
     
-    @State var selectedAreas: Set<Search.Category> = [.tracks, .artists, .albums]
+    @State var selectedAreas: Set<Search.Category> = [.tracks, .artists, .albums, .playrooms]
     
     @State var searchResults: [Search.ResultView] = []
     
@@ -48,10 +48,13 @@ public struct ExploreView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @State var searchbarRect: CGRect? = nil
+    @Binding var playroom: Musicroom?
+    @Binding var selectedViewId: String
     
-    
-    public init(geoProxy: GeometryProxy) {
+    public init(geoProxy: GeometryProxy, playroom: Binding<Musicroom?>, selectedViewId: Binding<String>) {
         self.geoProxy = geoProxy
+        self._playroom = playroom
+        self._selectedViewId = selectedViewId
     }
     
     var areasFiltered: Set<Search.Category> {
@@ -358,6 +361,14 @@ public struct ExploreView: JoliView {
                                     images: [],
                                     titleKeyPath: \.name,
                                     subtitleKeyPath: \.details)
+                        .onTapGesture {
+                            print("[Explore] tapped: \(room)")
+                            self.selectedViewId = "views.listen"
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, qos: .userInteractive, flags: .enforceQoS){
+                                self.playroom = room
+                            }
+                        }
                         .eraseToAnyView()
                 }
             }
@@ -463,6 +474,7 @@ public struct SpotifyItemView<Item>: View {
             NetworkImage(string: images?.smallestImage?.url){
                 Image(systemName: "music.note.list")
                     .resizable()
+                    .padding()
                     .foregroundColor(.white)
                     .background(Color.gray)
                     .frame(width: 64, height: 64, alignment: .bottomLeading)
@@ -537,7 +549,7 @@ struct DarkBlueShadowProgressViewStyle: ProgressViewStyle {
 struct ExploreView_Previews: PreviewProvider {
     static var previews: some View {
         GeometryReader() { geoProxy in
-            ExploreView(geoProxy: geoProxy)
+            ExploreView(geoProxy: geoProxy, playroom: .constant(nil), selectedViewId: .constant(.empty))
         }
     }
 }
