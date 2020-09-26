@@ -21,9 +21,12 @@ struct ListenView: JoliView {
     
     @State var peopleViewBounds: CGRect? = nil
     @State var navbarViewBounds: CGRect? = nil
+    @State var roomControlViewBounds: CGRect? = nil
+    
     var animation: Namespace.ID
     @Binding var playroom: Musicroom?
     @Binding var currentUser: User?
+    @State var scrollProxy: ScrollViewProxy? = nil
     
     var body: some View {
         let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
@@ -40,21 +43,29 @@ struct ListenView: JoliView {
             return mem
         }
         return ZStack(){
-            ScrollView(.vertical, showsIndicators: true) {
-//                VStack(){
-//                    Text("Playing View").font(.largeTitle)
-//                }
-//                .frame(width: screenWidth, height: screenWidth)
-//                .onAppear(){
-//                    print("[ListenView] playing view appeared")
-//                }
-//                .onDisappear() {
-//                    print("[ListenView] playing view disappeared")
-//                }
-                TrackList(tracks: self.$tracks, preview: $preview)
-                    //.padding(.top, geoProxy.safeAreaInsets.top)
-                    .padding(.top, navbarViewBounds == nil ? .zero : navbarViewBounds?.height)
-                    .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+            ScrollViewReader() { scrollProxy in
+                GeometryReader() { proxy in
+                    ScrollView(.vertical, showsIndicators: true) {
+                        //                VStack(){
+                        //                    Text("Playing View").font(.largeTitle)
+                        //                }
+                        //                .frame(width: screenWidth, height: screenWidth)
+                        //                .onAppear(){
+                        //                    print("[ListenView] playing view appeared")
+                        //                }
+                        //                .onDisappear() {
+                        //                    print("[ListenView] playing view disappeared")
+                        //                }
+                        TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom)
+                            //.padding(.top, geoProxy.safeAreaInsets.top)
+                            //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
+                            .padding(.top, proxy.frame(in: .named("playroom-controls-space")).minY)//== nil ? .zero : navbarViewBounds?.height)
+                            .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+                    }
+                }
+                .onAppear() {
+                    self.scrollProxy = scrollProxy //
+                }
             }
             .frame(maxWidth: screenWidth)
             
@@ -73,21 +84,105 @@ struct ListenView: JoliView {
                 //Color.white.blur(radius: 20).opacity(0.9))
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
-            //.offset(x: appCoordinator.tabbar., y: /*@START_MENU_TOKEN@*/10.0/*@END_MENU_TOKEN@*/)
+            //.offset(x: appCoordinator.tabbar., y: )
             .zIndex(100)
             
             VStack(spacing: .zero) {
                 HStack(spacing: .zero){
                     Spacer()
                 }
+                .animation(.easeIn)
                 .frame(width: screenWidth, height: geoProxy.safeAreaInsets.top)
-                .background(Color.white.opacity(0.70))
+                .background(Color.white.opacity(0.89))
                 .onFrameChange() { rect in
                     DispatchQueue.main.async {
                         self.navbarViewBounds = rect
                     }
                 }
+                
+                Group(){
+                    if let playroom = playroom {
+                        
+                        let a = SEED_DATA.tracks.first!
+                        let b = SEED_DATA.tracks[16]
+                        let c = SEED_DATA.tracks[32]
+                        
+                        HStack(alignment: .center){
+                            NetworkImage(string: a.albumCoverUrl) {
+                                Text("Oops")
+                            }
+                            .frame(width: 56, height: 56)
+                            .onTapGesture {
+                                withImpact(.soft, animated: .easeInOut) {
+                                    scrollProxy?.scrollTo(a.uri, anchor: .center)
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 1){
+                                NetworkImage(string: b.albumCoverUrl) {
+                                    Text("Oops 2")
+                                }
+                                .frame(width: 40, height: 40)
+                                Text("Up Next")
+                                    .font(Font.footnote.weight(.thin))
+                                    .foregroundColor(Color.primary)
+                            }
+                            .frame(height: 56)
+                            .onTapGesture {
+                                withImpact(.soft, animated: .easeInOut) {
+                                    scrollProxy?.scrollTo(b.uri, anchor: .center)
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 1){
+                                NetworkImage(string: c.albumCoverUrl) {
+                                    Text("Oops 3")
+                                }
+                                .frame(width: 40, height: 40)
+                                Text("Runner-up")
+                                    .font(Font.footnote.weight(.thin))
+                                    .foregroundColor(Color.primary)
+                            }
+                            .frame(height: 56)
+                            .onTapGesture {
+                                withImpact(.soft, animated: .easeInOut) {
+                                    scrollProxy?.scrollTo(c.uri, anchor: .center)
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            VStack(alignment: .trailing) {
+                                HStack(alignment: .center){
+                                    Text("in")
+                                        .font(Font.headline)
+                                        .foregroundColor(Color.gray)
+                                    Text(playroom.name)
+                                        .font(Font.headline)
+                                        .foregroundColor(.blue)
+                                        .frame(maxWidth: screenWidth / 1.8)
+                                        .fixedSize(horizontal: true, vertical: false)
+                                }
+                                Text("by Obialo")
+                                    .font(Font.footnote.weight(.thin))
+                                    .foregroundColor(Color.secondary)
+                            }
+                        }
+                        .padding(.horizontal, Sizing.small * 0.6)
+                        .padding([.horizontal, .bottom], Sizing.small * 0.5)
+                        .background(Color.white.opacity(0.90))
+                        
+                        
+                    }
+                }
+                .coordinateSpace(name: "playroom-controls-space")
+                    .onFrameChange() { rect in
+                        DispatchQueue.main.async {
+                            self.roomControlViewBounds = rect
+                        }
+                    }
                 Divider()
+                
                 AppPreviewView(preview: self.$preview, currentUser: self.$currentUser, animation: animation)
                     .frame(maxWidth: screenWidth)
                     .frame(minWidth: screenWidth, maxHeight: screenHeight)

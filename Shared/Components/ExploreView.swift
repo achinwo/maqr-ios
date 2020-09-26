@@ -126,13 +126,6 @@ public struct ExploreView: JoliView {
             Divider()
         }
         
-//        let x = VStack(alignment: .leading) {
-//            //Text("Testing test")
-//            ForEach(Array(resultsByCategory.sorted(by: >)), id: \.0) { key, value in
-//                value
-//            }
-//        }
-        
         return ZStack(alignment: .top) {
             
                 //let top = (searchbarRect?.maxY ?? geoProxy.safeAreaInsets.top) //- geoProxy.safeAreaInsets.top

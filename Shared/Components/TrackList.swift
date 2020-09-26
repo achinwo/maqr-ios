@@ -174,10 +174,12 @@ public struct TrackList: JoliView {
     @State var subscriptionCounts: [String: HeartLevel] = [:]
     @Binding var tracks: [Playable]
     @Binding var preview: AppPreview?
+    @Binding var playroom: Musicroom?
     
-    public init(tracks: Binding<[Playable]>, preview: Binding<AppPreview?> = .constant(nil)){
+    public init(tracks: Binding<[Playable]>, preview: Binding<AppPreview?> = .constant(nil), playroom: Binding<Musicroom?> = .constant(nil)){
         self._tracks = tracks
         self._preview = preview
+        self._playroom = playroom
     }
     
     func trackBinding(_ trackId: Array<Playable>.Index) -> Binding<Playable> {
@@ -196,7 +198,7 @@ public struct TrackList: JoliView {
         
         let heart: Binding<HeartLevel?> = Binding() { () -> HeartLevel? in
             
-            guard trackId < tracks.count else {
+            guard trackId < tracks.count, playroom != nil else {
                 return nil
             }
             
