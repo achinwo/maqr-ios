@@ -160,7 +160,7 @@ struct ListenView: JoliView {
                             VStack(alignment: .trailing) {
                                 HStack(alignment: .center){
                                     Text("in")
-                                        .font(Font.headline)
+                                        .font(Font.subheadline)
                                         .foregroundColor(Color.gray)
                                     Text(playroom.name)
                                         .font(Font.headline)
@@ -171,6 +171,26 @@ struct ListenView: JoliView {
                                 Text("by Obialo")
                                     .font(Font.footnote.weight(.thin))
                                     .foregroundColor(Color.secondary)
+                            }.onTapGesture {
+                                self.preview = .view() {
+                                    VStack(){
+                                        Spacer()
+                                        Button(){
+                                            withAnimation() {
+                                                self.playroom = nil
+                                                self.preview = nil
+                                            }
+                                        } label: {
+                                            Text("Exit \"\(playroom.name)\"?")
+                                                .font(.title2)
+                                        }
+                                        .cornerRadius(12)
+                                        Spacer()
+                                    }
+                                    .background(Color.clear)
+                                    .padding()
+                                    .eraseToAnyView()
+                                }
                             }
                         }
                         .padding(.horizontal, Sizing.small * 0.6)

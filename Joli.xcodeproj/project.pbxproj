@@ -58,7 +58,6 @@
 		928A392C24E9EB8300A029A1 /* JoliPlayground.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		928A393024E9EB9400A029A1 /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
 		928A393124E9EB9400A029A1 /* SpotifyiOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		928A393224E9EC7A00A029A1 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 928A392724E9EB1A00A029A1 /* StoreKit.framework */; };
 		928F75F424F7B13400CF708B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F75F324F7B13400CF708B /* SearchView.swift */; };
 		928F75F524F7B13400CF708B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F75F324F7B13400CF708B /* SearchView.swift */; };
 		928F75F624F7B13400CF708B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F75F324F7B13400CF708B /* SearchView.swift */; };
@@ -290,7 +289,6 @@
 		928A391B24E9DAE600A029A1 /* ListenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenView.swift; sourceTree = "<group>"; };
 		928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyDelegate.swift; sourceTree = "<group>"; };
 		928A392324E9E2FA00A029A1 /* JoyMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoyMeterView.swift; sourceTree = "<group>"; };
-		928A392724E9EB1A00A029A1 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		928F75F324F7B13400CF708B /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		929BA5CA24C7925F00B11188 /* JoliApi */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JoliApi; sourceTree = "<group>"; };
 		929BA5CB24C7925F00B11188 /* env.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = env.json; sourceTree = "<group>"; };
@@ -373,7 +371,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9274A81424CDB41500B45EDF /* JoliPlayground.framework in Frameworks */,
-				928A393224E9EC7A00A029A1 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -670,7 +667,6 @@
 		92F37A18236458F2005FE2AB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				928A392724E9EB1A00A029A1 /* StoreKit.framework */,
 				92A2EDE024D001EE00D6640A /* MapKit.framework */,
 				925E5C72236A742100D95AB7 /* SpotifyiOS.framework */,
 				9234320D23BFD2F700E24E96 /* NotificationCenter.framework */,
@@ -1950,8 +1946,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/achinwo/JoliApi.git";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.1;
 			};
 		};
 		92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */ = {

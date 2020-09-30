@@ -43,7 +43,9 @@ public struct NetworkImage<Content: SwiftUI.View>: JoliView {
         
         return ZStack(){
                 if let image = image {
-                    SwiftUI.Image(uiImage: image).resizable()
+                    SwiftUI.Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
                 } else {
                     placeholderContent
                 }
@@ -56,7 +58,9 @@ public struct NetworkImage<Content: SwiftUI.View>: JoliView {
     private func loadImage() {
         guard let imageURL = imageURL, image == nil else { return }
         
-        KingfisherManager.shared.downloader.trustedHosts = Set([appCoordinator.api.baseUrlHttp.host!])
+        if appCoordinator.api != nil, let host = appCoordinator.api.baseUrlHttp.host {
+            KingfisherManager.shared.downloader.trustedHosts = Set([host])
+        }
         
         KingfisherManager.shared.retrieveImage(with: imageURL) { result in
             switch result {
