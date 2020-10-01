@@ -10,6 +10,23 @@ import SwiftUI
 import Combine
 import JoliCore
 import JoliApi
+import GradientLoadingBar
+
+
+struct GradientLoadingBarView: UIViewRepresentable {
+    
+    //let isAnimating: Bool
+    //let style: UIActivityIndicatorView.Style
+
+    func makeUIView(context: Context) -> GradientActivityIndicatorView {
+        let view = GradientActivityIndicatorView()
+        return view
+    }
+
+    func updateUIView(_ uiView: GradientActivityIndicatorView, context: Context) {
+        //isAnimating ? uiView.startAnimating() : uiView.stopAnimating()
+    }
+}
 
 let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlists, .artists, .shows, .episodes, .albums])
 
@@ -103,13 +120,6 @@ public struct ExploreView: JoliView {
                             print("Selected: \(selectedAreas)")
                         } label: {
                             HStack(){
-                                if appCoordinator.isSearching.contains(area) && selectedAreas.contains(area) {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                        .fixedSize()
-                                        .frame(width: 4, height: 4)
-                                        .padding(.all, 2)
-                                }
                                 Text(area.labelPlural)
                                     .layoutPriority(1000)
                                     .tag(area).font(.subheadline)
@@ -123,6 +133,13 @@ public struct ExploreView: JoliView {
                 }
             }
             .padding(.bottom, Sizing.small)
+            
+            
+            GradientLoadingBarView()
+                .opacity(appCoordinator.isSearching.isEmpty ? 0 : 1)
+                .animation(.easeInOut(duration: 0.2))
+                .frame(height: appCoordinator.isSearching.isEmpty ? 0 : 2)
+            
             Divider()
         }
         

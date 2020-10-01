@@ -40,6 +40,7 @@
 		9274A80924CDB29900B45EDF /* JoliClip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 9274A7E424CDB29200B45EDF /* JoliClip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9274A81424CDB41500B45EDF /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		9274A81524CDB41500B45EDF /* JoliPlayground.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		927DD09925263C92005BAAF7 /* GradientLoadingBar in Frameworks */ = {isa = PBXBuildFile; productRef = 927DD09825263C92005BAAF7 /* GradientLoadingBar */; };
 		927E0E3624E9ADC000C8257D /* AppClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3524E9ADC000C8257D /* AppClip.swift */; };
 		927E0E3724E9ADC000C8257D /* AppClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3524E9ADC000C8257D /* AppClip.swift */; };
 		927E0E3824E9ADC000C8257D /* AppClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3524E9ADC000C8257D /* AppClip.swift */; };
@@ -363,6 +364,7 @@
 				925C6FF324CB722A0016963F /* FBLPromises in Frameworks */,
 				92BD11D924CB104D00AAB7DE /* LetterAvatarKit in Frameworks */,
 				9203B31924CB079200F465CC /* JoliApi in Frameworks */,
+				927DD09925263C92005BAAF7 /* GradientLoadingBar in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -710,6 +712,7 @@
 				925C6FF224CB722A0016963F /* FBLPromises */,
 				923C2B0324CC7506009E2380 /* PartialSheet */,
 				9266BDC82506EB8700DAE077 /* SFSafeSymbols */,
+				927DD09825263C92005BAAF7 /* GradientLoadingBar */,
 			);
 			productName = JoliPlayground;
 			productReference = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */;
@@ -910,6 +913,7 @@
 				925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */,
 				923C2B0224CC7506009E2380 /* XCRemoteSwiftPackageReference "PartialSheet" */,
 				9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */,
+				927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1934,6 +1938,14 @@
 				minimumVersion = 1.2.0;
 			};
 		};
+		927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/fxm90/GradientLoadingBar.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.0;
+			};
+		};
 		929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vpeschenkov/LetterAvatarKit.git";
@@ -1987,6 +1999,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */;
 			productName = SFSafeSymbols;
+		};
+		927DD09825263C92005BAAF7 /* GradientLoadingBar */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */;
+			productName = GradientLoadingBar;
 		};
 		92BD11D224CB104D00AAB7DE /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
