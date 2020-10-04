@@ -28,6 +28,17 @@ struct GradientLoadingBarView: UIViewRepresentable {
     }
 }
 
+
+public extension Search.Category {
+ 
+    mutating func empty() {
+        for cat in Self.allCases {
+            self.remove(cat)
+        }
+    }
+    
+}
+
 let spotifyEngine = Search.Engine("FakeSpotify", categories: [.tracks, .playlists, .artists, .shows, .episodes, .albums])
 
 let joliEngine = Search.Engine("Joli", categories: .playrooms)
@@ -58,7 +69,16 @@ public struct ExploreView: JoliView {
     
     @State var selectedAreas: Set<Search.Category> = [.tracks, .artists, .albums, .playrooms]
     
-    @State var searchResults: [Search.ResultView] = []
+    @State var searchResults: [Search.ResultView] = [] {
+        
+        didSet {
+            DispatchQueue.main.async {
+                appCoordinator.isSearching.empty()
+            }
+        }
+    }
+    
+    @AppStorage("explore.search.term") var currentSearchTerm: String = ""
     
     @State var searchResultPublisher: AnyCancellable? = nil
     
@@ -79,7 +99,13 @@ public struct ExploreView: JoliView {
     }
     
     var suggestionsView: some View {
-        return Label("Nothing here", systemImage: "magnifyingglass")
+        return Group() {
+            if currentSearchTerm.isEmpty {
+                Label("Nothing here", systemImage: "magnifyingglass")
+            } else {
+                Label("Searching \"\(currentSearchTerm)\"...", systemImage: "text.magnifyingglass")
+            }
+        }
     }
     
     var resultsByCategory: [Search.Category: [Search.ResultView]] {
@@ -162,6 +188,7 @@ public struct ExploreView: JoliView {
                                     self.seeAllKey = self.seeAllKey == item.key ? nil : item.key
                                 } label: {
                                     Image(systemName: self.seeAllKey == item.key ? "rotate.left.fill" : "rotate.right")
+                                        .font(.subheadline)
                                         //.resizable()
                                 }
                             }
@@ -177,14 +204,15 @@ public struct ExploreView: JoliView {
                                     .background(Colors.lightGray)
                                     //.opacity(self.seeAllKey == item.key ? 1 : 0)
                                     .zIndex(self.seeAllKey == item.key ? 10 : 0)
+                                    .rotation3DEffect(self.seeAllKey != item.key ? Angle(degrees: -180) : Angle.zero, axis: (0, 90, 0))
                                         
                                     self.renderContent(item.key, item.value)
                                         .background(Color.white)
                                         //.opacity(self.seeAllKey == item.key ? 0 : 1)
                                         .zIndex(self.seeAllKey == item.key ? 0 : 10)
+                                        .rotation3DEffect(self.seeAllKey == item.key ? Angle(degrees: 180) : Angle.zero, axis: (0, 90, 0))
                                 }
-                                .listRowInsets(EdgeInsets(top: Sizing.medium, leading: 0, bottom: Sizing.medium, trailing: 0))
-                                .rotation3DEffect(self.seeAllKey == item.key ? Angle(degrees: 360.00) : Angle.zero, axis: (0, 90, 0))
+                                .listRowInsets(EdgeInsets(top: Sizing.small, leading: 0, bottom: Sizing.small, trailing: 0))
                             }
                             //.clipped()
                         }
@@ -226,6 +254,12 @@ public struct ExploreView: JoliView {
         }
         .onAppear(){
             self.updateSubscriptions()
+            
+            guard !currentSearchTerm.isEmpty else {
+                return
+            }
+            
+            self.model.query = currentSearchTerm
         }
         
     }
@@ -266,21 +300,18 @@ public struct ExploreView: JoliView {
             .map() { q -> AnyPublisher<[Search.ResultView], Never> in
                 
                 guard !q.isEmpty else {
+                    
+                    DispatchQueue.main.async {
+                        appCoordinator.isSearching.empty()
+                        currentSearchTerm = .empty
+                    }
+                    
                     return Just([]).eraseToAnyPublisher()
                 }
                 
-                var isSearching = appCoordinator.isSearching
-                
-                for opt in Search.Category.allCases {
-                    guard spotifyEngine.supportedCategories.contains(opt) else {
-                        continue
-                    }
-                    
-                    isSearching.insert(opt)
-                }
-                
                 DispatchQueue.main.async {
-                    appCoordinator.isSearching = isSearching
+                    appCoordinator.isSearching.insert(spotifyEngine.supportedCategories.union(joliEngine.supportedCategories))
+                    currentSearchTerm = q
                 }
                 
                 let spotifyPub = spotifyEngine.search(q, self.selectedAreas) { (q, categories, limit) in
@@ -294,18 +325,6 @@ public struct ExploreView: JoliView {
                             .catch() { error in
                                 print("[searchTracks] error: \(error)")
                                 promise(.success([]))
-                            }
-                            .always() {
-                                
-                                var isSearching = appCoordinator.isSearching
-                                
-                                for opt in Search.Category.allCases {
-                                    isSearching.remove(opt)
-                                }
-                                
-                                DispatchQueue.main.async {
-                                    appCoordinator.isSearching = isSearching
-                                }
                             }
                     }.eraseToAnyPublisher()
                 }
@@ -337,24 +356,27 @@ public struct ExploreView: JoliView {
                                 print("[searchTracks] error: \(error)")
                                 promise(.success([]))
                             }
-                            .always() {
-                                
-                                var isSearching = appCoordinator.isSearching
-                                
-                                for opt in Search.Category.allCases {
-                                    isSearching.remove(opt)
-                                }
-                                
-                                DispatchQueue.main.async {
-                                    appCoordinator.isSearching = isSearching
-                                }
-                            }
                     }.eraseToAnyPublisher()
                 }
                 
                 return Publishers.CombineLatest(spotifyPub, joliPub)
                     .scan([Search.ResultView]()) { current, pair -> [Search.ResultView] in
                         return pair.0 + pair.1
+                    }
+                    .handleEvents() { subs in
+                        print("Subscription: \(subs.combineIdentifier)")
+                    } receiveOutput: { values in
+                        print("in output handler, received \(values.count)")
+                    } receiveCompletion: { _ in
+                        DispatchQueue.main.async {
+                            appCoordinator.isSearching.empty()
+                        }
+                    } receiveCancel: {
+                        DispatchQueue.main.async {
+                            appCoordinator.isSearching.empty()
+                        }
+                    } receiveRequest: { demand in
+                        print("received demand: \(demand.description)")
                     }
                     .eraseToAnyPublisher()
             }
@@ -509,6 +531,7 @@ public struct SpotifyItemView<Item>: View {
                     .frame(width: 64, height: 64, alignment: .bottomLeading)
             }
             .frame(width: 64, height: 64, alignment: .bottomLeading)
+            .clipped()
 
             VStack(alignment: .leading){
                 Text(item[keyPath: titleKeyPath]).font(.body)
