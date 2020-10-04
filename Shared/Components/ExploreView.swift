@@ -159,15 +159,32 @@ public struct ExploreView: JoliView {
                                 Spacer()
                                 Button() {
                                     print("[ExploreView] See all: \(item.key)")
+                                    self.seeAllKey = self.seeAllKey == item.key ? nil : item.key
                                 } label: {
-                                    Label("See All", systemImage: "arrow.up.left.and.arrow.down.right")
+                                    Image(systemName: self.seeAllKey == item.key ? "rotate.left.fill" : "rotate.right")
+                                        //.resizable()
                                 }
                             }
                             .padding(.top, idx == 0 ? 185 : nil)
                             
                             Section(header: header) {
-                                self.renderContent(item.key, item.value)
-                                    .listRowInsets(EdgeInsets(top: Sizing.medium, leading: 0, bottom: Sizing.medium, trailing: 0))
+                                ZStack(){
+                                    VStack(){
+                                        GeometryReader() { proxy in
+                                            Text("Flipped it!").font(.largeTitle)
+                                        }
+                                    }
+                                    .background(Colors.lightGray)
+                                    //.opacity(self.seeAllKey == item.key ? 1 : 0)
+                                    .zIndex(self.seeAllKey == item.key ? 10 : 0)
+                                        
+                                    self.renderContent(item.key, item.value)
+                                        .background(Color.white)
+                                        //.opacity(self.seeAllKey == item.key ? 0 : 1)
+                                        .zIndex(self.seeAllKey == item.key ? 0 : 10)
+                                }
+                                .listRowInsets(EdgeInsets(top: Sizing.medium, leading: 0, bottom: Sizing.medium, trailing: 0))
+                                .rotation3DEffect(self.seeAllKey == item.key ? Angle(degrees: 360.00) : Angle.zero, axis: (0, 90, 0))
                             }
                             //.clipped()
                         }
@@ -212,6 +229,8 @@ public struct ExploreView: JoliView {
         }
         
     }
+    
+    @State var seeAllKey: Search.Category? = nil
     
     private func renderContent(_ key: Search.Category, _ views: [Search.ResultView]) -> some View {
         return VStack(alignment: .leading, spacing: .zero){
