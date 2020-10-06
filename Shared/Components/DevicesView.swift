@@ -8,7 +8,6 @@
 
 import SwiftUI
 import JoliCore
-import UIKit
 import Combine
 import PartialSheet
 

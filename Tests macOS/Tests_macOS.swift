@@ -5,8 +5,9 @@
 //  Created by Anthony Chinwo on 21/07/2020.
 //  Copyright © 2020 Anthony Chinwo. All rights reserved.
 //
-
+import PromisesTestHelpers
 import XCTest
+import JoliCore
 
 class Tests_macOS: XCTestCase {
 

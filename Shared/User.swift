@@ -8,7 +8,12 @@
 
 import Foundation
 import JoliCore
+
+#if os(OSX)
+import AppKit
+#else
 import UIKit
+#endif
 
 public enum DeviceUid {
     case unknown

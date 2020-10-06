@@ -9,6 +9,7 @@
 import XCTest
 @testable import Joli
 @testable import JoliApi
+import Starscream
 
 class Tests_iOS: XCTestCase {
 
@@ -23,6 +24,10 @@ class Tests_iOS: XCTestCase {
 
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
+    }
+    
+    func testPlayState() throws {
+        print("It ran the thing")
     }
 
     func testExample() throws {

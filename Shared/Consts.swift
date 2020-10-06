@@ -8,8 +8,17 @@
 
 import Foundation
 import SwiftUI
-import UIKit
 import JoliApi
+
+#if os(OSX)
+import AppKit
+public typealias UIFont = NSFont
+public typealias UIImage = NSImage
+#else
+import UIKit
+#endif
+
+
 // genstrings -a -o en.lproj ../*.swift && genstrings -a -o fr.lproj ../*.swift
 //
 public let logger = JoliApi.getLogger()
