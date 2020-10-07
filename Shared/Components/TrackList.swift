@@ -202,8 +202,7 @@ public struct TrackView2: JoliView {
                         Rectangle()
                         .fill(Color.yellow)
                         .frame(width: 4, height: proxy.size.height)
-                            
-                            .offset(x: min(offset, proxy.size.width), y: 0)
+                        .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
                         Spacer()
                     }
                     .frame(width: proxy.size.width, height: proxy.size.height)
