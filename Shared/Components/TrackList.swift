@@ -88,10 +88,10 @@ public struct TrackView2: JoliView {
                 }
                 
                 DispatchQueue.global(qos: .background).async {
-                    let newColors = loadedImage.getColors()
+                    //let newColors = loadedImage.getColors()
                         
                     DispatchQueue.main.async {
-                        self.colors = newColors
+                        //self.colors = newColors
                         
 //                        var builder = track//.builder()
 //                        builder.colorBackground = colors?.background.hexString
@@ -123,6 +123,7 @@ public struct TrackView2: JoliView {
                 
                 
                 self.playPubCancel = playStatePublisher
+                    //.receive(on: RunLoop.main)
                     .sink() { completion in
                     print("[playStatePublisher] received: \(completion)")
                 } receiveValue: { value in
@@ -131,13 +132,19 @@ public struct TrackView2: JoliView {
                         return
                     }
                     
-                    self.playState = value
+                    DispatchQueue.main.async {
+                        self.playState = value
+                    }
                 }
             }
             
             GeometryReader() { proxy in
                 
-                let offsetX = proxy.size.width
+                let containerWidth = CGFloat(proxy.size.width)
+                let progress = CGFloat(playState?.progressMs ?? 1)
+                let trackDuration = max(CGFloat(track.duration ?? 3000), progress)
+                
+                let offset = containerWidth * (max(progress, 1) / trackDuration)
                 
                 HStack() {
                     VStack(alignment: .leading) {
@@ -190,18 +197,26 @@ public struct TrackView2: JoliView {
                     }
                 }
                 .background(
-                    Rectangle()
-                    .fill(Color.clear)
-//                        .offset(x: self.playState != nil ? 200 : 0, y: 0)
+                    HStack(alignment: .center){
+                        
+                        Rectangle()
+                        .fill(Color.yellow)
+                        .frame(width: 4, height: proxy.size.height)
+                            
+                            .offset(x: min(offset, proxy.size.width), y: 0)
+                        Spacer()
+                    }
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .opacity(playState == nil || playState?.playingState != .playing ? 0 : 1)
+                    .animation(.easeInOut)
                 )
-                
             }
         }
         //.rotation3DEffect(.degrees(45), axis: (x: 0.0, y: 0.0, z: self.requestingPlay ? 1.0 : 0.0))
         .onTapGesture(perform: cb)
         .scaleEffect(x: self.requestingPlay ? 0.98 : 1, y: self.requestingPlay ? 0.98 : 1, anchor: .center)
         .animation(.interactiveSpring())
-        .background(colors?.backgroundColor ?? Color.clear)
+        //.background(colors?.backgroundColor ?? Color.clear)
     }
 }
 
