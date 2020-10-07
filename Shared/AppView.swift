@@ -37,6 +37,7 @@ public struct AppView2: View {
     @Binding var playroom: Musicroom?
     @Binding var currentUser: User?
     
+    
     public init(playroom: Binding<Musicroom?>, currentUser: Binding<User?>){
         self._playroom = playroom
         self._currentUser = currentUser
@@ -57,7 +58,11 @@ public struct AppView2: View {
                             ExploreView(geoProxy: geoProxy, playroom: self.$playroom, selectedViewId: self.$selectedViewId)
                                 .frame(width: screenWidth)
                                 .onChange(of: self.scrollPosition) { value in
-                                    print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
+                                    
+                                    if [.leadingEdge, .trailingEdge].contains(value) {
+                                        print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
+                                    }
+                                    
                                     switch value {
                                         case .leadingEdge:
                                             self.selectedViewId = Self.viewIds.explore

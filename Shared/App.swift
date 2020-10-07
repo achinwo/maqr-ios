@@ -13,7 +13,7 @@ import JoliCore
 import JoliApi
 import Promises
 import Foundation
-import SpriteKit
+import Combine
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 
@@ -23,21 +23,6 @@ let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAa
 let TOKEN: String? = nil
 #endif
 
-class GameScene: SKScene {
-    
-    override func didMove(to view: SKView) {
-        physicsBody = SKPhysicsBody(edgeLoopFrom: frame)
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else { return }
-        let location = touch.location(in: self)
-        let box = SKSpriteNode(color: [UIColor.red, UIColor.green, UIColor.systemPink, UIColor.blue, UIColor.purple, UIColor.yellow].randomElement()!, size: CGSize(width: 50, height: 50))
-        box.position = location
-        box.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 50, height: 50))
-        addChild(box)
-    }
-}
 
 @main
 struct JoliApp: AppClip {
@@ -52,8 +37,9 @@ struct JoliApp: AppClip {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) var scenePhase
     
-    
     let spotify = spotifyDelegateInstance
+    var websocket: Socket? = nil
+    var cancellables: Set<AnyCancellable> = []
     
     var appState: AppState {
         return appDelegate.appState
@@ -64,22 +50,15 @@ struct JoliApp: AppClip {
     }
     
     init() {
+        JoliApi.Environment.loadEnvConfig()
+        
         UITableView.appearance().separatorStyle = .none
-    }
-    
-    var scene: SKScene {
-        let scene = GameScene()
-        scene.size = CGSize(width: 400, height: 400)
-        scene.scaleMode = .fill
-        return scene
+        self.websocket = Socket(url: env.baseUrl.ws)
     }
     
     var contentView: some View {
-        //ZStack(){
+        
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser)
-//            SpriteView(scene: scene)
-//                .frame(width: 300, height: 400)
-//        }
             .onReceive(appDelegate.$shortcutItemToProcess) { _ in
                 //print(appDelegate.shortcutItemType)
                 //Do something here
@@ -90,6 +69,7 @@ struct JoliApp: AppClip {
                 
                 self.coordinator.namespace = namespace
                 self.coordinator.api = api
+                self.coordinator.playStatePublisher = self.websocket?.deserialize(PlayState.self)
                 
                 guard let token = TOKEN else {
                     return

@@ -15,7 +15,7 @@
 		9203B32824CB07F200F465CC /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD024C79C06007C960E /* Extensions.swift */; };
 		9203B32924CB07F800F465CC /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
 		9203B32A24CB07FD00F465CC /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
-		9203B32B24CB080000F465CC /* LiveObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* LiveObject.swift */; };
+		9203B32B24CB080000F465CC /* Publishers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* Publishers.swift */; };
 		9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9234320D23BFD2F700E24E96 /* NotificationCenter.framework */; };
 		9208ACF324CC559400773730 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9208ACF224CC559400773730 /* DevicesView.swift */; };
 		9208ACF524CC559400773730 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9208ACF224CC559400773730 /* DevicesView.swift */; };
@@ -101,8 +101,8 @@
 		92A32E1F24C7A9FC007C960E /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92A32E2C24C7BB53007C960E /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
 		92A32E2D24C7BB53007C960E /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
-		92A32E3124CA22FA007C960E /* LiveObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* LiveObject.swift */; };
-		92A32E3224CA22FA007C960E /* LiveObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* LiveObject.swift */; };
+		92A32E3124CA22FA007C960E /* Publishers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* Publishers.swift */; };
+		92A32E3224CA22FA007C960E /* Publishers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* Publishers.swift */; };
 		92A7120D24D85EC500AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
 		92A7120F24D85EC600AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
 		92BD11CE24CB0BCB00AAB7DE /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
@@ -293,7 +293,7 @@
 		92A32E2324C7AF93007C960E /* Joli.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Joli.entitlements; sourceTree = "<group>"; };
 		92A32E2424C7B145007C960E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		92A32E2B24C7BB53007C960E /* Consts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Consts.swift; sourceTree = "<group>"; };
-		92A32E3024CA22FA007C960E /* LiveObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveObject.swift; sourceTree = "<group>"; };
+		92A32E3024CA22FA007C960E /* Publishers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Publishers.swift; sourceTree = "<group>"; };
 		92A7120C24D85EC500AD6729 /* NetworkImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageView.swift; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -446,7 +446,7 @@
 				92A32DCE24C79C06007C960E /* AppDelegate.swift */,
 				92A32DD624C79C07007C960E /* AppView.swift */,
 				92A32E2B24C7BB53007C960E /* Consts.swift */,
-				92A32E3024CA22FA007C960E /* LiveObject.swift */,
+				92A32E3024CA22FA007C960E /* Publishers.swift */,
 				92A32DC924C79C06007C960E /* ServiceAlert.swift */,
 				928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */,
 				926E8FE024C76DE100378436 /* Styles.swift */,
@@ -1001,7 +1001,7 @@
 				928F75F424F7B13400CF708B /* SearchView.swift in Sources */,
 				92BD11CE24CB0BCB00AAB7DE /* ImagePicker.swift in Sources */,
 				927E0E3A24E9AFFF00C8257D /* Preview.swift in Sources */,
-				9203B32B24CB080000F465CC /* LiveObject.swift in Sources */,
+				9203B32B24CB080000F465CC /* Publishers.swift in Sources */,
 				9208ACF524CC559400773730 /* DevicesView.swift in Sources */,
 				92BD11D024CB0BD200AAB7DE /* PeopleGridView.swift in Sources */,
 				92BD11CF24CB0BCF00AAB7DE /* ImageView.swift in Sources */,
@@ -1067,7 +1067,7 @@
 				92A32DDE24C79C07007C960E /* PeopleGridView.swift in Sources */,
 				92A32DE024C79C07007C960E /* MusicroomView.swift in Sources */,
 				92A32DDC24C79C07007C960E /* ImagePicker.swift in Sources */,
-				92A32E3124CA22FA007C960E /* LiveObject.swift in Sources */,
+				92A32E3124CA22FA007C960E /* Publishers.swift in Sources */,
 				92A32D8924C79A13007C960E /* Styles.swift in Sources */,
 				927E0E3B24E9AFFF00C8257D /* Preview.swift in Sources */,
 				929FFE1D24FAF096000BDCF0 /* User.swift in Sources */,
@@ -1093,7 +1093,7 @@
 				92A32DB824C79B59007C960E /* UserSettings.swift in Sources */,
 				92A32DE924C79C07007C960E /* FeedbackSettingsView.swift in Sources */,
 				9270C353252CB4AD0030E6AD /* App.swift in Sources */,
-				92A32E3224CA22FA007C960E /* LiveObject.swift in Sources */,
+				92A32E3224CA22FA007C960E /* Publishers.swift in Sources */,
 				92A32D8824C79A13007C960E /* Styles.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

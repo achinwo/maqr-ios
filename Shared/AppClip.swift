@@ -294,6 +294,8 @@ public final class AppCoordinator: ObservableObject {
     @Published public var namespace: Namespace.ID? = nil
     @Published public var keyboardHeight: CGFloat = 0
     
+    @Published public var playStatePublisher: PlayState.Publisher? = nil
+    
     private var allSearchengines = [spotifyEngine]
     
     public init(namespace: Namespace.ID? = nil){
@@ -322,14 +324,6 @@ public final class AppCoordinator: ObservableObject {
     public func dismissKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
-    
-//    public func search(_ query: String, positionMs: Int? = nil) -> Promise<SearchResultView> {
-//
-//    }
-//
-//    public func searchresults() -> {
-//
-//    }
     
     public func play(_ track: Playable, positionMs: Int? = nil) -> Promise<PlayState?> {
         return api.fetchSpotifyDevices(on: DispatchQueue.main)
@@ -385,6 +379,7 @@ public final class AppCoordinator: ObservableObject {
 public protocol AppClip: App {
     associatedtype Content: View
     
+    var env: JoliApi.Environment { get }
     var contentView: Content { get }
     var scenePhase: ScenePhase { get }
     var coordinator: AppCoordinator { nonmutating get }
@@ -395,6 +390,23 @@ public protocol AppClip: App {
 }
 
 public extension AppClip {
+    
+    var debug: Bool {
+        #if DEBUG
+        return true
+        #else
+        return false
+        #endif
+    }
+    
+    var env: JoliApi.Environment {
+        guard self.debug else {
+            return .production
+        }
+        
+        let json = JoliApi.Environment.CACHED_ENV_CONFIG
+        return JoliApi.Environment(rawValue: json["env"] as? String ?? JoliApi.Environment.local.rawValue) ?? .development
+    }
     
     var body: some Scene {
         WindowGroup {

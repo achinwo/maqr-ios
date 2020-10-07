@@ -88,21 +88,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     var env: JoliApi.Environment {
-        
-        get {
-
-            guard self.debug else {
-                return .production
-            }
-            
-            let json = JoliApi.Environment.CACHED_ENV_CONFIG
-            return JoliApi.Environment(rawValue: json["env"] as? String ?? JoliApi.Environment.local.rawValue) ?? .development
+        guard self.debug else {
+            return .production
         }
         
-        set {
-            JoliApi.Environment.CACHED_ENV_CONFIG["env"] = newValue.rawValue as AnyObject
-        }
-        
+        let json = JoliApi.Environment.CACHED_ENV_CONFIG
+        return JoliApi.Environment(rawValue: json["env"] as? String ?? JoliApi.Environment.local.rawValue) ?? .development
     }
     
     func registerForPushNotifications() {
@@ -189,12 +180,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         logger.addDestination(cloud)
         
-        if debug, let filePath = Bundle.main.path(forResource: "env", ofType: "json"),
-           let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)),
-           let json: [String: AnyObject] = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: AnyObject] {
-            logger.debug("[Debug mode] env config: \(json)")
-            
-            JoliApi.Environment.CACHED_ENV_CONFIG.merge(json) { (_, new) in new }
+        if debug {
+            JoliApi.Environment.loadEnvConfig()
         }
         
         self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: nil)
