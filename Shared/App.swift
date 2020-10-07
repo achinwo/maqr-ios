@@ -53,7 +53,11 @@ struct JoliApp: AppClip {
         JoliApi.Environment.loadEnvConfig()
         
         UITableView.appearance().separatorStyle = .none
-        self.websocket = Socket(url: env.baseUrl.ws)
+        self.websocket = Socket(url: URL(string: "https://192.168.1.188:8080/ws")!) { soc in
+            soc.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
+                print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
+            }
+        }
     }
     
     var contentView: some View {
@@ -69,7 +73,14 @@ struct JoliApp: AppClip {
                 
                 self.coordinator.namespace = namespace
                 self.coordinator.api = api
-                self.coordinator.playStatePublisher = self.websocket?.deserialize(PlayState.self)
+                self.coordinator.playStatePublisher = self.websocket?
+                    .deserialize(PlayState.self)
+                    .autoconnect()
+                    .multicast() {
+                        return PassthroughSubject<PlayState, SocketError>()
+                    }
+                    .autoconnect()
+                    .eraseToAnyPublisher()
                 
                 guard let token = TOKEN else {
                     return

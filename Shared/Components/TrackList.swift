@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Combine
 import JoliCore
 import UIImageColors
 
@@ -41,6 +42,9 @@ public struct TrackView2: JoliView {
     @Binding var heartLevel: HeartLevel?
     @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
     @State var requestingPlay = false
+    @State var playState: PlayState? = nil
+    
+    @State var playPubCancel: AnyCancellable? = nil
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -67,6 +71,9 @@ public struct TrackView2: JoliView {
         let cb: () -> () = {
             self.requestingPlay = true
             appCoordinator.play(track)
+                .then(){ playState in
+                    self.playState = playState
+                }
                 .always {
                     self.requestingPlay = false
                 }
@@ -106,52 +113,88 @@ public struct TrackView2: JoliView {
             .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             .onTapGesture(perform: cb)
             .padding(.all, 2)
-            
-            VStack(alignment: .leading) {
-                Text(track.title)
-                    .foregroundColor(colors?.primaryColor ?? Color.primary)
-                    .animation(.easeInOut)
-                    .font(Font.headline.weight(.light))
-                    .lineLimit(2)
+            .onDisappear() {
+                //self.playPubCancel?.cancel()
+            }
+            .onAppear() {
+                guard let playStatePublisher = self.appCoordinator.playStatePublisher else {
+                    return
+                }
                 
-                HStack {
+                
+                self.playPubCancel = playStatePublisher
+                    .sink() { completion in
+                    print("[playStatePublisher] received: \(completion)")
+                } receiveValue: { value in
                     
-                    Text(track.artistName)
-                        .foregroundColor(colors?.secondaryColor ?? Color.primary)
-                        .animation(.easeInOut)
-                        .font(Font.subheadline.weight(.semibold))
-                    Text("•").foregroundColor(colors?.detailColor ?? Color.primary)
-                    Text("2003")
-                        .foregroundColor(colors?.detailColor ?? Color.primary)
-                        .animation(.easeInOut)
-                        .font(Font.subheadline.weight(.light))
-                    Spacer()
+                    guard value.trackUri == track.uri else {
+                        return
+                    }
+                    
+                    self.playState = value
                 }
             }
             
-            if self.heartLevel != nil {
-                Spacer()
-                JoyMeterView(self.$heartLevel, heartCount: 1, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary, backgroundColor: Color.red.opacity(0.5))
-                    .padding()
-                    .padding(.trailing, Sizing.large)
-                    .foregroundColor(colors?.secondaryColor ?? Color.primary)
-                    .onTapGesture {
+            GeometryReader() { proxy in
+                
+                let offsetX = proxy.size.width
+                
+                HStack() {
+                    VStack(alignment: .leading) {
+                        Text(track.title)
+                            .foregroundColor(colors?.primaryColor ?? Color.primary)
+                            .animation(.easeInOut)
+                            .font(Font.headline.weight(.light))
+                            .lineLimit(2)
                         
-                        guard self.heartLevel != .full else {
-                            withAnimation(.none) {
-                                self.heartLevel = .quarter
+                        HStack {
+                            
+                            Text(track.artistName)
+                                .foregroundColor(colors?.secondaryColor ?? Color.primary)
+                                .animation(.easeInOut)
+                                .font(Font.subheadline.weight(.semibold))
+                            Text("•").foregroundColor(colors?.detailColor ?? Color.primary)
+                            Text("2003")
+                                .foregroundColor(colors?.detailColor ?? Color.primary)
+                                .animation(.easeInOut)
+                                .font(Font.subheadline.weight(.light))
+                            Spacer()
+                        }
+                        
+                        Spacer()
+                    }
+                    
+                    if self.heartLevel != nil {
+                        Spacer()
+                        JoyMeterView(self.$heartLevel, heartCount: 1, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary, backgroundColor: Color.red.opacity(0.5))
+                            .padding()
+                            .padding(.trailing, Sizing.large)
+                            .foregroundColor(colors?.secondaryColor ?? Color.primary)
+                            .onTapGesture {
+                                
+                                guard self.heartLevel != .full else {
+                                    withAnimation(.none) {
+                                        self.heartLevel = .quarter
+                                    }
+                                    return
+                                }
+                                self.heartLevel = self.heartLevel?.next
                             }
-                            return
-                        }
-                        self.heartLevel = self.heartLevel?.next
+                            .onLongPressGesture {
+                                
+                                appCoordinator.withImpact(.medium) {
+                                    self.heartLevel = .quarter
+                                }
+                                print("new count: \(self.heartLevel)")
+                            }
                     }
-                    .onLongPressGesture {
-                        
-                        appCoordinator.withImpact(.medium) {
-                            self.heartLevel = .quarter
-                        }
-                        print("new count: \(self.heartLevel)")
-                    }
+                }
+                .background(
+                    Rectangle()
+                    .fill(Color.clear)
+//                        .offset(x: self.playState != nil ? 200 : 0, y: 0)
+                )
+                
             }
         }
         //.rotation3DEffect(.degrees(45), axis: (x: 0.0, y: 0.0, z: self.requestingPlay ? 1.0 : 0.0))

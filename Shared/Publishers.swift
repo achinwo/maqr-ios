@@ -24,14 +24,25 @@ public enum SocketError: Error {
 
 public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
-    @Published var isConnected: Bool = false
+    @Published var isConnected: Bool = false {
+        didSet {
+            guard isConnected else {
+                return
+            }
+            
+            self.onConnect?(self)
+        }
+    }
     
     let soc: WebSocket
     var request: URLRequest
     
+    public let onConnect: ((Socket) -> Void)?
+    
     var rawMessage = PassthroughSubject<SocketMessage, SocketError>()
     
-    public init?(url: URL, timeoutInterval: TimeInterval = 5) {
+    public init?(url: URL, timeoutInterval: TimeInterval = 5, onConnect: ((Socket) -> Void)? = nil) {
+        self.onConnect = onConnect
         
         var ws = URLComponents(url: url, resolvingAgainstBaseURL: false)
         ws?.scheme = "wss"
@@ -195,7 +206,7 @@ extension Socket {
 }
 
 public extension Persisted {
-    typealias Publisher = DbPublisher<Self, Socket>
+    typealias Publisher = AnyPublisher<Self, SocketError>
 }
 
 public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePublisher where S.Failure == SocketError, S.Output == SocketMessage {
@@ -204,6 +215,8 @@ public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePub
     public typealias Failure = S.Failure
     
     private let socket: S
+    
+    //
     
     public init(socket: S) {
         self.socket = socket
