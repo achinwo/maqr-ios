@@ -9,6 +9,41 @@
 import SwiftUI
 import JoliCore
 
+struct ShakeEffect: GeometryEffect {
+    
+    var position: CGFloat
+    var animatableData: CGFloat {
+        get { position }
+        set { position = newValue }
+    }
+    
+    init(shakes: Int) {
+        position = CGFloat(shakes)
+    }
+    
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        return ProjectionTransform(CGAffineTransform(translationX: -30 * sin(position * 2 * .pi), y: 0))
+    }
+    
+}
+
+struct ShakeButtonView: View {
+    @State var invalidAttempts = 0
+    
+    var body: some View {
+        VStack {
+            Button(action: {
+                self.invalidAttempts += 1
+            }) { Text("Shake") }
+            Rectangle()
+                .fill(Color.purple)
+                .frame(width: 200, height: 200)
+                .modifier(ShakeEffect(shakes: invalidAttempts * 2))
+                .animation(Animation.linear)
+        }
+    }
+}
+
 struct ListenView: JoliView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
@@ -210,6 +245,11 @@ struct ListenView: JoliView {
                         .background(Color.white.opacity(0.90))
                         
                         
+                    } else {
+//                        HStack(){
+//                            Spacer()
+//                            ShakeButtonView()
+//                        }
                     }
                 }
                 .coordinateSpace(name: "playroom-controls-space")

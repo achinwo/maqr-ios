@@ -48,6 +48,8 @@ public struct TrackView2: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
+    @State var invalidPlayAttempts = 0
+    
     var longPress: some Gesture {
             LongPressGesture(minimumDuration: 3)
                 .updating($isDetectingLongPress) { currentstate, gestureState,
@@ -73,6 +75,10 @@ public struct TrackView2: JoliView {
             appCoordinator.play(track)
                 .then(){ playState in
                     self.playState = playState
+                }
+                .catch() { error in
+                    print("[PlayTrack] error: \(error)")
+                    invalidPlayAttempts += 1
                 }
                 .always {
                     self.requestingPlay = false
@@ -112,6 +118,8 @@ public struct TrackView2: JoliView {
             .frame(width: 64, height: 64, alignment: .center)
             .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             .onTapGesture(perform: cb)
+            .modifier(ShakeEffect(shakes: invalidPlayAttempts * 2))
+            .animation(Animation.linear)
             .padding(.all, 2)
             .onDisappear() {
                 //self.playPubCancel?.cancel()
