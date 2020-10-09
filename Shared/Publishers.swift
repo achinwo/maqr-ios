@@ -37,6 +37,18 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
     private var rawMessage = PassthroughSubject<SocketMessage, SocketError>()
     
+    private var completion: Subscribers.Completion<SocketError>? = nil {
+        didSet {
+            
+            guard let completion = completion else {
+                return
+            }
+            
+            rawMessage.send(completion: completion)
+            self.rawMessage = PassthroughSubject<SocketMessage, SocketError>()
+        }
+    }
+    
     public init(url: URL, timeoutInterval: TimeInterval = 5, onConnect: ((Socket, Bool) -> Void)? = nil) {
         self.onConnect = onConnect
         request = URLRequest(url: url)
@@ -82,8 +94,6 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
         
         guard !isConnected else { return cancellable }
         
-        
-        self.rawMessage = PassthroughSubject<SocketMessage, SocketError>()
         soc.connect()
         
         return cancellable
@@ -102,7 +112,7 @@ extension Socket: WebSocketDelegate {
             case .disconnected(let reason, let code):
                 isConnected = false
                 Swift.print("websocket is disconnected: \(reason) with code: \(code)")
-                self.rawMessage.send(completion: Subscribers.Completion.failure(SocketError.disconnected(reason, code)))
+                self.completion = Subscribers.Completion.failure(SocketError.disconnected(reason, code))
                 
             case .text(let string):
                 //Swift.print("Received text: \(string)")
@@ -132,11 +142,11 @@ extension Socket: WebSocketDelegate {
                 }
             case .cancelled:
                 isConnected = false
-                self.rawMessage.send(completion: .finished)
+                self.completion = .finished
                 
             case .error(let error):
                 isConnected = false
-                self.rawMessage.send(completion: Subscribers.Completion.failure(SocketError.error(error)))
+                self.completion =  Subscribers.Completion.failure(SocketError.error(error))
         }
     }
     
@@ -202,9 +212,20 @@ public extension Socket {
         return DbPublisher(socket: self)
     }
     
-    
-    func publish<M>(_ modelType: M.Type) -> M.Publisher where M: Persisted {
+    func publish<M>(_ modelType: M.Type, smoothKeyPath: Publishers.Smooth<M.Publisher>.ValueKeyPath? = nil, interval: TimeInterval = 0.3) -> M.Publisher where M: Persisted {
+        
+        guard let kp = smoothKeyPath else {
+            return self.deserialize(modelType.self)
+                .multicast() {
+                    return PassthroughSubject<M, SocketError>()
+                }
+                .autoconnect()
+                .eraseToAnyPublisher()
+        }
+        
         return self.deserialize(modelType.self)
+            .smooth(kp, interval: interval)
+            .autoconnect()
             .multicast() {
                 return PassthroughSubject<M, SocketError>()
             }
@@ -220,8 +241,8 @@ public extension Persisted {
 
 public extension Publisher {
     
-    func smooth(_ path: WritableKeyPath<Self.Output, Int>, duration: TimeInterval, interval: TimeInterval = 0.3) -> Publishers.Smooth<Self> {
-        return Publishers.Smooth(self, path: path, duration: duration, interval: interval)
+    func smooth(_ path: Publishers.Smooth<Self>.ValueKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 0.3) -> Publishers.Smooth<Self> {
+        return Publishers.Smooth(self, path: path, unit: unit, duration: duration, interval: interval)
     }
     
 }
@@ -230,40 +251,25 @@ public extension Publishers {
     
     class Smooth<C: Publisher>: ConnectablePublisher {
         
+        public typealias ValueKeyPath = WritableKeyPath<C.Output, Int?>
+        public typealias CurrentValue = (value: C.Output, ts: Date)
+        
         private var timer: Timer.TimerPublisher
         public var smoothingOn: Bool = false
-        var path: WritableKeyPath<C.Output, Int>
+        var path: ValueKeyPath
+        let duration: TimeInterval?
+        let interval: TimeInterval
+        
+        let unit: Int
         
         private var timerCancel: AnyCancellable? = nil
         private var passthroughCancel: AnyCancellable? = nil
-        
-        private var target: C {
-            didSet {
-                self.passthroughCancel = target.sink(){ completion in
-                    self.passthrough.send(completion: completion)
-                } receiveValue:{ output in
-                    let newValue = output[keyPath: self.path]
-                    
-                    guard let currentValue = self.currentValue else {
-                        self.currentValue = output[keyPath: self.path]
-                        return
-                    }
-                    
-                    self.currentValue = self.applySmooth(newValue, currentValue)
-                }
-            }
-        }
-        private var currentValue: Int? = nil
+        private var currentValue = CurrentValueSubject<CurrentValue?, C.Failure>(nil)
         
         var passthrough = PassthroughSubject<C.Output, C.Failure>()
         
-        func applySmooth(_ newValue: Int, _ oldValue: Int) -> Int {
-            let result = newValue
-            Swift.print("[applySmooth] newValue: \(newValue), oldValue: \(oldValue) -> \(result)")
-            return result
-        }
-        
-        public init(_ target: C, path: WritableKeyPath<C.Output, Int>, duration: TimeInterval, interval: TimeInterval = 0.3, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .default, options:  RunLoop.SchedulerOptions? = nil){
+        public init(_ target: C, path: ValueKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 1, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .default, options:  RunLoop.SchedulerOptions? = nil){
+            self.duration = duration
             timer = Timer.TimerPublisher(interval: interval,
                                          tolerance: tolerance,
                                          runLoop: runLoop,
@@ -271,27 +277,104 @@ public extension Publishers {
                                          options: options)
             self.target = target
             self.path = path
+            self.interval = interval
+            self.unit = unit
             
-            
-            self.timerCancel = timer.sink(){ completion in
-                
-            } receiveValue: { value in
-                
-            }
+            setupPassthrough()
         }
         
         public func connect() -> Cancellable {
-            return timer.connect()
+            timer.connect()
+        }
+        
+        private func setupPassthrough() {
+            Swift.print("[Passthrough] setting up...")
+            
+            self.passthroughCancel?.cancel()
+            
+            let start = Date()
+            
+            self.timerCancel = timer.sink(){ value in
+                
+                let proceed = self.duration == nil ? true : Date().timeIntervalSince(start) < self.duration!
+                
+                guard proceed else {
+                    Swift.print("[Passthrough] ticker cancelled")
+                    self.timerCancel?.cancel()
+                    return
+                }
+                
+                guard var (lastValue, _) = self.currentValue.value, let keyValue = lastValue[keyPath: self.path] else {
+                    return
+                }
+                
+                let interval = abs(self.interval)
+                var addition: Int = 0
+                
+                if interval > 0 && interval < 1 {
+                    addition = Int(Double(self.unit) * interval)
+                } else if interval >= 1 {
+                    addition = Int(interval) * self.unit
+                }
+                
+                let newQuant = keyValue + addition
+                lastValue[keyPath: self.path] = newQuant
+                
+                //Swift.print("[Timer] \(keyValue) -> \(newQuant) (\(interval) * \(self.unit))")
+                
+                self.currentValue.send((lastValue, Date()))
+                self.passthrough.send(lastValue)
+            }
+            
+            self.passthroughCancel = target.sink(){ completion in
+                Swift.print("[Passthrough] cancelled - \(completion)")
+                self.timerCancel?.cancel()
+                self.passthrough.send(completion: completion)
+            } receiveValue: { output in
+                Swift.print("[Passthrough] got - \(output)")
+                
+                guard let outWithTs = self.currentValue.value, output[keyPath: self.path] != nil else {
+                    self.currentValue.send((value: output, ts: Date()))
+                    self.passthrough.send(output)
+                    return
+                }
+                
+                let out = self.applySmooth((output, Date()), outWithTs)
+                
+                self.currentValue.send(out)
+                self.passthrough.send(out.value)
+            }
         }
         
         public func receive<S>(subscriber: S) where S : Subscriber, C.Failure == S.Failure, C.Output == S.Input {
-            passthrough.receive(subscriber: subscriber)
+            return passthrough
+                .receive(subscriber: subscriber)
         }
         
         public typealias Output = C.Output
         public typealias Failure = C.Failure
         
+        private var target: C {
+            didSet {
+                setupPassthrough()
+            }
+        }
+        
+        func applySmooth(_ newValue: CurrentValue, _ oldValue: CurrentValue) -> CurrentValue {
+            
+            let vNew = newValue.value[keyPath: path]
+            //let vOld = oldValue.value[keyPath: path]
+            
+            var resObj = newValue.value
+            resObj[keyPath: path] = vNew
+            
+            let result = (resObj, newValue.ts)
+            
+            return result
+        }
+        
     }
+    
 }
 
 public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePublisher where S.Failure == SocketError, S.Output == SocketMessage {

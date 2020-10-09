@@ -14,6 +14,7 @@ import CancellationToken
 import Combine
 import JoliApi
 
+
 class JoliClipTests: XCTestCase {
     
     func testExample() throws {
@@ -43,10 +44,21 @@ class JoliClipTests: XCTestCase {
 //
 //        print("[promise] \(prom)")
 //
-        soc = Socket(url: URL(string: "https://192.168.1.188:8080/ws")!)
+        
+        soc = Socket(url: baseUrl.ws.appendingPathComponent("/ws")) { socket, connected in
+            print("[Socket] connected: \(connected)")
+            
+            guard connected else { return }
+            
+            socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
+                print("The data was sent")
+            }
+        }
         
         let cast = soc!
             .deserialize(PlayState.self)
+            .autoconnect()
+            .smooth(\.progressMs, duration: 60)
             .autoconnect()
             .multicast() {
                 return PassthroughSubject<PlayState, SocketError>()
@@ -60,15 +72,13 @@ class JoliClipTests: XCTestCase {
                         case .finished: print("Publisher is finished")
                     }
                 } receiveValue: { playState in
-                    print("[PlayState1] \(playState)")
+                    print("[PlayState1] \(playState.trackUri) - \(playState.progressMs)")
                 }
         
         print("[Subscribed] two=\(cancellable)")
         
-        q.asyncAfter(deadline: .now() + 2) {
-            self.soc?.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
-                print("The data was sent")
-            }
+        q.asyncAfter(deadline: .now() + 10) {
+            //self.soc?.soc.disconnect()
         }
         
         q.asyncAfter(deadline: .now() + 16) {
