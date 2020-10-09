@@ -211,14 +211,19 @@ public struct TrackView2: JoliView {
                             
                             let offset = containerWidth * (max(progress, 1) / trackDuration)
                             
-                            RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
-                                .fill([Color.blue, Color.green, Color.yellow, Color.purple][ item.key.count % 4 ].opacity(0.64))
-                                .frame(width: 3, height: proxy.size.height)
-                                .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
-                                .id(item.key)
+                            HStack(alignment: .bottom){
+                                RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
+                                    .fill([Color.blue, Color.green, Color.yellow, Color.purple][ item.key.count % 4 ].opacity(0.64))
+                                    .frame(width: 3, height: proxy.size.height)
+                                    .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
+                                    .id(item.key)
+                                Spacer()
+                            }
+                            .frame(width: proxy.size.width, height: proxy.size.height)
                         }
                     }
                     .frame(width: proxy.size.width, height: proxy.size.height)
+                    //.background(Color.pink)
                     .opacity(self.playStatebyUsername.isEmpty ? 0 : 1)
                     .animation(.easeInOut)
                     .id(track.uri)
