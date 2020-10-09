@@ -26,32 +26,20 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
     @Published var isConnected: Bool = false {
         didSet {
-            guard isConnected else {
-                return
-            }
-            
-            self.onConnect?(self)
+            self.onConnect?(self, isConnected)
         }
     }
     
     let soc: WebSocket
     var request: URLRequest
     
-    public let onConnect: ((Socket) -> Void)?
+    public var onConnect: ((Socket, Bool) -> Void)?
     
-    var rawMessage = PassthroughSubject<SocketMessage, SocketError>()
+    private var rawMessage = PassthroughSubject<SocketMessage, SocketError>()
     
-    public init?(url: URL, timeoutInterval: TimeInterval = 5, onConnect: ((Socket) -> Void)? = nil) {
+    public init(url: URL, timeoutInterval: TimeInterval = 5, onConnect: ((Socket, Bool) -> Void)? = nil) {
         self.onConnect = onConnect
-        
-        var ws = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        ws?.scheme = "wss"
-        
-        guard let wsUrl = ws?.url else {
-            return nil
-        }
-        
-        request = URLRequest(url: wsUrl)
+        request = URLRequest(url: url)
         request.timeoutInterval = timeoutInterval
         
         let pinner = FoundationSecurity(allowSelfSigned: true) // don't validate SSL certificates
@@ -80,16 +68,22 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
         }
     }
     
+    var disconnectRequestCount = 0
+    
+    @discardableResult
     public func connect() -> Cancellable {
         logger.debug("Connect called")
         
         let cancellable = AnyCancellable() {
-            Swift.print("[Socket] disconnect")
-            self.soc.disconnect()
+            self.disconnectRequestCount += 1
+            Swift.print("[Socket] disconnect: \(self.disconnectRequestCount)")
+            //self.soc.disconnect()
         }
         
         guard !isConnected else { return cancellable }
         
+        
+        self.rawMessage = PassthroughSubject<SocketMessage, SocketError>()
         soc.connect()
         
         return cancellable
@@ -132,6 +126,10 @@ extension Socket: WebSocketDelegate {
                 Swift.print("Received data: viabilityChanged")
             case .reconnectSuggested(_):
                 Swift.print("Received data: reconnectSuggested")
+                
+                DispatchQueue.global().async {
+                    self.connect()
+                }
             case .cancelled:
                 isConnected = false
                 self.rawMessage.send(completion: .finished)
@@ -155,6 +153,7 @@ extension Socket: Publisher {
         self.rawMessage
             .receive(subscriber: subscriber)
     }
+    
     
 }
 
@@ -197,16 +196,102 @@ public extension JoliApi {
 
 
 
-extension Socket {
+public extension Socket {
     
     func deserialize<M: Persisted>(_ modelType: M.Type) -> DbPublisher<M, Socket> {
         return DbPublisher(socket: self)
+    }
+    
+    
+    func publish<M>(_ modelType: M.Type) -> M.Publisher where M: Persisted {
+        return self.deserialize(modelType.self)
+            .multicast() {
+                return PassthroughSubject<M, SocketError>()
+            }
+            .autoconnect()
+            .eraseToAnyPublisher()
     }
     
 }
 
 public extension Persisted {
     typealias Publisher = AnyPublisher<Self, SocketError>
+}
+
+public extension Publisher {
+    
+    func smooth(_ path: WritableKeyPath<Self.Output, Int>, duration: TimeInterval, interval: TimeInterval = 0.3) -> Publishers.Smooth<Self> {
+        return Publishers.Smooth(self, path: path, duration: duration, interval: interval)
+    }
+    
+}
+
+public extension Publishers {
+    
+    class Smooth<C: Publisher>: ConnectablePublisher {
+        
+        private var timer: Timer.TimerPublisher
+        public var smoothingOn: Bool = false
+        var path: WritableKeyPath<C.Output, Int>
+        
+        private var timerCancel: AnyCancellable? = nil
+        private var passthroughCancel: AnyCancellable? = nil
+        
+        private var target: C {
+            didSet {
+                self.passthroughCancel = target.sink(){ completion in
+                    self.passthrough.send(completion: completion)
+                } receiveValue:{ output in
+                    let newValue = output[keyPath: self.path]
+                    
+                    guard let currentValue = self.currentValue else {
+                        self.currentValue = output[keyPath: self.path]
+                        return
+                    }
+                    
+                    self.currentValue = self.applySmooth(newValue, currentValue)
+                }
+            }
+        }
+        private var currentValue: Int? = nil
+        
+        var passthrough = PassthroughSubject<C.Output, C.Failure>()
+        
+        func applySmooth(_ newValue: Int, _ oldValue: Int) -> Int {
+            let result = newValue
+            Swift.print("[applySmooth] newValue: \(newValue), oldValue: \(oldValue) -> \(result)")
+            return result
+        }
+        
+        public init(_ target: C, path: WritableKeyPath<C.Output, Int>, duration: TimeInterval, interval: TimeInterval = 0.3, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .default, options:  RunLoop.SchedulerOptions? = nil){
+            timer = Timer.TimerPublisher(interval: interval,
+                                         tolerance: tolerance,
+                                         runLoop: runLoop,
+                                         mode: mode,
+                                         options: options)
+            self.target = target
+            self.path = path
+            
+            
+            self.timerCancel = timer.sink(){ completion in
+                
+            } receiveValue: { value in
+                
+            }
+        }
+        
+        public func connect() -> Cancellable {
+            return timer.connect()
+        }
+        
+        public func receive<S>(subscriber: S) where S : Subscriber, Self.Failure == S.Failure, Self.Output == S.Input {
+            passthrough.receive(subscriber: subscriber)
+        }
+        
+        public typealias Output = C.Output
+        public typealias Failure = C.Failure
+        
+    }
 }
 
 public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePublisher where S.Failure == SocketError, S.Output == SocketMessage {

@@ -45,6 +45,7 @@ public struct TrackView2: JoliView {
     @State var playState: PlayState? = nil
     
     @State var playPubCancel: AnyCancellable? = nil
+    @State var playStatePublisherCancel: AnyCancellable? = nil
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -118,33 +119,32 @@ public struct TrackView2: JoliView {
             .frame(width: 64, height: 64, alignment: .center)
             .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             .onTapGesture(perform: cb)
+            .onReceive(appCoordinator.$playStatePublisher){ publisher in
+                
+                self.playPubCancel = publisher
+                    .sink() { completion in
+                        
+                        self.playPubCancel = nil
+                        //print("[playStatePublisher] errored: \(completion)")
+                        
+//                        guard case let Subscribers.Completion.failure(error) = completion else {
+//                            return
+//                        }
+                        
+                    } receiveValue: { value in
+                        guard value.trackUri == track.uri else {
+                            return
+                        }
+                        //print("[playStatePublisher] received: \(value)")
+                        
+                        DispatchQueue.main.async {
+                            self.playState = value
+                        }
+                    }
+            }
             .modifier(ShakeEffect(shakes: invalidPlayAttempts * 2))
             .animation(Animation.linear)
             .padding(.all, 2)
-            .onDisappear() {
-                //self.playPubCancel?.cancel()
-            }
-            .onAppear() {
-                guard let playStatePublisher = self.appCoordinator.playStatePublisher else {
-                    return
-                }
-                
-                
-                self.playPubCancel = playStatePublisher
-                    //.receive(on: RunLoop.main)
-                    .sink() { completion in
-                    print("[playStatePublisher] received: \(completion)")
-                } receiveValue: { value in
-                    
-                    guard value.trackUri == track.uri else {
-                        return
-                    }
-                    
-                    DispatchQueue.main.async {
-                        self.playState = value
-                    }
-                }
-            }
             
             GeometryReader() { proxy in
                 

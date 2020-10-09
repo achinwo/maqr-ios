@@ -32,13 +32,13 @@ struct JoliApp: AppClip {
     @State var currentUser: User? = SEED_DATA.users.first { $0.isOwnDevice }
     @State var currentPlayroom: Musicroom? = nil//SEED_DATA.musicrooms.first
     
-    var coordinator: AppCoordinator = AppCoordinator()
+    var coordinator: AppCoordinator
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) var scenePhase
     
     let spotify = spotifyDelegateInstance
-    var websocket: Socket? = nil
+    var websocket: Socket
     var cancellables: Set<AnyCancellable> = []
     
     var appState: AppState {
@@ -50,12 +50,30 @@ struct JoliApp: AppClip {
     }
     
     init() {
-        JoliApi.Environment.loadEnvConfig()
+        JoliApi.Environment.loadEnvConfig(from: Bundle.main)
         
         UITableView.appearance().separatorStyle = .none
-        self.websocket = Socket(url: URL(string: "https://192.168.1.188:8080/ws")!) { soc in
-            soc.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
-                print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
+        let url = JoliApi.Environment.current.baseUrl.ws //URL(string: "https://192.168.1.173:8080/ws")!
+        
+        
+        self.websocket = Socket(url: url.appendingPathComponent("/ws"))
+        self.coordinator = AppCoordinator(self.websocket.publish(PlayState.self))
+        
+        self.websocket.onConnect = self.onConnectionStateChanged
+        
+        websocket.connect()
+    }
+    
+    func onConnectionStateChanged(_ socket: Socket, _ connected: Bool){
+        guard connected else {
+            return
+        }
+        
+        socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
+            print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
+            
+            DispatchQueue.main.async {
+                self.coordinator.playStatePublisher = self.websocket.publish(PlayState.self)
             }
         }
     }
@@ -73,14 +91,6 @@ struct JoliApp: AppClip {
                 
                 self.coordinator.namespace = namespace
                 self.coordinator.api = api
-                self.coordinator.playStatePublisher = self.websocket?
-                    .deserialize(PlayState.self)
-                    .autoconnect()
-                    .multicast() {
-                        return PassthroughSubject<PlayState, SocketError>()
-                    }
-                    .autoconnect()
-                    .eraseToAnyPublisher()
                 
                 guard let token = TOKEN else {
                     return
@@ -100,10 +110,13 @@ extension JoliApp {
     func onScenePhaseChange(_ phase: ScenePhase){
         switch phase {
             case .active:
-                print("App became active")
-                appState.api.wsClient.connect() { connectionState in
-                    self.appState.onServerConnectionStateChanged(connectionState)
-                }
+                print("App became active2")
+//                appState.api.wsClient.connect() { connectionState in
+//                    self.appState.onServerConnectionStateChanged(connectionState)
+//                }
+                
+                websocket.connect()
+                print("[Reconnecting]")
                 
                 if let _ = self.spotify.appRemote.connectionParameters.accessToken {
                     logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote")
@@ -127,11 +140,11 @@ extension JoliApp {
                     appDelegate.shortcutItemToProcess = nil
                 }
             case .inactive:
-                print("App became inactive")
+                print("App became inactive2")
                 if self.spotify.appRemote.isConnected {
                     self.spotify.appRemote.disconnect()
                 }
-                appState.api.wsClient.disconnect()
+                //appState.api.wsClient.disconnect()
                 appDelegate.stopObservingVolumeChanges()
                 
                 let application = UIApplication.shared
@@ -144,6 +157,7 @@ extension JoliApp {
                 ]
             case .background:
                 print("App is running in the background")
+                websocket.soc.disconnect()
             @unknown default:
                 // Fallback for future cases
                 print("Unknown scene phase: \(phase)")

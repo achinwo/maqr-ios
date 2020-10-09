@@ -11,7 +11,7 @@ import JoliPlayground
 import JoliCore
 import CancellationToken
 import Combine
-
+import JoliApi
 
 @main
 struct JoliClip: AppClip {
@@ -24,9 +24,9 @@ struct JoliClip: AppClip {
     }
     
     
-    var coordinator: AppCoordinator = AppCoordinator()
+    var coordinator: AppCoordinator
     
-    
+    var websocket: Socket
     
     @Environment(\.scenePhase) var scenePhase
     @AppStorage(key: .authToken, store: .groupContainer) var authToken: String = .empty
@@ -42,7 +42,28 @@ struct JoliClip: AppClip {
     }
     
     init() {
+        JoliApi.Environment.loadEnvConfig(from: Bundle.main)
+        let url = JoliApi.Environment.current.baseUrl.ws //URL(string: "https://192.168.1.173:8080/ws")!
         
+        self.websocket = Socket(url: url.appendingPathComponent("/ws")) { (socket, connected) in
+            
+            guard connected else { return }
+            
+            socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
+                print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
+            }
+        }
+        
+        let pub: PlayState.Publisher = self.websocket
+            .deserialize(PlayState.self)
+            .autoconnect()
+            .multicast() {
+                return PassthroughSubject<PlayState, SocketError>()
+            }
+            .autoconnect()
+            .eraseToAnyPublisher()
+        
+        self.coordinator = AppCoordinator(pub)
     }
     
     func onScenePhaseChange(_ phase: ScenePhase){

@@ -166,10 +166,10 @@ public struct AppView2: View {
 }
 
 
-struct AppView2_Previews: PreviewProvider {
-    static var previews: some View {
-        let coord = AppCoordinator()
-        AppView2(playroom: .constant(SEED_DATA.musicrooms.first), currentUser: .constant(SEED_DATA.users.first))
-            .environmentObject(coord)
-    }
-}
+//struct AppView2_Previews: PreviewProvider {
+//    static var previews: some View {
+//        let coord = AppCoordinator()
+//        AppView2(playroom: .constant(SEED_DATA.musicrooms.first), currentUser: .constant(SEED_DATA.users.first))
+//            .environmentObject(coord)
+//    }
+//}

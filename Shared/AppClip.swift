@@ -294,12 +294,13 @@ public final class AppCoordinator: ObservableObject {
     @Published public var namespace: Namespace.ID? = nil
     @Published public var keyboardHeight: CGFloat = 0
     
-    @Published public var playStatePublisher: PlayState.Publisher? = nil
+    @Published public var playStatePublisher: PlayState.Publisher
     
     private var allSearchengines = [spotifyEngine]
     
-    public init(namespace: Namespace.ID? = nil){
+    public init(_ playStatePublisher: PlayState.Publisher, namespace: Namespace.ID? = nil){
         self.namespace = namespace
+        self.playStatePublisher = playStatePublisher
         
         let notificationCenter = NotificationCenter.default
         
@@ -386,6 +387,7 @@ public protocol AppClip: App {
     var namespace: Namespace.ID { get }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void
+    func onScenePhaseChange(_ phase: ScenePhase) -> Void
     
 }
 
