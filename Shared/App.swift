@@ -58,7 +58,7 @@ struct JoliApp: AppClip {
         
         
         self.websocket = Socket(url: url.appendingPathComponent("/ws"))
-        self.coordinator = AppCoordinator(self.websocket.publish(PlayState.self, smoothKeyPath: \.progressMs, interval: playbackRefreshRate))
+        self.coordinator = AppCoordinator(self.websocket.publish(PlayState.self, smoothKeyPath: \.progressMs, identity: \.userName, interval: playbackRefreshRate))
         
         self.websocket.onConnect = self.onConnectionStateChanged
         
@@ -74,7 +74,7 @@ struct JoliApp: AppClip {
             print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
             
             DispatchQueue.main.async {
-                self.coordinator.playStatePublisher = self.websocket.publish(PlayState.self, smoothKeyPath: \.progressMs, interval: self.playbackRefreshRate)
+                self.coordinator.playStatePublisher = self.websocket.publish(PlayState.self, smoothKeyPath: \.progressMs, identity: \.userName, interval: self.playbackRefreshRate)
             }
         }
     }

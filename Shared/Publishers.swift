@@ -212,9 +212,9 @@ public extension Socket {
         return DbPublisher(socket: self)
     }
     
-    func publish<M>(_ modelType: M.Type, smoothKeyPath: Publishers.Smooth<M.Publisher>.ValueKeyPath? = nil, interval: TimeInterval = 0.3) -> M.Publisher where M: Persisted {
+    func publish<M, Id: Hashable>(_ modelType: M.Type, smoothKeyPath: Publishers.Smooth<M.Publisher, Id>.ValueKeyPath? = nil, identity: Publishers.Smooth<M.Publisher, Id>.IdentityKeyPath? = nil, interval: TimeInterval = 0.3) -> M.Publisher where M: Persisted {
         
-        guard let kp = smoothKeyPath else {
+        guard let kp = smoothKeyPath, let idKp = identity else {
             return self.deserialize(modelType.self)
                 .multicast() {
                     return PassthroughSubject<M, SocketError>()
@@ -224,7 +224,7 @@ public extension Socket {
         }
         
         return self.deserialize(modelType.self)
-            .smooth(kp, interval: interval)
+            .smooth(kp, identity: idKp, interval: interval)
             .autoconnect()
             .multicast() {
                 return PassthroughSubject<M, SocketError>()
@@ -241,22 +241,24 @@ public extension Persisted {
 
 public extension Publisher {
     
-    func smooth(_ path: Publishers.Smooth<Self>.ValueKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 0.3) -> Publishers.Smooth<Self> {
-        return Publishers.Smooth(self, path: path, unit: unit, duration: duration, interval: interval)
+    func smooth<Id: Hashable>(_ path: Publishers.Smooth<Self, Id>.ValueKeyPath, identity: Publishers.Smooth<Self, Id>.IdentityKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 0.3) -> Publishers.Smooth<Self, Id> {
+        return Publishers.Smooth(self, path: path, identity:identity, unit: unit, duration: duration, interval: interval)
     }
     
 }
 
 public extension Publishers {
     
-    class Smooth<C: Publisher>: ConnectablePublisher {
+    class Smooth<C: Publisher, Id: Hashable>: ConnectablePublisher {
         
+        public typealias IdentityKeyPath = WritableKeyPath<C.Output, Id>
         public typealias ValueKeyPath = WritableKeyPath<C.Output, Int?>
         public typealias CurrentValue = (value: C.Output, ts: Date)
         
         private var timer: Timer.TimerPublisher
         public var smoothingOn: Bool = false
         var path: ValueKeyPath
+        var identityPath: IdentityKeyPath
         let duration: TimeInterval?
         let interval: TimeInterval
         
@@ -264,11 +266,11 @@ public extension Publishers {
         
         private var timerCancel: AnyCancellable? = nil
         private var passthroughCancel: AnyCancellable? = nil
-        private var currentValue = CurrentValueSubject<CurrentValue?, C.Failure>(nil)
+        private var currentValue = CurrentValueSubject<[Id: CurrentValue], C.Failure>([:])
         
         var passthrough = PassthroughSubject<C.Output, C.Failure>()
         
-        public init(_ target: C, path: ValueKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 1, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .default, options:  RunLoop.SchedulerOptions? = nil){
+        public init(_ target: C, path: ValueKeyPath, identity: IdentityKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 1, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .default, options:  RunLoop.SchedulerOptions? = nil){
             self.duration = duration
             timer = Timer.TimerPublisher(interval: interval,
                                          tolerance: tolerance,
@@ -279,6 +281,7 @@ public extension Publishers {
             self.path = path
             self.interval = interval
             self.unit = unit
+            self.identityPath = identity
             
             setupPassthrough()
         }
@@ -304,26 +307,37 @@ public extension Publishers {
                     return
                 }
                 
-                guard var (lastValue, _) = self.currentValue.value, let keyValue = lastValue[keyPath: self.path] else {
+                var valuesMap = self.currentValue.value
+                
+                guard !valuesMap.isEmpty else {
                     return
                 }
                 
-                let interval = abs(self.interval)
-                var addition: Int = 0
-                
-                if interval > 0 && interval < 1 {
-                    addition = Int(Double(self.unit) * interval)
-                } else if interval >= 1 {
-                    addition = Int(interval) * self.unit
+                for (id, item) in self.currentValue.value {
+                    
+                    guard let keyValue = item.value[keyPath: self.path] else { continue }
+                    
+                    var lastValue = item.value
+                    
+                    let interval = abs(self.interval)
+                    var addition: Int = 0
+                    
+                    if interval > 0 && interval < 1 {
+                        addition = Int(Double(self.unit) * interval)
+                    } else if interval >= 1 {
+                        addition = Int(interval) * self.unit
+                    }
+                    
+                    let newQuant = keyValue + addition
+                    lastValue[keyPath: self.path] = newQuant
+                    
+                    //Swift.print("[Timer] \(keyValue) -> \(newQuant) (\(interval) * \(self.unit))")
+                    valuesMap[id] = (lastValue, Date())
+                    
+                    self.passthrough.send(lastValue)
                 }
                 
-                let newQuant = keyValue + addition
-                lastValue[keyPath: self.path] = newQuant
-                
-                //Swift.print("[Timer] \(keyValue) -> \(newQuant) (\(interval) * \(self.unit))")
-                
-                self.currentValue.send((lastValue, Date()))
-                self.passthrough.send(lastValue)
+                self.currentValue.send(valuesMap)
             }
             
             self.passthroughCancel = target.sink(){ completion in
@@ -332,16 +346,23 @@ public extension Publishers {
                 self.passthrough.send(completion: completion)
             } receiveValue: { output in
                 Swift.print("[Passthrough] got - \(output)")
+                let id = output[keyPath: self.identityPath]
+                var valuesMap = self.currentValue.value
                 
-                guard let outWithTs = self.currentValue.value, output[keyPath: self.path] != nil else {
-                    self.currentValue.send((value: output, ts: Date()))
+                guard let outWithTs = self.currentValue.value[id], output[keyPath: self.path] != nil else {
+                    
+                    valuesMap[id] = (value: output, ts: Date())
+                    
+                    self.currentValue.send(valuesMap)
                     self.passthrough.send(output)
                     return
                 }
                 
                 let out = self.applySmooth((output, Date()), outWithTs)
                 
-                self.currentValue.send(out)
+                valuesMap[id] = out
+                
+                self.currentValue.send(valuesMap)
                 self.passthrough.send(out.value)
             }
         }

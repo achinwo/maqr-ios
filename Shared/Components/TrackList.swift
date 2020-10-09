@@ -47,6 +47,8 @@ public struct TrackView2: JoliView {
     @State var playPubCancel: AnyCancellable? = nil
     @State var playStatePublisherCancel: AnyCancellable? = nil
     
+    @State var playStatebyUsername = [String: PlayState]()
+    
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @State var invalidPlayAttempts = 0
@@ -138,7 +140,7 @@ public struct TrackView2: JoliView {
                         //print("[playStatePublisher] received: \(value)")
                         
                         DispatchQueue.main.async {
-                            self.playState = value
+                            self.playStatebyUsername[value.userName] = value
                         }
                     }
             }
@@ -147,12 +149,6 @@ public struct TrackView2: JoliView {
             .padding(.all, 2)
             
             GeometryReader() { proxy in
-                
-                let containerWidth = CGFloat(proxy.size.width)
-                let progress = CGFloat(playState?.progressMs ?? 1)
-                let trackDuration = max(CGFloat(track.duration ?? 3000), progress)
-                
-                let offset = containerWidth * (max(progress, 1) / trackDuration)
                 
                 HStack() {
                     VStack(alignment: .leading) {
@@ -205,17 +201,27 @@ public struct TrackView2: JoliView {
                     }
                 }
                 .background(
-                    HStack(alignment: .center){
+                    ZStack(alignment: .leading){
                         
-                        Rectangle()
-                        .fill(Color.yellow)
-                        .frame(width: 4, height: proxy.size.height)
-                        .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
-                        Spacer()
+                        let containerWidth = CGFloat(proxy.size.width)
+                        
+                        ForEach(Array(self.playStatebyUsername), id: \.key) { item in
+                            let progress = CGFloat(item.value.progressMs ?? 1)
+                            let trackDuration = max(CGFloat(track.duration ?? 30000), progress)
+                            
+                            let offset = containerWidth * (max(progress, 1) / trackDuration)
+                            
+                            RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
+                                .fill([Color.blue, Color.green, Color.yellow, Color.purple][ item.key.count % 4 ].opacity(0.64))
+                                .frame(width: 3, height: proxy.size.height)
+                                .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
+                                .id(item.key)
+                        }
                     }
                     .frame(width: proxy.size.width, height: proxy.size.height)
-                    .opacity(playState == nil || playState?.playingState != .playing ? 0 : 1)
+                    .opacity(self.playStatebyUsername.isEmpty ? 0 : 1)
                     .animation(.easeInOut)
+                    .id(track.uri)
                 )
             }
         }
