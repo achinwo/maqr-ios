@@ -284,7 +284,7 @@ public extension Publishers {
             return timer.connect()
         }
         
-        public func receive<S>(subscriber: S) where S : Subscriber, Self.Failure == S.Failure, Self.Output == S.Input {
+        public func receive<S>(subscriber: S) where S : Subscriber, C.Failure == S.Failure, C.Output == S.Input {
             passthrough.receive(subscriber: subscriber)
         }
         
