@@ -40,7 +40,8 @@ struct JoliApp: AppClip {
     let spotify = spotifyDelegateInstance
     var websocket: Socket
     var cancellables: Set<AnyCancellable> = []
-    var playbackRefreshRate: TimeInterval = 0.05
+    var playbackRefreshRate: TimeInterval = 0.15
+    
     
     var appState: AppState {
         return appDelegate.appState
@@ -58,11 +59,25 @@ struct JoliApp: AppClip {
         
         
         self.websocket = Socket(url: url.appendingPathComponent("/ws"))
-        self.coordinator = AppCoordinator(self.websocket.publish(PlayState.self, smoothKeyPath: \.progressMs, identity: \.userName, interval: playbackRefreshRate))
+        
+        let publisher = self.websocket.publish(PlayState.self, interval: playbackRefreshRate, path: \.progressMs, resolver: cb)
+        
+        self.coordinator = AppCoordinator(publisher)
         
         self.websocket.onConnect = self.onConnectionStateChanged
         
         websocket.connect()
+    }
+    
+    @State var once = false
+    
+    let cb: Publishers.Smooth<PlayState.Publisher, String>.StateGetter = { (state, now) in
+        
+        guard let id = state.trackUri, let duration = state.durationMs, state.playingState == .playing else {
+            return nil
+        }
+        
+        return (id: id, value: state.progressMs, duration: TimeInterval(duration))
     }
     
     func onConnectionStateChanged(_ socket: Socket, _ connected: Bool){
@@ -74,7 +89,9 @@ struct JoliApp: AppClip {
             print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
             
             DispatchQueue.main.async {
-                self.coordinator.playStatePublisher = self.websocket.publish(PlayState.self, smoothKeyPath: \.progressMs, identity: \.userName, interval: self.playbackRefreshRate)
+                let publisher: PlayState.Publisher = self.websocket.publish(PlayState.self, interval: self.playbackRefreshRate, path: \.progressMs, resolver: cb)
+                
+                self.coordinator.playStatePublisher = publisher
             }
         }
     }

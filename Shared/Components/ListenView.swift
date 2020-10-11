@@ -154,7 +154,7 @@ struct ListenView: JoliView {
                         
                         let a = SEED_DATA.tracks.first!
                         let b = SEED_DATA.tracks[16]
-                        let c = SEED_DATA.tracks[32]
+                        let c = SEED_DATA.tracks[SEED_DATA.tracks.count - 3]
                         
                         HStack(alignment: .center){
                             NetworkImage(string: a.albumCoverUrl) {

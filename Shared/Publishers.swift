@@ -212,9 +212,9 @@ public extension Socket {
         return DbPublisher(socket: self)
     }
     
-    func publish<M, Id: Hashable>(_ modelType: M.Type, smoothKeyPath: Publishers.Smooth<M.Publisher, Id>.ValueKeyPath? = nil, identity: Publishers.Smooth<M.Publisher, Id>.IdentityKeyPath? = nil, interval: TimeInterval = 0.3) -> M.Publisher where M: Persisted {
+    func publish<M, Id: Hashable>(_ modelType: M.Type, interval: TimeInterval = 0.3, path: Publishers.Smooth<M.Publisher, Id>.ValueKeyPath? = nil, resolver: Publishers.Smooth<M.Publisher, Id>.StateGetter? = nil) -> M.Publisher where M: Persisted {
         
-        guard let kp = smoothKeyPath, let idKp = identity else {
+        guard let resolve = resolver, let kp = path else {
             return self.deserialize(modelType.self)
                 .multicast() {
                     return PassthroughSubject<M, SocketError>()
@@ -224,7 +224,7 @@ public extension Socket {
         }
         
         return self.deserialize(modelType.self)
-            .smooth(kp, identity: idKp, interval: interval)
+            .smooth(kp, resolver: resolve)
             .autoconnect()
             .multicast() {
                 return PassthroughSubject<M, SocketError>()
@@ -241,26 +241,43 @@ public extension Persisted {
 
 public extension Publisher {
     
-    func smooth<Id: Hashable>(_ path: Publishers.Smooth<Self, Id>.ValueKeyPath, identity: Publishers.Smooth<Self, Id>.IdentityKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 0.3) -> Publishers.Smooth<Self, Id> {
-        return Publishers.Smooth(self, path: path, identity:identity, unit: unit, duration: duration, interval: interval)
+    func smooth<Id: Hashable>(_ path: Publishers.Smooth<Self, Id>.ValueKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 0.3, resolver: @escaping Publishers.Smooth<Self, Id>.StateGetter) -> Publishers.Smooth<Self, Id> {
+        return Publishers.Smooth(self, path: path, unit: unit,
+                                 duration: duration, interval: interval, resolver: resolver)
+    }
+    
+    func filter<ValueType: Equatable>(_ path: KeyPath<Output, ValueType>, value: ValueType) -> AnyPublisher<Output, Failure> {
+        return self.filter() { $0[keyPath: path] == value }
+            .eraseToAnyPublisher()
     }
     
 }
 
 public extension Publishers {
     
-    class Smooth<C: Publisher, Id: Hashable>: ConnectablePublisher {
+    class Smooth<C: Publisher, Id: Hashable>: ConnectablePublisher, Identifiable, CustomDebugStringConvertible {
+        
+        public typealias StateGetter = (C.Output, Date) -> State?
+        
+        public typealias Value = Int?
         
         public typealias IdentityKeyPath = WritableKeyPath<C.Output, Id>
         public typealias ValueKeyPath = WritableKeyPath<C.Output, Int?>
         public typealias CurrentValue = (value: C.Output, ts: Date)
         
+        public typealias State = (id: Id, value: Value, duration: TimeInterval)
+        
+        public var debugDescription: String {
+            return "Smooth<\(C.self), \(Id.self)>(\(id))"
+        }
+        
         private var timer: Timer.TimerPublisher
         public var smoothingOn: Bool = false
         var path: ValueKeyPath
-        var identityPath: IdentityKeyPath
         let duration: TimeInterval?
         let interval: TimeInterval
+        
+        let resolve: StateGetter
         
         let unit: Int
         
@@ -270,7 +287,7 @@ public extension Publishers {
         
         var passthrough = PassthroughSubject<C.Output, C.Failure>()
         
-        public init(_ target: C, path: ValueKeyPath, identity: IdentityKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 1, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .default, options:  RunLoop.SchedulerOptions? = nil){
+        public init(_ target: C, path: ValueKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 1, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .default, options:  RunLoop.SchedulerOptions? = nil, resolver: @escaping StateGetter){
             self.duration = duration
             timer = Timer.TimerPublisher(interval: interval,
                                          tolerance: tolerance,
@@ -278,16 +295,21 @@ public extension Publishers {
                                          mode: mode,
                                          options: options)
             self.target = target
-            self.path = path
             self.interval = interval
             self.unit = unit
-            self.identityPath = identity
+            self.resolve = resolver
+            self.path = path
             
             setupPassthrough()
         }
         
         public func connect() -> Cancellable {
             timer.connect()
+        }
+        
+        deinit {
+            timerCancel?.cancel()
+            self.passthroughCancel?.cancel()
         }
         
         private func setupPassthrough() {
@@ -297,15 +319,7 @@ public extension Publishers {
             
             let start = Date()
             
-            self.timerCancel = timer.sink(){ value in
-                
-                let proceed = self.duration == nil ? true : Date().timeIntervalSince(start) < self.duration!
-                
-                guard proceed else {
-                    Swift.print("[Passthrough] ticker cancelled")
-                    self.timerCancel?.cancel()
-                    return
-                }
+            self.timerCancel = timer.sink(){ [self] timestamp in
                 
                 var valuesMap = self.currentValue.value
                 
@@ -313,9 +327,20 @@ public extension Publishers {
                     return
                 }
                 
+                var evictSet: Set<Id> = []
+                
                 for (id, item) in self.currentValue.value {
                     
-                    guard let keyValue = item.value[keyPath: self.path] else { continue }
+                    let state = self.resolve(item.value, timestamp)
+                    let proceed = state?.duration == nil ? true : Date().timeIntervalSince(start) < state!.duration
+                    
+                    
+                    guard proceed else {
+                        evictSet.insert(id)
+                        continue
+                    }
+                    
+                    guard let keyValue = state?.value else { continue }
                     
                     var lastValue = item.value
                     
@@ -331,10 +356,19 @@ public extension Publishers {
                     let newQuant = keyValue + addition
                     lastValue[keyPath: self.path] = newQuant
                     
-                    //Swift.print("[Timer] \(keyValue) -> \(newQuant) (\(interval) * \(self.unit))")
+                    if Int32(Date().timeIntervalSince(start)) % 10 == 0 {
+                        Swift.print("[\(debugDescription)] \(keyValue) -> \(newQuant) (\(interval) * \(self.unit))")
+                    }
+                    
                     valuesMap[id] = (lastValue, Date())
                     
                     self.passthrough.send(lastValue)
+                }
+                
+                if !evictSet.isEmpty {
+                    Swift.print("[Timer] removing ids: \(evictSet)")
+                    
+                    evictSet.forEach() { valuesMap.removeValue(forKey: $0) }
                 }
                 
                 self.currentValue.send(valuesMap)
@@ -345,11 +379,17 @@ public extension Publishers {
                 self.timerCancel?.cancel()
                 self.passthrough.send(completion: completion)
             } receiveValue: { output in
-                Swift.print("[Passthrough] got - \(output)")
-                let id = output[keyPath: self.identityPath]
+                //Swift.print("[Passthrough] got - \(output)")
+                
+                guard let state = self.resolve(output, Date()) else {
+                    self.passthrough.send(output)
+                    return
+                }
+                
+                let id = state.id
                 var valuesMap = self.currentValue.value
                 
-                guard let outWithTs = self.currentValue.value[id], output[keyPath: self.path] != nil else {
+                guard let outWithTs = self.currentValue.value[id], state.value != nil else {
                     
                     valuesMap[id] = (value: output, ts: Date())
                     
@@ -383,15 +423,8 @@ public extension Publishers {
         
         func applySmooth(_ newValue: CurrentValue, _ oldValue: CurrentValue) -> CurrentValue {
             
-            let vNew = newValue.value[keyPath: path]
-            //let vOld = oldValue.value[keyPath: path]
             
-            var resObj = newValue.value
-            resObj[keyPath: path] = vNew
-            
-            let result = (resObj, newValue.ts)
-            
-            return result
+            return newValue
         }
         
     }

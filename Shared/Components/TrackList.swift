@@ -42,7 +42,6 @@ public struct TrackView2: JoliView {
     @Binding var heartLevel: HeartLevel?
     @State var heartIconFont: UIFont.TextStyle = UIFont.TextStyle.title2
     @State var requestingPlay = false
-    @State var playState: PlayState? = nil
     
     @State var playPubCancel: AnyCancellable? = nil
     @State var playStatePublisherCancel: AnyCancellable? = nil
@@ -75,9 +74,17 @@ public struct TrackView2: JoliView {
     public var body: some View {
         let cb: () -> () = {
             self.requestingPlay = true
-            appCoordinator.play(track)
+            appCoordinator.play(track, positionMs: self.playStatebyUsername.first?.value.progressMs)
                 .then(){ playState in
-                    self.playState = playState
+                    
+                    guard var playState = playState else {
+                        return
+                    }
+                    
+                    playState.progressMs = self.playStatebyUsername[playState.userName]?.progressMs ?? 0
+                    playState.durationMs = self.playStatebyUsername[playState.userName]?.durationMs
+                    
+                    self.playStatebyUsername[playState.userName] = playState
                 }
                 .catch() { error in
                     print("[PlayTrack] error: \(error)")
@@ -87,7 +94,33 @@ public struct TrackView2: JoliView {
                     self.requestingPlay = false
                 }
         }
-        HStack(alignment: .center) {
+        
+        
+        let heartCount = 16
+        
+        return HStack(alignment: .center) {
+            
+            let setupPublisher = { (publisher: PlayState.Publisher) -> Void in
+                
+                self.playPubCancel = publisher
+                    .filter(\.trackUri, value: track.uri)
+                    .sink() { completion in
+                        
+                        self.playPubCancel = nil
+                        //print("[playStatePublisher] errored: \(completion)")
+                        
+//                        guard case let Subscribers.Completion.failure(error) = completion else {
+//                            return
+//                        }
+                        
+                    } receiveValue: { value in
+                        //print("[playStatePublisher] received: \(value)")
+                        
+                        DispatchQueue.main.async {
+                            self.playStatebyUsername[value.userName] = value
+                        }
+                    }
+            }
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
                          placeholderImage: UIImage(systemName: "timelapse")!) { (loadedImage, error) in
@@ -121,29 +154,12 @@ public struct TrackView2: JoliView {
             .frame(width: 64, height: 64, alignment: .center)
             .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             .onTapGesture(perform: cb)
-            .onReceive(appCoordinator.$playStatePublisher){ publisher in
-                
-                self.playPubCancel = publisher
-                    .sink() { completion in
-                        
-                        self.playPubCancel = nil
-                        //print("[playStatePublisher] errored: \(completion)")
-                        
-//                        guard case let Subscribers.Completion.failure(error) = completion else {
-//                            return
-//                        }
-                        
-                    } receiveValue: { value in
-                        guard value.trackUri == track.uri else {
-                            return
-                        }
-                        //print("[playStatePublisher] received: \(value)")
-                        
-                        DispatchQueue.main.async {
-                            self.playStatebyUsername[value.userName] = value
-                        }
-                    }
-            }
+            .onReceive(appCoordinator.$playStatePublisher, perform: setupPublisher)
+            .onAppear() { setupPublisher(appCoordinator.playStatePublisher) }
+//            .onDisappear() {
+//                self.playPubCancel?.cancel()
+//                self.playPubCancel = nil
+//            }
             .modifier(ShakeEffect(shakes: invalidPlayAttempts * 2))
             .animation(Animation.linear)
             .padding(.all, 2)
@@ -176,8 +192,10 @@ public struct TrackView2: JoliView {
                     }
                     
                     if self.heartLevel != nil {
+                        
+                        
                         Spacer()
-                        JoyMeterView(self.$heartLevel, heartCount: 1, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary, backgroundColor: Color.red.opacity(0.5))
+                        JoyMeterView(self.$heartLevel, heartCount: heartCount, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary, backgroundColor: Color.red.opacity(0.5))
                             .padding()
                             .padding(.trailing, Sizing.large)
                             .foregroundColor(colors?.secondaryColor ?? Color.primary)
@@ -207,13 +225,13 @@ public struct TrackView2: JoliView {
                         
                         ForEach(Array(self.playStatebyUsername), id: \.key) { item in
                             let progress = CGFloat(item.value.progressMs ?? 1)
-                            let trackDuration = max(CGFloat(track.duration ?? 30000), progress)
+                            let trackDuration = CGFloat(item.value.durationMs ?? 40000)
                             
                             let offset = containerWidth * (max(progress, 1) / trackDuration)
                             
                             HStack(alignment: .bottom){
                                 RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
-                                    .fill([Color.blue, Color.green, Color.yellow, Color.purple][ item.key.count % 4 ].opacity(0.64))
+                                    .fill([Color.blue, Color.purple, Color.yellow, Color.green][ item.key.count % 4 ].opacity(0.48))
                                     .frame(width: 3, height: proxy.size.height)
                                     .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
                                     .id(item.key)
