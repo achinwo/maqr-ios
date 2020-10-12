@@ -158,6 +158,11 @@ struct ListenView: JoliView {
     @State var tripLine: CGFloat = 0
     @State var loadingFinishedAt: Date? = nil
     
+    private func refreshContent() {
+        self.loadLiveTracks()
+        self.loadPlayrooms()
+    }
+    
     var body: some View {
 //        let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
 //            guard user.id != 3 else {
@@ -242,6 +247,13 @@ struct ListenView: JoliView {
                                 }
                             }
                             //.frame(minHeight: screenHeight)
+                            .onChange(of: self.playroom) { value in
+                                guard value == nil else {
+                                    return
+                                }
+                                
+                                self.refreshContent()
+                            }
                             .padding(.horizontal, Sizing.large)
                             .onFrameChange() { value in
                                 
@@ -257,8 +269,7 @@ struct ListenView: JoliView {
                                     self.tripLine = value.origin.y
                                     
                                     withImpact(.rigid) {
-                                        self.loadLiveTracks()
-                                        self.loadPlayrooms()
+                                        self.refreshContent()
                                         print("[] Frame chnaged: \(value)")
                                     }
                                 }
@@ -280,17 +291,20 @@ struct ListenView: JoliView {
                         }
                     }.background(
                         VStack() {
-                            ProgressView("Refreshing...", value: nil, total: 100).progressViewStyle(CircularProgressViewStyle())
+                            ProgressView(self.loadingLiveTracks ? "Refreshing..." : "Done!", value: self.loadingLiveTracks ? nil : 100.0, total: 100.0)
+                                .opacity(self.loadingLiveTracks ? 1 : 0.5)
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .font(Font.headline.weight(.thin))
                             Spacer()
                         }
-                        .padding(.top, Sizing.xxLarge * 2)
+                        .padding(.trailing, Sizing.small)
+                        .padding(.top, Sizing.xxLarge * 2.6)
                     )
                 }
                 .animation(.easeInOut)
                 .onAppear() {
                     self.scrollProxy = scrollProxy //
-                    self.loadLiveTracks()
-                    self.loadPlayrooms()
+                    self.refreshContent()
                 }
             }
             .frame(maxWidth: screenWidth)
