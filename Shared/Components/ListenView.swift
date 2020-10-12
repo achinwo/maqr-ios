@@ -10,6 +10,7 @@ import SwiftUI
 import JoliCore
 import JoliApi
 import Promises
+import Combine
 
 struct ShakeEffect: GeometryEffect {
     
@@ -59,6 +60,7 @@ struct ListenView: JoliView {
     @State var peopleViewBounds: CGRect? = nil
     @State var navbarViewBounds: CGRect? = nil
     @State var roomControlViewBounds: CGRect? = nil
+    @State var pullToRefreshCancel: AnyCancellable? = nil
     
     var animation: Namespace.ID
     @Binding var playroom: Musicroom?
@@ -89,7 +91,13 @@ struct ListenView: JoliView {
     
     
     
-    @State var loadingLiveTracks = false
+    @State var loadingLiveTracks = false {
+        didSet {
+            if !loadingLiveTracks {
+                self.loadingFinishedAt = Date()
+            }
+        }
+    }
     @State var loadingPlayrooms = false
     
     private func loadPlayrooms() {
@@ -97,7 +105,6 @@ struct ListenView: JoliView {
         self.loadingPlayrooms = true
         Musicroom.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
             .then() { rooms  in
-                print("[Playrooms] states: \(rooms)")
                 self.playrooms = rooms
             }
             .always() {
@@ -149,6 +156,7 @@ struct ListenView: JoliView {
     }
     
     @State var tripLine: CGFloat = 0
+    @State var loadingFinishedAt: Date? = nil
     
     var body: some View {
 //        let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
@@ -210,8 +218,8 @@ struct ListenView: JoliView {
                                     }
                                     
                                     let columns = [
-                                        GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium),
-                                        GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium)
+                                        GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium * 2),
+                                        GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium * 2)
                                     ]
                                     
                                     Section(header: header) {
@@ -234,7 +242,7 @@ struct ListenView: JoliView {
                                 }
                             }
                             //.frame(minHeight: screenHeight)
-                            .padding(.horizontal, Sizing.medium)
+                            .padding(.horizontal, Sizing.large)
                             .onFrameChange() { value in
                                 
                                 if value.origin.y < tripLine {
@@ -248,7 +256,7 @@ struct ListenView: JoliView {
                                 DispatchQueue.main.async {
                                     self.tripLine = value.origin.y
                                     
-                                    withImpact(.heavy) {
+                                    withImpact(.rigid) {
                                         self.loadLiveTracks()
                                         self.loadPlayrooms()
                                         print("[] Frame chnaged: \(value)")
@@ -374,6 +382,17 @@ struct ListenView: JoliView {
                             Spacer()
                             
                             VStack(alignment: .trailing) {
+                                Button(){
+                                    withImpact(.soft) {
+                                        self.playroom = nil
+                                    }
+                                } label: {
+                                    Image(systemName: "arrow.down.right.and.arrow.up.left")
+                                        .resizable()
+                                        .frame(width: 18, height: 18)
+                                        .font(Font.subheadline.weight(.thin))
+                                        .foregroundColor(Color.secondary)
+                                }
                                 HStack(alignment: .center){
                                     Text("in")
                                         .font(Font.subheadline)
@@ -415,10 +434,22 @@ struct ListenView: JoliView {
                         
                         
                     } else {
-//                        HStack(){
-//                            Spacer()
-//                            ShakeButtonView()
-//                        }
+                        HStack(alignment: .top){
+                            Spacer()
+                            //ShakeButtonView()
+                            Text("ꚠ")
+                                .font(Font.title.weight(.thin))
+                                .gradientForeground(colors: [Color.red, Color.orange, Color.yellow, Color.green, Color.blue, Color.purple, Color.pink])
+                                .scaleEffect(x: self.loadingLiveTracks ? 1.5 : 1.0, y: self.loadingLiveTracks ? 1.5 : 1.0)
+                                .onTapGesture {
+                                    self.loadPlayrooms()
+                                    self.loadLiveTracks()
+                                }
+                            
+                            Spacer()
+                        }
+                        .animation(.easeInOut)
+                        .background(Color.white.opacity(0.90))
                     }
                 }
                 .coordinateSpace(name: "playroom-controls-space")
@@ -441,6 +472,17 @@ struct ListenView: JoliView {
             }
         }
     }
+}
+
+extension View {
+    
+    public func gradientForeground(colors: [Color]) -> some View {
+        self.overlay(AngularGradient(gradient: Gradient(colors: colors),
+                                     center: UnitPoint(x: 0.5, y: 1),
+                                     angle: Angle(degrees: 0.00)))
+            .mask(self)
+    }
+    
 }
 
 //struct ListenView_Previews: PreviewProvider {
