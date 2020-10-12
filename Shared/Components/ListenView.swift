@@ -81,12 +81,29 @@ struct ListenView: JoliView {
                 }
     
     @State var liveTracks: [Spotify.Track] = []
+    @State var playrooms: [Musicroom] = []
     
     public struct SpotiftyTracksResponse: Codable {
         public var tracks: [Spotify.Track]
     }
     
+    
+    
     @State var loadingLiveTracks = false
+    @State var loadingPlayrooms = false
+    
+    private func loadPlayrooms() {
+        print("[loadLiveTracks] loading...")
+        self.loadingPlayrooms = true
+        Musicroom.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+            .then() { rooms  in
+                print("[Playrooms] states: \(rooms)")
+                self.playrooms = rooms
+            }
+            .always() {
+                self.loadingPlayrooms = false
+            }
+    }
     
     private func loadLiveTracks() {
         print("[loadLiveTracks] loading...")
@@ -97,7 +114,7 @@ struct ListenView: JoliView {
                 let trackUris = states
                     .sorted(by: { $0.updatedAt > $1.updatedAt })
                     .compactMap() { state -> String? in
-                    guard state.playingState == .playing else {
+                    guard state.playingState == .playing, let isLocal = state.trackUri?.starts(with: "spotify:local:"), !isLocal else {
                         return nil
                     }
                     
@@ -167,18 +184,56 @@ struct ListenView: JoliView {
                                 Divider()
                                     .opacity(self.loadingLiveTracks ? 1 : 0)
                                 
-                                
-                                HStack(){
-                                    Text("Live Tracks")
-                                        .font(Font.largeTitle.weight(.light))
-                                    Spacer()
+                                if !self.liveTracks.isEmpty {
+                                    
+                                    let header = HStack(){
+                                        Text("Live Tracks")
+                                            .font(Font.largeTitle.weight(.thin))
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                    }
+                                    
+                                    Section(header: header) {
+                                        ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
+                                            TrackView2(track: .constant(track), useDynamicColors: true)
+                                                .id(track.uri)
+                                        }
+                                    }
                                 }
                                 
-                                ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                                    TrackView2(track: .constant(track), useDynamicColors: true)
-                                        .id(track.uri)
+                                if !self.playrooms.isEmpty {
+                                    let header = HStack(){
+                                        Text("Playrooms")
+                                            .font(Font.largeTitle.weight(.thin))
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                    }
+                                    
+                                    let columns = [
+                                        GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium),
+                                        GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium)
+                                    ]
+                                    
+                                    Section(header: header) {
+                                        LazyVGrid(columns: columns) {
+                                            ForEach(self.playrooms, id: \.id) { room in
+                                                SpotifyItemView(item: room,
+                                                                images: [],
+                                                                titleKeyPath: \.name,
+                                                                subtitleKeyPath: \.details)
+                                                    .frame(height: 64)
+                                                    .onTapGesture {
+                                                        self.playroom = room
+                                                    }
+                                                    //.background(Color.yellow)
+                                                    .id(room.id)
+                                            }
+                                        }
+                                    }
+                                    
                                 }
                             }
+                            //.frame(minHeight: screenHeight)
                             .padding(.horizontal, Sizing.medium)
                             .onFrameChange() { value in
                                 
@@ -195,6 +250,7 @@ struct ListenView: JoliView {
                                     
                                     withImpact(.heavy) {
                                         self.loadLiveTracks()
+                                        self.loadPlayrooms()
                                         print("[] Frame chnaged: \(value)")
                                     }
                                 }
@@ -216,7 +272,7 @@ struct ListenView: JoliView {
                         }
                     }.background(
                         VStack() {
-                            ProgressView("Refresh", value: nil, total: 100).progressViewStyle(CircularProgressViewStyle())
+                            ProgressView("Refreshing...", value: nil, total: 100).progressViewStyle(CircularProgressViewStyle())
                             Spacer()
                         }
                         .padding(.top, Sizing.xxLarge * 2)
@@ -226,6 +282,7 @@ struct ListenView: JoliView {
                 .onAppear() {
                     self.scrollProxy = scrollProxy //
                     self.loadLiveTracks()
+                    self.loadPlayrooms()
                 }
             }
             .frame(maxWidth: screenWidth)
