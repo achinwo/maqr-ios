@@ -49,9 +49,9 @@ struct ListenTabbarView: JoliView {
     @State var isSearching = false
     @State var searchbarActive = false
     @EnvironmentObject var appCoordinator: AppCoordinator
-    @State var activeDevice: Spotify.Device?
     @State var volume: CGFloat = 30
     @Binding var playroom: Musicroom?
+    @Binding var activeDevice: Spotify.Device?
     
     @State var heartLevel: HeartLevel? = .full
     @Namespace var localNamespace
@@ -59,13 +59,14 @@ struct ListenTabbarView: JoliView {
     @State var isDragging = false
     @State var offset: CGSize = .zero
     
-    public init(users: [UserIdentifiable], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>){
+    public init(users: [UserIdentifiable], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>, activeDevice: Binding<Spotify.Device?>){
         
         self._playroom = playroom
         self._users = State(initialValue: users)
         self._isExpanded = isExpanded ?? .constant(true)
         self._searchText = searchText ?? .constant("")
         self._preview = preview ?? .constant(.userProfile(SEED_DATA.users.first!.builder()))
+        self._activeDevice = activeDevice
     }
     
     var stickyHeaderView: some View {
@@ -152,14 +153,6 @@ struct ListenTabbarView: JoliView {
                     self.isDragging = false
                 }
             
-            let devices: [Spotify.Device] = [
-                Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
-                Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
-                Spotify.Device(name: "Microwave", type: .speaker, isActive: true, id: "test_device4"),
-                
-                Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
-                Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
-            ]
             
             HStack(){
                 
@@ -172,9 +165,7 @@ struct ListenTabbarView: JoliView {
                 
                 Spacer()
                 Button(){
-                    self.appCoordinator.sheet.show(){
-                        DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: devices)
-                    }
+                    self.devicesBarActive.toggle()
                 } label: {
                     Image(systemName: "hifispeaker")
                 }
@@ -246,6 +237,15 @@ struct ListenTabbarView: JoliView {
         }
         
         
+        let devices: [Spotify.Device] = [
+            Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
+            Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
+            Spotify.Device(name: "Microwave", type: .speaker, isActive: true, id: "test_device4"),
+            
+            Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
+            Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
+        ]
+        
         return VStack(alignment: .center, spacing: .zero){
             
             if self.searchbarActive {
@@ -255,6 +255,8 @@ struct ListenTabbarView: JoliView {
                                 .stroke(Colors.lightGray.opacity(self.isSearching ? 0 : 0.9), lineWidth: 1))
                     .padding(.top, Sizing.medium)
                     .background(Color.clear)
+            } else if self.devicesBarActive {
+                DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: devices)
             }
             mainView
         }
@@ -270,5 +272,5 @@ struct ListenTabbarView: JoliView {
         .animation(.spring())
         
     }
-    
+     @State var devicesBarActive = false
 }

@@ -42,6 +42,7 @@ struct JoliApp: AppClip {
     var cancellables: Set<AnyCancellable> = []
     var playbackRefreshRate: TimeInterval = 0.15
     
+    @State var activeDevice: Spotify.Device? = nil
     
     var appState: AppState {
         return appDelegate.appState
@@ -98,7 +99,7 @@ struct JoliApp: AppClip {
     
     var contentView: some View {
         
-        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser)
+        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, activeDevice: self.$activeDevice)
             .onReceive(appDelegate.$shortcutItemToProcess) { _ in
                 //print(appDelegate.shortcutItemType)
                 //Do something here

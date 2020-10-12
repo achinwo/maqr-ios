@@ -8,6 +8,8 @@
 
 import SwiftUI
 import JoliCore
+import JoliApi
+import Promises
 
 struct ShakeEffect: GeometryEffect {
     
@@ -61,6 +63,7 @@ struct ListenView: JoliView {
     var animation: Namespace.ID
     @Binding var playroom: Musicroom?
     @Binding var currentUser: User?
+    @Binding var activeDevice: Spotify.Device?
     @State var scrollProxy: ScrollViewProxy? = nil
     
     @State private var membership: [PlayroomMembership] = SEED_DATA.users.map() { user in
@@ -76,6 +79,59 @@ struct ListenView: JoliView {
                                                  playroomId: 3, user: user)
                     return mem
                 }
+    
+    @State var liveTracks: [Spotify.Track] = []
+    
+    public struct SpotiftyTracksResponse: Codable {
+        public var tracks: [Spotify.Track]
+    }
+    
+    @State var loadingLiveTracks = false
+    
+    private func loadLiveTracks() {
+        print("[loadLiveTracks] loading...")
+        self.loadingLiveTracks = true
+        PlayState.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+            .then() { states -> Promise<SpotiftyTracksResponse?> in
+                print("[PlayStates] states: \(states)")
+                let trackUris = states
+                    .sorted(by: { $0.updatedAt > $1.updatedAt })
+                    .compactMap() { state -> String? in
+                    guard state.playingState == .playing else {
+                        return nil
+                    }
+                    
+                    return state.trackUri?.replacingOccurrences(of: "spotify:track:", with: "", options: .literal, range: nil)
+                }
+                
+                guard var comp = URLComponents(string: "/api/spotify/tracks"), !trackUris.isEmpty else {
+                    return Promise(nil)
+                }
+                
+                comp.queryItems = [
+                    URLQueryItem(name: "ids", value: trackUris.joined(separator: ","))
+                ]
+                
+                return HttpMethod.Fetch.get(url: comp, dataType: SpotiftyTracksResponse.self, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+                    .then() { resp -> SpotiftyTracksResponse in
+                        //print("[LiveTracks] \(resp.tracks)")
+                        
+                        DispatchQueue.main.async {
+                            self.liveTracks = resp.tracks
+                        }
+                        
+                        return resp
+                    }
+                    .catch() { error in
+                        print("[SpotifyTracksFtech] \(comp) - \(error)")
+                    }
+            }
+            .always() {
+                loadingLiveTracks = false
+            }
+    }
+    
+    @State var tripLine: CGFloat = 0
     
     var body: some View {
 //        let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
@@ -105,15 +161,71 @@ struct ListenView: JoliView {
                         //                .onDisappear() {
                         //                    print("[ListenView] playing view disappeared")
                         //                }
-                        TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom)
-                            //.padding(.top, geoProxy.safeAreaInsets.top)
-                            //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
-                            .padding(.top, proxy.frame(in: .named("playroom-controls-space")).minY)//== nil ? .zero : navbarViewBounds?.height)
-                            .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
-                    }
+                        if playroom == nil {
+                            VStack(){
+                                
+                                Divider()
+                                    .opacity(self.loadingLiveTracks ? 1 : 0)
+                                
+                                
+                                HStack(){
+                                    Text("Live Tracks")
+                                        .font(Font.largeTitle.weight(.light))
+                                    Spacer()
+                                }
+                                
+                                ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
+                                    TrackView2(track: .constant(track), useDynamicColors: true)
+                                        .id(track.uri)
+                                }
+                            }
+                            .padding(.horizontal, Sizing.medium)
+                            .onFrameChange() { value in
+                                
+                                if value.origin.y < tripLine {
+                                    DispatchQueue.main.async {
+                                        self.tripLine = 0
+                                    }
+                                }
+                                
+                                guard value.origin.y >= 100 && self.tripLine < 100, !self.loadingLiveTracks else { return }
+                                
+                                DispatchQueue.main.async {
+                                    self.tripLine = value.origin.y
+                                    
+                                    withImpact(.heavy) {
+                                        self.loadLiveTracks()
+                                        print("[] Frame chnaged: \(value)")
+                                    }
+                                }
+                            }
+                            .background(Color.white)
+                            .padding(.top, Sizing.xxLarge * 2)
+                            .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                        } else {
+                            
+                            
+                            TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom)
+                                .background(Color.white)
+                                .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                                //.padding(.top, geoProxy.safeAreaInsets.top)
+                                //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
+                                .padding(.top, proxy.frame(in: .named("playroom-controls-space")).minY)//== nil ? .zero : navbarViewBounds?.height)
+                                .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+                            
+                        }
+                    }.background(
+                        VStack() {
+                            ProgressView("Refresh", value: nil, total: 100).progressViewStyle(CircularProgressViewStyle())
+                            Spacer()
+                        }
+                        .padding(.top, Sizing.xxLarge * 2)
+                    )
                 }
+                .animation(.easeInOut)
                 .onAppear() {
                     self.scrollProxy = scrollProxy //
+                    self.loadLiveTracks()
                 }
             }
             .frame(maxWidth: screenWidth)
@@ -121,7 +233,7 @@ struct ListenView: JoliView {
             VStack(spacing: .zero) {
                 Spacer()
                 Divider()
-                ListenTabbarView(users: membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview, playroom: self.$playroom)
+                ListenTabbarView(users: membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview, playroom: self.$playroom, activeDevice: self.$activeDevice)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in
@@ -258,7 +370,7 @@ struct ListenView: JoliView {
                             self.roomControlViewBounds = rect
                         }
                     }
-                Divider()
+                Divider().opacity(self.playroom == nil ? 0 : 1).animation(.easeInOut)
                 
                 AppPreviewView(preview: self.$preview, currentUser: self.$currentUser, animation: animation)
                     .frame(maxWidth: screenWidth)
