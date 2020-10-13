@@ -117,7 +117,7 @@ struct ListenView: JoliView {
         self.loadingLiveTracks = true
         PlayState.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
             .then() { states -> Promise<SpotiftyTracksResponse?> in
-                print("[PlayStates] states: \(states)")
+                //print("[PlayStates] states: \(states)")
                 let trackUris = states
                     .sorted(by: { $0.updatedAt > $1.updatedAt })
                     .compactMap() { state -> String? in
@@ -137,13 +137,8 @@ struct ListenView: JoliView {
                 ]
                 
                 return HttpMethod.Fetch.get(url: comp, dataType: SpotiftyTracksResponse.self, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
-                    .then() { resp -> SpotiftyTracksResponse in
-                        //print("[LiveTracks] \(resp.tracks)")
-                        
-                        DispatchQueue.main.async {
-                            self.liveTracks = resp.tracks
-                        }
-                        
+                    .then(on: .main) { resp -> SpotiftyTracksResponse in
+                        self.liveTracks = resp.tracks
                         return resp
                     }
                     .catch() { error in
@@ -157,10 +152,167 @@ struct ListenView: JoliView {
     
     @State var tripLine: CGFloat = 0
     @State var loadingFinishedAt: Date? = nil
+    @GestureState private var isDragging = false
     
     private func refreshContent() {
         self.loadLiveTracks()
         self.loadPlayrooms()
+    }
+    
+    var contentView: some View {
+        ScrollViewReader() { scrollProxy in
+            GeometryReader() { proxy in
+                
+                let gragGesture = DragGesture(minimumDistance: 10, coordinateSpace: .global)
+                    .updating($isDragging) { (currentState, state, transaction) in
+                        state = currentState.translation.height > 10
+                        print("[Dragging] \(state) - \(currentState.translation.height )")
+                    }
+                
+                ScrollView(.vertical, showsIndicators: true) {
+                    if playroom == nil {
+                        
+                        VStack(){
+                            
+                            Divider()
+                                .opacity(self.loadingLiveTracks ? 1 : 0)
+                            
+                            if !self.liveTracks.isEmpty {
+                                
+                                let header = HStack(){
+                                    Text("Live Tracks")
+                                        .font(Font.largeTitle.weight(.thin))
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                }
+                                
+                                Section(header: header) {
+                                    ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
+                                        TrackView2(track: .constant(track), useDynamicColors: true)
+                                            .id(track.uri)
+                                    }
+                                }
+                            }
+                            
+                            if !self.playrooms.isEmpty {
+                                let header = HStack(){
+                                    Text("Playrooms")
+                                        .font(Font.largeTitle.weight(.thin))
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                }
+                                
+                                let columns = [
+                                    GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium * 2),
+                                    GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium * 2)
+                                ]
+                                
+                                Section(header: header) {
+                                    LazyVGrid(columns: columns) {
+                                        ForEach(self.playrooms, id: \.id) { room in
+                                            SpotifyItemView(item: room,
+                                                            images: [],
+                                                            titleKeyPath: \.name,
+                                                            subtitleKeyPath: \.details)
+                                                .frame(height: 64)
+                                                .onTapGesture {
+                                                    self.playroom = room
+                                                }
+                                                //.background(Color.yellow)
+                                                .id(room.id)
+                                        }
+                                    }
+                                }
+                                
+                            }
+                            
+                            //                                Group(){
+                            //                                    Color.white
+                            //                                }
+                            //                                .frame(width: screenWidth, height: screenWidth)
+                            
+                            Divider().padding(.vertical, Sizing.xxLarge)
+                            
+                            let header = HStack(){
+                                Label(){
+                                    Text("Settings")
+                                } icon: {
+                                    Image(systemName: "gearshape")
+                                        .font(Font.title.weight(.thin))
+                                }
+                                .foregroundColor(.secondary)
+                                .font(Font.largeTitle.weight(.thin))
+                                
+                                Spacer()
+                            }
+                            
+                            Section(header: header) {
+                                Text("Add stuff")
+                            }
+                            .id("settings")
+                            
+                        }
+                        //.frame(minHeight: screenHeight)
+                        .onChange(of: self.playroom) { value in
+                            guard value == nil else {
+                                return
+                            }
+                            
+                            self.refreshContent()
+                        }
+                        .padding(.horizontal, Sizing.large)
+                        .onFrameChange() { value in
+                            
+                            if value.origin.y < tripLine, isDragging {
+                                DispatchQueue.main.async {
+                                    self.tripLine = 0
+                                }
+                            }
+                            
+                            guard value.origin.y >= 100 && self.tripLine < 100, !self.loadingLiveTracks else { return }
+                            
+                            DispatchQueue.main.async {
+                                self.tripLine = value.origin.y
+                                
+                                withImpact(.rigid) {
+                                    self.refreshContent()
+                                    print("[] Frame chnaged: \(value)")
+                                }
+                            }
+                        }
+                        .background(Color.white)
+                        .padding(.top, Sizing.xxLarge * 2)
+                        .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                    } else {
+                        TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom)
+                            .background(Color.white)
+                            .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                            //.padding(.top, geoProxy.safeAreaInsets.top)
+                            //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
+                            .padding(.top, proxy.frame(in: .named("playroom-controls-space")).minY)//== nil ? .zero : navbarViewBounds?.height)
+                            .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+                    }
+                }
+                .simultaneousGesture(gragGesture)
+                .background(
+                    VStack() {
+                        ProgressView(self.loadingLiveTracks ? "Refreshing..." : "Done!", value: self.loadingLiveTracks ? nil : 100.0, total: 100.0)
+                            .opacity(self.loadingLiveTracks ? 1 : 0.5)
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .font(Font.headline.weight(.thin))
+                        Spacer()
+                    }
+                    .padding(.trailing, Sizing.small)
+                    .padding(.top, Sizing.xxLarge * 2.6)
+                )
+            }
+            .animation(.easeInOut)
+            .onAppear() {
+                self.scrollProxy = scrollProxy //
+                self.refreshContent()
+            }
+        }
+        .frame(maxWidth: screenWidth)
     }
     
     var body: some View {
@@ -178,136 +330,7 @@ struct ListenView: JoliView {
 //            return mem
 //        }
         return ZStack(){
-            ScrollViewReader() { scrollProxy in
-                GeometryReader() { proxy in
-                    ScrollView(.vertical, showsIndicators: true) {
-                        //                VStack(){
-                        //                    Text("Playing View").font(.largeTitle)
-                        //                }
-                        //                .frame(width: screenWidth, height: screenWidth)
-                        //                .onAppear(){
-                        //                    print("[ListenView] playing view appeared")
-                        //                }
-                        //                .onDisappear() {
-                        //                    print("[ListenView] playing view disappeared")
-                        //                }
-                        if playroom == nil {
-                            VStack(){
-                                
-                                Divider()
-                                    .opacity(self.loadingLiveTracks ? 1 : 0)
-                                
-                                if !self.liveTracks.isEmpty {
-                                    
-                                    let header = HStack(){
-                                        Text("Live Tracks")
-                                            .font(Font.largeTitle.weight(.thin))
-                                            .foregroundColor(.secondary)
-                                        Spacer()
-                                    }
-                                    
-                                    Section(header: header) {
-                                        ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                                            TrackView2(track: .constant(track), useDynamicColors: true)
-                                                .id(track.uri)
-                                        }
-                                    }
-                                }
-                                
-                                if !self.playrooms.isEmpty {
-                                    let header = HStack(){
-                                        Text("Playrooms")
-                                            .font(Font.largeTitle.weight(.thin))
-                                            .foregroundColor(.secondary)
-                                        Spacer()
-                                    }
-                                    
-                                    let columns = [
-                                        GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium * 2),
-                                        GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium * 2)
-                                    ]
-                                    
-                                    Section(header: header) {
-                                        LazyVGrid(columns: columns) {
-                                            ForEach(self.playrooms, id: \.id) { room in
-                                                SpotifyItemView(item: room,
-                                                                images: [],
-                                                                titleKeyPath: \.name,
-                                                                subtitleKeyPath: \.details)
-                                                    .frame(height: 64)
-                                                    .onTapGesture {
-                                                        self.playroom = room
-                                                    }
-                                                    //.background(Color.yellow)
-                                                    .id(room.id)
-                                            }
-                                        }
-                                    }
-                                    
-                                }
-                            }
-                            //.frame(minHeight: screenHeight)
-                            .onChange(of: self.playroom) { value in
-                                guard value == nil else {
-                                    return
-                                }
-                                
-                                self.refreshContent()
-                            }
-                            .padding(.horizontal, Sizing.large)
-                            .onFrameChange() { value in
-                                
-                                if value.origin.y < tripLine {
-                                    DispatchQueue.main.async {
-                                        self.tripLine = 0
-                                    }
-                                }
-                                
-                                guard value.origin.y >= 100 && self.tripLine < 100, !self.loadingLiveTracks else { return }
-                                
-                                DispatchQueue.main.async {
-                                    self.tripLine = value.origin.y
-                                    
-                                    withImpact(.rigid) {
-                                        self.refreshContent()
-                                        print("[] Frame chnaged: \(value)")
-                                    }
-                                }
-                            }
-                            .background(Color.white)
-                            .padding(.top, Sizing.xxLarge * 2)
-                            .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
-                        } else {
-                            
-                            
-                            TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom)
-                                .background(Color.white)
-                                .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
-                                //.padding(.top, geoProxy.safeAreaInsets.top)
-                                //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
-                                .padding(.top, proxy.frame(in: .named("playroom-controls-space")).minY)//== nil ? .zero : navbarViewBounds?.height)
-                                .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
-                            
-                        }
-                    }.background(
-                        VStack() {
-                            ProgressView(self.loadingLiveTracks ? "Refreshing..." : "Done!", value: self.loadingLiveTracks ? nil : 100.0, total: 100.0)
-                                .opacity(self.loadingLiveTracks ? 1 : 0.5)
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .font(Font.headline.weight(.thin))
-                            Spacer()
-                        }
-                        .padding(.trailing, Sizing.small)
-                        .padding(.top, Sizing.xxLarge * 2.6)
-                    )
-                }
-                .animation(.easeInOut)
-                .onAppear() {
-                    self.scrollProxy = scrollProxy //
-                    self.refreshContent()
-                }
-            }
-            .frame(maxWidth: screenWidth)
+            self.contentView
             
             VStack(spacing: .zero) {
                 Spacer()
@@ -444,8 +467,7 @@ struct ListenView: JoliView {
                         }
                         .padding(.horizontal, Sizing.small * 0.6)
                         .padding([.horizontal, .bottom], Sizing.small * 0.5)
-                        .background(Color.white.opacity(0.90))
-                        
+                        .matchedGeometryEffect(id: "listen-header", in: animation)
                         
                     } else {
                         HStack(alignment: .top){
@@ -463,9 +485,10 @@ struct ListenView: JoliView {
                             Spacer()
                         }
                         .animation(.easeInOut)
-                        .background(Color.white.opacity(0.90))
+                        .matchedGeometryEffect(id: "listen-header", in: animation)
                     }
                 }
+                .background(Color.white.opacity(0.90))
                 .coordinateSpace(name: "playroom-controls-space")
                     .onFrameChange() { rect in
                         DispatchQueue.main.async {

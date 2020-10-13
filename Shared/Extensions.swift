@@ -57,6 +57,8 @@ public extension Search {
         
         @EnvironmentObject public var appCoordinator: AppCoordinator
         
+        @GestureState var isTapping = false
+        
         public var result: Result
         
         public var id: String {
@@ -71,7 +73,13 @@ public extension Search {
         }
         
         public var body: some View {
+            let tap = TapGesture()
+                .updating($isTapping) { currentState, state, transaction in
+                    state = true
+                }
             content()
+                .scaleEffect(x: isTapping ? 0.8 : 1, y: isTapping ? 0.8 : 1)
+                .gesture(tap)
         }
     }
 }
