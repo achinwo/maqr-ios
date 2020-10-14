@@ -75,10 +75,10 @@ struct JoliApp: AppClip {
     let cb: Publishers.Smooth<PlayState.Publisher, String>.StateGetter = { (state, now) in
         
         guard let duration = state.durationMs, state.playingState == .playing else {
-            return (id: state.trackUri, value: state.progressMs, duration: nil)
+            return (id: state.trackUri, value: state.progressMs, duration: nil, idleTimeout: 5)
         }
         
-        return (id: state.trackUri, value: state.progressMs, duration: TimeInterval(duration))
+        return (id: state.trackUri, value: state.progressMs, duration: TimeInterval(duration), idleTimeout: 5)
     }
     
     func onConnectionStateChanged(_ socket: Socket, _ connected: Bool){
@@ -89,7 +89,7 @@ struct JoliApp: AppClip {
         socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
             print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
             
-            DispatchQueue.main.async { 
+            DispatchQueue.main.async {
                 let publisher: PlayState.Publisher = self.websocket.publish(PlayState.self, interval: self.playbackRefreshRate, path: \.progressMs, resolver: cb)
                 
                 self.coordinator.playStatePublisher = publisher

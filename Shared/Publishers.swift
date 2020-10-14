@@ -264,7 +264,7 @@ public extension Publishers {
         public typealias ValueKeyPath = WritableKeyPath<C.Output, Int?>
         public typealias CurrentValue = (value: C.Output, ts: Date)
         
-        public typealias State = (id: Id?, value: Value, duration: TimeInterval?)
+        public typealias State = (id: Id?, value: Value, duration: TimeInterval?, idleTimeout: TimeInterval)
         
         public var debugDescription: String {
             return "Smooth<\(C.self), \(Id.self)>(\(id))"
@@ -361,6 +361,12 @@ public extension Publishers {
                         continue
                     }
                     
+                    guard Date().timeIntervalSince(item.ts) < state.idleTimeout else {
+                        Swift.print("[Timer] timedout - \(id)")
+                        evictSet.insert(id)
+                        continue
+                    }
+                    
                     guard let keyValue = state.value else { continue }
                     
                     var lastValue = item.value
@@ -381,7 +387,7 @@ public extension Publishers {
 //                        Swift.print("[\(self.debugDescription)] \(keyValue) -> \(newQuant) (\(interval) * \(self.unit)) - \(state)")
 //                    }
                     
-                    valuesMap[id] = (lastValue, Date())
+                    valuesMap[id] = (lastValue, item.ts)
                     
                     self.passthrough.send(lastValue)
                 }
