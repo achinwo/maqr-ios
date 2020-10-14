@@ -72,18 +72,21 @@ public struct TrackView2: JoliView {
     }
     
     public var body: some View {
-        let cb: () -> () = {
+        let cb: (Bool) -> () = { (fromBegining: Bool) -> Void in
+
             self.requestingPlay = true
-            appCoordinator.play(track, positionMs: self.playStatebyUsername.first?.value.progressMs)
+            let progress: Int? = fromBegining ? nil : self.playStatebyUsername.first?.value.progressMs
+
+            appCoordinator.play(track, positionMs: progress)
                 .then(){ playState in
-                    
+
                     guard var playState = playState else {
                         return
                     }
-                    
-                    playState.progressMs = self.playStatebyUsername[playState.userName]?.progressMs ?? 0
+
+                    playState.progressMs = progress
                     playState.durationMs = self.playStatebyUsername[playState.userName]?.durationMs
-                    
+
                     self.playStatebyUsername[playState.userName] = playState
                 }
                 .catch() { error in
@@ -95,32 +98,35 @@ public struct TrackView2: JoliView {
                 }
         }
         
+        let setupPublisher = { (publisher: PlayState.Publisher) -> Void in
+            guard self.playPubCancel == nil else {
+                return
+            }
+            
+            self.playPubCancel = publisher
+                .filter(\.trackUri, value: track.uri)
+                .sink() { completion in
+                    
+                    self.playPubCancel = nil
+                    //print("[playStatePublisher] errored: \(completion)")
+                    
+//                        guard case let Subscribers.Completion.failure(error) = completion else {
+//                            return
+//                        }
+                    
+                } receiveValue: { value in
+                    //print("[playStatePublisher] received: \(value)")
+                    
+                    DispatchQueue.main.async {
+                        self.playStatebyUsername[value.userName] = value
+                    }
+                }
+        }
+        
         
         let heartCount = 16
         
         return HStack(alignment: .center) {
-            
-            let setupPublisher = { (publisher: PlayState.Publisher) -> Void in
-                
-                self.playPubCancel = publisher
-                    .filter(\.trackUri, value: track.uri)
-                    .sink() { completion in
-                        
-                        self.playPubCancel = nil
-                        //print("[playStatePublisher] errored: \(completion)")
-                        
-//                        guard case let Subscribers.Completion.failure(error) = completion else {
-//                            return
-//                        }
-                        
-                    } receiveValue: { value in
-                        //print("[playStatePublisher] received: \(value)")
-                        
-                        DispatchQueue.main.async {
-                            self.playStatebyUsername[value.userName] = value
-                        }
-                    }
-            }
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
                          placeholderImage: UIImage(systemName: "timelapse")!) { (loadedImage, error) in
@@ -129,37 +135,12 @@ public struct TrackView2: JoliView {
                     return
                 }
                 
-                DispatchQueue.global(qos: .background).async {
-                    //let newColors = loadedImage.getColors()
-                        
-                    DispatchQueue.main.async {
-                        //self.colors = newColors
-                        
-//                        var builder = track//.builder()
-//                        builder.colorBackground = colors?.background.hexString
-//                        builder.colorDetail = colors?.detail.hexString
-//                        builder.colorSecondary = colors?.secondary.hexString
-//                        builder.colorPrimary = colors?.primary.hexString
-//
-//                        builder.save()
-//                            .catch(){ error in
-//                                logger.debug("[TrackView] colors update error: \(error)")
-//                            }
-//                            .then(){ newTrack in
-//                                logger.debug("[TrackView] created track: \(newTrack)")
-//                            }
-                    }
-                }
             }
             .frame(width: 64, height: 64, alignment: .center)
             .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-            .onTapGesture(perform: cb)
+            .onTapGesture(count: 2) { cb(true) }
             .onReceive(appCoordinator.$playStatePublisher, perform: setupPublisher)
             .onAppear() { setupPublisher(appCoordinator.playStatePublisher) }
-//            .onDisappear() {
-//                self.playPubCancel?.cancel()
-//                self.playPubCancel = nil
-//            }
             .modifier(ShakeEffect(shakes: invalidPlayAttempts * 2))
             .animation(Animation.linear)
             .padding(.all, 2)
@@ -249,7 +230,7 @@ public struct TrackView2: JoliView {
             }
         }
         //.rotation3DEffect(.degrees(45), axis: (x: 0.0, y: 0.0, z: self.requestingPlay ? 1.0 : 0.0))
-        .onTapGesture(perform: cb)
+        .onTapGesture() { cb(false) }
         .scaleEffect(x: self.requestingPlay ? 0.98 : 1, y: self.requestingPlay ? 0.98 : 1, anchor: .center)
         .animation(.interactiveSpring())
         //.background(colors?.backgroundColor ?? Color.clear)
