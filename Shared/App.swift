@@ -51,6 +51,7 @@ struct JoliApp: AppClip {
             }
             
             activeDeviceId = device.id
+            print("[activeDevice] updated preferred device: \(device.name)")
         }
     }
     
@@ -131,12 +132,6 @@ struct JoliApp: AppClip {
                 self.coordinator.namespace = namespace
                 self.coordinator.api = api
                 
-                api.fetchSpotifyDevices(on: DispatchQueue.global(qos: .userInitiated))
-                    .catch(){ error in
-                        logger.error("[App#fetchSpotifyDevices] error: \(error)")
-                    }
-                    .then(on: .main) { self.devices = $0 }
-                
                 guard let token = TOKEN else {
                     return
                 }
@@ -145,6 +140,12 @@ struct JoliApp: AppClip {
                     .then() { auth in
                         print("[LoggedIn] \(String(describing: auth?.user))")
                         self.currentUser = auth?.user
+                        
+                        api.fetchSpotifyDevices(on: DispatchQueue.global(qos: .userInitiated))
+                            .catch(){ error in
+                                logger.error("[App#fetchSpotifyDevices] error: \(error)")
+                            }
+                            .then(on: .main) { self.devices = $0 }
                     }
             }
     }

@@ -344,7 +344,7 @@ public final class AppCoordinator: ObservableObject {
                         .then(on: .main) { $0 }
             }
         }
-        
+        print("[play] using pre-selected device: \(device.name)")
         return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
             .then(on: .main) { $0 }
     }

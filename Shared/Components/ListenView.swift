@@ -189,7 +189,7 @@ struct ListenView: JoliView {
                                 
                                 Section(header: header) {
                                     ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                                        TrackView2(track: .constant(track), useDynamicColors: true)
+                                        TrackView2(track: .constant(track), useDynamicColors: true, activeDevice: $activeDevice)
                                             .id(track.uri)
                                     }
                                 }
@@ -285,7 +285,7 @@ struct ListenView: JoliView {
                         .padding(.top, Sizing.xxLarge * 2)
                         .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     } else {
-                        TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom)
+                        TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom, activeDevice: self.$activeDevice)
                             .background(Color.white)
                             .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                             //.padding(.top, geoProxy.safeAreaInsets.top)
