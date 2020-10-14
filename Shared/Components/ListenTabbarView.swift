@@ -52,6 +52,7 @@ struct ListenTabbarView: JoliView {
     @State var volume: CGFloat = 30
     @Binding var playroom: Musicroom?
     @Binding var activeDevice: Spotify.Device?
+    @Binding var devices: [Spotify.Device]
     
     @State var heartLevel: HeartLevel? = .full
     @Namespace var localNamespace
@@ -59,7 +60,7 @@ struct ListenTabbarView: JoliView {
     @State var isDragging = false
     @State var offset: CGSize = .zero
     
-    public init(users: [UserIdentifiable], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>, activeDevice: Binding<Spotify.Device?>){
+    public init(users: [UserIdentifiable], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>, activeDevice: Binding<Spotify.Device?>, devices: Binding<[Spotify.Device]>){
         
         self._playroom = playroom
         self._users = State(initialValue: users)
@@ -67,6 +68,7 @@ struct ListenTabbarView: JoliView {
         self._searchText = searchText ?? .constant("")
         self._preview = preview ?? .constant(.userProfile(SEED_DATA.users.first!.builder()))
         self._activeDevice = activeDevice
+        self._devices = devices
     }
     
     var stickyHeaderView: some View {
@@ -236,16 +238,6 @@ struct ListenTabbarView: JoliView {
             }
         }
         
-        
-        let devices: [Spotify.Device] = [
-            Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
-            Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
-            Spotify.Device(name: "Microwave", type: .speaker, isActive: true, id: "test_device4"),
-            
-            Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
-            Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
-        ]
-        
         return VStack(alignment: .center, spacing: .zero){
             
             if self.searchbarActive {
@@ -256,7 +248,9 @@ struct ListenTabbarView: JoliView {
                     .padding(.top, Sizing.medium)
                     .background(Color.clear)
             } else if self.devicesBarActive {
-                DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: devices)
+                DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: self.$devices)
+                    .background(Color.clear)
+                Divider()
             }
             mainView
         }

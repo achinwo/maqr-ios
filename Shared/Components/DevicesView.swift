@@ -15,14 +15,12 @@ public struct DevicesView: View {
     
     @Binding var activeDevice: Spotify.Device?
     @Binding var volume: CGFloat
-    @State var devices: [Spotify.Device] = []
+    @Binding var devices: [Spotify.Device]
     
-    @Environment(\.presentationMode) var presentationMode
-    
-    public init(activeDevice: Binding<Spotify.Device?>, volume: Binding<CGFloat>, devices: [Spotify.Device] = []){
+    public init(activeDevice: Binding<Spotify.Device?>, volume: Binding<CGFloat>, devices: Binding<[Spotify.Device]>){
         self._volume = volume
         self._activeDevice = activeDevice
-        self.devices = devices
+        self._devices = devices
     }
     
     var volumeImageName: String {
@@ -43,6 +41,7 @@ public struct DevicesView: View {
     var deviceGridItems: [GridItem] {
         if devices.count >= 3 {
             return [
+                GridItem(),
                 GridItem(),
                 GridItem()
             ]
@@ -70,17 +69,13 @@ public struct DevicesView: View {
                     
                     ForEach(devices) { device in
                         Button(){
-                            guard let idx = self.devices.firstIndex(of: device) else {
-                                return
-                            }
-                            logger.debug("[DevicesView] setting active device: \(self.devices[idx])")
-                            self.activeDevice = self.devices[idx]
-                            presentationMode.wrappedValue.dismiss()
+                            logger.debug("[DevicesView] setting active device: \(device)")
+                            self.activeDevice = device
                         } label: {
                             VStack {
                                 Image(systemName: device.imageName)
                                     .padding()
-                                    .font(.largeTitle)
+                                    .font(.subheadline)
                                 Text(device.name)
                             }
                         }
@@ -133,7 +128,7 @@ public struct DevicesSampleView: View {
                 print("Partial sheet dismissed")
             } content: {
                 DevicesView(activeDevice: self.$activeDevice, volume: self.$volume,
-                        devices: devices)
+                            devices: .constant(devices))
             }
         }
     }

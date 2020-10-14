@@ -312,8 +312,8 @@ public struct TrackList: JoliView {
     
     public var body: some View {
         return LazyVStack(alignment: .center, spacing: 0) {
-            ForEach(Array(tracks.enumerated()), id: \.offset) { item in
-                TrackView2(track: self.trackBinding(item.offset), heartLevel: self.heartLevelBinding(item.offset), useDynamicColors: true)
+            ForEach(Array(tracks.enumerated()), id: \.element.uri) { item in
+                TrackView2(track: .constant(item.element), heartLevel: self.heartLevelBinding(item.offset), useDynamicColors: true)
                         .id(item.element.uri)
                         .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 1) {
                             withImpact {

@@ -42,7 +42,19 @@ struct JoliApp: AppClip {
     var cancellables: Set<AnyCancellable> = []
     var playbackRefreshRate: TimeInterval = 0.15
     
-    @State var activeDevice: Spotify.Device? = nil
+    @AppStorage("spotify.devices.active") var activeDeviceId: String = .empty
+    
+    @State var activeDevice: Spotify.Device? = nil {
+        didSet {
+            guard let device = activeDevice else {
+                return
+            }
+            
+            activeDeviceId = device.id
+        }
+    }
+    
+    @State var devices: [Spotify.Device] = []
     
     var appState: AppState {
         return appDelegate.appState
@@ -69,8 +81,6 @@ struct JoliApp: AppClip {
         
         websocket.connect()
     }
-    
-    @State var once = false
     
     let cb: Publishers.Smooth<PlayState.Publisher, String>.StateGetter = { (state, now) in
         
@@ -99,17 +109,33 @@ struct JoliApp: AppClip {
     
     var contentView: some View {
         
-        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, activeDevice: self.$activeDevice)
+        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, activeDevice: self.$activeDevice, devices: self.$devices)
             .onReceive(appDelegate.$shortcutItemToProcess) { _ in
                 //print(appDelegate.shortcutItemType)
                 //Do something here
                 logger.debug("[Joli] shortcutItem change: \(String(describing: appDelegate.shortcutItemToProcess))")
+            }
+            .onChange(of: devices) { devices in
+                
+                let device = devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.id == activeDeviceId }) ?? devices.first(where: { $0.type == .computer })
+                
+                guard let activeDevice = device ?? devices.last else {
+                    return
+                }
+                
+                self.activeDevice = activeDevice
             }
             .onAppear() {
                 logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
                 
                 self.coordinator.namespace = namespace
                 self.coordinator.api = api
+                
+                api.fetchSpotifyDevices(on: DispatchQueue.global(qos: .userInitiated))
+                    .catch(){ error in
+                        logger.error("[App#fetchSpotifyDevices] error: \(error)")
+                    }
+                    .then(on: .main) { self.devices = $0 }
                 
                 guard let token = TOKEN else {
                     return

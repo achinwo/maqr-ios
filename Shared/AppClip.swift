@@ -326,21 +326,27 @@ public final class AppCoordinator: ObservableObject {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
-    public func play(_ track: Playable, positionMs: Int? = nil) -> Promise<PlayState?> {
-        return api.fetchSpotifyDevices(on: DispatchQueue.main)
-            .catch(){ error in
-                logger.error("[fetchSpotifyDevices] error: \(error)")
-            }
-            .then() { (devices) -> Promise<PlayState?> in
-                logger.debug("Devices: \(devices)")
-                
-                guard let device = devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }) else {
-                    return Promise(nil)
+    public func play(_ track: Playable, positionMs: Int? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
+        
+        guard let device = device else {
+            return api.fetchSpotifyDevices(on: DispatchQueue.global(qos: .userInitiated))
+                .catch(){ error in
+                    logger.error("[fetchSpotifyDevices] error: \(error)")
                 }
-                
-                return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.main)
-                    .then() { $0 }
+                .then() { (devices) -> Promise<PlayState?> in
+                    logger.debug("Devices: \(devices)")
+                    
+                    guard let device = devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }) else {
+                        return Promise(nil)
+                    }
+                    
+                    return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
+                        .then(on: .main) { $0 }
+            }
         }
+        
+        return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
+            .then(on: .main) { $0 }
     }
     
     public func share(text: String){

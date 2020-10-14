@@ -66,6 +66,7 @@ struct ListenView: JoliView {
     @Binding var playroom: Musicroom?
     @Binding var currentUser: User?
     @Binding var activeDevice: Spotify.Device?
+    @Binding var devices: [Spotify.Device]
     @State var scrollProxy: ScrollViewProxy? = nil
     
     @State private var membership: [PlayroomMembership] = SEED_DATA.users.map() { user in
@@ -315,6 +316,11 @@ struct ListenView: JoliView {
         .frame(maxWidth: screenWidth)
     }
     
+    
+    let a = SEED_DATA.tracks.first!
+    let b = SEED_DATA.tracks[16]
+    let c = SEED_DATA.tracks[SEED_DATA.tracks.count - 3]
+    
     var body: some View {
 //        let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
 //            guard user.id != 3 else {
@@ -335,7 +341,8 @@ struct ListenView: JoliView {
             VStack(spacing: .zero) {
                 Spacer()
                 Divider()
-                ListenTabbarView(users: membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview, playroom: self.$playroom, activeDevice: self.$activeDevice)
+                ListenTabbarView(users: membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
+                                 playroom: self.$playroom, activeDevice: self.$activeDevice, devices: self.$devices)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in
@@ -366,9 +373,6 @@ struct ListenView: JoliView {
                 Group(){
                     if let playroom = playroom {
                         
-                        let a = SEED_DATA.tracks.first!
-                        let b = SEED_DATA.tracks[16]
-                        let c = SEED_DATA.tracks[SEED_DATA.tracks.count - 3]
                         
                         HStack(alignment: .center){
                             NetworkImage(string: a.albumCoverUrl) {

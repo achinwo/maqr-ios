@@ -37,11 +37,13 @@ public struct AppView2: View {
     @Binding var playroom: Musicroom?
     @Binding var currentUser: User?
     @Binding var activeDevice: Spotify.Device?
+    @Binding var devices: [Spotify.Device]
     
-    public init(playroom: Binding<Musicroom?>, currentUser: Binding<User?>, activeDevice: Binding<Spotify.Device?>){
+    public init(playroom: Binding<Musicroom?>, currentUser: Binding<User?>, activeDevice: Binding<Spotify.Device?>, devices: Binding<[Spotify.Device]>){
         self._playroom = playroom
         self._currentUser = currentUser
         self._activeDevice = activeDevice
+        self._devices = devices
     }
     
     @State var filteredTracks: [Playable] = SEED_DATA.tracks
@@ -77,7 +79,7 @@ public struct AppView2: View {
                             
                             ListenView(geoProxy: geoProxy, tracks: self.$filteredTracks, tabbarExpaned: self.$isExpanded,
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
-                                       playroom: self.$playroom, currentUser: self.$currentUser, activeDevice: self.$activeDevice)
+                                       playroom: self.$playroom, currentUser: self.$currentUser, activeDevice: self.$activeDevice, devices: self.$devices)
                                 .frame(width: screenWidth)
                                 .onChange(of: self.filterText) { term in
                                     let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
