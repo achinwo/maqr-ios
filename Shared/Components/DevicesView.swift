@@ -39,15 +39,10 @@ public struct DevicesView: View {
     }
     
     var deviceGridItems: [GridItem] {
-        if devices.count >= 3 {
-            return [
-                GridItem(),
-                GridItem(),
-                GridItem()
-            ]
-        } else {
-            return [GridItem()]
-        }
+        return [
+            GridItem(),
+            GridItem(),
+        ]
     }
     
     public var body: some View {
@@ -62,29 +57,28 @@ public struct DevicesView: View {
                     Text("Volume")
                 }.labelsHidden()
             }
-            Divider().padding()
+            Divider()//.padding()
             
-            ScrollView(.horizontal){
-                LazyHGrid(rows: deviceGridItems, spacing: Sizing.medium){
-                    
-                    ForEach(devices) { device in
-                        Button(){
-                            logger.debug("[DevicesView] setting active device: \(device)")
-                            self.activeDevice = device
-                        } label: {
-                            VStack {
-                                Image(systemName: device.imageName)
-                                    .padding()
-                                    .font(.subheadline)
-                                Text(device.name)
-                            }
+            LazyVGrid(columns: deviceGridItems, spacing: Sizing.medium){
+                
+                ForEach(devices) { device in
+                    Button(){
+                        logger.debug("[DevicesView] setting active device: \(device)")
+                        self.activeDevice = device
+                    } label: {
+                        VStack {
+                            Image(systemName: device.imageName)
+                                .font(Font.title.weight(.thin))
+                            Text(device.name)
+                                .lineLimit(2)
+                                .font(.caption)
                         }
-                        .padding()
-                        .cornerRadius(20)
-                        .background(device == activeDevice ? Color.yellow : Colors.lightGray)
                     }
-                }.padding()
-            }
+                    .padding()
+                    .background(device == activeDevice ? Color.yellow : Colors.lightGray)
+                    .cornerRadius(20)
+                }
+            }.padding()
             
         }//.frame(width: .infinity, height: self.screenHeight / 3)
         return view
