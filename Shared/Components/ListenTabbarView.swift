@@ -156,6 +156,7 @@ struct ListenTabbarView: JoliView {
                 
                 Button(){
                     self.searchbarActive.toggle()
+                    self.devicesBarActive = false
                 } label: {
                     Image(systemName: "magnifyingglass")
                         .font(Font.title2.weight(self.searchbarActive ? .light : .ultraLight))
@@ -164,10 +165,11 @@ struct ListenTabbarView: JoliView {
                 Spacer()
                 Button(){
                     self.devicesBarActive.toggle()
+                    self.searchbarActive = false
                 } label: {
                     Image(systemName: "hifispeaker")
                 }
-                .font(Font.title.weight(.ultraLight))
+                .font(Font.title.weight(self.devicesBarActive ? .light : .ultraLight))
                 
                 if playroom != nil {
                     Spacer()
@@ -243,10 +245,15 @@ struct ListenTabbarView: JoliView {
                                 .stroke(Colors.lightGray.opacity(self.isSearching ? 0 : 0.9), lineWidth: 1))
                     .padding(.top, Sizing.medium)
                     .background(Color.clear)
+                    .matchedGeometryEffect(id: "listenbar-addon", in: localNamespace)
             } else if self.devicesBarActive {
-                DevicesView(volume: self.$volume)
-                    .background(Color.clear)
-                Divider()
+                VStack() {
+                    
+                    DevicesView()
+                        .background(Color.clear)
+                    Divider()
+                }
+                .matchedGeometryEffect(id: "listenbar-addon", in: localNamespace)
             }
             mainView
         }

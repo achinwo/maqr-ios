@@ -33,6 +33,9 @@ public final class AppCoordinator: ObservableObject {
     @Published public var devices: [Spotify.Device] = []
     
     public let activeDeviceSubject = CurrentValueSubject<Spotify.Device?, Never>(nil)
+    public let volumeSubject = PassthroughSubject<Int, Never>()
+    
+    private var volumeCancel: AnyCancellable? = nil
     
     public var initialActiveDeviceId: String? = nil
     
@@ -61,10 +64,28 @@ public final class AppCoordinator: ObservableObject {
         self.namespace = namespace
         self.playStatePublisher = playStatePublisher
         
-        let api = self.api
-        let activeDeviceSubject = self.activeDeviceSubject
-        let deviceId = initialActiveDeviceId
+        //let activeDeviceSubject = self.activeDeviceSubject
+        //let deviceId = initialActiveDeviceId
         
+        self.volumeCancel = self.volumeSubject
+            .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInitiated))
+            .sink() { value in
+                
+                guard var device = self.activeDeviceSubject.value else {
+                    return
+                }
+                
+                self.api.setVolume(value, deviceId: device.id)
+                    .then() { res in
+                        print("[AppCoord] updated volume: \(res)")
+                        device.volumePercent = value
+                        
+                        self.activeDeviceSubject.send(device)
+                    }
+                    .catch() { error in
+                        print("[AppCoord] volume set error: \(error)")
+                    }
+            }
         
         let notificationCenter = NotificationCenter.default
         

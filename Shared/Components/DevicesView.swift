@@ -14,16 +14,10 @@ import PartialSheet
 public struct DevicesView: JoliView {
     
     @State var activeDevice: Spotify.Device? = nil
-    @Binding var volume: CGFloat
+    @State var volume: CGFloat = .zero
     @State var devices: [Spotify.Device] = []
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
-    
-    public init(volume: Binding<CGFloat>){
-        self._volume = volume
-//        self._activeDevice = activeDevice
-//        self._devices = devices
-    }
     
     var volumeImageName: String {
         var volumeImage: String
@@ -53,13 +47,24 @@ public struct DevicesView: JoliView {
                 Image(systemName: volumeImageName)
                     .frame(width: Sizing.large, height: Sizing.large)
                     .labelsHidden()
-                    .font(.largeTitle)
+                    .font(.title)
+                    .foregroundColor(.secondary)
                     .padding()
                 Slider(value: self.$volume, in: 0...100) {
                     Text("Volume")
-                }.labelsHidden()
+                }
+                .disabled(self.activeDevice == nil)
+                .labelsHidden()
+                
+                Image(systemName: "xmark")
+                    .font(.title)
+                    
+                    .foregroundColor(.secondary)
+                    .padding()
+                    .padding(.trailing, .zero)
             }
-            Divider()//.padding()
+            .padding()
+            //Divider()//.padding()
             
             LazyVGrid(columns: deviceGridItems, spacing: Sizing.medium){
                 
@@ -78,11 +83,15 @@ public struct DevicesView: JoliView {
                         }
                     }
                     .padding()
-                    .background(device == activeDevice ? Color.yellow : Colors.lightGray)
+                    .background(device.id == activeDevice?.id ? Colors.lightGray : Color.clear)
                     .cornerRadius(20)
                 }
             }.padding()
             
+        }
+        .onChange(of: self.volume) { volume in
+            print("[Devices] updated volume: \(volume)")
+            self.appCoordinator.volumeSubject.send(Int(volume))
         }
         .onReceive(appCoordinator.$devices) { devices in
             self.devices = devices
@@ -91,6 +100,15 @@ public struct DevicesView: JoliView {
             
             logger.debug("[DevicesView] active device updated: \(activeDevice)")
             self.activeDevice = activeDevice
+            
+            guard let device = activeDevice else {
+                return
+            }
+            
+            self.volume = CGFloat(device.volumePercent)
+        }
+        .onAppear() {
+            appCoordinator.refreshDevices()
         }
         
         //.frame(width: .infinity, height: self.screenHeight / 3)
@@ -134,7 +152,7 @@ public struct DevicesSampleView: View {
             self.partialSheetManager.showPartialSheet(){
                 print("Partial sheet dismissed")
             } content: {
-                DevicesView(volume: self.$volume)
+                DevicesView()
             }
         }
     }

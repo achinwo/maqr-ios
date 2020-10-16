@@ -448,6 +448,7 @@
 				92DBFB32250393990039FF4E /* Views */,
 				92A32DCB24C79C06007C960E /* App.swift */,
 				927E0E3524E9ADC000C8257D /* AppClip.swift */,
+				92595B4C253A1AD200609558 /* AppCoordinator.swift */,
 				92A32DCE24C79C06007C960E /* AppDelegate.swift */,
 				92A32DD624C79C07007C960E /* AppView.swift */,
 				92A32E2B24C7BB53007C960E /* Consts.swift */,
@@ -456,7 +457,6 @@
 				928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */,
 				926E8FE024C76DE100378436 /* Styles.swift */,
 				929FFE1B24FAF096000BDCF0 /* User.swift */,
-				92595B4C253A1AD200609558 /* AppCoordinator.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
