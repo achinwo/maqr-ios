@@ -124,6 +124,12 @@ public struct TrackView2: JoliView {
                     DispatchQueue.main.async {
                         self.playStatebyUsername[value.userName] = value
                     }
+                    
+                    guard value.trackUri == track.uri else {
+                        return
+                    }
+                    
+                    self.appCoordinator.playingSubject.send((track, value))
                 }
         }
         

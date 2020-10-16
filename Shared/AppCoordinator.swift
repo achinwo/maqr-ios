@@ -33,6 +33,7 @@ public final class AppCoordinator: ObservableObject {
     @Published public var devices: [Spotify.Device] = []
     
     public let activeDeviceSubject = CurrentValueSubject<Spotify.Device?, Never>(nil)
+    public let playingSubject = CurrentValueSubject<(Playable, PlayState)?, Never>(nil)
     public let volumeSubject = PassthroughSubject<Int, Never>()
     
     private var volumeCancel: AnyCancellable? = nil
@@ -43,6 +44,7 @@ public final class AppCoordinator: ObservableObject {
     
     public func refreshDevices(){
         print("[AppCoordinator#devicesPublisher] fetching devices")
+        self.refreshingDevices = true
         api?.fetchSpotifyDevices(on: .global(qos: .userInitiated))
             .then() { devices in
                 
@@ -58,7 +60,12 @@ public final class AppCoordinator: ObservableObject {
             .catch() { error in
                 print("[AppCoordinator#devicesPublisher] error: \(error)")
             }
+            .always {
+                self.refreshingDevices = false
+            }
     }
+    
+    @Published var refreshingDevices = false
     
     public init(_ playStatePublisher: PlayState.Publisher, namespace: Namespace.ID? = nil){
         self.namespace = namespace
@@ -68,23 +75,42 @@ public final class AppCoordinator: ObservableObject {
         //let deviceId = initialActiveDeviceId
         
         self.volumeCancel = self.volumeSubject
+            .removeDuplicates()
             .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInitiated))
             .sink() { value in
                 
-                guard var device = self.activeDeviceSubject.value else {
+                guard let device = self.activeDeviceSubject.value else {
                     return
                 }
                 
-                self.api.setVolume(value, deviceId: device.id)
-                    .then() { res in
-                        print("[AppCoord] updated volume: \(res)")
-                        device.volumePercent = value
-                        
-                        self.activeDeviceSubject.send(device)
-                    }
-                    .catch() { error in
-                        print("[AppCoord] volume set error: \(error)")
-                    }
+                let setVolume = { () -> Void in
+                    self.api.setVolume(value, deviceId: device.id)
+                        .then() { res in
+                            print("[AppCoord] updated volume: \(res)")
+    //                        device.volumePercent = value
+    //
+    //                        self.activeDeviceSubject.send(device)
+                        }
+                        .catch() { error in
+                            print("[AppCoord] volume set error: \(error)")
+                        }
+                }
+                
+                setVolume()
+                
+//                guard let (track, playingState) = self.playingSubject.value, playingState.deviceUid != device.id else {
+//
+//                    return
+//                }
+//
+//                self.play(track, positionMs: playingState.progressMs, device: device)
+//                    .then() { _ in
+//                        print("[AppCordinator] auto switching device: \(playingState.deviceUid) -> \(device.id)")
+//                        setVolume()
+//                    }
+//                    .catch() { error in
+//                        print("[AppCoord] auto switching device: \(error)")
+//                    }
             }
         
         let notificationCenter = NotificationCenter.default
@@ -126,12 +152,18 @@ public final class AppCoordinator: ObservableObject {
                     }
                     
                     return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
-                        .then(on: .main) { $0 }
+                        .then(on: .main) { ps in
+                            self.playingSubject.send((track, ps))
+                            return Promise(ps)
+                        }
             }
         }
         
         return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
-            .then(on: .main) { $0 }
+            .then(on: .main) { ps in
+                self.playingSubject.send((track, ps))
+                return Promise(ps)
+            }
     }
     
     public func share(text: String){

@@ -248,9 +248,10 @@ struct ListenTabbarView: JoliView {
                     .matchedGeometryEffect(id: "listenbar-addon", in: localNamespace)
             } else if self.devicesBarActive {
                 VStack() {
-                    
-                    DevicesView()
-                        .background(Color.clear)
+                    DevicesView() { _ in
+                        self.devicesBarActive.toggle()
+                    }
+                    .background(Color.clear)
                     Divider()
                 }
                 .matchedGeometryEffect(id: "listenbar-addon", in: localNamespace)

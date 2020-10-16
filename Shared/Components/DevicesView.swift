@@ -16,6 +16,11 @@ public struct DevicesView: JoliView {
     @State var activeDevice: Spotify.Device? = nil
     @State var volume: CGFloat = .zero
     @State var devices: [Spotify.Device] = []
+    let onClose: ((Spotify.Device?) -> Void)?
+    
+    public init(onClose: ((Spotify.Device?) -> Void)? = nil){
+        self.onClose = onClose
+    }
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -53,44 +58,84 @@ public struct DevicesView: JoliView {
                 Slider(value: self.$volume, in: 0...100) {
                     Text("Volume")
                 }
-                .disabled(self.activeDevice == nil)
+                .disabled(self.activeDevice == nil || devices.isEmpty)
                 .labelsHidden()
                 
-                Image(systemName: "xmark")
-                    .font(.title)
+                Button() {
+                    self.onClose?(self.activeDevice)
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.title)
+                        .foregroundColor(.secondary)
+                        .padding()
+                        .onTapGesture {
+                            self.onClose?(self.activeDevice)
+                        }
+                }
+                .offset(x: Sizing.small, y: 0)
                     
-                    .foregroundColor(.secondary)
-                    .padding()
-                    .padding(.trailing, .zero)
+                    
             }
             .padding()
             //Divider()//.padding()
             
-            LazyVGrid(columns: deviceGridItems, spacing: Sizing.medium){
-                
-                ForEach(devices) { device in
-                    Button(){
-                        logger.debug("[DevicesView] setting active device: \(device)")
-                        
-                        self.appCoordinator.activeDeviceSubject.send(device)
+            if devices.isEmpty {
+                VStack(){
+                    Text("No Spotify Devices Detected").font(.headline).foregroundColor(.secondary).padding()
+                    
+                    ProgressView("Refreshing...", value: nil, total: 100)
+                        .labelsHidden()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .opacity(appCoordinator.refreshingDevices ? 1 : 0)
+                        .animation(.easeInOut)
+                        .padding(.bottom, Sizing.small)
+                    
+                    Button() {
+                        appCoordinator.refreshDevices()
                     } label: {
-                        VStack {
-                            Image(systemName: device.imageName)
-                                .font(Font.title.weight(.thin))
-                            Text(device.name)
-                                .lineLimit(2)
-                                .font(.caption)
-                        }
+                        Label("Refresh", systemImage: "arrow.clockwise")
+                            .font(Font.headline.weight(.light))
+                            .padding()
+                            .animation(.easeInOut)
                     }
-                    .padding()
-                    .background(device.id == activeDevice?.id ? Colors.lightGray : Color.clear)
-                    .cornerRadius(20)
+                    .disabled(appCoordinator.refreshingDevices)
+                    .background(Colors.lightGray.opacity(0.7))
+                    .cornerRadius(50, antialiased: true)
                 }
-            }.padding()
+                .padding()
+            } else {
+                LazyVGrid(columns: deviceGridItems, spacing: Sizing.medium){
+                    
+                    ForEach(devices) { device in
+                        Button(){
+                            logger.debug("[DevicesView] setting active device: \(device)")
+                            
+                            self.appCoordinator.activeDeviceSubject.send(device)
+                        } label: {
+                            VStack {
+                                Image(systemName: device.imageName)
+                                    .font(Font.title.weight(.thin))
+                                Text(device.name)
+                                    .lineLimit(2)
+                                    .font(.caption)
+                            }
+                        }
+                        .padding()
+                        .background(device.id == activeDevice?.id ? Colors.lightGray : Color.clear)
+                        .cornerRadius(20)
+                    }
+                }.padding()
+            }
+            
             
         }
         .onChange(of: self.volume) { volume in
             print("[Devices] updated volume: \(volume)")
+            
+            guard let activeDevice = activeDevice, CGFloat(activeDevice.volumePercent) != volume else {
+                return
+            }
+            
             self.appCoordinator.volumeSubject.send(Int(volume))
         }
         .onReceive(appCoordinator.$devices) { devices in
@@ -99,6 +144,7 @@ public struct DevicesView: JoliView {
         .onReceive(appCoordinator.activeDeviceSubject){ activeDevice in
             
             logger.debug("[DevicesView] active device updated: \(activeDevice)")
+            //let prevActive = self.activeDevice
             self.activeDevice = activeDevice
             
             guard let device = activeDevice else {
