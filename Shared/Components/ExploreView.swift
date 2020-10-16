@@ -447,7 +447,7 @@ public struct ExploreView: JoliView {
         appendViews(res.tracks, .tracks) { track, result in
             Search.ResultView(result: result){
                 GeometryReader() { proxy in
-                    TrackView2(track: .constant(track), activeDevice: .constant(nil)).eraseToAnyView()
+                    TrackView2(track: .constant(track)).eraseToAnyView()
                 }
             }
         }

@@ -12,7 +12,7 @@ import JoliCore
 extension Track: View  {
     
     public var body: some View {
-        TrackView2(track: .constant(self), activeDevice: .constant(nil))
+        TrackView2(track: .constant(self))
     }
     
 }
@@ -141,6 +141,7 @@ public enum SearchResultLayout: View {
         }
     }
     
+    #warning("Remove hardcoded IP address")
     public var body: some View {
         let onRoomTap = {
             
@@ -190,7 +191,7 @@ public enum SearchResultLayout: View {
                 case .threeList(let results):
                     ForEach(results){ result in
                         if let tracks = result.tracks {
-                            TrackList(tracks: .constant(tracks as! [Track]), activeDevice: .constant(nil))
+                            TrackList(tracks: .constant(tracks as! [Track]))
                         } else if let users = result.users {
                             List {
                                 ForEach(users) { user in

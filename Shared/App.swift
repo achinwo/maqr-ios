@@ -32,7 +32,7 @@ struct JoliApp: AppClip {
     @State var currentUser: User? = SEED_DATA.users.first { $0.isOwnDevice }
     @State var currentPlayroom: Musicroom? = nil//SEED_DATA.musicrooms.first
     
-    var coordinator: AppCoordinator
+    let coordinator: AppCoordinator
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) var scenePhase
@@ -43,17 +43,6 @@ struct JoliApp: AppClip {
     var playbackRefreshRate: TimeInterval = 0.15
     
     @AppStorage("spotify.devices.active") var activeDeviceId: String = .empty
-    
-    @State var activeDevice: Spotify.Device? = nil {
-        didSet {
-            guard let device = activeDevice else {
-                return
-            }
-            
-            activeDeviceId = device.id
-            print("[activeDevice] updated preferred device: \(device.name)")
-        }
-    }
     
     @State var devices: [Spotify.Device] = []
     
@@ -110,27 +99,26 @@ struct JoliApp: AppClip {
     
     var contentView: some View {
         
-        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, activeDevice: self.$activeDevice, devices: self.$devices)
+        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser)
             .onReceive(appDelegate.$shortcutItemToProcess) { _ in
                 //print(appDelegate.shortcutItemType)
                 //Do something here
                 logger.debug("[Joli] shortcutItem change: \(String(describing: appDelegate.shortcutItemToProcess))")
             }
-            .onChange(of: devices) { devices in
+            .onReceive(coordinator.activeDeviceSubject) { (device: Spotify.Device?) in
                 
-                let device = devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.id == activeDeviceId }) ?? devices.first(where: { $0.type == .computer })
-                
-                guard let activeDevice = device ?? devices.last else {
+                guard let device = device else {
                     return
                 }
                 
-                self.activeDevice = activeDevice
+                self.activeDeviceId = device.id
             }
             .onAppear() {
                 logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
                 
                 self.coordinator.namespace = namespace
                 self.coordinator.api = api
+                self.coordinator.initialActiveDeviceId = activeDeviceId == .empty ? nil : activeDeviceId
                 
                 guard let token = TOKEN else {
                     return
@@ -141,11 +129,7 @@ struct JoliApp: AppClip {
                         print("[LoggedIn] \(String(describing: auth?.user))")
                         self.currentUser = auth?.user
                         
-                        api.fetchSpotifyDevices(on: DispatchQueue.global(qos: .userInitiated))
-                            .catch(){ error in
-                                logger.error("[App#fetchSpotifyDevices] error: \(error)")
-                            }
-                            .then(on: .main) { self.devices = $0 }
+                        self.coordinator.refreshDevices()
                     }
             }
     }

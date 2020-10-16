@@ -11,16 +11,18 @@ import JoliCore
 import Combine
 import PartialSheet
 
-public struct DevicesView: View {
+public struct DevicesView: JoliView {
     
-    @Binding var activeDevice: Spotify.Device?
+    @State var activeDevice: Spotify.Device? = nil
     @Binding var volume: CGFloat
-    @Binding var devices: [Spotify.Device]
+    @State var devices: [Spotify.Device] = []
     
-    public init(activeDevice: Binding<Spotify.Device?>, volume: Binding<CGFloat>, devices: Binding<[Spotify.Device]>){
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    
+    public init(volume: Binding<CGFloat>){
         self._volume = volume
-        self._activeDevice = activeDevice
-        self._devices = devices
+//        self._activeDevice = activeDevice
+//        self._devices = devices
     }
     
     var volumeImageName: String {
@@ -64,7 +66,8 @@ public struct DevicesView: View {
                 ForEach(devices) { device in
                     Button(){
                         logger.debug("[DevicesView] setting active device: \(device)")
-                        self.activeDevice = device
+                        
+                        self.appCoordinator.activeDeviceSubject.send(device)
                     } label: {
                         VStack {
                             Image(systemName: device.imageName)
@@ -80,7 +83,17 @@ public struct DevicesView: View {
                 }
             }.padding()
             
-        }//.frame(width: .infinity, height: self.screenHeight / 3)
+        }
+        .onReceive(appCoordinator.$devices) { devices in
+            self.devices = devices
+        }
+        .onReceive(appCoordinator.activeDeviceSubject){ activeDevice in
+            
+            logger.debug("[DevicesView] active device updated: \(activeDevice)")
+            self.activeDevice = activeDevice
+        }
+        
+        //.frame(width: .infinity, height: self.screenHeight / 3)
         return view
     }
 }
@@ -121,8 +134,7 @@ public struct DevicesSampleView: View {
             self.partialSheetManager.showPartialSheet(){
                 print("Partial sheet dismissed")
             } content: {
-                DevicesView(activeDevice: self.$activeDevice, volume: self.$volume,
-                            devices: .constant(devices))
+                DevicesView(volume: self.$volume)
             }
         }
     }

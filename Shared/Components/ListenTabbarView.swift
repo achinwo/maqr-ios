@@ -51,8 +51,6 @@ struct ListenTabbarView: JoliView {
     @EnvironmentObject var appCoordinator: AppCoordinator
     @State var volume: CGFloat = 30
     @Binding var playroom: Musicroom?
-    @Binding var activeDevice: Spotify.Device?
-    @Binding var devices: [Spotify.Device]
     
     @State var heartLevel: HeartLevel? = .full
     @Namespace var localNamespace
@@ -60,15 +58,13 @@ struct ListenTabbarView: JoliView {
     @State var isDragging = false
     @State var offset: CGSize = .zero
     
-    public init(users: [UserIdentifiable], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>, activeDevice: Binding<Spotify.Device?>, devices: Binding<[Spotify.Device]>){
+    public init(users: [UserIdentifiable], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>){
         
         self._playroom = playroom
         self._users = State(initialValue: users)
         self._isExpanded = isExpanded ?? .constant(true)
         self._searchText = searchText ?? .constant("")
         self._preview = preview ?? .constant(.userProfile(SEED_DATA.users.first!.builder()))
-        self._activeDevice = activeDevice
-        self._devices = devices
     }
     
     var stickyHeaderView: some View {
@@ -248,7 +244,7 @@ struct ListenTabbarView: JoliView {
                     .padding(.top, Sizing.medium)
                     .background(Color.clear)
             } else if self.devicesBarActive {
-                DevicesView(activeDevice: self.$activeDevice, volume: self.$volume, devices: self.$devices)
+                DevicesView(volume: self.$volume)
                     .background(Color.clear)
                 Divider()
             }

@@ -65,9 +65,21 @@ struct ListenView: JoliView {
     var animation: Namespace.ID
     @Binding var playroom: Musicroom?
     @Binding var currentUser: User?
-    @Binding var activeDevice: Spotify.Device?
-    @Binding var devices: [Spotify.Device]
+//    @State var activeDevice: Spotify.Device? = nil
+//    @State var devices: [Spotify.Device] = []
     @State var scrollProxy: ScrollViewProxy? = nil
+    
+    
+    init(geoProxy: GeometryProxy, tracks: Binding<[Playable]>, tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Musicroom?>, currentUser: Binding<User?>) {
+        self.geoProxy = geoProxy
+        self._tracks = tracks
+        self._tabbarExpaned = tabbarExpaned
+        self._preview = preview
+        self._filterText = filterText
+        self.animation = animation
+        self._playroom = playroom
+        self._currentUser = currentUser
+    }
     
     @State private var membership: [PlayroomMembership] = SEED_DATA.users.map() { user in
                     guard user.id != 3 else {
@@ -153,7 +165,16 @@ struct ListenView: JoliView {
     
     @State var tripLine: CGFloat = 0
     @State var loadingFinishedAt: Date? = nil
-    @GestureState private var isDragging = false
+    @GestureState private var dragOffset = CGSize.zero
+    @State var isDragging = false {
+        didSet {
+            guard isDragging else { return }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, qos: .userInitiated) {
+                self.isDragging = false
+            }
+        }
+    }
     
     private func refreshContent() {
         self.loadLiveTracks()
@@ -164,10 +185,13 @@ struct ListenView: JoliView {
         ScrollViewReader() { scrollProxy in
             GeometryReader() { proxy in
                 
-                let gragGesture = DragGesture(minimumDistance: 10, coordinateSpace: .global)
-                    .updating($isDragging) { (currentState, state, transaction) in
-                        state = currentState.translation.height > 10
-                        print("[Dragging] \(state) - \(currentState.translation.height )")
+                let dragGesture = DragGesture()
+                    .updating($dragOffset) { (value, state, transaction) in
+                        state = value.translation
+                        
+                        DispatchQueue.main.async {
+                            self.isDragging = value.translation != .zero
+                        }
                     }
                 
                 ScrollView(.vertical, showsIndicators: true) {
@@ -189,7 +213,7 @@ struct ListenView: JoliView {
                                 
                                 Section(header: header) {
                                     ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                                        TrackView2(track: .constant(track), useDynamicColors: true, activeDevice: $activeDevice)
+                                        TrackView2(track: .constant(track), useDynamicColors: true)
                                             .id(track.uri)
                                     }
                                 }
@@ -264,6 +288,8 @@ struct ListenView: JoliView {
                         .padding(.horizontal, Sizing.large)
                         .onFrameChange() { value in
                             
+                            guard isDragging else { return }
+                            
                             if value.origin.y < tripLine, isDragging {
                                 DispatchQueue.main.async {
                                     self.tripLine = 0
@@ -285,7 +311,7 @@ struct ListenView: JoliView {
                         .padding(.top, Sizing.xxLarge * 2)
                         .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     } else {
-                        TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom, activeDevice: self.$activeDevice)
+                        TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom)
                             .background(Color.white)
                             .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                             //.padding(.top, geoProxy.safeAreaInsets.top)
@@ -294,7 +320,7 @@ struct ListenView: JoliView {
                             .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
                     }
                 }
-                .simultaneousGesture(gragGesture)
+                .simultaneousGesture(dragGesture)
                 .background(
                     VStack() {
                         ProgressView(self.loadingLiveTracks ? "Refreshing..." : "Done!", value: self.loadingLiveTracks ? nil : 100.0, total: 100.0)
@@ -312,6 +338,7 @@ struct ListenView: JoliView {
                 self.scrollProxy = scrollProxy //
                 self.refreshContent()
             }
+            
         }
         .frame(maxWidth: screenWidth)
     }
@@ -342,7 +369,7 @@ struct ListenView: JoliView {
                 Spacer()
                 Divider()
                 ListenTabbarView(users: membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
-                                 playroom: self.$playroom, activeDevice: self.$activeDevice, devices: self.$devices)
+                                 playroom: self.$playroom)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in

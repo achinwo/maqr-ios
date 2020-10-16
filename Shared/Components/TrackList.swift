@@ -47,7 +47,10 @@ public struct TrackView2: JoliView {
     @State var playStatePublisherCancel: AnyCancellable? = nil
     
     @State var playStatebyUsername = [String: PlayState]()
-    @Binding var activeDevice: Spotify.Device?
+    
+    var activeDevice: Spotify.Device? {
+        appCoordinator.activeDeviceSubject.value
+    }
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -65,10 +68,9 @@ public struct TrackView2: JoliView {
                 }
         }
     
-    public init(track: Binding<Playable>, heartLevel: Binding<HeartLevel?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, activeDevice: Binding<Spotify.Device?>){
+    public init(track: Binding<Playable>, heartLevel: Binding<HeartLevel?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false){
         self._heartLevel = heartLevel
         self._track = track
-        self._activeDevice = activeDevice
         self.colors = colors
         self.useDynamicColors = useDynamicColors
     }
@@ -252,13 +254,11 @@ public struct TrackList: JoliView {
     @Binding var tracks: [Playable]
     @Binding var preview: AppPreview?
     @Binding var playroom: Musicroom?
-    @Binding var activeDevice: Spotify.Device?
     
-    public init(tracks: Binding<[Playable]>, preview: Binding<AppPreview?> = .constant(nil), playroom: Binding<Musicroom?> = .constant(nil), activeDevice: Binding<Spotify.Device?>){
+    public init(tracks: Binding<[Playable]>, preview: Binding<AppPreview?> = .constant(nil), playroom: Binding<Musicroom?> = .constant(nil)){
         self._tracks = tracks
         self._preview = preview
         self._playroom = playroom
-        self._activeDevice = activeDevice
     }
     
     func trackBinding(_ trackId: Array<Playable>.Index) -> Binding<Playable> {
@@ -317,7 +317,7 @@ public struct TrackList: JoliView {
     public var body: some View {
         return LazyVStack(alignment: .center, spacing: 0) {
             ForEach(Array(tracks.enumerated()), id: \.element.uri) { item in
-                TrackView2(track: .constant(item.element), heartLevel: self.heartLevelBinding(item.offset), useDynamicColors: true, activeDevice: self.$activeDevice)
+                TrackView2(track: .constant(item.element), heartLevel: self.heartLevelBinding(item.offset), useDynamicColors: true)
                         .id(item.element.uri)
                         .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 1) {
                             withImpact {
@@ -333,7 +333,7 @@ public struct TrackList: JoliView {
 struct TrackList_Previews: PreviewProvider {
     
     static var previews: some View {
-        TrackList(tracks: .constant(SEED_DATA.tracks), activeDevice: .constant(nil))
+        TrackList(tracks: .constant(SEED_DATA.tracks))
     }
     
 }

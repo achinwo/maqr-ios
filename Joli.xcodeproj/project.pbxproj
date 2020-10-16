@@ -26,6 +26,8 @@
 		923C2B0424CC7506009E2380 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 923C2B0324CC7506009E2380 /* PartialSheet */; };
 		923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		923C2B0624CC752E009E2380 /* JoliPlayground.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		92595B4D253A1AD200609558 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
+		92595B4E253A1AD200609558 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
 		925C6FF324CB722A0016963F /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 925C6FF224CB722A0016963F /* FBLPromises */; };
 		9263B87824F080E6008962EC /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
 		9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
@@ -216,6 +218,7 @@
 		9208ACF224CC559400773730 /* DevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesView.swift; sourceTree = "<group>"; };
 		9222BE1724CD8A5800F19973 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
+		92595B4C253A1AD200609558 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		925E5C72236A742100D95AB7 /* SpotifyiOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SpotifyiOS.framework; sourceTree = "<group>"; };
 		925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Joli-Bridging-Header.h"; sourceTree = "<group>"; };
 		9263B87724F080E6008962EC /* ListenTabbarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListenTabbarView.swift; sourceTree = "<group>"; };
@@ -453,6 +456,7 @@
 				928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */,
 				926E8FE024C76DE100378436 /* Styles.swift */,
 				929FFE1B24FAF096000BDCF0 /* User.swift */,
+				92595B4C253A1AD200609558 /* AppCoordinator.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1004,6 +1008,7 @@
 				928A391C24E9DAE700A029A1 /* ListenView.swift in Sources */,
 				928F75F424F7B13400CF708B /* SearchView.swift in Sources */,
 				92BD11CE24CB0BCB00AAB7DE /* ImagePicker.swift in Sources */,
+				92595B4D253A1AD200609558 /* AppCoordinator.swift in Sources */,
 				927E0E3A24E9AFFF00C8257D /* Preview.swift in Sources */,
 				9203B32B24CB080000F465CC /* Publishers.swift in Sources */,
 				9208ACF524CC559400773730 /* DevicesView.swift in Sources */,
@@ -1043,6 +1048,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92595B4E253A1AD200609558 /* AppCoordinator.swift in Sources */,
 				92A32DE424C79C07007C960E /* TrackSearchView.swift in Sources */,
 				92A32E2C24C7BB53007C960E /* Consts.swift in Sources */,
 				92A32DEC24C79C07007C960E /* UserProfileView.swift in Sources */,
