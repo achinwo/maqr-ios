@@ -52,7 +52,9 @@ struct ListenView: JoliView {
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     let geoProxy: GeometryProxy
-    @Binding var tracks: [Playable]
+    
+    @State var tracks: [Playable] = []
+    
     @Binding var tabbarExpaned: Bool
     @Binding var preview: AppPreview?
     @Binding var filterText: String
@@ -70,15 +72,37 @@ struct ListenView: JoliView {
     @State var scrollProxy: ScrollViewProxy? = nil
     
     
-    init(geoProxy: GeometryProxy, tracks: Binding<[Playable]>, tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Musicroom?>, currentUser: Binding<User?>) {
+    init(geoProxy: GeometryProxy, tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Musicroom?>, currentUser: Binding<User?>) {
         self.geoProxy = geoProxy
-        self._tracks = tracks
         self._tabbarExpaned = tabbarExpaned
         self._preview = preview
         self._filterText = filterText
         self.animation = animation
         self._playroom = playroom
         self._currentUser = currentUser
+    }
+    
+    func fetchTracks(_ room: Musicroom) -> Promise<[RoomTrack]> {
+        return RoomTrack.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+            .then() { tracks -> [RoomTrack] in
+                var tracksByMusicrooms: [Int: [RoomTrack]] = [:]
+                
+                for track in tracks.filter({ $0.isPlayable }) {
+                    var roomTracks = tracksByMusicrooms[track.roomId] ?? []
+                    
+                    guard !roomTracks.contains(track) else {
+                        continue
+                    }
+                    
+                    roomTracks.append(track)
+                    tracksByMusicrooms[track.roomId] = roomTracks
+                }
+                
+                self.tracks = tracksByMusicrooms[room.id] ?? []
+                return tracksByMusicrooms[room.id] ?? []
+                
+                //print("[onAppear#ListenView] tracks=\(self.tracks.count), strip=\(self.strip)")
+            }
     }
     
     @State private var membership: [PlayroomMembership] = SEED_DATA.users.map() { user in
@@ -313,11 +337,11 @@ struct ListenView: JoliView {
                     } else {
                         TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom)
                             .background(Color.white)
-                            .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                             //.padding(.top, geoProxy.safeAreaInsets.top)
                             //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
-                            .padding(.top, proxy.frame(in: .named("playroom-controls-space")).minY)//== nil ? .zero : navbarViewBounds?.height)
+                            .padding(.top, geoProxy.safeAreaInsets.top + 100)
                             .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+                            .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     }
                 }
                 .simultaneousGesture(dragGesture)
@@ -329,6 +353,7 @@ struct ListenView: JoliView {
                             .font(Font.headline.weight(.thin))
                         Spacer()
                     }
+                    .opacity(self.playroom == nil ? 1 : 0)
                     .padding(.trailing, Sizing.small)
                     .padding(.top, Sizing.xxLarge * 2.6)
                 )
@@ -343,10 +368,7 @@ struct ListenView: JoliView {
         .frame(maxWidth: screenWidth)
     }
     
-    
-    let a = SEED_DATA.tracks.first!
-    let b = SEED_DATA.tracks[16]
-    let c = SEED_DATA.tracks[SEED_DATA.tracks.count - 3]
+    @State var strip: (playing: Playable?, next: Playable?, runnerup: Playable?) = (nil, nil, nil)
     
     var body: some View {
 //        let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
@@ -362,6 +384,129 @@ struct ListenView: JoliView {
 //                                         playroomId: 3, user: user)
 //            return mem
 //        }
+        
+        
+        let makeTitle = { (playroom: Playroom) in
+            VStack(alignment: .trailing) {
+                Button(){
+                    withImpact(.soft) {
+                        self.playroom = nil
+                    }
+                } label: {
+                    Image(systemName: "arrow.down.right.and.arrow.up.left")
+                        .resizable()
+                        .frame(width: 18, height: 18)
+                        .font(Font.subheadline.weight(.thin))
+                        .foregroundColor(Color.secondary)
+                }
+                HStack(alignment: .center){
+                    Text("in")
+                        .font(Font.subheadline)
+                        .foregroundColor(Color.gray)
+                    Text(playroom.name)
+                        .font(Font.headline)
+                        .foregroundColor(.blue)
+                        .frame(maxWidth: screenWidth / 1.8)
+                        .fixedSize(horizontal: true, vertical: false)
+                }
+                Text("by Obialo")
+                    .font(Font.footnote.weight(.thin))
+                    .foregroundColor(Color.secondary)
+            }
+            .onTapGesture {
+                self.preview = .view() {
+                    VStack(){
+                        Spacer()
+                        Button(){
+                            withAnimation() {
+                                self.playroom = nil
+                                self.preview = nil
+                            }
+                        } label: {
+                            Text("Exit \"\(playroom.name)\"?")
+                                .font(.title2)
+                        }
+                        .cornerRadius(12)
+                        Spacer()
+                    }
+                    .background(Color.clear)
+                    .padding()
+                    .eraseToAnyView()
+                }
+            }
+        }
+        
+
+        let makeStrip = { (playroom: Playroom) in
+            HStack(alignment: .center){
+                NetworkImage(string: strip.playing?.thumbnailUrl) {
+                    Rectangle().stroke(Color.gray)
+                }
+                .frame(width: 56, height: 56)
+                .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
+                .onTapGesture {
+                    withImpact(.soft, animated: .easeInOut) {
+
+                        guard let uri = strip.playing?.uri else {
+                            return
+                        }
+
+                        scrollProxy?.scrollTo(uri, anchor: .center)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 1){
+                    NetworkImage(string: strip.next?.thumbnailUrl) {
+                        Rectangle().stroke(Color.gray)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
+                    .frame(width: 40, height: 40)
+                    Text("Up Next")
+                        .font(Font.footnote.weight(.thin))
+                        .foregroundColor(Color.primary)
+                }
+                .frame(height: 56)
+                .onTapGesture {
+                    withImpact(.soft, animated: .easeInOut) {
+
+                        guard let uri = strip.next?.uri else {
+                            return
+                        }
+
+                        scrollProxy?.scrollTo(uri, anchor: .center)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 1){
+                    NetworkImage(string: strip.runnerup?.thumbnailUrl) {
+                        Rectangle().stroke(Color.gray)//.fill(style: Color.gray)
+                    }
+                    .frame(width: 40, height: 40)
+                    Text("Runner-up")
+                        .font(Font.footnote.weight(.thin))
+                        .foregroundColor(Color.primary)
+                }
+                .frame(height: 56)
+                .onTapGesture {
+                    withImpact(.soft, animated: .easeInOut) {
+
+                        guard let uri = strip.runnerup?.uri else {
+                            return
+                        }
+
+                        scrollProxy?.scrollTo(uri, anchor: .center)
+                    }
+                }
+
+                Spacer()
+
+                makeTitle(playroom)
+            }
+            .padding(.horizontal, Sizing.small * 0.6)
+            .padding([.horizontal, .bottom], Sizing.small * 0.5)
+            .matchedGeometryEffect(id: "listen-header", in: animation)
+        }
+        
         return ZStack(){
             self.contentView
             
@@ -381,7 +526,18 @@ struct ListenView: JoliView {
                 //Color.white.blur(radius: 20).opacity(0.9))
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
-            //.offset(x: appCoordinator.tabbar., y: )
+            .onChange(of: playroom) { room in
+                
+                guard let room = room else {
+                    return
+                }
+                
+                self.tracks = []
+                self.fetchTracks(room)
+                    .always() {
+                        self.strip = (playing: self.tracks.first, next: self.tracks.randomElement(), runnerup: self.tracks.last)
+                    }
+            }
             .zIndex(100)
             
             VStack(spacing: .zero) {
@@ -399,107 +555,7 @@ struct ListenView: JoliView {
                 
                 Group(){
                     if let playroom = playroom {
-                        
-                        
-                        HStack(alignment: .center){
-                            NetworkImage(string: a.albumCoverUrl) {
-                                Text("Oops")
-                            }
-                            .frame(width: 56, height: 56)
-                            .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-                            .onTapGesture {
-                                withImpact(.soft, animated: .easeInOut) {
-                                    scrollProxy?.scrollTo(a.uri, anchor: .center)
-                                }
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 1){
-                                NetworkImage(string: b.albumCoverUrl) {
-                                    Text("Oops 2")
-                                }
-                                .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-                                .frame(width: 40, height: 40)
-                                Text("Up Next")
-                                    .font(Font.footnote.weight(.thin))
-                                    .foregroundColor(Color.primary)
-                            }
-                            .frame(height: 56)
-                            .onTapGesture {
-                                withImpact(.soft, animated: .easeInOut) {
-                                    scrollProxy?.scrollTo(b.uri, anchor: .center)
-                                }
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 1){
-                                NetworkImage(string: c.albumCoverUrl) {
-                                    Text("Oops 3")
-                                }
-                                .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-                                .frame(width: 40, height: 40)
-                                Text("Runner-up")
-                                    .font(Font.footnote.weight(.thin))
-                                    .foregroundColor(Color.primary)
-                            }
-                            .frame(height: 56)
-                            .onTapGesture {
-                                withImpact(.soft, animated: .easeInOut) {
-                                    scrollProxy?.scrollTo(c.uri, anchor: .center)
-                                }
-                            }
-                            
-                            Spacer()
-                            
-                            VStack(alignment: .trailing) {
-                                Button(){
-                                    withImpact(.soft) {
-                                        self.playroom = nil
-                                    }
-                                } label: {
-                                    Image(systemName: "arrow.down.right.and.arrow.up.left")
-                                        .resizable()
-                                        .frame(width: 18, height: 18)
-                                        .font(Font.subheadline.weight(.thin))
-                                        .foregroundColor(Color.secondary)
-                                }
-                                HStack(alignment: .center){
-                                    Text("in")
-                                        .font(Font.subheadline)
-                                        .foregroundColor(Color.gray)
-                                    Text(playroom.name)
-                                        .font(Font.headline)
-                                        .foregroundColor(.blue)
-                                        .frame(maxWidth: screenWidth / 1.8)
-                                        .fixedSize(horizontal: true, vertical: false)
-                                }
-                                Text("by Obialo")
-                                    .font(Font.footnote.weight(.thin))
-                                    .foregroundColor(Color.secondary)
-                            }.onTapGesture {
-                                self.preview = .view() {
-                                    VStack(){
-                                        Spacer()
-                                        Button(){
-                                            withAnimation() {
-                                                self.playroom = nil
-                                                self.preview = nil
-                                            }
-                                        } label: {
-                                            Text("Exit \"\(playroom.name)\"?")
-                                                .font(.title2)
-                                        }
-                                        .cornerRadius(12)
-                                        Spacer()
-                                    }
-                                    .background(Color.clear)
-                                    .padding()
-                                    .eraseToAnyView()
-                                }
-                            }
-                        }
-                        .padding(.horizontal, Sizing.small * 0.6)
-                        .padding([.horizontal, .bottom], Sizing.small * 0.5)
-                        .matchedGeometryEffect(id: "listen-header", in: animation)
-                        
+                        makeStrip(playroom)
                     } else {
                         HStack(alignment: .top){
                             Spacer()

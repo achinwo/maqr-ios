@@ -10,7 +10,7 @@ import SwiftUI
 import JoliApi
 import JoliCore
 
-public struct AppView2: View {
+public struct AppView2: JoliView {
     
     enum ScrollPosition: Equatable {
         case leadingEdge
@@ -20,7 +20,7 @@ public struct AppView2: View {
     
     static let viewIds: (explore: String, listen: String, notset: String) = ("views.explore", "views.listen", "views.none")
     
-    @EnvironmentObject var appCoordinator: AppCoordinator
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var scrollPosition: ScrollPosition = .leadingEdge
     
     @State var isExpanded = false
@@ -34,15 +34,23 @@ public struct AppView2: View {
     
     @Namespace var animation
     
-    @Binding var playroom: Musicroom?
+    @Binding var playroom: Musicroom? {
+        didSet {
+            
+            
+        }
+    }
+    
     @Binding var currentUser: User?
+    
+    
     
     public init(playroom: Binding<Musicroom?>, currentUser: Binding<User?>){
         self._playroom = playroom
         self._currentUser = currentUser
     }
     
-    @State var filteredTracks: [Playable] = SEED_DATA.tracks
+    @State var filteredTracks: [Playable] = []
     
     @State var preview: AppPreview? = nil
     
@@ -73,7 +81,7 @@ public struct AppView2: View {
                                 }
                                 .id(Self.viewIds.explore)
                             
-                            ListenView(geoProxy: geoProxy, tracks: self.$filteredTracks, tabbarExpaned: self.$isExpanded,
+                            ListenView(geoProxy: geoProxy, tabbarExpaned: self.$isExpanded,
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
                                        playroom: self.$playroom, currentUser: self.$currentUser)
                                 .frame(width: screenWidth)
@@ -140,6 +148,13 @@ public struct AppView2: View {
                             print("[AppView2] scrolling to: \(value)")
                             proxy.scrollTo(value)
                         }
+                    }
+                    .onChange(of: playroom) { room in
+                        guard let pla = playroom else {
+                            return
+                        }
+                        
+                        self.filteredTracks = []
                     }
                     .onAppear() {
                         
