@@ -98,13 +98,13 @@ struct JoliApp: AppClip {
     }
     
     var contentView: some View {
-        
+
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser)
-            .onReceive(appDelegate.$shortcutItemToProcess) { _ in
-                //print(appDelegate.shortcutItemType)
-                //Do something here
-                logger.debug("[Joli] shortcutItem change: \(String(describing: appDelegate.shortcutItemToProcess))")
-            }
+//            .onReceive(appDelegate.$shortcutItemToProcess) { _ in
+//                //print(appDelegate.shortcutItemType)
+//                //Do something here
+//                logger.debug("[Joli] shortcutItem change: \(String(describing: appDelegate.shortcutItemToProcess))")
+//            }
             .onReceive(coordinator.activeDeviceSubject) { (device: Spotify.Device?) in
                 
                 guard let device = device else {
@@ -155,7 +155,7 @@ extension JoliApp {
                     logger.debug("[SceneDelegate#sceneDidBecomeActive] connecting Spotify remote aborted...")
                 }
                 
-                if let shortcutItem = appDelegate.shortcutItemToProcess {
+                if let shortcutItem = shortcutItemToProcess {
                     // In this sample an alert is being shown to indicate that the action has been triggered,
                     // but in real code the functionality for the quick action would be triggered.
                     var message = "\(shortcutItem.type) triggered"
@@ -167,7 +167,7 @@ extension JoliApp {
                     appDelegate.window?.rootViewController?.present(alertController, animated: true, completion: nil)
                     
                     // Reset the shortcut item so it's never processed twice.
-                    appDelegate.shortcutItemToProcess = nil
+                    shortcutItemToProcess = nil
                 }
             case .inactive:
                 print("App became inactive2")

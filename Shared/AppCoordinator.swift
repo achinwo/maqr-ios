@@ -76,7 +76,7 @@ public final class AppCoordinator: ObservableObject {
         
         self.volumeCancel = self.volumeSubject
             .removeDuplicates()
-            .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInitiated))
+            .debounce(for: 0.2, scheduler: DispatchQueue.global(qos: .userInitiated))
             .sink() { value in
                 
                 guard let device = self.activeDeviceSubject.value else {

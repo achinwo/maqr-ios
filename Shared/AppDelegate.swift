@@ -28,9 +28,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var audioSession = AVAudioSession.sharedInstance()
     
     var window: UIWindow?
-
-    /// Temporary variable to hold a shortcut item from the launching or activation of the app.
-    @Published public var shortcutItemToProcess: UIApplicationShortcutItem?
     
     private struct Observation {
         static let VolumeKey = "outputVolume"
@@ -140,7 +137,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let content = notification.request.content
         // Process notification content
         logger.info("[AppDelegate#userNotificationCenter] willPresent: \(content.body)")
-        completionHandler([.alert]) // Display notification as regular alert and play sound
+        completionHandler([.list]) // Display notification as regular alert and play sound
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -234,5 +231,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         return true
     }
+    
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        if let shortcutItem = options.shortcutItem {
+            shortcutItemToProcess = shortcutItem
+        }
+        
+        let sceneConfiguration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+        sceneConfiguration.delegateClass = CustomSceneDelegate.self
+        
+        return sceneConfiguration
+    }
 
+}
+
+var shortcutItemToProcess: UIApplicationShortcutItem?
+
+class CustomSceneDelegate: UIResponder, UIWindowSceneDelegate {
+    func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+        shortcutItemToProcess = shortcutItem
+        logger.debug("[AppDelegate] windowScene=\(shortcutItem)")
+    }
 }
