@@ -11,6 +11,10 @@ import JoliCore
 import JoliApi
 import Promises
 import Combine
+//import Sourceful
+
+public typealias Color = SwiftUI.Color
+public typealias View = SwiftUI.View
 
 struct ShakeEffect: GeometryEffect {
     
@@ -512,6 +516,11 @@ struct ListenView: JoliView {
             
             VStack(spacing: .zero) {
                 Spacer()
+                
+                
+                
+                
+                
                 Divider()
                 ListenTabbarView(users: membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
                                  playroom: self.$playroom)

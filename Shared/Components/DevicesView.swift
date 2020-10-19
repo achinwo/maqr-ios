@@ -175,14 +175,14 @@ public struct DevicesSampleView: View {
     }
     
     public var body: some View {
-        let devices: [Spotify.Device] = [
-            Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
-            Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
-            Spotify.Device(name: "Microwave", type: .speaker, isActive: true, id: "test_device4"),
-            
-            Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
-            Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
-        ]
+//        let devices: [Spotify.Device] = [
+//            Spotify.Device(name: "Devialet Phantom", type: .smartphone, isActive: true, id: "test_device3"),
+//            Spotify.Device(name: "Joli Player", type: .computer, isActive: true, id: "test_device1"),
+//            Spotify.Device(name: "Microwave", type: .speaker, isActive: true, id: "test_device4"),
+//
+//            Spotify.Device(name: "Cyber Truck", type: .automobile, isActive: true, id: "test_device5"),
+//            Spotify.Device(name: "Living Room", type: .tv, isActive: true, id: "test_device6")
+//        ]
         
             // 1.2 Add the manager as environmentObject
             

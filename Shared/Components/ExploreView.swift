@@ -11,7 +11,7 @@ import Combine
 import JoliCore
 import JoliApi
 import GradientLoadingBar
-
+import Sourceful
 
 struct GradientLoadingBarView: UIViewRepresentable {
     
@@ -198,7 +198,29 @@ public struct ExploreView: JoliView {
                                 ZStack(){
                                     VStack(){
                                         GeometryReader() { proxy in
-                                            Text("Flipped it!").font(.largeTitle)
+                                            let quotation = """
+                                            class View {
+                                                
+                                                public func gradientForeground(colors: [Color]) -> some View {
+                                                    self.overlay(AngularGradient(gradient: Gradient(colors: colors),
+                                                                                 center: UnitPoint(x: 0.5, y: 1),
+                                                                                 angle: Angle(degrees: 0.00)))
+                                                        .mask(self)
+                                                }
+                                                
+                                            }
+                                            """
+                                            
+                                            let cus = SourceCodeTextEditor.Customization(
+                                                didChangeText: {_ in },
+                                                insertionPointColor: { Sourceful.Color.white },
+                                                lexerForSource: { _ in SwiftLexer() },
+                                                textViewDidBeginEditing: { _ in },
+                                                theme: { DefaultSourceCodeTheme() }
+                                            )
+                                            
+                                            SourceCodeTextEditor(text: .constant(quotation), cusotmization: cus)
+                                                .frame(width: proxy.size.width, height: proxy.size.height)
                                         }
                                     }
                                     .background(Colors.lightGray)

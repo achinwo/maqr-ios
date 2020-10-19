@@ -19,6 +19,7 @@
 		9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9234320D23BFD2F700E24E96 /* NotificationCenter.framework */; };
 		9208ACF324CC559400773730 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9208ACF224CC559400773730 /* DevicesView.swift */; };
 		9208ACF524CC559400773730 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9208ACF224CC559400773730 /* DevicesView.swift */; };
+		921BA271253E0819007C2FE0 /* Sourceful in Frameworks */ = {isa = PBXBuildFile; productRef = 921BA270253E0819007C2FE0 /* Sourceful */; };
 		9222BE1824CD8A5800F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
 		9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
 		923657552530654B008A8A83 /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
@@ -310,6 +311,7 @@
 			files = (
 				92BD11D524CB104D00AAB7DE /* UIImageColors in Frameworks */,
 				92BD11D324CB104D00AAB7DE /* Kingfisher in Frameworks */,
+				921BA271253E0819007C2FE0 /* Sourceful in Frameworks */,
 				923C2B0424CC7506009E2380 /* PartialSheet in Frameworks */,
 				9266BDC92506EB8700DAE077 /* SFSafeSymbols in Frameworks */,
 				928A392A24E9EB5A00A029A1 /* MapKit.framework in Frameworks */,
@@ -672,6 +674,7 @@
 				923C2B0324CC7506009E2380 /* PartialSheet */,
 				9266BDC82506EB8700DAE077 /* SFSafeSymbols */,
 				927DD09825263C92005BAAF7 /* GradientLoadingBar */,
+				921BA270253E0819007C2FE0 /* Sourceful */,
 			);
 			productName = JoliPlayground;
 			productReference = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */;
@@ -878,6 +881,7 @@
 				923C2B0224CC7506009E2380 /* XCRemoteSwiftPackageReference "PartialSheet" */,
 				9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */,
 				927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */,
+				921BA25B253E03B4007C2FE0 /* XCRemoteSwiftPackageReference "Sourceful" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1852,6 +1856,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		921BA25B253E03B4007C2FE0 /* XCRemoteSwiftPackageReference "Sourceful" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twostraws/Sourceful.git";
+			requirement = {
+				kind = revision;
+				revision = ef82b07261dceeedb6e48f1ecd4f4305b5cd10f8;
+			};
+		};
 		923C2B0224CC7506009E2380 /* XCRemoteSwiftPackageReference "PartialSheet" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/AndreaMiotto/PartialSheet.git";
@@ -1922,6 +1934,11 @@
 		9203B31824CB079200F465CC /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
+		};
+		921BA270253E0819007C2FE0 /* Sourceful */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 921BA25B253E03B4007C2FE0 /* XCRemoteSwiftPackageReference "Sourceful" */;
+			productName = Sourceful;
 		};
 		923C2B0324CC7506009E2380 /* PartialSheet */ = {
 			isa = XCSwiftPackageProductDependency;
