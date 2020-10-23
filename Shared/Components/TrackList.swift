@@ -222,7 +222,7 @@ public struct TrackView2: JoliView {
                             
                             HStack(alignment: .bottom){
                                 RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
-                                    .fill([Color.blue, Color.purple, Color.yellow, Color.green][ item.key.count % 4 ].opacity(0.48))
+                                    .fill(item.value.color.opacity(0.48))
                                     .frame(width: 3, height: proxy.size.height)
                                     .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
                                     .id(item.key)
@@ -245,11 +245,40 @@ public struct TrackView2: JoliView {
         .animation(.interactiveSpring())
         //.background(colors?.backgroundColor ?? Color.clear)
     }
+    
+    
 }
 
-public extension Playable {
+public extension String {
+    func count(of needle: Character) -> Int {
+        return reduce(0) {
+            $1 == needle ? $0 + 1 : $0
+        }
+    }
+}
+
+public extension PlayState {
     
+    static var allColors: [Color] {
+        return [
+            .black,
+            .white,
+            .gray,
+            .red,
+            .green,
+            .blue,
+            .orange,
+            .yellow,
+            .pink,
+            .purple
+        ]
+    }
     
+    var color: Color {
+        let colors = Self.allColors
+        let color = colors[(userName.count + userName.lowercased().count(of: "x")) % colors.count ]
+        return color
+    }
 }
 
 public struct TrackList: JoliView {
