@@ -75,6 +75,7 @@ struct ListenView: JoliView {
 //    @State var devices: [Spotify.Device] = []
     @State var scrollProxy: ScrollViewProxy? = nil
     
+    @State var votes: [QueuedTrackVote] = []
     
     init(geoProxy: GeometryProxy, tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Musicroom?>, currentUser: Binding<User?>) {
         self.geoProxy = geoProxy
@@ -86,10 +87,12 @@ struct ListenView: JoliView {
         self._currentUser = currentUser
     }
     
-    func fetchTracks(_ room: Musicroom) -> Promise<[RoomTrack]> {
-        return RoomTrack.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
-            .then() { tracks -> [RoomTrack] in
-                var tracksByMusicrooms: [Int: [RoomTrack]] = [:]
+    func fetchTracks(_ room: Musicroom) -> Promise<[QueuedTrack]> {
+        
+        return QueuedTrack.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+            .then() { tracks -> [QueuedTrack] in
+                var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
+                var allVotes: [QueuedTrackVote] = []
                 
                 for track in tracks.filter({ $0.isPlayable }) {
                     var roomTracks = tracksByMusicrooms[track.roomId] ?? []
@@ -100,8 +103,15 @@ struct ListenView: JoliView {
                     
                     roomTracks.append(track)
                     tracksByMusicrooms[track.roomId] = roomTracks
+                    
+                    guard let votes = track.votes else {
+                        continue
+                    }
+                    
+                    allVotes.append(contentsOf: votes)
                 }
                 
+                self.votes = allVotes
                 self.tracks = tracksByMusicrooms[room.id] ?? []
                 return tracksByMusicrooms[room.id] ?? []
                 
@@ -269,8 +279,11 @@ struct ListenView: JoliView {
                                                             subtitleKeyPath: \.details)
                                                 .frame(height: 64)
                                                 .onTapGesture {
+                                                    self.tracks = []
+                                                    self.votes = []
                                                     self.playroom = room
                                                 }
+                                                .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
                                                 //.background(Color.yellow)
                                                 .id(room.id)
                                         }
@@ -339,7 +352,9 @@ struct ListenView: JoliView {
                         .padding(.top, Sizing.xxLarge * 2)
                         .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     } else {
-                        TrackList(tracks: self.$tracks, preview: $preview, playroom: self.$playroom)
+                        TrackList(tracks: self.$tracks, votes: self.$votes, preview: $preview, playroom: self.$playroom) { track in
+                                self.voteTrack(track)
+                            }
                             .background(Color.white)
                             //.padding(.top, geoProxy.safeAreaInsets.top)
                             //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
@@ -370,6 +385,28 @@ struct ListenView: JoliView {
             
         }
         .frame(maxWidth: screenWidth)
+    }
+    
+    
+    @discardableResult
+    func voteTrack(_ track: QueuedTrack) -> Promise<QueuedTrackVote> {
+        let builder = Builder<QueuedTrackVote>()
+        return builder.update(.queuedTrackId, track.id as AnyObject)
+            .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then() { vote -> QueuedTrackVote in
+                print("[CreatedVote] \(vote)")
+                
+//                guard let room = self.playroom else {
+//                    return vote
+//                }
+                
+                self.votes.append(vote)
+                
+                return vote
+            }
+            .always {
+                print("[Vote Track] completed - \(self.playroom)")
+            }
     }
     
     @State var strip: (playing: Playable?, next: Playable?, runnerup: Playable?) = (nil, nil, nil)
@@ -443,65 +480,59 @@ struct ListenView: JoliView {
 
         let makeStrip = { (playroom: Playroom) in
             HStack(alignment: .center){
-                NetworkImage(string: strip.playing?.thumbnailUrl) {
-                    Rectangle().stroke(Color.gray)
-                }
-                .frame(width: 56, height: 56)
-                .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-                .onTapGesture {
-                    withImpact(.soft, animated: .easeInOut) {
-
-                        guard let uri = strip.playing?.uri else {
-                            return
-                        }
-
-                        scrollProxy?.scrollTo(uri, anchor: .center)
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: 1){
-                    NetworkImage(string: strip.next?.thumbnailUrl) {
+                
+                if let playing = strip.playing {
+                    NetworkImage(string: playing.thumbnailUrl) {
                         Rectangle().stroke(Color.gray)
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-                    .frame(width: 40, height: 40)
-                    Text("Up Next")
-                        .font(Font.footnote.weight(.thin))
-                        .foregroundColor(Color.primary)
-                }
-                .frame(height: 56)
-                .onTapGesture {
-                    withImpact(.soft, animated: .easeInOut) {
-
-                        guard let uri = strip.next?.uri else {
-                            return
+                    .frame(width: 56, height: 56)
+                    .onTapGesture {
+                        withImpact(.soft, animated: .easeInOut) {
+                            scrollProxy?.scrollTo(playing.uri, anchor: .center)
                         }
-
-                        scrollProxy?.scrollTo(uri, anchor: .center)
                     }
+                    .id(playing.thumbnailUrl)
                 }
+                
+                if let next = strip.next, strip.playing != nil {
 
-                VStack(alignment: .leading, spacing: 1){
-                    NetworkImage(string: strip.runnerup?.thumbnailUrl) {
-                        Rectangle().stroke(Color.gray)//.fill(style: Color.gray)
-                    }
-                    .frame(width: 40, height: 40)
-                    Text("Runner-up")
-                        .font(Font.footnote.weight(.thin))
-                        .foregroundColor(Color.primary)
-                }
-                .frame(height: 56)
-                .onTapGesture {
-                    withImpact(.soft, animated: .easeInOut) {
-
-                        guard let uri = strip.runnerup?.uri else {
-                            return
+                    VStack(alignment: .leading, spacing: 1){
+                        NetworkImage(string: next.thumbnailUrl) {
+                            Rectangle().stroke(Color.gray)
                         }
-
-                        scrollProxy?.scrollTo(uri, anchor: .center)
+                        .frame(width: 40, height: 40)
+                        Text("Up Next")
+                            .font(Font.footnote.weight(.thin))
+                            .foregroundColor(Color.primary)
                     }
+                    .frame(height: 56)
+                    .onTapGesture {
+                        withImpact(.soft, animated: .easeInOut) {
+                            scrollProxy?.scrollTo(next.uri, anchor: .center)
+                        }
+                    }
+                    .id(next.thumbnailUrl)
                 }
-
+                
+                if let runnerup = strip.runnerup, strip.playing != nil, strip.next != nil {
+                    VStack(alignment: .leading, spacing: 1){
+                        NetworkImage(string: runnerup.thumbnailUrl) {
+                            Rectangle().stroke(Color.gray)//.fill(style: Color.gray)
+                        }
+                        .frame(width: 40, height: 40)
+                        Text("Runner-up")
+                            .font(Font.footnote.weight(.thin))
+                            .foregroundColor(Color.primary)
+                    }
+                    .frame(height: 56)
+                    .onTapGesture {
+                        withImpact(.soft, animated: .easeInOut) {
+                            scrollProxy?.scrollTo(runnerup.uri, anchor: .center)
+                        }
+                    }
+                    .id(runnerup.thumbnailUrl)
+                }
+                
                 Spacer()
 
                 makeTitle(playroom)
@@ -535,17 +566,36 @@ struct ListenView: JoliView {
                 //Color.white.blur(radius: 20).opacity(0.9))
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
+            .onChange(of: votes) { votes in
+                
+                guard let tracks = tracks as? [QueuedTrack] else {
+                    self.strip = (nil, nil, nil)
+                    return
+                }
+                
+                let grouped = Dictionary(grouping: votes, by: { $0.queuedTrackId })
+                let items = grouped.sorted() { $0.value.count >= $1.value.count }
+                
+                let firstKey = items.first?.key ?? tracks.first?.id
+                let secondKey: Int? = items.count > 1 ? items[1].key : nil
+                let thirdKey = items.count > 2 ? items[2].key : nil
+                
+                
+                self.strip = (
+                    playing: tracks.first() { $0.id == firstKey },
+                    next: tracks.first() { $0.id == secondKey },
+                    runnerup: tracks.first() { $0.id == thirdKey}
+                )
+                
+                print("[SortedItems] first:\(items.first?.key), second: \(secondKey), third: \(thirdKey)")
+            }
             .onChange(of: playroom) { room in
                 
                 guard let room = room else {
                     return
                 }
                 
-                self.tracks = []
                 self.fetchTracks(room)
-                    .always() {
-                        self.strip = (playing: self.tracks.first, next: self.tracks.randomElement(), runnerup: self.tracks.last)
-                    }
             }
             .zIndex(100)
             

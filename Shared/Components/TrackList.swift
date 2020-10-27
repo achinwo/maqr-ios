@@ -10,6 +10,7 @@ import SwiftUI
 import Combine
 import JoliCore
 import UIImageColors
+import Promises
 
 public extension UIImageColors {
     
@@ -52,6 +53,8 @@ public struct TrackView2: JoliView {
         appCoordinator.activeDeviceSubject.value
     }
     
+    let onHeartTapped: (() -> Void)?
+    
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @State var invalidPlayAttempts = 0
@@ -68,7 +71,8 @@ public struct TrackView2: JoliView {
                 }
         }
     
-    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false){
+    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, onHeartTapped: (() -> Void)? = nil){
+        self.onHeartTapped = onHeartTapped
         self._hearts = hearts
         self._track = track
         self.colors = colors
@@ -147,7 +151,7 @@ public struct TrackView2: JoliView {
                 
             }
             .frame(width: 64, height: 64, alignment: .center)
-            .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
+            //.clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             .onTapGesture(count: 2) { cb(true) }
             .onReceive(appCoordinator.$playStatePublisher, perform: setupPublisher)
             .onAppear() { setupPublisher(appCoordinator.playStatePublisher) }
@@ -184,22 +188,15 @@ public struct TrackView2: JoliView {
                     
                     if self.hearts != nil {
                         
-                        
                         Spacer()
                         JoyMeterView(self.$hearts, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary, backgroundColor: Color.red.opacity(0.5))
                             .padding()
                             .padding(.trailing, Sizing.large)
                             .foregroundColor(colors?.secondaryColor ?? Color.primary)
-//                            .onTapGesture {
-//
-//                                guard self.heartLevel != .full else {
-//                                    withAnimation(.none) {
-//                                        self.heartLevel = .quarter
-//                                    }
-//                                    return
-//                                }
-//                                self.heartLevel = self.heartLevel?.next
-//                            }
+                            .onTapGesture {
+                                self.onHeartTapped?()
+                            }
+                        
 //                            .onLongPressGesture {
 //
 //                                appCoordinator.withImpact(.medium) {
@@ -285,15 +282,21 @@ public struct TrackList: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
+    let onVoteTapped: ((QueuedTrack) -> Void)?
     @State var subscriptionCounts: [String: Hearts] = [:]
     @Binding var tracks: [Playable]
+    @Binding var votes: [QueuedTrackVote]
     @Binding var preview: AppPreview?
     @Binding var playroom: Musicroom?
     
-    public init(tracks: Binding<[Playable]>, preview: Binding<AppPreview?> = .constant(nil), playroom: Binding<Musicroom?> = .constant(nil)){
+    @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
+    
+    public init(tracks: Binding<[Playable]>, votes: Binding<[QueuedTrackVote]>? = .constant([]), preview: Binding<AppPreview?> = .constant(nil), playroom: Binding<Musicroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil){
+        self.onVoteTapped = onVoteTapped
         self._tracks = tracks
         self._preview = preview
         self._playroom = playroom
+        self._votes = votes ?? .constant([])
     }
     
     func trackBinding(_ trackId: Array<Playable>.Index) -> Binding<Playable> {
@@ -316,46 +319,64 @@ public struct TrackList: JoliView {
                 return nil
             }
             
-            let track = tracks[trackId]
-            
-            guard let subscriptionCounts = self.subscriptionCounts[track.uri] else {
-                
-                let elem = Hearts(score: CGFloat((120...1000).randomElement()!))
-                
-                DispatchQueue.main.async {
-                    self.subscriptionCounts[track.uri] = elem
-                }
-                
-                return elem
+            guard let track = tracks[trackId] as? QueuedTrack, let count: Int = self.votesByTrack[track.id]?.count else {
+                return Hearts(score: HeartLevel.empty.rawValue)
             }
             
-            return subscriptionCounts
+            return Hearts(score: CGFloat(count) * HeartLevel.quarter.rawValue)
             
         } set: { (heart, trasacton) in
             
-            withTransaction(trasacton) {
-                
-                guard trackId < tracks.count else {
-                    return
-                }
-                
-                let track = tracks[trackId]
-                subscriptionCounts[track.uri] = heart
-                
-                //track.subscriptionCount = heart
-                print("[TrackList] failed to set hear \(String(describing: heart)) for \(trasacton)")
-            }
+//            withTransaction(trasacton) {
+//
+//                guard trackId < tracks.count else {
+//                    return
+//                }
+//
+//                let track = tracks[trackId]
+//                subscriptionCounts[track.uri] = heart
+//
+//                //track.subscriptionCount = heart
+//                print("[TrackList] failed to set hear \(String(describing: heart)) for \(trasacton)")
+//            }
         }
         return heart
     }
     
     public var body: some View {
         return VStack(alignment: .center, spacing: 0) {
-            ForEach(Array(tracks.enumerated()), id: \.element.uri) { item in
-                TrackView2(track: .constant(item.element), hearts: self.heartLevelBinding(item.offset), useDynamicColors: true)
-                        .id(item.element.uri)
+                ForEach(Array(tracks.enumerated()), id: \.element.uri) { item in
+                    
+                    let track = item.element
+                    
+                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(item.offset), useDynamicColors: true) {
+                        print("[Heart Tapped] \(track.title)")
+                        
+                        guard let queued = track as? QueuedTrack else {
+                            return
+                        }
+                        
+                        self.onVoteTapped?(queued)
+                        
+                    }.id(track.uri)
                 }
+        }
+        .onChange(of: self.votes) { votes in
+            var mapping: [Int: [QueuedTrackVote]] = [:]
+            
+            for vote in votes {
+                
+                guard var existing = mapping[vote.queuedTrackId] else {
+                    mapping[vote.queuedTrackId] = []
+                    continue
+                }
+                
+                existing.append(vote)
+                mapping[vote.queuedTrackId] = existing
             }
+            
+            self.votesByTrack = mapping
+        }
     }
     
 }

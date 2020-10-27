@@ -96,8 +96,12 @@ public struct Hearts: CustomStringConvertible {
         return score == .zero
     }
     
-    public static func -= (lhs: inout Hearts, rhs: HeartLevel) -> Hearts {
-        return Hearts(score: 0)
+    public func subtracting(_ level: HeartLevel) -> Hearts? {
+        guard score > level.rawValue else {
+            return nil
+        }
+        
+        return Hearts(score: score - level.rawValue)
     }
 }
 
@@ -144,16 +148,9 @@ struct JoyMeterView: View {
                 .overlay(Rectangle().background(Color.primary).offset(x: offset, y: 0))
                 .background(self.backgroundColor)
                 .mask(Image(systemName: "heart.fill").font(.system(size: width, weight: .light)))
-//                .onChange(of: self.heartLevel) { newLevel in
-//                    guard self.heartLevel == .full else {
-//                        return
-//                    }
-//
-//                    self.heartCount += 1
-//                }
             
-            if self.hearts.count > 1 {
-                let offset = width / 1.16
+            if self.hearts.count >= 1 {
+                let offset = width / 1.32
                 Text("×\(self.hearts.count)").foregroundColor(labelColor).font(.footnote)
                     .offset(x: offset, y: width / 4)
                     .frame(minWidth: width)

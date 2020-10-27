@@ -96,6 +96,10 @@ struct JoliApp: AppClip {
                 self.coordinator.playStatePublisher = publisher
             }
         }
+        
+        socket.write(topic: "/subscribe", body: ["subject": "database_updates"]) { error in
+            print("[App] updated subscriptions: database_updates - \(String(describing: error))")
+        }
     }
     
     var contentView: some View {
