@@ -26,6 +26,7 @@ public struct AppView2: JoliView {
     @State var isExpanded = false
     
     @State var heartLevel: HeartLevel = .full
+    @State var draggingValue: CGSize = .zero
     
     @AppStorage("selectedViewId") var selectedViewId: String = viewIds.notset
     @State var peopleViewBounds: CGRect? = nil
@@ -64,6 +65,7 @@ public struct AppView2: JoliView {
                         HStack(alignment: .top, spacing: .zero){
                             ExploreView(geoProxy: geoProxy, playroom: self.$playroom, selectedViewId: self.$selectedViewId)
                                 .frame(width: screenWidth)
+                                .frame(minHeight: screenHeight - geoProxy.safeAreaInsets.top - geoProxy.safeAreaInsets.bottom)
                                 .onChange(of: self.scrollPosition) { value in
                                     
                                     if [.leadingEdge, .trailingEdge].contains(value) {
@@ -79,28 +81,31 @@ public struct AppView2: JoliView {
                                             break
                                     }
                                 }
+                                .background(Color.white)
                                 .id(Self.viewIds.explore)
                             
                             ListenView(geoProxy: geoProxy, tabbarExpaned: self.$isExpanded,
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
                                        playroom: self.$playroom, currentUser: self.$currentUser)
                                 .frame(width: screenWidth)
-                                .onChange(of: self.filterText) { term in
-                                    let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                                    
-                                    guard !self.filterText.isEmpty else {
-                                        self.filteredTracks = SEED_DATA.tracks
-                                        return
-                                    }
-                                    
-                                    self.filteredTracks = SEED_DATA.tracks.filter() { track in
-                                        return track.artistName.lowercased().contains(term) || track.title.lowercased().contains(term)
-                                    }
-                                }
+                                .clipped()
+//                                .onChange(of: self.filterText) { term in
+//                                    let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+//
+//                                    guard !self.filterText.isEmpty else {
+//                                        self.filteredTracks = SEED_DATA.tracks
+//                                        return
+//                                    }
+//
+//                                    self.filteredTracks = SEED_DATA.tracks.filter() { track in
+//                                        return track.artistName.lowercased().contains(term) || track.title.lowercased().contains(term)
+//                                    }
+//                                }
+                                .background(Color.white)
                                 .id(Self.viewIds.listen)
                         }
-                        //.background(Images.joliIconRounded.image.blur(radius: screenWidth, opaque: true))
                         .onFrameChange(){ frame in
+                            
                             DispatchQueue.main.async {
                                 switch (frame.origin.x, frame.origin.y) {
                                     case (0, _):
@@ -110,13 +115,53 @@ public struct AppView2: JoliView {
                                     default:
                                         self.scrollPosition = .point(frame.origin)
                                 }
+                                
+                                let trailingThreshold = ((self.screenWidth + 100) * -1)
+                                
+                                guard frame.origin.x > 100 || frame.origin.x < trailingThreshold else {
+                                    //print("Overscroll menues disabled! \(frame.origin.x)")
+                                    return
+                                }
+                                
+                                if frame.origin.x > 100 {
+                                    print("Leading menu enabled \(frame.origin)")
+                                } else if frame.origin.x < trailingThreshold {
+                                    print("Trailing menu enabled \(frame.origin)")
+                                }
                             }
                         }
                     }
+                    .background(
+                        GeometryReader() { gProx in
+                            HStack(){
+                                VStack(){
+//                                    Image(systemName: "star.circle.fill")
+//                                                .font(.system(size: 100))
+//                                                .offset(x: 0, y: draggingValue.height)
+                                }
+                                .frame(width: 100, height: gProx.size.height)
+                                .background(Color.yellow)
+                                .fixedSize()
+                                
+                                Spacer()
+                                
+                                VStack(){
+                                    
+                                }
+                                .frame(width: 100, height: gProx.size.height)
+                                .background(Color.blue)
+                                .fixedSize()
+                            }
+                            .frame(width: gProx.size.width, height: gProx.size.height)
+                            
+                            //.background(Color.red)
+                        }
+                    )
                     .simultaneousGesture(
                         DragGesture()
                             .onChanged { gesture in
                                 self.offset = gesture.translation
+                                //print("Dragging: \(self.offset)")
                             }
                             
                             .onEnded { _ in
@@ -167,6 +212,19 @@ public struct AppView2: JoliView {
                             proxy.scrollTo(self.selectedViewId)
                         }
                     }
+//                    .highPriorityGesture(
+//                        DragGesture()
+//                            .updating(self.$draggingValue) { (value, state, trans) in
+//                                print("DRAGGING - \(value)")
+//                                state = value.translation
+//                            }
+//                            .onChanged() { value in
+//                                print("DRAG changed - \(value)")
+//                            }
+//                            .onEnded() { value in
+//                                print("DRAG ended - \(value)")
+//                            }
+//                    )
                 }
             }
             .ignoresSafeArea(.all, edges: [.top, .bottom])

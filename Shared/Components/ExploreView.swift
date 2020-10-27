@@ -189,6 +189,7 @@ public struct ExploreView: JoliView {
                                 } label: {
                                     Image(systemName: self.seeAllKey == item.key ? "rotate.left.fill" : "rotate.right")
                                         .font(.subheadline)
+                                        .animation(.easeInOut)
                                         //.resizable()
                                 }
                             }
@@ -226,15 +227,20 @@ public struct ExploreView: JoliView {
                                     .background(Colors.lightGray)
                                     //.opacity(self.seeAllKey == item.key ? 1 : 0)
                                     .zIndex(self.seeAllKey == item.key ? 10 : 0)
+                                    .animation(.easeInOut)
                                     .rotation3DEffect(self.seeAllKey != item.key ? Angle(degrees: -180) : Angle.zero, axis: (0, 90, 0))
                                         
                                     self.renderContent(item.key, item.value)
                                         .background(Color.white)
                                         //.opacity(self.seeAllKey == item.key ? 0 : 1)
                                         .zIndex(self.seeAllKey == item.key ? 0 : 10)
+                                        .animation(.easeInOut)
                                         .rotation3DEffect(self.seeAllKey == item.key ? Angle(degrees: 180) : Angle.zero, axis: (0, 90, 0))
                                 }
-                                .listRowInsets(EdgeInsets(top: Sizing.small, leading: 0, bottom: Sizing.small, trailing: 0))
+                                .listRowInsets(.init(top: self.seeAllKey == item.key ? 0 : 2,
+                                                          leading: 0, bottom: self.seeAllKey == item.key ? 0 : 2,
+                                                          trailing: 0))
+                                .animation(.easeInOut)
                             }
                             //.clipped()
                         }
@@ -254,20 +260,22 @@ public struct ExploreView: JoliView {
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                 }
             
-            searchBar
-                .accentColor(.primary)
-                .padding(.top, geoProxy.safeAreaInsets.top)
-                //.anchorPreference(key: BoundsPreferenceKey.self, value: .bounds) { $0 }
-                .background(
-                    GeometryReader { geometry in
-                        //Rectangle()
-                        //.fill(Color.clear)
-                        return Color.white.opacity(0.86)
-                            .preference(key: BoundsPreferenceKey.self,
-                                        value: geometry.frame(in: .named("myZstack")))
-                    }
-                )
-            
+            VStack() {
+                searchBar
+                    .accentColor(.primary)
+                    .padding(.top, geoProxy.safeAreaInsets.top)
+                    //.anchorPreference(key: BoundsPreferenceKey.self, value: .bounds) { $0 }
+                    .background(
+                        GeometryReader { geometry in
+                            //Rectangle()
+                            //.fill(Color.clear)
+                            return Color.white.opacity(0.86)
+                                .preference(key: BoundsPreferenceKey.self,
+                                            value: geometry.frame(in: .named("myZstack")))
+                        }
+                    )
+                Spacer()
+            }
             
         }
         .coordinateSpace(name: "myZstack")
