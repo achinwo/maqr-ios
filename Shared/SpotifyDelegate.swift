@@ -133,8 +133,8 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
             .playlistModifyPrivate,
             .playlistModifyPublic,
             .playlistReadPrivate
-            
         ]
+        
         self.spotifySessionManager.alwaysShowAuthorizationDialog = true
         //self.spotifySessionManager.
         self.spotifySessionManager.initiateSession(with: requestedScopes, options: .default)

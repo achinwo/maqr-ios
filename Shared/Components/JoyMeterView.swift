@@ -103,36 +103,34 @@ public struct Hearts: CustomStringConvertible {
 
 struct JoyMeterView: View {
     
-    @Binding private var heartLevelBinding: HeartLevel?
-    @State var heartCount: Int = 0
+    @Binding private var heartLevelBinding: Hearts?
     @State var width: CGFloat = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
     @State var labelColor: Color = .gray
     @State var backgroundColor: Color = .clear
     
-    var heartLevel: HeartLevel {
-        return self.heartLevelBinding ?? .empty
+    var hearts: Hearts {
+        return self.heartLevelBinding ?? Hearts(score: HeartLevel.empty.rawValue)
     }
     
-    init(_ heartLevel: Binding<HeartLevel?>, heartCount: Int = 0, width: CGFloat? = nil, labelColor: Color? = nil, backgroundColor: Color?  = nil){
-        self._heartLevelBinding = heartLevel
-        self.heartCount = heartCount
+    init(_ hearts: Binding<Hearts?>, width: CGFloat? = nil, labelColor: Color? = nil, backgroundColor: Color?  = nil){
+        self._heartLevelBinding = hearts
         self.width = width ?? UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
         self.labelColor = labelColor ?? .gray
         self.backgroundColor = backgroundColor ?? self.backgroundColor
     }
     
-    init(_ heartLevel: Binding<HeartLevel?>, heartCount: Int = 0, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil, backgroundColor: Color? = nil){
-        self.init(heartLevel, heartCount: heartCount, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor, backgroundColor: backgroundColor)
+    init(_ heartLevel: Binding<Hearts?>, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil, backgroundColor: Color? = nil){
+        self.init(heartLevel, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor, backgroundColor: backgroundColor)
     }
     
     
     var body: some View {
         let getOffset = { () -> CGFloat in
-            guard heartLevel.rawValue > 0 else {
+            guard self.hearts.level.rawValue > 0 else {
                 return width * -1
             }
-            
-            let levelVal = heartLevel.rawValue / 100.0 * width
+
+            let levelVal = self.hearts.level.rawValue / 100.0 * width
             return (width - levelVal) * -1
         }
         
@@ -146,17 +144,17 @@ struct JoyMeterView: View {
                 .overlay(Rectangle().background(Color.primary).offset(x: offset, y: 0))
                 .background(self.backgroundColor)
                 .mask(Image(systemName: "heart.fill").font(.system(size: width, weight: .light)))
-                .onChange(of: self.heartLevel) { newLevel in
-                    guard self.heartLevel == .full else {
-                        return
-                    }
-                    
-                    self.heartCount += 1
-                }
+//                .onChange(of: self.heartLevel) { newLevel in
+//                    guard self.heartLevel == .full else {
+//                        return
+//                    }
+//
+//                    self.heartCount += 1
+//                }
             
-            if self.heartCount > 1 {
+            if self.hearts.count > 1 {
                 let offset = width / 1.16
-                Text("×\(self.heartCount)").foregroundColor(labelColor).font(.footnote)
+                Text("×\(self.hearts.count)").foregroundColor(labelColor).font(.footnote)
                     .offset(x: offset, y: width / 4)
                     .frame(minWidth: width)
                     //.colorMultiply(.primary)
@@ -171,7 +169,7 @@ struct JoyMeterView: View {
 struct JoyMeterView_Previews: PreviewProvider {
     
     static var previews: some View {
-        let level: Binding<HeartLevel?> = .constant(.full)
-        return JoyMeterView(level, heartCount: 5, textStyle: .largeTitle)
+        //let level: Binding<HeartLevel?> = .constant(.full)
+        return JoyMeterView(.constant(Hearts(score: 5)), textStyle: .largeTitle)
     }
 }

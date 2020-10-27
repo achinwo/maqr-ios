@@ -52,7 +52,7 @@ struct ListenTabbarView: JoliView {
     @State var volume: CGFloat = 30
     @Binding var playroom: Musicroom?
     
-    @State var heartLevel: HeartLevel? = .full
+    @State var hearts: Hearts? = Hearts(score: 575)
     @Namespace var localNamespace
     
     @State var isDragging = false
@@ -82,7 +82,7 @@ struct ListenTabbarView: JoliView {
     var body: some View {
         var label = ""
         
-        if !(self.isExpanded || users.isEmpty) {
+        if self.isExpanded {
             label = "\(label)\(users.count)" //•
         }
         
@@ -123,6 +123,7 @@ struct ListenTabbarView: JoliView {
                     }
                     .padding()
             }
+            .accentColor(.primary)
             .background(Colors.lightGray.opacity(0.3))
             .cornerRadius(Sizing.large)
             .animation(.spring())
@@ -173,8 +174,8 @@ struct ListenTabbarView: JoliView {
                 
                 if playroom != nil {
                     Spacer()
-                    JoyMeterView($heartLevel, textStyle: .title3)
-                        .background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
+                    JoyMeterView($hearts, textStyle: .title3)
+                        //.background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
                         .foregroundColor(.red)
                         .font(Font.title.weight(.ultraLight))
                         .scaleEffect(isDragging ? 1.5 : 1)
@@ -189,6 +190,7 @@ struct ListenTabbarView: JoliView {
                     //.alignmentGuide(.custom) { dims in dims[.custom] }
                 }
                 Spacer()
+                
                 if playroom == nil {
                     Image(systemName: "person")
                         .font(Font.title.weight(self.preview == .userAccount ? .light : .thin))
@@ -222,19 +224,27 @@ struct ListenTabbarView: JoliView {
                         }
                 }
                 
-                
                 Spacer()
+                Image(systemName: "arrow.uturn.backward.circle")
+                    .font(Font.title3.weight(self.isExpanded ? .light : .thin))
+                    .foregroundColor(Color.gray)
+                    .onTapGesture(){}
+                
             }
+            .accentColor(.primary)
             .padding()
-            .padding(.leading, .zero)
+            .padding(.trailing, .zero)
             .frame(minWidth: screenWidth / 2)
             .background(Color.gray.opacity(0.001))
+            .offset(x: Sizing.small)
             .onTapGesture(){
                 withAnimation(){
                     self.isExpanded.toggle()
                 }
             }
         }
+        .accentColor(.clear)
+        
         
         return VStack(alignment: .center, spacing: .zero){
             
