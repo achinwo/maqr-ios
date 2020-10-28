@@ -167,21 +167,6 @@ extension Socket: Publisher {
     
 }
 
-public extension Track {
-    
-    func toPlayState(_ progressMs: Int? = 0) -> PlayStateRecord {
-        return PlayState(accessToken: .empty, country: .empty, createdAt: self.createdAt,
-                         createdById: createdById, deletedAt: deletedAt, deletedById: self.deletedById,
-                         deviceUid: nil, displayName: .empty, email: .empty,
-                         expiresIn: 0, id: 0, playingState: .playing,
-                         playingStateChangedAt: nil, playlistUri: nil,
-                         product: .empty, progressMs: progressMs, refreshToken: .empty,
-                         roomId: nil, scope: .empty, tokenType: .empty, trackUri: uri,
-                         updatedAt: updatedAt, updatedById: updatedById, userName: .empty).builder()
-    }
-    
-}
-
 
 public extension JoliApi {
     

@@ -18,7 +18,7 @@ import Combine
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 
 #if DEBUG
-let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAam9saW1jLmFwcCIsImNyZWF0ZWRBdCI6IjIwMjAtMDgtMjJUMTM6NDQ6NTUuODY2WiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0.OhxodQ0Zl0E_k_Su8CDwSB2scqteqfmyfUSMHwlfN00"
+let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAam9saW1jLmFwcCIsImNyZWF0ZWRBdCI6IjIwMjAtMTAtMjhUMTU6MTQ6MzIuODgwWiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0.CdMbtPMDYMWvnkZyJthTA_-LbR8V1wIZu8GAgZaZ7zk"
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im9iaUBnbWFpbC5uZXQiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTIyVDEyOjE5OjUzLjgyMloiLCJleHBpcmVzSW4iOjE0NDAwMDB9.irNuefZoTZ38dnbwaGdqPF93NihZ22oWxZi8mDKYUIg"
 #else
 let TOKEN: String? = nil

@@ -75,13 +75,13 @@ struct TrackView: SwiftUI.View {
     }
     
     var explicitLabel: some SwiftUI.View {
-        return Text(track.explicit == nil || !track.explicit! ? "" : "E")
+        return Text(track.explicit  ? "" : "E")
         .padding(2)
         .background(Color.red)
         .font(.footnote)
         .foregroundColor(Color.white)
         .cornerRadius(3)
-        .opacity(track.explicit == nil || !track.explicit! ? 0.0 : 100)
+        .opacity(!track.explicit ? 0.0 : 100)
         //.overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
     }
     
