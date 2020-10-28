@@ -104,7 +104,7 @@ struct ListenView: JoliView {
                     roomTracks.append(track)
                     tracksByMusicrooms[track.roomId] = roomTracks
                     
-                    guard let votes = track.votes else {
+                    guard let votes = track.votes, track.roomId == playroom?.id else {
                         continue
                     }
                     
@@ -361,6 +361,16 @@ struct ListenView: JoliView {
                             .padding(.top, geoProxy.safeAreaInsets.top + 100)
                             .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
                             .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                            .onAppear(){
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                    guard let currentTrack = self.strip.playing else {
+                                        return
+                                    }
+                                    withAnimation(){
+                                        scrollProxy.scrollTo(currentTrack.uri, anchor: .center)
+                                    }
+                                }
+                            }
                     }
                 }
                 .simultaneousGesture(dragGesture)
@@ -382,7 +392,7 @@ struct ListenView: JoliView {
                 self.scrollProxy = scrollProxy //
                 self.refreshContent()
             }
-            
+             
         }
         .frame(maxWidth: screenWidth)
     }
@@ -549,9 +559,6 @@ struct ListenView: JoliView {
                 Spacer()
                 
                 
-                
-                
-                
                 Divider()
                 ListenTabbarView(users: membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
                                  playroom: self.$playroom)
@@ -567,6 +574,8 @@ struct ListenView: JoliView {
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
             .onChange(of: votes) { votes in
+                
+                print("[SortedItems] votes changed: \(votes.count)")
                 
                 guard let tracks = tracks as? [QueuedTrack] else {
                     self.strip = (nil, nil, nil)
