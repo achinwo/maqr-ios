@@ -32,6 +32,17 @@ public extension UIImageColors {
     
 }
 
+extension QueuedTrack {
+    
+    public var colors: UIImageColors? {
+        guard let bg = track?.colorBackground, let primary = track?.colorPrimary, let sec = track?.colorSecondary, let detail = track?.colorDetail else {
+            return nil
+        }
+        return .init(background: UIColor(hexString: bg), primary: UIColor(hexString: primary), secondary: UIColor(hexString: sec), detail: UIColor(hexString: detail))
+    }
+    
+}
+
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -62,7 +73,15 @@ extension Color {
 public struct TrackView2: JoliView {
     
     @Binding var track: Playable
-    @State var colors: UIImageColors? = nil
+    
+    var colors: UIImageColors? {
+        guard let track = track as? QueuedTrack else {
+            return nil
+        }
+        
+        return track.colors
+    }
+    
     var useDynamicColors = false
     @GestureState var isDetectingLongPress = false
     @State var completedLongPress = false
@@ -103,7 +122,6 @@ public struct TrackView2: JoliView {
         self.onHeartTapped = onHeartTapped
         self._hearts = hearts
         self._track = track
-        self.colors = colors
         self.useDynamicColors = useDynamicColors
     }
     
@@ -200,17 +218,32 @@ public struct TrackView2: JoliView {
                             .font(Font.headline.weight(.light))
                             .lineLimit(2)
                         
-                        HStack {
-                            
+                        HStack(spacing: .zero) {
+                            if track.explicit {
+                                Text(track.explicit  ? "E" : "")
+                                    .font(Font.footnote)
+                                    .padding(.horizontal, 2)
+                                    .background(Color.gray.opacity(0.85))
+                                    .font(.footnote)
+                                    .foregroundColor(Color.white)
+                                    .cornerRadius(3)
+                                    .padding(.trailing, Sizing.small / 3)
+                            }
+                                //.overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
                             Text(track.artistName)
                                 .foregroundColor(colors?.secondaryColor ?? Color.primary)
                                 .animation(.easeInOut)
                                 .font(Font.subheadline.weight(.semibold))
-                            Text("•").foregroundColor(colors?.detailColor ?? Color.primary)
-                            Text("2003")
-                                .foregroundColor(colors?.detailColor ?? Color.primary)
-                                .animation(.easeInOut)
-                                .font(Font.subheadline.weight(.light))
+                            
+                            if let release = track.releasedAt {
+                                Text("•").foregroundColor(colors?.detailColor ?? Color.primary).padding(.horizontal, Sizing.small / 3)
+                                Text("\(Calendar.current.component(.year, from: release).description)")
+                                    .lineLimit(1)
+                                    .foregroundColor(colors?.detailColor ?? Color.primary)
+                                    .animation(.easeInOut)
+                                    .font(Font.subheadline.weight(.light))
+                            }
+                            
                             Spacer()
                         }
                         
@@ -223,7 +256,7 @@ public struct TrackView2: JoliView {
                         JoyMeterView(self.$hearts, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary, backgroundColor: Color.red.opacity(0.5))
                             .padding()
                             .padding(.trailing, Sizing.large)
-                            //.foregroundColor(self.requestingVoteTrackId == nil ? colors?.secondaryColor ?? Color.primary : Color.gray)
+                            .foregroundColor(colors?.secondaryColor ?? Color.primary)
                             .scaleEffect(x: self.requestingVoteTrackId == track.id ? 1.32 : 1, y: self.requestingVoteTrackId == track.id ? 1.32 : 1, anchor: .center)
                             .onTapGesture {
                                 self.onHeartTapped?()
@@ -244,20 +277,24 @@ public struct TrackView2: JoliView {
                         let containerWidth = CGFloat(proxy.size.width)
                         
                         ForEach(Array(self.playStatebyUsername), id: \.key) { item in
-                            let progress = CGFloat(item.value.progressMs ?? 1)
-                            let trackDuration = CGFloat(item.value.durationMs ?? 40000)
                             
-                            let offset = containerWidth * (max(progress, 1) / trackDuration)
-                            
-                            HStack(alignment: .bottom){
-                                RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
-                                    .fill(item.value.color.opacity(0.48))
-                                    .frame(width: 3, height: proxy.size.height)
-                                    .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
-                                    .id(item.key)
-                                Spacer()
+                            if let progressMs = item.value.progressMs, let progress = CGFloat(progressMs), let durMs = item.value.durationMs, let trackDuration = CGFloat(durMs) {
+                                
+                                let offset = containerWidth * (max(progress, 1) / trackDuration)
+                                
+                                HStack(alignment: .bottom){
+                                    RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
+                                        .fill(item.value.color.opacity(0.48))
+                                        .frame(width: 3, height: proxy.size.height)
+                                        .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
+                                        .id(item.key)
+                                    Spacer()
+                                }
+                                .frame(width: proxy.size.width, height: proxy.size.height)
+                            } else {
+                                EmptyView()
                             }
-                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            
                         }
                     }
                     .frame(width: proxy.size.width, height: proxy.size.height)
@@ -272,7 +309,7 @@ public struct TrackView2: JoliView {
         .onTapGesture() { cb(false) }
         .scaleEffect(x: self.requestingPlay ? 0.98 : 1, y: self.requestingPlay ? 0.98 : 1, anchor: .center)
         .animation(.interactiveSpring())
-        //.background(colors?.backgroundColor ?? Color.clear)
+        .background(colors?.backgroundColor ?? Color.clear)
     }
     
     
