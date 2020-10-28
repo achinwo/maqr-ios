@@ -353,7 +353,18 @@ struct ListenView: JoliView {
                         .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     } else {
                         TrackList(tracks: self.$tracks, votes: self.$votes, preview: $preview, playroom: self.$playroom) { track in
-                                self.voteTrack(track)
+                            
+                            guard self.appCoordinator.voteRequestedSubject.value == nil else {
+                                return
+                            }
+                            
+                                self.appCoordinator.voteTrack(track)
+                                    .then() { vote in
+                                        self.votes.append(vote)
+                                    }
+                                    .always {
+                                        print("[Vote Track] completed - \(self.playroom)")
+                                    }
                             }
                             .background(Color.white)
                             //.padding(.top, geoProxy.safeAreaInsets.top)
@@ -395,28 +406,6 @@ struct ListenView: JoliView {
              
         }
         .frame(maxWidth: screenWidth)
-    }
-    
-    
-    @discardableResult
-    func voteTrack(_ track: QueuedTrack) -> Promise<QueuedTrackVote> {
-        let builder = Builder<QueuedTrackVote>()
-        return builder.update(.queuedTrackId, track.id as AnyObject)
-            .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then() { vote -> QueuedTrackVote in
-                print("[CreatedVote] \(vote)")
-                
-//                guard let room = self.playroom else {
-//                    return vote
-//                }
-                
-                self.votes.append(vote)
-                
-                return vote
-            }
-            .always {
-                print("[Vote Track] completed - \(self.playroom)")
-            }
     }
     
     @State var strip: (playing: Playable?, next: Playable?, runnerup: Playable?) = (nil, nil, nil)
@@ -463,27 +452,6 @@ struct ListenView: JoliView {
                 Text("by Obialo")
                     .font(Font.footnote.weight(.thin))
                     .foregroundColor(Color.secondary)
-            }
-            .onTapGesture {
-                self.preview = .view() {
-                    VStack(){
-                        Spacer()
-                        Button(){
-                            withAnimation() {
-                                self.playroom = nil
-                                self.preview = nil
-                            }
-                        } label: {
-                            Text("Exit \"\(playroom.name)\"?")
-                                .font(.title2)
-                        }
-                        .cornerRadius(12)
-                        Spacer()
-                    }
-                    .background(Color.clear)
-                    .padding()
-                    .eraseToAnyView()
-                }
             }
         }
         
@@ -550,6 +518,7 @@ struct ListenView: JoliView {
             .padding(.horizontal, Sizing.small * 0.6)
             .padding([.horizontal, .bottom], Sizing.small * 0.5)
             .matchedGeometryEffect(id: "listen-header", in: animation)
+            .animation(.easeInOut)
         }
         
         return ZStack(){

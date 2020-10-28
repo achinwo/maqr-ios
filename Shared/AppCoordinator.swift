@@ -36,6 +36,9 @@ public final class AppCoordinator: ObservableObject {
     public let playingSubject = CurrentValueSubject<(Playable, PlayState)?, Never>(nil)
     public let volumeSubject = PassthroughSubject<Int, Never>()
     
+    public let playRequestedSubject = CurrentValueSubject<Bool, Never>(false)
+    public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
+    
     private var volumeCancel: AnyCancellable? = nil
     
     public var initialActiveDeviceId: String? = nil
@@ -135,6 +138,19 @@ public final class AppCoordinator: ObservableObject {
     
     public func dismissKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    
+    @discardableResult
+    public func voteTrack(_ track: QueuedTrack) -> Promise<QueuedTrackVote> {
+        let builder = Builder<QueuedTrackVote>()
+        self.voteRequestedSubject.send(track.id)
+        
+        return builder.update(.queuedTrackId, track.id as AnyObject)
+            .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .always {
+                self.voteRequestedSubject.send(nil)
+            }
+            
     }
     
     public func play(_ track: Playable, positionMs: Int? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
