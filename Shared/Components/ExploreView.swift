@@ -559,6 +559,7 @@ public struct SpotifyItemView<Item>: View {
                     .foregroundColor(.white)
                     .background(Color.gray)
                     .frame(width: 64, height: 64, alignment: .bottomLeading)
+                    .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             }
             .frame(width: 64, height: 64, alignment: .bottomLeading)
             .clipped()

@@ -79,6 +79,8 @@ struct ListenTabbarView: JoliView {
             )
     }
     
+    @State var requestingVote: Int? = nil
+    
     var body: some View {
         var label = ""
         
@@ -178,14 +180,18 @@ struct ListenTabbarView: JoliView {
                         //.background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
                         .foregroundColor(.red)
                         .font(Font.title.weight(.ultraLight))
-                        .scaleEffect(isDragging ? 1.5 : 1)
+                        .onReceive(appCoordinator.voteRequestedSubject) { requesting in
+                            self.requestingVote = requesting
+                        }
+                        .scaleEffect(self.requestingVote == nil ? 1 : 0.7)
+                        //.scaleEffect(isDragging ? 1.5 : 1)
                         .offset(offset)
                         .onTapGesture() {
                             withImpact(.soft, animated: .spring()) {
                                 self.isExpanded.toggle()
                             }
                         }
-                        .gesture(combined)
+                        //.gesture(combined)
                     //.offset(x: !(self.isExpanded || users.isEmpty) ? Sizing.small / 2 * -1 : 0, y: 0)
                     //.alignmentGuide(.custom) { dims in dims[.custom] }
                 }

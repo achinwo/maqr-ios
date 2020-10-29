@@ -75,7 +75,7 @@ public struct TrackView2: JoliView {
     @Binding var track: Playable
     
     var colors: UIImageColors? {
-        guard let track = track as? QueuedTrack else {
+        guard let track = track as? QueuedTrack, useDynamicColors else {
             return nil
         }
         
@@ -183,9 +183,6 @@ public struct TrackView2: JoliView {
                 }
         }
         
-        
-        let heartCount = 16
-        
         return HStack(alignment: .center) {
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
@@ -243,6 +240,14 @@ public struct TrackView2: JoliView {
                                     .animation(.easeInOut)
                                     .font(Font.subheadline.weight(.light))
                             }
+                            
+//                            if let queued = (track as? QueuedTrack)?.track, let releaseDatePrecision = queued.releaseDatePrecision {
+//                                Text("(\(releaseDatePrecision))")
+//                                    .lineLimit(1)
+//                                    .foregroundColor(colors?.detailColor ?? Color.primary)
+//                                    .animation(.easeInOut)
+//                                    .font(Font.subheadline.weight(.light))
+//                            }
                             
                             Spacer()
                         }
@@ -418,7 +423,7 @@ public struct TrackList: JoliView {
                     
                     let track = item.element
                     
-                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(item.offset), useDynamicColors: true) {
+                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(item.offset), useDynamicColors: false) {
                         print("[Heart Tapped] \(track.title)")
                         
                         guard let queued = track as? QueuedTrack else {

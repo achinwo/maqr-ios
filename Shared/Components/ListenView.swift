@@ -283,7 +283,6 @@ struct ListenView: JoliView {
                                                     self.votes = []
                                                     self.playroom = room
                                                 }
-                                                .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
                                                 //.background(Color.yellow)
                                                 .id(room.id)
                                         }
