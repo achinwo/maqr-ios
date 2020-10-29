@@ -342,7 +342,7 @@ public extension PlayState {
     
     var color: Color {
         let colors = Self.allColors
-        let color = colors[(userName.count + userName.lowercased().count(of: "x")) % colors.count ]
+        let color = colors[(userName.count + userName.lowercased().count(of: "g")) % colors.count ]
         return color
     }
 }
