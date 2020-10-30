@@ -123,6 +123,8 @@ struct JoliApp: AppClip {
         self.websocket.onConnect = self.onConnectionStateChanged
         
         websocket.connect()
+        
+        print("[AppView.init] active token: \(activeSessionId)")
     }
     
     struct SerializedAuths: Codable {
@@ -182,8 +184,10 @@ struct JoliApp: AppClip {
                 self.activeDeviceId = device.id
             }
             .onReceive(coordinator.$activeSessionToken) { token in
+                
+                print("[AppView] received new session token: \(token)")
+                
                 guard let token = token else {
-                    self.activeSessionId = .empty
                     return
                 }
                 
@@ -198,7 +202,7 @@ struct JoliApp: AppClip {
                 self.auth = auth
             }
             .onAppear() {
-                logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
+                logger.debug("[Joli] setting coordinator animation namespace to \(namespace) - activeSessionId: \(activeSessionId)")
                 
                 self.coordinator.namespace = namespace
                 self.coordinator.api = api

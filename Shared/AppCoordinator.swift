@@ -48,6 +48,9 @@ public final class AppCoordinator: ObservableObject {
     @Published public var activeSessionToken: String? = nil {
         didSet {
             self.authSubject.send(activeAuth)
+            self.activeDeviceSubject.send(nil)
+            self.devices = []
+            self.playingSubject.send(nil)
         }
     }
     

@@ -115,7 +115,15 @@ public struct DevicesView: JoliView {
                 
                 let auth = auths[idx]
                 
+                guard appCoordinator.activeSessionToken != auth.session.token else {
+                    return
+                }
+                
                 appCoordinator.activeSessionToken = auth.session.token
+                
+                DispatchQueue.main.async {
+                    appCoordinator.refreshDevices()
+                }
             }
             .onReceive(appCoordinator.authsSubject) { auths in
                 self.auths = auths
@@ -126,7 +134,10 @@ public struct DevicesView: JoliView {
                 }
             }
             .onReceive(appCoordinator.$activeSessionToken) { token in
-                self.selectedAuthTokenIdx = auths.firstIndex() { $0.session.token == token } ?? 0
+                
+                guard let newIdx = appCoordinator.authsSubject.value.firstIndex(where: { $0.session.token == token }) else { return }
+                
+                self.selectedAuthTokenIdx =  newIdx
             }
             .padding()
             //Divider()//.padding()
