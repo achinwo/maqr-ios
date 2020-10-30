@@ -265,9 +265,10 @@ struct ListenView: JoliView {
                                     Spacer()
                                 }
                                 
+                                let space = Sizing.small / 2
                                 let columns = [
-                                    GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium * 2),
-                                    GridItem(.fixed(screenWidth / 2 - (Sizing.medium * 2)), spacing: Sizing.medium * 2)
+                                    GridItem(.fixed(screenWidth / 2 - space), spacing: space),
+                                    GridItem(.fixed(screenWidth / 2 - space), spacing: space)
                                 ]
                                 
                                 Section(header: header) {
@@ -312,7 +313,24 @@ struct ListenView: JoliView {
                             }
                             
                             Section(header: header) {
-                                Text("Add stuff")
+                                HStack(alignment: .top){
+                                    VStack(alignment: .leading) {
+                                        Text("Autoplay")
+                                            .font(.headline)
+                                            .foregroundColor(.primary)
+                                        
+                                        Text("Begin playback immediately when joining a playroom")
+                                            .font(.footnote)
+                                            .foregroundColor(Color.secondary)
+                                    }
+                                    .frame(maxWidth: screenWidth / 2)
+                                    
+                                    Spacer()
+                                    
+                                    Toggle("Autoplay", isOn: .constant(false))
+                                        .labelsHidden()
+                                        .padding(.trailing, Sizing.xLarge)
+                                }
                             }
                             .id("settings")
                             
@@ -361,8 +379,17 @@ struct ListenView: JoliView {
                                     .then() { vote in
                                         self.votes.append(vote)
                                     }
-                                    .always {
-                                        print("[Vote Track] completed - \(self.playroom)")
+                                    .catch() { voteError in
+                                        
+                                        guard let error = voteError as? AppCoordinator.ActionError else {
+                                            print("[ListenView] unrecognised error: \(voteError)")
+                                            return
+                                        }
+                                        
+                                        switch error {
+                                            case .insufficientHeartPoints:
+                                                self.appCoordinator.insufficientPointsAttempt += 1
+                                        }
                                     }
                             }
                             .background(Color.white)
@@ -543,8 +570,6 @@ struct ListenView: JoliView {
             }
             .onChange(of: votes) { votes in
                 
-                print("[SortedItems] votes changed: \(votes.count)")
-                
                 guard let tracks = tracks as? [QueuedTrack] else {
                     self.strip = (nil, nil, nil)
                     return
@@ -564,7 +589,6 @@ struct ListenView: JoliView {
                     runnerup: tracks.first() { $0.id == thirdKey}
                 )
                 
-                print("[SortedItems] first:\(items.first?.key), second: \(secondKey), third: \(thirdKey)")
             }
             .onChange(of: playroom) { room in
                 

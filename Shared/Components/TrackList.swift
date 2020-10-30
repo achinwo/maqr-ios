@@ -332,16 +332,13 @@ public extension PlayState {
     
     static var allColors: [Color] {
         return [
-            .black,
-            .white,
-            .gray,
             .red,
-            .green,
-            .blue,
-            .orange,
             .yellow,
+            .blue,
             .pink,
-            .purple
+            .green,
+            .purple,
+            .orange,
         ]
     }
     

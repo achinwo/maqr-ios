@@ -27,6 +27,7 @@ public final class AppCoordinator: ObservableObject {
     @Published public var isSharePresented = false
     @Published public var namespace: Namespace.ID? = nil
     @Published public var keyboardHeight: CGFloat = 0
+    @Published public var insufficientPointsAttempt = 0
     
     @Published public var playStatePublisher: PlayState.Publisher
     
@@ -38,6 +39,8 @@ public final class AppCoordinator: ObservableObject {
     
     public let playRequestedSubject = CurrentValueSubject<Bool, Never>(false)
     public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
+    public let authSubject = CurrentValueSubject<Auth?, Never>(nil)
+    public let userHeartsSubject = CurrentValueSubject<Hearts?, Never>(nil)
     
     private var volumeCancel: AnyCancellable? = nil
     
@@ -140,13 +143,34 @@ public final class AppCoordinator: ObservableObject {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
+    public enum ActionError: Error {
+        case insufficientHeartPoints
+    }
+    
     @discardableResult
     public func voteTrack(_ track: QueuedTrack) -> Promise<QueuedTrackVote> {
+        
+        guard let hearts = self.userHeartsSubject.value,
+              let newHearts = hearts.subtracting(HeartLevel.quarter),
+              var user = self.authSubject.value?.user else {
+            
+            return Promise.init(ActionError.insufficientHeartPoints)
+        }
+        
         let builder = Builder<QueuedTrackVote>()
         self.voteRequestedSubject.send(track.id)
         
         return builder.update(.queuedTrackId, track.id as AnyObject)
             .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then() { vote -> Promise<QueuedTrackVote> in
+                user.heartPoints = Int(newHearts.score)
+                
+                return user.save(baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession)
+                    .then() { user -> QueuedTrackVote in
+                        self.userHeartsSubject.send(newHearts)
+                        return vote
+                    }
+            }
             .always {
                 self.voteRequestedSubject.send(nil)
             }

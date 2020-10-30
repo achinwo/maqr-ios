@@ -130,7 +130,6 @@ public struct DevicesView: JoliView {
             
         }
         .onChange(of: self.volume) { volume in
-            print("[Devices] updated volume: \(volume)")
             
             guard let activeDevice = activeDevice, CGFloat(activeDevice.volumePercent) != volume else {
                 return
@@ -143,7 +142,7 @@ public struct DevicesView: JoliView {
         }
         .onReceive(appCoordinator.activeDeviceSubject){ activeDevice in
             
-            logger.debug("[DevicesView] active device updated: \(activeDevice)")
+            logger.debug("[DevicesView] active device updated: \(String(describing: activeDevice))")
             //let prevActive = self.activeDevice
             self.activeDevice = activeDevice
             

@@ -52,7 +52,7 @@ struct ListenTabbarView: JoliView {
     @State var volume: CGFloat = 30
     @Binding var playroom: Musicroom?
     
-    @State var hearts: Hearts? = Hearts(score: 575)
+    @State var hearts: Hearts? = nil
     @Namespace var localNamespace
     
     @State var isDragging = false
@@ -178,7 +178,7 @@ struct ListenTabbarView: JoliView {
                     Spacer()
                     JoyMeterView($hearts, textStyle: .title3)
                         //.background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
-                        .foregroundColor(.red)
+                        .foregroundColor(self.hearts == nil || self.hearts!.score <= HeartLevel.empty.rawValue ? Color.gray : Color.red)
                         .font(Font.title.weight(.ultraLight))
                         .onReceive(appCoordinator.voteRequestedSubject) { requesting in
                             self.requestingVote = requesting
@@ -186,6 +186,7 @@ struct ListenTabbarView: JoliView {
                         .scaleEffect(self.requestingVote == nil ? 1 : 0.7)
                         //.scaleEffect(isDragging ? 1.5 : 1)
                         .offset(offset)
+                        .modifier(ShakeEffect(shakes: insufficientPointsAttempt * 2))
                         .onTapGesture() {
                             withImpact(.soft, animated: .spring()) {
                                 self.isExpanded.toggle()
@@ -274,6 +275,13 @@ struct ListenTabbarView: JoliView {
             }
             mainView
         }
+        .onReceive(appCoordinator.userHeartsSubject) { hearts in
+            self.hearts = hearts
+            print("[ListenTabbarView] hearts: \(String(describing: hearts))")
+        }
+        .onReceive(self.appCoordinator.$insufficientPointsAttempt) { insufficientPointsAttempt in
+            self.insufficientPointsAttempt = insufficientPointsAttempt
+        }
         .onChange(of: self.isSearching) { value in
             if self.searchbarActive && !value {
                 self.searchbarActive = false
@@ -286,5 +294,8 @@ struct ListenTabbarView: JoliView {
         .animation(.spring())
         
     }
-     @State var devicesBarActive = false
+    
+    
+    @State var insufficientPointsAttempt = 0
+    @State var devicesBarActive = false
 }

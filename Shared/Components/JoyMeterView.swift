@@ -97,7 +97,7 @@ public struct Hearts: CustomStringConvertible {
     }
     
     public func subtracting(_ level: HeartLevel) -> Hearts? {
-        guard score > level.rawValue else {
+        guard score >= level.rawValue else {
             return nil
         }
         
@@ -126,7 +126,6 @@ struct JoyMeterView: View {
     init(_ heartLevel: Binding<Hearts?>, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil, backgroundColor: Color? = nil){
         self.init(heartLevel, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor, backgroundColor: backgroundColor)
     }
-    
     
     var body: some View {
         let getOffset = { () -> CGFloat in

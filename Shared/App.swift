@@ -21,7 +21,7 @@ let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAam9saW1jLmFwcCIsImNyZWF0ZWRBdCI6IjIwMjAtMTAtMjhUMTU6MTQ6MzIuODgwWiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0.CdMbtPMDYMWvnkZyJthTA_-LbR8V1wIZu8GAgZaZ7zk"
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
 #else
-let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
+let TOKEN: String? = nil
 #endif
 
 
@@ -30,7 +30,23 @@ struct JoliApp: AppClip {
     
     @Namespace var namespace
     
-    @State var currentUser: User? = SEED_DATA.users.first { $0.isOwnDevice }
+    @State var auth: Auth? = nil {
+        didSet {
+            self.coordinator.authSubject.send(auth)
+            self.currentUser = auth?.user
+            
+            guard let user = auth?.user else {
+                self.coordinator.userHeartsSubject.send(nil)
+                return
+            }
+            
+            let points = CGFloat(user.heartPoints ?? 350)
+            self.coordinator.userHeartsSubject.send(Hearts(score: points <= HeartLevel.empty.rawValue ? HeartLevel.half.rawValue : points))
+        }
+    }
+    
+    @State var currentUser: User? = nil
+    
     @State var currentPlayroom: Musicroom? = nil//SEED_DATA.musicrooms.first
     
     let coordinator: AppCoordinator
@@ -75,11 +91,13 @@ struct JoliApp: AppClip {
     
     let cb: Publishers.Smooth<PlayState.Publisher, String>.StateGetter = { (state, now) in
         
+        let uid = state.trackUri == nil ? nil : state.trackUri! + state.id.description
+        
         guard let duration = state.durationMs, state.playingState == .playing else {
-            return (id: state.trackUri, value: state.progressMs, duration: nil, idleTimeout: 5)
+            return (id: uid, value: state.progressMs, duration: nil, idleTimeout: 4)
         }
         
-        return (id: state.trackUri, value: state.progressMs, duration: TimeInterval(duration), idleTimeout: 5)
+        return (id: uid, value: state.progressMs, duration: TimeInterval(duration), idleTimeout: 4)
     }
     
     func onConnectionStateChanged(_ socket: Socket, _ connected: Bool){
@@ -132,8 +150,7 @@ struct JoliApp: AppClip {
                 appState.api.authenticate(token: token)
                     .then() { auth in
                         print("[LoggedIn] \(String(describing: auth?.user))")
-                        self.currentUser = auth?.user
-                        
+                        self.auth = auth
                         self.coordinator.refreshDevices()
                     }
             }
