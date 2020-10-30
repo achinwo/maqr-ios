@@ -268,9 +268,9 @@ struct ListenTabbarView: JoliView {
                     DevicesView() { _ in
                         self.devicesBarActive.toggle()
                     }
-                    .background(Color.clear)
                     Divider()
                 }
+                .background(Color.clear)
                 .matchedGeometryEffect(id: "listenbar-addon", in: localNamespace)
             }
             mainView

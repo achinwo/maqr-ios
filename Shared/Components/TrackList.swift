@@ -337,8 +337,8 @@ public extension PlayState {
             .blue,
             .pink,
             .green,
-            .purple,
             .orange,
+            .purple,
         ]
     }
     

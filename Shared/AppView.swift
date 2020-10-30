@@ -83,6 +83,17 @@ public struct AppView2: JoliView {
                                 }
                                 .background(Color.white)
                                 .id(Self.viewIds.explore)
+                                .simultaneousGesture(
+                                    TapGesture()
+                                        .onEnded() { value in
+                                            
+                                            guard appCoordinator.keyboardHeight > 0 else {
+                                                return
+                                            }
+                                            
+                                            appCoordinator.dismissKeyboard()
+                                        }
+                                )
                             
                             ListenView(geoProxy: geoProxy, tabbarExpaned: self.$isExpanded,
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
@@ -171,17 +182,6 @@ public struct AppView2: JoliView {
                                 }
                                 
                                 guard appCoordinator.keyboardHeight > 0 && self.offset.height < appCoordinator.keyboardHeight else {
-                                    return
-                                }
-                                
-                                appCoordinator.dismissKeyboard()
-                            }
-                    )
-                    .simultaneousGesture(
-                        TapGesture()
-                            .onEnded() { value in
-                                
-                                guard appCoordinator.keyboardHeight > 0 else {
                                     return
                                 }
                                 

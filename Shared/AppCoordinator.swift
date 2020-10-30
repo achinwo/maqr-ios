@@ -39,14 +39,31 @@ public final class AppCoordinator: ObservableObject {
     
     public let playRequestedSubject = CurrentValueSubject<Bool, Never>(false)
     public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
-    public let authSubject = CurrentValueSubject<Auth?, Never>(nil)
+    
+    public let authSubject = PassthroughSubject<Auth?, Never>()
+    
     public let userHeartsSubject = CurrentValueSubject<Hearts?, Never>(nil)
+    public let authsSubject = CurrentValueSubject<[Auth], Never>([])
+    
+    @Published public var activeSessionToken: String? = nil {
+        didSet {
+            self.authSubject.send(activeAuth)
+        }
+    }
     
     private var volumeCancel: AnyCancellable? = nil
     
     public var initialActiveDeviceId: String? = nil
     
     private var allSearchengines = [spotifyEngine]
+    
+    public enum ActionError: Error {
+        case insufficientHeartPoints
+    }
+    
+    var activeAuth: Auth? {
+        return self.authsSubject.value.first() { $0.session.token == activeSessionToken }
+    }
     
     public func refreshDevices(){
         print("[AppCoordinator#devicesPublisher] fetching devices")
@@ -143,16 +160,12 @@ public final class AppCoordinator: ObservableObject {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
-    public enum ActionError: Error {
-        case insufficientHeartPoints
-    }
-    
     @discardableResult
     public func voteTrack(_ track: QueuedTrack) -> Promise<QueuedTrackVote> {
         
         guard let hearts = self.userHeartsSubject.value,
               let newHearts = hearts.subtracting(HeartLevel.quarter),
-              var user = self.authSubject.value?.user else {
+              var user = self.activeAuth?.user else {
             
             return Promise.init(ActionError.insufficientHeartPoints)
         }

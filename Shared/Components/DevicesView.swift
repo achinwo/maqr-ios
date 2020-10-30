@@ -46,8 +46,41 @@ public struct DevicesView: JoliView {
         ]
     }
     
+    @State var selectedAuthTokenIdx: Int = .zero
+    
+    @State var selectedAuthToken: String? = nil
+    @State var auths: [Auth] = []
+    
     public var body: some View {
+//        Picker(selection: self.$appState.selectedTabIdx, label: Text("Room")){
+//            ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
+//                Text("\(roomTab.emoji != nil ? "\(roomTab.emoji!) " : "")\(roomTab.title)")
+//                    .foregroundColor(.green)
+//                    .tag(roomTab.rawValue)
+//            }
+//        }
+
         let view = VStack(){
+            
+            if self.auths.count > 1 {
+                
+                Picker(selection: self.$selectedAuthTokenIdx, label: Text("Users")) {
+                    ForEach(Array(self.auths.enumerated()), id: \.offset) { item in
+                        let auth = item.element
+                        Text("\(auth.user.ranking.emoji) \(auth.user.name)")
+                            .tag(item.offset)
+//                            .onTapGesture() {
+//                                self.selectedAuthToken = auth.session.token
+//                            }
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
+                .id(self.selectedAuthToken)
+                
+                Divider()
+            }
+            
             HStack(){
                 Image(systemName: volumeImageName)
                     .frame(width: Sizing.large, height: Sizing.large)
@@ -74,7 +107,26 @@ public struct DevicesView: JoliView {
                 }
                 .offset(x: Sizing.small, y: 0)
                     
-                    
+            }
+            .onChange(of: self.selectedAuthTokenIdx) { idx in
+                print("[DevicesView] token changed: \(idx)")
+                
+                guard idx < self.auths.count else { return }
+                
+                let auth = auths[idx]
+                
+                appCoordinator.activeSessionToken = auth.session.token
+            }
+            .onReceive(appCoordinator.authsSubject) { auths in
+                self.auths = auths
+                
+                guard self.selectedAuthTokenIdx < self.auths.count else {
+                    self.selectedAuthTokenIdx = 0
+                    return
+                }
+            }
+            .onReceive(appCoordinator.$activeSessionToken) { token in
+                self.selectedAuthTokenIdx = auths.firstIndex() { $0.session.token == token } ?? 0
             }
             .padding()
             //Divider()//.padding()

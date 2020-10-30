@@ -549,6 +549,17 @@ struct ListenView: JoliView {
         
         return ZStack(){
             self.contentView
+                .simultaneousGesture(
+                    TapGesture()
+                        .onEnded() { value in
+                            
+                            guard appCoordinator.keyboardHeight > 0 else {
+                                return
+                            }
+                            
+                            appCoordinator.dismissKeyboard()
+                        }
+                )
             
             VStack(spacing: .zero) {
                 Spacer()

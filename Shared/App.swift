@@ -18,22 +18,31 @@ import Combine
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 
 #if DEBUG
-let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAam9saW1jLmFwcCIsImNyZWF0ZWRBdCI6IjIwMjAtMTAtMjhUMTU6MTQ6MzIuODgwWiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0.CdMbtPMDYMWvnkZyJthTA_-LbR8V1wIZu8GAgZaZ7zk"
+//let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAam9saW1jLmFwcCIsImNyZWF0ZWRBdCI6IjIwMjAtMTAtMjhUMTU6MTQ6MzIuODgwWiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0.CdMbtPMDYMWvnkZyJthTA_-LbR8V1wIZu8GAgZaZ7zk"
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
-#else
 let TOKEN: String? = nil
+#else
+let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
 #endif
 
 
 @main
 struct JoliApp: AppClip {
     
+    @AppStorage("spotify.devices.active") var activeDeviceId: String = .empty
+    
     @Namespace var namespace
     
     @State var auth: Auth? = nil {
         didSet {
-            self.coordinator.authSubject.send(auth)
+            
+            self.devices = []
+            self.currentPlayroom = nil
+            self.activeDeviceId = .empty
+            
+            self.coordinator.activeSessionToken = auth?.session.token
             self.currentUser = auth?.user
+            self.activeSessionId = auth?.session.token ?? .empty
             
             guard let user = auth?.user else {
                 self.coordinator.userHeartsSubject.send(nil)
@@ -42,6 +51,32 @@ struct JoliApp: AppClip {
             
             let points = CGFloat(user.heartPoints ?? 350)
             self.coordinator.userHeartsSubject.send(Hearts(score: points <= HeartLevel.empty.rawValue ? HeartLevel.half.rawValue : points))
+        }
+    }
+    
+    @AppStorage("active-session-id") var activeSessionId: String = .empty
+    @AppStorage("auths-data") var authsData: Data = Data() {
+        didSet {
+            
+            guard let authsSerialized = try? jsonDecoder.decode(SerializedAuths.self, from: authsData), !self.authsData.isEmpty else {
+                return
+            }
+            
+            let auths = authsSerialized.auths
+            self.auths = auths
+            
+            guard !activeSessionId.isEmpty else {
+                self.auth = nil
+                return
+            }
+            
+            self.auth = auths.first() { $0.session.token == activeSessionId }
+        }
+    }
+    
+    @State var auths: [Auth] = [] {
+        didSet {
+            self.coordinator.authsSubject.send(auths)
         }
     }
     
@@ -59,8 +94,6 @@ struct JoliApp: AppClip {
     var cancellables: Set<AnyCancellable> = []
     var playbackRefreshRate: TimeInterval = 0.15
     
-    @AppStorage("spotify.devices.active") var activeDeviceId: String = .empty
-    
     @State var devices: [Spotify.Device] = []
     
     var appState: AppState {
@@ -70,6 +103,9 @@ struct JoliApp: AppClip {
     var api: JoliApi {
         return appState.api
     }
+    
+    let jsonDecoder = Playroom.jsonDecoder()
+    let jsonEncoder = Playroom.jsonEncoder()
     
     init() {
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
@@ -87,6 +123,15 @@ struct JoliApp: AppClip {
         self.websocket.onConnect = self.onConnectionStateChanged
         
         websocket.connect()
+    }
+    
+    struct SerializedAuths: Codable {
+        var auths: [Auth]
+        var createdBy: Int?
+        var updatedBy: Int?
+        var version: String? = nil
+        var createdAt: Date = Date()
+        var updatedAt: Date = Date()
     }
     
     let cb: Publishers.Smooth<PlayState.Publisher, String>.StateGetter = { (state, now) in
@@ -136,6 +181,22 @@ struct JoliApp: AppClip {
                 
                 self.activeDeviceId = device.id
             }
+            .onReceive(coordinator.$activeSessionToken) { token in
+                guard let token = token else {
+                    self.activeSessionId = .empty
+                    return
+                }
+                
+                guard token != activeSessionId else {
+                    return
+                }
+                
+                self.activeSessionId = token
+                let auth = auths.first() { $0.session.token == token }
+                
+                appState.api.auth = auth
+                self.auth = auth
+            }
             .onAppear() {
                 logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
                 
@@ -143,15 +204,37 @@ struct JoliApp: AppClip {
                 self.coordinator.api = api
                 self.coordinator.initialActiveDeviceId = activeDeviceId == .empty ? nil : activeDeviceId
                 
+//                if let authsSerialized = try? jsonDecoder.decode(SerializedAuths.self, from: authsData) {
+//                    print("[AUTHS] existing: \(authsSerialized)")
+//                } else {
+//                    print("[AUTHS] nothing to set!")
+//                }
+                
+                self.auths = self.authsData.isEmpty ? [] : (try? jsonDecoder.decode(SerializedAuths.self, from: authsData))?.auths ?? []
+                
                 guard let token = TOKEN else {
+                    
+                    let auth = auths.first() { $0.session.token == activeSessionId }
+                    appState.api.auth = auth
+                    self.auth = auth
+                    
                     return
                 }
                 
                 appState.api.authenticate(token: token)
                     .then() { auth in
-                        print("[LoggedIn] \(String(describing: auth?.user))")
+                        appState.api.auth = auth
                         self.auth = auth
-                        self.coordinator.refreshDevices()
+                        
+                        guard let auth = auth, !auths.contains(where: { $0.session.token == auth.session.token }) else {
+                            return
+                        }
+                        
+                        var newAuths = self.auths
+                        newAuths.append(auth)
+                        
+                        let serialized = SerializedAuths(auths: newAuths, createdBy: self.auth?.user.createdById, updatedBy: self.auth?.user.updatedById)
+                        self.authsData = (try? jsonEncoder.encode(serialized)) ?? Data()
                     }
             }
     }
