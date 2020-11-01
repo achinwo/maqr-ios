@@ -75,7 +75,7 @@ public struct DevicesView: JoliView {
                     }
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .padding()
+                .padding(.vertical, Sizing.small)
                 .id(self.selectedAuthToken)
                 
                 Divider()
