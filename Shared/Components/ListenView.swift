@@ -235,107 +235,11 @@ struct ListenView: JoliView {
                 ScrollView(.vertical, showsIndicators: true) {
                     if playroom == nil {
                         
-                        VStack(){
-                            
-                            Divider()
-                                .opacity(self.loadingLiveTracks ? 1 : 0)
-                            
-                            if !self.liveTracks.isEmpty {
-                                
-                                let header = HStack(){
-                                    Text("Live Tracks")
-                                        .font(Font.largeTitle.weight(.thin))
-                                        .foregroundColor(.secondary)
-                                    Spacer()
-                                }
-                                
-                                Section(header: header) {
-                                    ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                                        TrackView2(track: .constant(track), useDynamicColors: true)
-                                            .id(track.uri)
-                                    }
-                                }
-                            }
-                            
-                            if !self.playrooms.isEmpty {
-                                let header = HStack(){
-                                    Text("Playrooms")
-                                        .font(Font.largeTitle.weight(.thin))
-                                        .foregroundColor(.secondary)
-                                    Spacer()
-                                }
-                                
-                                let space = Sizing.small / 2
-                                let columns = [
-                                    GridItem(.fixed(screenWidth / 2 - space), spacing: space),
-                                    GridItem(.fixed(screenWidth / 2 - space), spacing: space)
-                                ]
-                                
-                                Section(header: header) {
-                                    LazyVGrid(columns: columns) {
-                                        ForEach(self.playrooms, id: \.id) { room in
-                                            SpotifyItemView(item: room,
-                                                            images: [],
-                                                            titleKeyPath: \.name,
-                                                            subtitleKeyPath: \.details)
-                                                .frame(height: 64)
-                                                .onTapGesture {
-                                                    self.tracks = []
-                                                    self.votes = []
-                                                    self.playroom = room
-                                                }
-                                                //.background(Color.yellow)
-                                                .id(room.id)
-                                        }
-                                    }
-                                }
-                                
-                            }
-                            
-                            //                                Group(){
-                            //                                    Color.white
-                            //                                }
-                            //                                .frame(width: screenWidth, height: screenWidth)
-                            
-                            Divider().padding(.vertical, Sizing.xxLarge)
-                            
-                            let header = HStack(){
-                                Label(){
-                                    Text("Settings")
-                                } icon: {
-                                    Image(systemName: "gearshape")
-                                        .font(Font.title.weight(.thin))
-                                }
-                                .foregroundColor(.secondary)
-                                .font(Font.largeTitle.weight(.thin))
-                                
-                                Spacer()
-                            }
-                            
-                            Section(header: header) {
-                                HStack(alignment: .top){
-                                    VStack(alignment: .leading) {
-                                        Text("Autoplay")
-                                            .font(.headline)
-                                            .foregroundColor(.primary)
-                                        
-                                        Text("Begin playback immediately when joining a playroom")
-                                            .font(.footnote)
-                                            .foregroundColor(Color.secondary)
-                                    }
-                                    .frame(maxWidth: screenWidth / 2)
-                                    
-                                    Spacer()
-                                    
-                                    Toggle("Autoplay", isOn: .constant(false))
-                                        .labelsHidden()
-                                        .padding(.trailing, Sizing.xLarge)
-                                }
-                            }
-                            .id("settings")
-                            
+                        LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, isLoading: self.$loadingLiveTracks) { room in
+                            self.tracks = []
+                            self.votes = []
+                            self.playroom = room
                         }
-                        //.frame(minHeight: screenHeight)
                         .onChange(of: self.playroom) { value in
                             guard value == nil else {
                                 return

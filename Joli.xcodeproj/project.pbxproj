@@ -45,6 +45,8 @@
 		9274A80924CDB29900B45EDF /* JoliClip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 9274A7E424CDB29200B45EDF /* JoliClip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9274A81424CDB41500B45EDF /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		9274A81524CDB41500B45EDF /* JoliPlayground.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		927AE0C12554AC020027493D /* LobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927AE0C02554AC020027493D /* LobbyView.swift */; };
+		927AE0C22554AC020027493D /* LobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927AE0C02554AC020027493D /* LobbyView.swift */; };
 		927DD09925263C92005BAAF7 /* GradientLoadingBar in Frameworks */ = {isa = PBXBuildFile; productRef = 927DD09825263C92005BAAF7 /* GradientLoadingBar */; };
 		927E0E3624E9ADC000C8257D /* AppClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3524E9ADC000C8257D /* AppClip.swift */; };
 		927E0E3724E9ADC000C8257D /* AppClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3524E9ADC000C8257D /* AppClip.swift */; };
@@ -239,6 +241,7 @@
 		9274A80024CDB29800B45EDF /* JoliClipUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JoliClipUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9274A80424CDB29800B45EDF /* JoliClipUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliClipUITests.swift; sourceTree = "<group>"; };
 		9274A80624CDB29800B45EDF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		927AE0C02554AC020027493D /* LobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyView.swift; sourceTree = "<group>"; };
 		927E0E3524E9ADC000C8257D /* AppClip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppClip.swift; sourceTree = "<group>"; };
 		927E0E3924E9AFFF00C8257D /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
 		928A391B24E9DAE600A029A1 /* ListenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenView.swift; sourceTree = "<group>"; };
@@ -566,6 +569,7 @@
 				92A32DDA24C79C07007C960E /* ProfileView.swift */,
 				928F75F324F7B13400CF708B /* SearchView.swift */,
 				92A32DD124C79C06007C960E /* TrackList.swift */,
+				927AE0C02554AC020027493D /* LobbyView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1005,6 +1009,7 @@
 				92BD11D124CB0BD800AAB7DE /* TrackList.swift in Sources */,
 				9203B32924CB07F800F465CC /* Styles.swift in Sources */,
 				9203B32A24CB07FD00F465CC /* Consts.swift in Sources */,
+				927AE0C12554AC020027493D /* LobbyView.swift in Sources */,
 				9263B87824F080E6008962EC /* ListenTabbarView.swift in Sources */,
 				927E0E3624E9ADC000C8257D /* AppClip.swift in Sources */,
 				9203B31724CB070200F465CC /* ProfileView.swift in Sources */,
@@ -1072,6 +1077,7 @@
 				92A32DB924C79B59007C960E /* AppState+Spotify.swift in Sources */,
 				92A32DE824C79C07007C960E /* FeedbackSettingsView.swift in Sources */,
 				92A32DF024C79C07007C960E /* AppDelegate.swift in Sources */,
+				927AE0C22554AC020027493D /* LobbyView.swift in Sources */,
 				92A32DF424C79C07007C960E /* Extensions.swift in Sources */,
 				92A32E0624C79C07007C960E /* TrackView.swift in Sources */,
 				92A32DEA24C79C07007C960E /* App.swift in Sources */,
