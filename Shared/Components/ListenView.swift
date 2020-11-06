@@ -71,8 +71,8 @@ struct ListenView: JoliView {
     var animation: Namespace.ID
     @Binding var playroom: Musicroom?
     @Binding var currentUser: User?
-//    @State var activeDevice: Spotify.Device? = nil
-//    @State var devices: [Spotify.Device] = []
+    //    @State var activeDevice: Spotify.Device? = nil
+    //    @State var devices: [Spotify.Device] = []
     @State var scrollProxy: ScrollViewProxy? = nil
     
     @State var votes: [QueuedTrackVote] = []
@@ -120,18 +120,18 @@ struct ListenView: JoliView {
     }
     
     @State private var membership: [PlayroomMembership] = SEED_DATA.users.map() { user in
-                    guard user.id != 3 else {
-                        return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
-                    }
+        guard user.id != 3 else {
+            return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
+        }
         
-                    let act = [PlayroomMembership.ActivityStatus.offline,
-                               PlayroomMembership.ActivityStatus.online].randomElement()!
+        let act = [PlayroomMembership.ActivityStatus.offline,
+                   PlayroomMembership.ActivityStatus.online].randomElement()!
         
-                    let mem = PlayroomMembership(inviteStatus: .accepted,
-                                                 activityStatus: act,
-                                                 playroomId: 3, user: user)
-                    return mem
-                }
+        let mem = PlayroomMembership(inviteStatus: .accepted,
+                                     activityStatus: act,
+                                     playroomId: 3, user: user)
+        return mem
+    }
     
     @State var liveTracks: [Spotify.Track] = []
     @State var playrooms: [Musicroom] = []
@@ -172,12 +172,12 @@ struct ListenView: JoliView {
                 let trackUris = states
                     .sorted(by: { $0.updatedAt > $1.updatedAt })
                     .compactMap() { state -> String? in
-                    guard state.playingState == .playing, let isLocal = state.trackUri?.starts(with: "spotify:local:"), !isLocal else {
-                        return nil
+                        guard state.playingState == .playing, let isLocal = state.trackUri?.starts(with: "spotify:local:"), !isLocal else {
+                            return nil
+                        }
+                        
+                        return state.trackUri?.replacingOccurrences(of: "spotify:track:", with: "", options: .literal, range: nil)
                     }
-                    
-                    return state.trackUri?.replacingOccurrences(of: "spotify:track:", with: "", options: .literal, range: nil)
-                }
                 
                 guard var comp = URLComponents(string: "/api/spotify/tracks"), !trackUris.isEmpty else {
                     return Promise(nil)
@@ -235,11 +235,16 @@ struct ListenView: JoliView {
                 ScrollView(.vertical, showsIndicators: true) {
                     if playroom == nil {
                         
-                        LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, isLoading: self.$loadingLiveTracks) { room in
-                            self.tracks = []
-                            self.votes = []
-                            self.playroom = room
+                        ZStack(){
+                            LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, isLoading: self.$loadingLiveTracks) { room in
+                                self.tracks = []
+                                self.votes = []
+                                self.playroom = room
+                            }
+                            .frame(width: screenWidth * 0.9)
                         }
+                        .frame(minHeight: screenHeight * 0.7)
+                        .background(Color.white)
                         .onChange(of: self.playroom) { value in
                             guard value == nil else {
                                 return
@@ -247,7 +252,6 @@ struct ListenView: JoliView {
                             
                             self.refreshContent()
                         }
-                        .padding(.horizontal, Sizing.large)
                         .onFrameChange() { value in
                             
                             guard isDragging else { return }
@@ -269,7 +273,6 @@ struct ListenView: JoliView {
                                 }
                             }
                         }
-                        .background(Color.white)
                         .padding(.top, Sizing.xxLarge * 2)
                         .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     } else {
@@ -279,42 +282,43 @@ struct ListenView: JoliView {
                                 return
                             }
                             
-                                self.appCoordinator.voteTrack(track)
-                                    .then() { vote in
-                                        self.votes.append(vote)
-                                    }
-                                    .catch() { voteError in
-                                        
-                                        guard let error = voteError as? AppCoordinator.ActionError else {
-                                            print("[ListenView] unrecognised error: \(voteError)")
-                                            return
-                                        }
-                                        
-                                        switch error {
-                                            case .insufficientHeartPoints:
-                                                self.appCoordinator.insufficientPointsAttempt += 1
-                                        }
-                                    }
-                            }
-                            .background(Color.white)
-                            //.padding(.top, geoProxy.safeAreaInsets.top)
-                            //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
-                            .padding(.top, geoProxy.safeAreaInsets.top + 100)
-                            .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
-                            .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
-                            .onAppear(){
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                    guard let currentTrack = self.strip.playing else {
+                            self.appCoordinator.voteTrack(track)
+                                .then() { vote in
+                                    self.votes.append(vote)
+                                }
+                                .catch() { voteError in
+                                    
+                                    guard let error = voteError as? AppCoordinator.ActionError else {
+                                        print("[ListenView] unrecognised error: \(voteError)")
                                         return
                                     }
-                                    withAnimation(){
-                                        scrollProxy.scrollTo(currentTrack.uri, anchor: .center)
+                                    
+                                    switch error {
+                                        case .insufficientHeartPoints:
+                                            self.appCoordinator.insufficientPointsAttempt += 1
                                     }
                                 }
+                        }
+                        .background(Color.white)
+                        //.padding(.top, geoProxy.safeAreaInsets.top)
+                        //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
+                        .padding(.top, geoProxy.safeAreaInsets.top + 100)
+                        .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+                        .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                        .onAppear(){
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                guard let currentTrack = self.strip.playing else {
+                                    return
+                                }
+                                withAnimation(){
+                                    scrollProxy.scrollTo(currentTrack.uri, anchor: .center)
+                                }
                             }
+                        }
                     }
                 }
                 .simultaneousGesture(dragGesture)
+                .frame(width: screenWidth)
                 .background(
                     VStack() {
                         ProgressView(self.loadingLiveTracks ? "Refreshing..." : "Done!", value: self.loadingLiveTracks ? nil : 100.0, total: 100.0)
@@ -324,7 +328,6 @@ struct ListenView: JoliView {
                         Spacer()
                     }
                     .opacity(self.playroom == nil ? 1 : 0)
-                    .padding(.trailing, Sizing.small)
                     .padding(.top, Sizing.xxLarge * 2.6)
                 )
             }
@@ -333,7 +336,7 @@ struct ListenView: JoliView {
                 self.scrollProxy = scrollProxy //
                 self.refreshContent()
             }
-             
+            
         }
         .frame(maxWidth: screenWidth)
     }
@@ -341,20 +344,6 @@ struct ListenView: JoliView {
     @State var strip: (playing: Playable?, next: Playable?, runnerup: Playable?) = (nil, nil, nil)
     
     var body: some View {
-//        let users: [UserIdentifiable] = SEED_DATA.users.map() { user in
-//            guard user.id != 3 else {
-//                return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
-//            }
-//
-//            let act = [PlayroomMembership.ActivityStatus.offline,
-//                       PlayroomMembership.ActivityStatus.online].randomElement()!
-//
-//            let mem = PlayroomMembership(inviteStatus: .accepted,
-//                                         activityStatus: act,
-//                                         playroomId: 3, user: user)
-//            return mem
-//        }
-        
         
         let makeTitle = { (playroom: Playroom) in
             VStack(alignment: .trailing) {
@@ -385,7 +374,7 @@ struct ListenView: JoliView {
             }
         }
         
-
+        
         let makeStrip = { (playroom: Playroom) in
             HStack(alignment: .center){
                 
@@ -403,7 +392,7 @@ struct ListenView: JoliView {
                 }
                 
                 if let next = strip.next, strip.playing != nil {
-
+                    
                     VStack(alignment: .leading, spacing: 1){
                         NetworkImage(string: next.thumbnailUrl) {
                             Rectangle().stroke(Color.gray)
@@ -442,7 +431,7 @@ struct ListenView: JoliView {
                 }
                 
                 Spacer()
-
+                
                 makeTitle(playroom)
             }
             .padding(.horizontal, Sizing.small * 0.6)
@@ -483,6 +472,7 @@ struct ListenView: JoliView {
                 //Color.white.blur(radius: 20).opacity(0.9))
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
+            .frame(width: screenWidth)
             .onChange(of: votes) { votes in
                 
                 guard let tracks = tracks as? [QueuedTrack] else {
@@ -552,11 +542,11 @@ struct ListenView: JoliView {
                 }
                 .background(Color.white.opacity(0.90))
                 .coordinateSpace(name: "playroom-controls-space")
-                    .onFrameChange() { rect in
-                        DispatchQueue.main.async {
-                            self.roomControlViewBounds = rect
-                        }
+                .onFrameChange() { rect in
+                    DispatchQueue.main.async {
+                        self.roomControlViewBounds = rect
                     }
+                }
                 Divider().opacity(self.playroom == nil ? 0 : 1).animation(.easeInOut)
                 
                 AppPreviewView(preview: self.$preview, currentUser: self.$currentUser, animation: animation)

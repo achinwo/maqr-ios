@@ -99,7 +99,7 @@ public struct AppView2: JoliView {
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
                                        playroom: self.$playroom, currentUser: self.$currentUser)
                                 .frame(width: screenWidth)
-                                .clipped()
+                                //.clipped()
 //                                .onChange(of: self.filterText) { term in
 //                                    let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
 //

@@ -22,105 +22,116 @@ public struct LobbyView: JoliView {
     
     
     public var body: some View {
-        VStack(){
-            
-            Divider()
-                .opacity(self.isLoading ? 1 : 0)
-            
-            if !self.liveTracks.isEmpty {
+        GeometryReader() { proxy in
+            VStack(){
                 
-                let header = HStack(){
-                    Text("Live Tracks")
-                        .font(Font.largeTitle.weight(.thin))
-                        .foregroundColor(.secondary)
-                    Spacer()
-                }
+                Divider()
+                    .opacity(self.isLoading ? 1 : 0)
                 
-                Section(header: header) {
-                    ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                        TrackView2(track: .constant(track), useDynamicColors: true)
-                            .id(track.uri)
+                if !self.liveTracks.isEmpty {
+                    
+                    let header = HStack(){
+                        Text("Live Tracks")
+                            .font(Font.largeTitle.weight(.thin))
+                            .foregroundColor(.secondary)
+                        Spacer()
                     }
-                }
-            }
-            
-            if !self.playrooms.isEmpty {
-                let header = HStack(){
-                    Text("Playrooms")
-                        .font(Font.largeTitle.weight(.thin))
-                        .foregroundColor(.secondary)
-                    Spacer()
-                }
-                
-                let space = Sizing.small / 2
-                let columns = [
-                    GridItem(.fixed(screenWidth / 2 - space), spacing: space),
-                    GridItem(.fixed(screenWidth / 2 - space), spacing: space)
-                ]
-                
-                Section(header: header) {
-                    LazyVGrid(columns: columns) {
-                        ForEach(self.playrooms, id: \.id) { room in
-                            SpotifyItemView(item: room,
-                                            images: [],
-                                            titleKeyPath: \.name,
-                                            subtitleKeyPath: \.details)
+                    
+                    Section(header: header) {
+                        ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
+                            TrackView2(track: .constant(track), useDynamicColors: true)
                                 .frame(height: 64)
-                                .onTapGesture {
-                                    self.onPlayroomSelected?(room)
-                                }
-                                //.background(Color.yellow)
-                                .id(room.id)
+                                .id(track.uri)
                         }
                     }
                 }
                 
-            }
-            
-            //                                Group(){
-            //                                    Color.white
-            //                                }
-            //                                .frame(width: screenWidth, height: screenWidth)
-            
-            Divider().padding(.vertical, Sizing.xxLarge)
-            
-            let header = HStack(){
-                Label(){
-                    Text("Settings")
-                } icon: {
-                    Image(systemName: "gearshape")
-                        .font(Font.title.weight(.thin))
-                }
-                .foregroundColor(.secondary)
-                .font(Font.largeTitle.weight(.thin))
-                
-                Spacer()
-            }
-            
-            Section(header: header) {
-                HStack(alignment: .top){
-                    VStack(alignment: .leading) {
-                        Text("Autoplay")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        Text("Begin playback immediately when joining a playroom")
-                            .font(.footnote)
-                            .foregroundColor(Color.secondary)
+                if !self.playrooms.isEmpty {
+                    let header = HStack(){
+                        Text("Playrooms")
+                        Spacer()
+                        Button() {
+                            print("[LobbyView] made")
+                        } label: {
+                            Image(systemName: "plus").font(Font.title.weight(.thin))
+                        }
                     }
-                    .frame(maxWidth: screenWidth / 2)
+                    .font(Font.largeTitle.weight(.thin))
+                    .foregroundColor(.secondary)
+                    
+                    let columns = [
+                        //GridItem(.fixed(proxy.size.width / 2 - space), spacing: space),
+                        //GridItem(.fixed(proxy.size.width / 2 - space), spacing: space)
+                        GridItem(),
+                        GridItem()
+                    ]
+                    
+                    Section(header: header) {
+                        LazyVGrid(columns: columns) {
+                            ForEach(self.playrooms, id: \.id) { room in
+                                SpotifyItemView(item: room,
+                                                images: [],
+                                                titleKeyPath: \.name,
+                                                subtitleKeyPath: \.details)
+                                    .frame(height: 64)
+                                    .onTapGesture {
+                                        self.onPlayroomSelected?(room)
+                                    }
+                                    //.background(Color.yellow)
+                                    .id(room.id)
+                            }
+                        }
+                    }
+                    
+                }
+                
+                //                                Group(){
+                //                                    Color.white
+                //                                }
+                //                                .frame(width: screenWidth, height: screenWidth)
+                
+                Divider().padding(.vertical, Sizing.xxLarge)
+                
+                let header = HStack(){
+                    Label(){
+                        Text("Settings")
+                    } icon: {
+                        Image(systemName: "gearshape")
+                            .font(Font.title.weight(.thin))
+                    }
+                    .foregroundColor(.secondary)
+                    .font(Font.largeTitle.weight(.thin))
                     
                     Spacer()
-                    
-                    Toggle("Autoplay", isOn: .constant(false))
-                        .labelsHidden()
-                        .padding(.trailing, Sizing.xLarge)
                 }
+                
+                Section(header: header) {
+                    HStack(alignment: .top){
+                        VStack(alignment: .leading) {
+                            Text("Autoplay")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            
+                            Text("Begin playback immediately when joining a playroom")
+                                .font(.footnote)
+                                .foregroundColor(Color.secondary)
+                        }
+                        .frame(maxWidth: screenWidth / 2)
+                        
+                        Spacer()
+                        
+                        Toggle("Autoplay", isOn: .constant(false))
+                            .labelsHidden()
+                            .padding(.trailing, Sizing.xLarge)
+                    }
+                }
+                .id("settings")
+                
             }
-            .id("settings")
-            
+            //.frame(height: proxy.size.height)
         }
     }
+    
 }
 
 //struct LobbyView_Previews: PreviewProvider {
