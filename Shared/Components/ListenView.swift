@@ -358,19 +358,40 @@ struct ListenView: JoliView {
                         .font(Font.subheadline.weight(.thin))
                         .foregroundColor(Color.secondary)
                 }
-                HStack(alignment: .center){
-                    Text("in")
-                        .font(Font.subheadline)
-                        .foregroundColor(Color.gray)
-                    Text(playroom.name)
-                        .font(Font.headline)
-                        .foregroundColor(.blue)
-                        .frame(maxWidth: screenWidth / 1.8)
-                        .fixedSize(horizontal: true, vertical: false)
+                
+                VStack(alignment: .trailing){
+                    HStack(alignment: .center){
+                        Text("in")
+                            .font(Font.subheadline)
+                            .foregroundColor(Color.gray)
+                        Text(playroom.name)
+                            .font(Font.headline)
+                            .foregroundColor(.blue)
+                            .frame(maxWidth: screenWidth / 1.8)
+                            .fixedSize(horizontal: true, vertical: false)
+                    }
+                    
+                    Text("by Obialo")
+                        .font(Font.footnote.weight(.thin))
+                        .foregroundColor(Color.secondary)
                 }
-                Text("by Obialo")
-                    .font(Font.footnote.weight(.thin))
-                    .foregroundColor(Color.secondary)
+                .onTapGesture() {
+                    self.preview = .view() {
+                        VStack() {
+                            Text(playroom.name).font(.largeTitle)
+                            Divider()
+                            HStack() {
+                                Text("Description").font(.headline)
+                                Spacer()
+                            }
+                            Text(playroom.details).lineLimit(nil).font(.body)
+                        }
+                        .padding(.top, Sizing.large)
+                        .padding()
+                        .background(Color.clear)
+                        .eraseToAnyView()
+                    }
+                }
             }
         }
         
@@ -558,6 +579,15 @@ struct ListenView: JoliView {
                     .offset(x: 0, y: self.preview == nil ? screenHeight : 0)
                     .animation(.spring())
                 
+            }
+            .onReceive(appCoordinator.playRequestedSubject) { playing in
+                print("[ListenView] playRequestedSubject: \(playing)")
+                
+                guard playing else { return }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
+                    self.refreshContent()
+                }
             }
         }
     }

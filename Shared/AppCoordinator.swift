@@ -194,6 +194,7 @@ public final class AppCoordinator: ObservableObject {
     }
     
     public func play(_ track: Playable, positionMs: Int? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
+        self.playRequestedSubject.send(true)
         
         guard let device = device else {
             return api.fetchSpotifyDevices(on: DispatchQueue.global(qos: .userInitiated))
@@ -212,13 +213,19 @@ public final class AppCoordinator: ObservableObject {
                             self.playingSubject.send((track, ps))
                             return Promise(ps)
                         }
-            }
+                }
+                .always {
+                    self.playRequestedSubject.send(false)
+                }
         }
         
         return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
             .then(on: .main) { ps in
                 self.playingSubject.send((track, ps))
                 return Promise(ps)
+            }
+            .always {
+                self.playRequestedSubject.send(false)
             }
     }
     

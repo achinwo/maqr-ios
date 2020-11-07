@@ -26,12 +26,16 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
     @Published var isConnected: Bool = false {
         didSet {
+            connecting = false
             self.onConnect?(self, isConnected)
         }
     }
     
-    let soc: WebSocket
+    private var connecting = false
+    
+    var soc: WebSocket
     var request: URLRequest
+    let allowSelfSigned: Bool
     
     public var onConnect: ((Socket, Bool) -> Void)?
     
@@ -44,17 +48,21 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
                 return
             }
             
-            rawMessage.send(completion: completion)
-            self.rawMessage = PassthroughSubject<SocketMessage, SocketError>()
+//            self.soc = WebSocket(request: request, certPinner: FoundationSecurity(allowSelfSigned: allowSelfSigned))
+//            self.soc.delegate = self
+//
+//            rawMessage.send(completion: completion)
+//            self.rawMessage = PassthroughSubject<SocketMessage, SocketError>()
         }
     }
     
-    public init(url: URL, timeoutInterval: TimeInterval = 5, onConnect: ((Socket, Bool) -> Void)? = nil) {
+    public init(url: URL, timeoutInterval: TimeInterval = 5, allowSelfSigned: Bool = true, onConnect: ((Socket, Bool) -> Void)? = nil) {
         self.onConnect = onConnect
         request = URLRequest(url: url)
         request.timeoutInterval = timeoutInterval
+        self.allowSelfSigned = allowSelfSigned
         
-        let pinner = FoundationSecurity(allowSelfSigned: true) // don't validate SSL certificates
+        let pinner = FoundationSecurity(allowSelfSigned: allowSelfSigned) // don't validate SSL certificates
         self.soc = WebSocket(request: request, certPinner: pinner)
         self.soc.delegate = self
     }
@@ -85,6 +93,7 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     @discardableResult
     public func connect() -> Cancellable {
         logger.debug("Connect called")
+        Swift.print("[Socket] Connect called")
         
         let cancellable = AnyCancellable() {
             self.disconnectRequestCount += 1
@@ -92,9 +101,10 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
             //self.soc.disconnect()
         }
         
-        guard !isConnected else { return cancellable }
+        guard !isConnected && !connecting else { return cancellable }
         
         soc.connect()
+        connecting = true
         
         return cancellable
     }
@@ -105,6 +115,7 @@ extension Socket: WebSocketDelegate {
     
     public func didReceive(event: WebSocketEvent, client: WebSocket) {
         //Swift.print("websocket event: \(event)")
+        
         switch event {
             case .connected(let headers):
                 isConnected = true
@@ -143,9 +154,11 @@ extension Socket: WebSocketDelegate {
             case .cancelled:
                 isConnected = false
                 self.completion = .finished
+                Swift.print("websocket is cancelled")
                 
             case .error(let error):
                 isConnected = false
+                Swift.print("websocket is error: \(error)")
                 self.completion =  Subscribers.Completion.failure(SocketError.error(error))
         }
     }

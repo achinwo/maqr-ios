@@ -28,6 +28,18 @@ let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQ
 #endif
 
 
+extension Array where Element == DispatchWorkItem {
+    
+    func cancelAll(){
+        print("[App#DispatchWorkItems] cancelling \(self.count) items...")
+        
+        for item in self {
+            item.cancel()
+        }
+    }
+    
+}
+
 @main
 struct JoliApp: AppClip {
     
@@ -149,13 +161,69 @@ struct JoliApp: AppClip {
         return (id: uid, value: state.progressMs, duration: TimeInterval(duration), idleTimeout: 4)
     }
     
+    @State var reconnectingTasks: [DispatchWorkItem] = []
+    
+    func scheduleSocketReconnect(){
+        
+        guard reconnectingTasks.isEmpty && !self.websocket.isConnected && [.background, .active].contains(scenePhase) else {
+            return
+        }
+        
+        let maxDelay = 300000 // 5 minutes
+        
+        func getDelay(for n: Int) -> Int {
+            let delay = Int(pow(2.0, Double(n))) * 1000
+            let jitter = Int.random(in: 0...1000)
+            return min(delay + jitter, maxDelay)
+        }
+        
+        let now = Date()
+        
+        var attempt = 1
+        var delay = getDelay(for: attempt)
+        
+        while delay < maxDelay {
+            
+            let thisAttempt = attempt
+            
+            print("[App#scheduleSocketReconnect] scheduling retry: \(attempt) - \(now.advanced(by: Double(delay) / 1000))")
+            
+            let workItem = DispatchWorkItem {
+                // Your async code goes in here
+                print("[App#scheduleSocketReconnect] triggered retry: \(thisAttempt) - \(Date())")
+                
+                guard !self.websocket.isConnected && [.background, .active].contains(scenePhase) else {
+                    self.reconnectingTasks.cancelAll()
+                    self.reconnectingTasks.removeAll()
+                    return
+                }
+                
+                self.websocket.connect()
+                print("[App#scheduleSocketReconnect] connect called: \(thisAttempt)")
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(delay), execute: workItem)
+            self.reconnectingTasks.append(workItem)
+            
+            attempt += 1
+            delay = getDelay(for: attempt)
+        }
+        
+    }
+    
     func onConnectionStateChanged(_ socket: Socket, _ connected: Bool){
+        print("[App#onConnectionStateChanged] connected: \(connected)")
+        
         guard connected else {
+            scheduleSocketReconnect()
             return
         }
         
         socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
             print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
+            
+            self.reconnectingTasks.cancelAll()
+            self.reconnectingTasks.removeAll()
             
             DispatchQueue.main.async {
                 let publisher: PlayState.Publisher = self.websocket.publish(PlayState.self, interval: self.playbackRefreshRate, path: \.progressMs, resolver: cb)
@@ -166,6 +234,18 @@ struct JoliApp: AppClip {
         
         socket.write(topic: "/subscribe", body: ["subject": "database_updates"]) { error in
             print("[App] updated subscriptions: database_updates - \(String(describing: error))")
+        }
+    }
+    
+    func assertWebsocketConnected() {
+        self.websocket.write(topic: "/status", body: [:]) { error in
+            
+            guard let error = error else {
+                logger.info("[App] asserting websocket connected successful")
+                return
+            }
+            
+            logger.error("[App] asserting websocket connected: \(error)")
         }
     }
     
@@ -184,6 +264,16 @@ struct JoliApp: AppClip {
                 }
                 
                 self.activeDeviceId = device.id
+            }
+            .onReceive(coordinator.voteRequestedSubject) { voting in
+                guard voting != nil else { return }
+                
+                self.assertWebsocketConnected()
+            }
+            .onReceive(coordinator.playRequestedSubject) { playing in
+                guard playing else { return }
+                
+                self.assertWebsocketConnected()
             }
             .onReceive(coordinator.$activeSessionToken) { token in
                 
