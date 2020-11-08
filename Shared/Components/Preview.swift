@@ -9,6 +9,29 @@ import UIKit
 import SwiftUI
 import JoliCore
 
+public struct PlayroomCreateView: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    
+    public var body: some View {
+        VStack(alignment: .leading){
+            Section(header: Text("Title")){
+                Text("room name")
+                //TextEditor(text: .constant("some description"))
+            }
+            
+            Section(header: Text("Theme Song")){
+                Text("choose theme song")
+            }
+            
+            Section(header: Text("Location")){
+                Text("room")
+            }
+        }
+        .background(Color.green)
+    }
+    
+}
 
 public enum AppPreview: View, Equatable {
     
@@ -31,12 +54,14 @@ public enum AppPreview: View, Equatable {
                 ScrollView(scrollAxis ?? .vertical){
                     viewFunc().clipped()
                 }
-        case .track(let track):
-            VStack() {
-                NetworkImage(string: track.albumCoverUrl) {
-                    Text("\(track.title)")
+            case .track(let track):
+                VStack() {
+                    NetworkImage(string: track.albumCoverUrl) {
+                        Text("\(track.title)")
+                    }
                 }
-            }
+            case .playroomCreate:
+                PlayroomCreateView()
             default:
                 EmptyView()
         }
@@ -46,9 +71,12 @@ public enum AppPreview: View, Equatable {
     case userProfile(UserIdentifiable)
     case track(Track)
     case view(Axis.Set? = nil, () -> AnyView)
+    case playroomCreate
 }
 
-struct AppPreviewView: View {
+struct AppPreviewView: JoliView {
+    
+    @EnvironmentObject var appCoordinator: AppCoordinator
     
     @Binding var preview: AppPreview?
     @Binding var currentUser: User?
@@ -64,7 +92,7 @@ struct AppPreviewView: View {
                 if let currentUser = currentUser, preview == .userAccount {
                     UserProfileView2(user: .constant(currentUser))
                 } else if let preview = self.preview {
-                    preview
+                    preview.environmentObject(appCoordinator)
                 } else {
                     Text("No Preview.")
                 }

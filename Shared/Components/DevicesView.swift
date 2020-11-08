@@ -50,6 +50,7 @@ public struct DevicesView: JoliView {
     
     @State var selectedAuthToken: String? = nil
     @State var auths: [Auth] = []
+    @State var accentColor = Color.primary
     
     public var body: some View {
 //        Picker(selection: self.$appState.selectedTabIdx, label: Text("Room")){
@@ -93,6 +94,7 @@ public struct DevicesView: JoliView {
                 }
                 .disabled(self.activeDevice == nil || devices.isEmpty)
                 .labelsHidden()
+                .accentColor(self.accentColor)
                 
                 Button() {
                     self.onClose?(self.activeDevice)
@@ -202,6 +204,22 @@ public struct DevicesView: JoliView {
         }
         .onReceive(appCoordinator.$devices) { devices in
             self.devices = devices
+        }
+        .onReceive(appCoordinator.$activeSessionToken) { token in
+            
+            guard token != nil else {
+                self.accentColor = .primary
+                return
+            }
+            
+            api.fetchSpotifyUserProfile(on: .main)
+                .then(){ user in
+                    let colors = PlayState.allColors
+                    self.accentColor = colors[(user.id.count + user.id.lowercased().count(of: "g")) % colors.count].opacity(0.7)
+                }
+                .catch() { error in
+                    self.accentColor = .primary
+                }
         }
         .onReceive(appCoordinator.activeDeviceSubject){ activeDevice in
             

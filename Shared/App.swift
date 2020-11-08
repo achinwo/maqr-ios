@@ -249,6 +249,13 @@ struct JoliApp: AppClip {
         }
     }
     
+    @State var isSheetPresented: Bool = false
+    @State var modalView: AppPreview? = nil {
+        didSet {
+            isSheetPresented = modalView != nil
+        }
+    }
+    
     var contentView: some View {
 
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser)
@@ -257,6 +264,21 @@ struct JoliApp: AppClip {
 //                //Do something here
 //                logger.debug("[Joli] shortcutItem change: \(String(describing: appDelegate.shortcutItemToProcess))")
 //            }
+            .sheet(isPresented: $isSheetPresented){
+                print("[App] sheet dismissed")
+                self.modalView = nil
+            } content: {
+                GeometryReader() { proxy in
+                    AppPreviewView(preview: self.$modalView, currentUser: self.$currentUser, animation: namespace)
+                        .frame(width: proxy.size.width, height: proxy.size.height + proxy.safeAreaInsets.bottom)
+                        .animation(.spring())
+                        .edgesIgnoringSafeArea(.bottom)
+                        .background(Color.yellow)
+                }
+            }
+            .onReceive(coordinator.globalModalSubject) { view in
+                self.modalView = view
+            }
             .onReceive(coordinator.activeDeviceSubject) { (device: Spotify.Device?) in
                 
                 guard let device = device else {
@@ -307,29 +329,32 @@ struct JoliApp: AppClip {
 //                }
                 
                 self.auths = self.authsData.isEmpty ? [] : (try? jsonDecoder.decode(SerializedAuths.self, from: authsData))?.auths ?? []
+                let token = TOKEN ?? activeSessionId
                 
-                guard let token = TOKEN else {
-                    
-                    let auth = auths.first() { $0.session.token == activeSessionId }
-                    appState.api.auth = auth
-                    self.auth = auth
-                    
-                    return
-                }
+//                guard let token = TOKEN else {
+//
+//                    let auth = auths.first() { $0.session.token == activeSessionId }
+//                    appState.api.auth = auth
+//                    self.auth = auth
+//
+//                    return
+//                }
                 
                 appState.api.authenticate(token: token)
                     .then() { auth in
                         appState.api.auth = auth
                         self.auth = auth
                         
-                        guard let auth = auth, !auths.contains(where: { $0.session.token == auth.session.token }) else {
+                        guard let auth = auth else {
                             return
                         }
                         
-                        var newAuths = self.auths
+                        var newAuths = self.auths.filter() { $0.session.token != auth.session.token }
                         newAuths.append(auth)
                         
-                        let serialized = SerializedAuths(auths: newAuths, createdBy: self.auth?.user.createdById, updatedBy: self.auth?.user.updatedById)
+                        let serialized = SerializedAuths(auths: newAuths.sorted(by: { $0.user.name < $1.user.name }),
+                                                         createdBy: self.auth?.user.createdById,
+                                                         updatedBy: self.auth?.user.updatedById)
                         self.authsData = (try? jsonEncoder.encode(serialized)) ?? Data()
                     }
             }

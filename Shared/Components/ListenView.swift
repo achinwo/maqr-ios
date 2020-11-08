@@ -581,9 +581,7 @@ struct ListenView: JoliView {
                 
             }
             .onReceive(appCoordinator.playRequestedSubject) { playing in
-                print("[ListenView] playRequestedSubject: \(playing)")
-                
-                guard playing else { return }
+                guard playing || self.loadingLiveTracks else { return }
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
                     self.refreshContent()

@@ -52,6 +52,7 @@ public struct LobbyView: JoliView {
                         Spacer()
                         Button() {
                             print("[LobbyView] made")
+                            self.appCoordinator.globalModalSubject.send(.playroomCreate)
                         } label: {
                             Image(systemName: "plus").font(Font.title.weight(.thin))
                         }
@@ -122,7 +123,6 @@ public struct LobbyView: JoliView {
                         
                         Toggle("Autoplay", isOn: .constant(false))
                             .labelsHidden()
-                            .padding(.trailing, Sizing.xLarge)
                     }
                 }
                 .id("settings")

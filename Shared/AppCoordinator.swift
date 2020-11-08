@@ -39,6 +39,7 @@ public final class AppCoordinator: ObservableObject {
     
     public let playRequestedSubject = CurrentValueSubject<Bool, Never>(false)
     public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
+    public let globalModalSubject = CurrentValueSubject<AppPreview?, Never>(nil)
     
     public let authSubject = PassthroughSubject<Auth?, Never>()
     
