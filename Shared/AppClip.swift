@@ -292,6 +292,7 @@ public protocol AppClip: App {
     
     func onUserActivity(_ activity: NSUserActivity) -> Void
     func onScenePhaseChange(_ phase: ScenePhase) -> Void
+    func onOpenUrl(url: URL) -> Void
     
 }
 

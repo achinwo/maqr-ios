@@ -1915,7 +1915,7 @@
 			repositoryURL = "https://github.com/achinwo/JoliApi.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.1;
+				minimumVersion = 1.0.2;
 			};
 		};
 		92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */ = {

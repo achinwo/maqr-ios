@@ -486,7 +486,7 @@ public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePub
             }
             
             switch typeName {
-                case "\(PlayState.self)":
+                case "\(PlayState.self)", "\(AuthToken.self)", "\(Playroom.self)":
                     let obj = try M.jsonDecoder().decode(M.self, from: jsonData)
                     return obj
                 default:

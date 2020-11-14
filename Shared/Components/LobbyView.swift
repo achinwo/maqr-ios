@@ -20,13 +20,50 @@ public struct LobbyView: JoliView {
     @Binding var isLoading: Bool
     let onPlayroomSelected: ((Playroom) -> Void)?
     
+    @State var auth: AuthToken? = nil
     
     public var body: some View {
         GeometryReader() { proxy in
-            VStack(){
+            VStack(alignment: .center){
                 
                 Divider()
                     .opacity(self.isLoading ? 1 : 0)
+                
+                Group(){
+                    if self.auth == nil {
+                        Button() {
+                            self.appCoordinator.authorizeSpotify()
+                        } label: {
+                            
+                            HStack() {
+                                Spacer()
+                                Image(uiImage: #imageLiteral(resourceName: "Spotify_Icon_RGB_Green.png"))
+                                    .resizable()
+                                    .frame(width: 64, height: 64, alignment: .center)
+                                VStack(alignment: .leading){
+                                    Text("Connect to Spotify ")
+                                        .font(.subheadline)
+                                        .foregroundColor(Color.green.opacity(0.9))
+                                        + Text("Premium")
+                                        .font(Font.subheadline.weight(.semibold))
+                                        .foregroundColor(.green)
+                                    Text("Access Spotify's vast library of tracks, podcasts, shows, and more.")
+                                        .font(Font.caption.weight(.light))
+                                        .foregroundColor(.primary)
+                                }
+                                Spacer()
+                            }
+                            .padding()
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.green.opacity(0.7), lineWidth: 2)
+                        )
+                        .background(Color.green.opacity(0.1))
+                        .padding()
+                    }
+                }
+                .animation(.easeInOut)
                 
                 if !self.liveTracks.isEmpty {
                     
@@ -129,6 +166,9 @@ public struct LobbyView: JoliView {
                 
             }
             //.frame(height: proxy.size.height)
+        }
+        .onReceive(appCoordinator.$authorizedSpotify) { auth in
+            self.auth = auth
         }
     }
     

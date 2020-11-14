@@ -15,9 +15,10 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
     let SpotifyRedirectURL = URL(string: "joli://spotify-callback/")!
     //URL(string: "spotify-ios-quick-start://spotify-login-callback")!
     
-    lazy var configuration = SPTConfiguration(clientID: SpotifyClientID, redirectURL: SpotifyRedirectURL)
+    var authCallback: ((AuthToken?, Error?) -> Void)? = nil
+    var playStateCallback: ((SPTAppRemotePlayerState) -> Void)? = nil
     
-    let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
+    lazy var configuration = SPTConfiguration(clientID: SpotifyClientID, redirectURL: SpotifyRedirectURL)
     
     lazy var appRemote: SPTAppRemote = {
         
@@ -39,32 +40,42 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
         }
     }
     
+    public func remoteConnect(token: String? = nil){
+        
+        guard !self.appRemote.isConnected else {
+            return
+        }
+        
+        let token = token ?? accessToken
+        self.appRemote.connectionParameters.accessToken = token
+        self.appRemote.connect()
+    }
+    
     func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
         logger.debug("Spotify: created session \(session)")
         
-        self.appRemote.connectionParameters.accessToken = session.accessToken
-        self.appRemote.connect()
+        remoteConnect(token: session.accessToken)
         
         let builder = Builder<AuthToken>.init(properties: [
-            AuthToken.CodingKeys.accessToken: session.accessToken as AnyObject,
-            AuthToken.CodingKeys.refreshToken: session.refreshToken as AnyObject,
-            AuthToken.CodingKeys.scope: session.scope as AnyObject,
-            AuthToken.CodingKeys.expiresIn: 3016 as AnyObject,
-            AuthToken.CodingKeys.tokenType: "Bearer" as AnyObject,
+            .accessToken: session.accessToken as AnyObject,
+            .refreshToken: session.refreshToken as AnyObject,
+            .scope: session.scope as AnyObject,
+            .expiresIn: 3016 as AnyObject,
+            .tokenType: "Bearer" as AnyObject,
         ])
         
         builder.save()
             .then(){ auth in
                 logger.info("[\(#function)] AUth: \(auth)")
-            }//.catch(appState.errorHandler())
+                self.authCallback?(auth, nil)
+            }
+            .catch() { error in
+                self.authCallback?(nil, error)
+            }
     }
     
     func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
         logger.debug("Spotify: session failure \(error)")
-    }
-    
-    func connect() {
-        self.appRemote.authorizeAndPlayURI(self.playURI)
     }
     
     func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
@@ -93,9 +104,8 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
     }
     
     func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
-        logger.debug("player state changed")
-        
         logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(playerState)")
+        self.playStateCallback?(playerState)
     }
     
     lazy var spotifySessionManager: SPTSessionManager = {
@@ -118,7 +128,7 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
         return spotifySessionManager.isSpotifyAppInstalled
     }()
     
-    func requestSpotifyAccess() {
+    func requestSpotifyAccess(uri: String? = nil) -> SPTSessionManager {
         //"app-remote-control streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-birthdate user-read-email user-read-private"
         let requestedScopes: SPTScope = [
             .appRemoteControl,
@@ -135,9 +145,22 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
             .playlistReadPrivate
         ]
         
-        self.spotifySessionManager.alwaysShowAuthorizationDialog = true
-        //self.spotifySessionManager.
-        self.spotifySessionManager.initiateSession(with: requestedScopes, options: .default)
+        let configuration = SPTConfiguration(
+            clientID: SpotifyClientID,
+            redirectURL: SpotifyRedirectURL //URL(string: "joli://spotify-callback/")!
+        )
+        
+        configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!
+        //https://localhost:8080/spotify_callback/
+        configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
+        
+        configuration.playURI = uri
+        let mgr = SPTSessionManager(configuration: configuration, delegate: self)
+        
+        mgr.alwaysShowAuthorizationDialog = true
+        mgr.initiateSession(with: requestedScopes, options: .default)
+        
+        return mgr
     }
     
 }

@@ -59,10 +59,27 @@ public final class AppCoordinator: ObservableObject {
     
     public var initialActiveDeviceId: String? = nil
     
+    @Published public var authorizedSpotify: AuthToken? = nil
+    @Published public var spotifyAuthCallback: ((AuthToken?) -> Void)? = nil
+    
     private var allSearchengines = [spotifyEngine]
     
     public enum ActionError: Error {
         case insufficientHeartPoints
+    }
+    
+    public func authorizeSpotify(){
+        
+        self.spotifyAuthCallback = { (auth: AuthToken?) -> Void in
+            self.spotifyAuthCallback = nil
+            print("[AppCoordinator#authorizeSpotify] auth: \(String(describing: auth))")
+            
+            guard let auth = auth else {
+                return
+            }
+            
+            print("[AppCoordinator#authorizeSpotify] do nothing")
+        }
     }
     
     var activeAuth: Auth? {
@@ -194,8 +211,26 @@ public final class AppCoordinator: ObservableObject {
             
     }
     
+    @Published var localPlayRequested: (track: Playable, positionMs: Int?)? = nil
+    
     public func play(_ track: Playable, positionMs: Int? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
         self.playRequestedSubject.send(true)
+        
+        let performPlay = { (device: Spotify.Device?) -> Promise<PlayState?>  in
+            
+            guard let device = device, ![.smartphone, .tablet].contains(device.type) else {
+                self.localPlayRequested = (track, positionMs)
+                return Promise(nil)
+            }
+            
+            self.localPlayRequested = nil
+            
+            return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
+                .then(on: .main) { ps in
+                    self.playingSubject.send((track, ps))
+                    return Promise(ps)
+                }
+        }
         
         guard let device = device else {
             return api.fetchSpotifyDevices(on: DispatchQueue.global(qos: .userInitiated))
@@ -204,30 +239,14 @@ public final class AppCoordinator: ObservableObject {
                 }
                 .then() { (devices) -> Promise<PlayState?> in
                     logger.debug("Devices: \(devices)")
-                    
-                    guard let device = devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }) else {
-                        return Promise(nil)
-                    }
-                    
-                    return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
-                        .then(on: .main) { ps in
-                            self.playingSubject.send((track, ps))
-                            return Promise(ps)
-                        }
+                    return performPlay(devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }))
                 }
                 .always {
                     self.playRequestedSubject.send(false)
                 }
         }
         
-        return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
-            .then(on: .main) { ps in
-                self.playingSubject.send((track, ps))
-                return Promise(ps)
-            }
-            .always {
-                self.playRequestedSubject.send(false)
-            }
+        return performPlay(device)
     }
     
     public func share(text: String){

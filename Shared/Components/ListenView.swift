@@ -119,19 +119,21 @@ struct ListenView: JoliView {
             }
     }
     
-    @State private var membership: [PlayroomMembership] = SEED_DATA.users.map() { user in
-        guard user.id != 3 else {
-            return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
-        }
+    @State private var membership: [PlayroomMembership] = []
         
-        let act = [PlayroomMembership.ActivityStatus.offline,
-                   PlayroomMembership.ActivityStatus.online].randomElement()!
-        
-        let mem = PlayroomMembership(inviteStatus: .accepted,
-                                     activityStatus: act,
-                                     playroomId: 3, user: user)
-        return mem
-    }
+//        SEED_DATA.users.map() { user in
+//        guard user.id != 3 else {
+//            return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
+//        }
+//
+//        let act = [PlayroomMembership.ActivityStatus.offline,
+//                   PlayroomMembership.ActivityStatus.online].randomElement()!
+//
+//        let mem = PlayroomMembership(inviteStatus: .accepted,
+//                                     activityStatus: act,
+//                                     playroomId: 3, user: user)
+//        return mem
+//    }
     
     @State var liveTracks: [Spotify.Track] = []
     @State var playrooms: [Musicroom] = []
