@@ -70,7 +70,9 @@ extension Color {
     }
 }
 
-public struct TrackView2: JoliView {
+public struct TrackView2<AddonView: View>: JoliView {
+    
+    typealias AddonView = EmptyView
     
     @Binding var track: Playable
     
@@ -81,7 +83,7 @@ public struct TrackView2: JoliView {
         
         return track.colors
     }
-    
+    var addonView: AddonView? = nil
     var useDynamicColors = false
     @GestureState var isDetectingLongPress = false
     @State var completedLongPress = false
@@ -123,6 +125,7 @@ public struct TrackView2: JoliView {
         self._hearts = hearts
         self._track = track
         self.useDynamicColors = useDynamicColors
+        self.addonView = nil
     }
     
     public var body: some View {
@@ -255,25 +258,9 @@ public struct TrackView2: JoliView {
                         Spacer()
                     }
                     
-                    if let track = self.track as? QueuedTrack, self.hearts != nil {
-                        
+                    if let addonView = self.addonView {
                         Spacer()
-                        JoyMeterView(self.$hearts, textStyle: self.heartIconFont, labelColor: colors?.detailColor ?? Color.primary, backgroundColor: Color.red.opacity(0.5))
-                            .padding()
-                            .padding(.trailing, Sizing.large)
-                            .foregroundColor(colors?.secondaryColor ?? Color.primary)
-                            .scaleEffect(x: self.requestingVoteTrackId == track.id ? 1.32 : 1, y: self.requestingVoteTrackId == track.id ? 1.32 : 1, anchor: .center)
-                            .onTapGesture {
-                                self.onHeartTapped?()
-                            }
-                        
-//                            .onLongPressGesture {
-//
-//                                appCoordinator.withImpact(.medium) {
-//                                    self.heartLevel = .quarter
-//                                }
-//                                print("new count: \(self.heartLevel)")
-//                            }
+                        addonView
                     }
                 }
                 .background(
@@ -349,7 +336,20 @@ public extension PlayState {
     }
 }
 
-public struct TrackList: JoliView {
+extension TrackView2 where AddonView: View {
+    
+    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false,
+                onHeartTapped: (() -> Void)? = nil, @ViewBuilder content: () -> AddonView){
+        self.onHeartTapped = onHeartTapped
+        self._hearts = hearts
+        self._track = track
+        self.useDynamicColors = useDynamicColors
+        self.addonView = content()
+    }
+    
+}
+
+public struct TrackList<AddonView: View>: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -361,13 +361,16 @@ public struct TrackList: JoliView {
     @Binding var playroom: Musicroom?
     
     @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
+    let addonViewFunc: () -> AddonView
     
-    public init(tracks: Binding<[Playable]>, votes: Binding<[QueuedTrackVote]>? = .constant([]), preview: Binding<AppPreview?> = .constant(nil), playroom: Binding<Musicroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil){
+    public init(tracks: Binding<[Playable]>, votes: Binding<[QueuedTrackVote]>? = .constant([]), preview: Binding<AppPreview?> = .constant(nil),
+                playroom: Binding<Musicroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil, @ViewBuilder addonView: @escaping () -> AddonView){
         self.onVoteTapped = onVoteTapped
         self._tracks = tracks
         self._preview = preview
         self._playroom = playroom
         self._votes = votes ?? .constant([])
+        self.addonViewFunc = addonView
     }
     
     func trackBinding(_ trackId: Array<Playable>.Index) -> Binding<Playable> {
@@ -429,6 +432,8 @@ public struct TrackList: JoliView {
                         
                         self.onVoteTapped?(queued)
                         
+                    } content: { () -> AddonView in
+                        return addonViewFunc()
                     }.id(track.uri)
                 }
         }
@@ -455,7 +460,7 @@ public struct TrackList: JoliView {
 struct TrackList_Previews: PreviewProvider {
     
     static var previews: some View {
-        TrackList(tracks: .constant(SEED_DATA.tracks))
+        TrackList(tracks: .constant(SEED_DATA.tracks)) { EmptyView() }
     }
     
 }

@@ -19,6 +19,9 @@
 		9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9234320D23BFD2F700E24E96 /* NotificationCenter.framework */; };
 		9208ACF324CC559400773730 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9208ACF224CC559400773730 /* DevicesView.swift */; };
 		9208ACF524CC559400773730 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9208ACF224CC559400773730 /* DevicesView.swift */; };
+		920958AB25601EE10014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
+		920958B225601F020014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
+		920958B325601F030014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		921BA271253E0819007C2FE0 /* Sourceful in Frameworks */ = {isa = PBXBuildFile; productRef = 921BA270253E0819007C2FE0 /* Sourceful */; };
 		9222BE1824CD8A5800F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
 		9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
@@ -219,6 +222,7 @@
 		9203B31124CB06C900F465CC /* JoliPlayground.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JoliPlayground.h; sourceTree = "<group>"; };
 		9203B31224CB06C900F465CC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9208ACF224CC559400773730 /* DevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesView.swift; sourceTree = "<group>"; };
+		920958AA25601EE10014626D /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		9222BE1724CD8A5800F19973 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		92595B4C253A1AD200609558 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
@@ -462,6 +466,7 @@
 				928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */,
 				926E8FE024C76DE100378436 /* Styles.swift */,
 				929FFE1B24FAF096000BDCF0 /* User.swift */,
+				920958AA25601EE10014626D /* Logging.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1007,6 +1012,7 @@
 				9222BE1824CD8A5800F19973 /* ExploreView.swift in Sources */,
 				92A7120D24D85EC500AD6729 /* NetworkImageView.swift in Sources */,
 				92BD11D124CB0BD800AAB7DE /* TrackList.swift in Sources */,
+				920958AB25601EE10014626D /* Logging.swift in Sources */,
 				9203B32924CB07F800F465CC /* Styles.swift in Sources */,
 				9203B32A24CB07FD00F465CC /* Consts.swift in Sources */,
 				927AE0C12554AC020027493D /* LobbyView.swift in Sources */,
@@ -1058,6 +1064,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				92595B4E253A1AD200609558 /* AppCoordinator.swift in Sources */,
+				920958B225601F020014626D /* Logging.swift in Sources */,
 				92A32DE424C79C07007C960E /* TrackSearchView.swift in Sources */,
 				92A32E2C24C7BB53007C960E /* Consts.swift in Sources */,
 				92A32DEC24C79C07007C960E /* UserProfileView.swift in Sources */,
@@ -1112,6 +1119,7 @@
 				92A32E2D24C7BB53007C960E /* Consts.swift in Sources */,
 				92A32DB824C79B59007C960E /* UserSettings.swift in Sources */,
 				92A32DE924C79C07007C960E /* FeedbackSettingsView.swift in Sources */,
+				920958B325601F030014626D /* Logging.swift in Sources */,
 				9270C353252CB4AD0030E6AD /* App.swift in Sources */,
 				92A32E3224CA22FA007C960E /* Publishers.swift in Sources */,
 				92A32D8824C79A13007C960E /* Styles.swift in Sources */,
@@ -1266,7 +1274,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = JoliClip/JoliClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1302,7 +1310,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = JoliClip/JoliClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1426,7 +1434,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1462,7 +1470,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (

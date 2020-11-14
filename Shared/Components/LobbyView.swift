@@ -20,7 +20,8 @@ public struct LobbyView: JoliView {
     @Binding var isLoading: Bool
     let onPlayroomSelected: ((Playroom) -> Void)?
     
-    @State var auth: AuthToken? = nil
+    @State var authToken: AuthToken? = nil
+    @State var bannerDisplayedAt: Date? = nil
     
     public var body: some View {
         GeometryReader() { proxy in
@@ -30,7 +31,7 @@ public struct LobbyView: JoliView {
                     .opacity(self.isLoading ? 1 : 0)
                 
                 Group(){
-                    if self.auth == nil {
+                    if self.authToken == nil && self.bannerDisplayedAt != nil {
                         Button() {
                             self.appCoordinator.authorizeSpotify()
                         } label: {
@@ -76,7 +77,7 @@ public struct LobbyView: JoliView {
                     
                     Section(header: header) {
                         ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                            TrackView2(track: .constant(track), useDynamicColors: true)
+                            TrackView2<Never>(track: .constant(track), useDynamicColors: true)
                                 .frame(height: 64)
                                 .id(track.uri)
                         }
@@ -168,7 +169,17 @@ public struct LobbyView: JoliView {
             //.frame(height: proxy.size.height)
         }
         .onReceive(appCoordinator.$authorizedSpotify) { auth in
-            self.auth = auth
+            self.authToken = auth
+        }
+        .onAppear() {
+            
+            guard bannerDisplayedAt == nil else {
+                return
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
+                self.bannerDisplayedAt = Date()
+            }
         }
     }
     

@@ -160,6 +160,9 @@ struct ListenView: JoliView {
             .then() { rooms  in
                 self.playrooms = rooms
             }
+            .catch() { error in
+                logger.error("[PlayrromsFetch] error: \(error)")
+            }
             .always() {
                 self.loadingPlayrooms = false
             }
@@ -195,7 +198,7 @@ struct ListenView: JoliView {
                         return resp
                     }
                     .catch() { error in
-                        print("[SpotifyTracksFtech] \(comp) - \(error)")
+                        logger.error("[SpotifyTracksFetch] \(comp) - \(error)")
                     }
             }
             .always() {
@@ -300,6 +303,8 @@ struct ListenView: JoliView {
                                             self.appCoordinator.insufficientPointsAttempt += 1
                                     }
                                 }
+                        } addonView: {
+                            EmptyView()
                         }
                         .background(Color.white)
                         //.padding(.top, geoProxy.safeAreaInsets.top)

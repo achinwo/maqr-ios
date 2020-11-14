@@ -171,17 +171,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         UNUserNotificationCenter.current().delegate = self
         
-        let cloud = SBPlatformDestination(appID: "Qxn1Mn", appSecret: "21jhvbtglMuzJhilb6m97owddeQdbjkq", encryptionKey: "xVDA8e89pdb7AuxldgYsNuezdqlHriko") // to cloud
-        cloud.analyticsUserName = UIDevice.current.name
-        cloud.sendingPoints.threshold = 2
+//        let cloud = SBPlatformDestination(appID: "Qxn1Mn", appSecret: "21jhvbtglMuzJhilb6m97owddeQdbjkq", encryptionKey: "xVDA8e89pdb7AuxldgYsNuezdqlHriko") // to cloud
+//        cloud.analyticsUserName = UIDevice.current.name
+//        cloud.sendingPoints.threshold = 2
         
-        logger.addDestination(cloud)
+        //SwiftyBeaver
+        
+        //logger.addDestination(cloud)
         
         if debug {
             JoliApi.Environment.loadEnvConfig()
         }
         
         self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: nil)
+        
+        logger.addDestination(ServerDestination(url: self.env.baseUrl.http, urlSession: self.appState.api.urlSession))
         
         logger.debug("[AppDelegate#willFinishLaunchingWithOptions] notifOptions:\(String(describing: launchOptions))")
         return true

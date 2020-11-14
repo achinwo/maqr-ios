@@ -166,6 +166,7 @@ struct JoliApp: AppClip {
     func onLocalSpotifyAuth(_ auth: AuthToken?, _ error: Error?){
         print("[AppView#onLocalSpotifyAuth] auth: \(String(describing: auth)), error: \(String(describing: error))")
         coordinator.authorizedSpotify = auth
+        coordinator.refreshDevices()
     }
     
     struct SerializedAuths: Codable {
@@ -437,6 +438,9 @@ struct JoliApp: AppClip {
                     }
                     .then() { authToken in
                         self.coordinator.authorizedSpotify = authToken
+                    }
+                    .catch() { error in
+                        logger.error("[App#authentication] error: \(error)")
                     }
             }
     }

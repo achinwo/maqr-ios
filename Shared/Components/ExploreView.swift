@@ -353,8 +353,9 @@ public struct ExploreView: JoliView {
                                 promise(.success(views))
                             }
                             .catch() { error in
-                                print("[searchTracks] error: \(error)")
                                 promise(.success([]))
+                                
+                                logger.error("[searchSpotify] error: \(error)")
                             }
                     }.eraseToAnyPublisher()
                 }
@@ -383,8 +384,8 @@ public struct ExploreView: JoliView {
                                 promise(.success(views))
                             }
                             .catch() { error in
-                                print("[searchTracks] error: \(error)")
                                 promise(.success([]))
+                                logger.error("[searchPlayrooms] error: \(error)")
                             }
                     }.eraseToAnyPublisher()
                 }
@@ -477,7 +478,7 @@ public struct ExploreView: JoliView {
         appendViews(res.tracks, .tracks) { track, result in
             Search.ResultView(result: result){
                 GeometryReader() { proxy in
-                    TrackView2(track: .constant(track)).eraseToAnyView()
+                    TrackView2<Never>(track: .constant(track)).eraseToAnyView()
                 }
             }
         }
