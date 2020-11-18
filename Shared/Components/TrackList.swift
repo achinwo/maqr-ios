@@ -339,12 +339,12 @@ public extension PlayState {
 extension TrackView2 where AddonView: View {
     
     public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false,
-                onHeartTapped: (() -> Void)? = nil, @ViewBuilder content: () -> AddonView){
+                onHeartTapped: (() -> Void)? = nil, @ViewBuilder content: (Playable, UIImageColors?) -> AddonView){
         self.onHeartTapped = onHeartTapped
         self._hearts = hearts
         self._track = track
         self.useDynamicColors = useDynamicColors
-        self.addonView = content()
+        self.addonView = content(self.track, nil)
     }
     
 }
@@ -361,10 +361,10 @@ public struct TrackList<AddonView: View>: JoliView {
     @Binding var playroom: Musicroom?
     
     @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
-    let addonViewFunc: () -> AddonView
+    let addonViewFunc: (Playable, UIImageColors?) -> AddonView
     
     public init(tracks: Binding<[Playable]>, votes: Binding<[QueuedTrackVote]>? = .constant([]), preview: Binding<AppPreview?> = .constant(nil),
-                playroom: Binding<Musicroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil, @ViewBuilder addonView: @escaping () -> AddonView){
+                playroom: Binding<Musicroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil, @ViewBuilder addonView: @escaping (Playable, UIImageColors?) -> AddonView){
         self.onVoteTapped = onVoteTapped
         self._tracks = tracks
         self._preview = preview
@@ -432,27 +432,13 @@ public struct TrackList<AddonView: View>: JoliView {
                         
                         self.onVoteTapped?(queued)
                         
-                    } content: { () -> AddonView in
-                        return addonViewFunc()
-                    }.id(track.uri)
+                    } content: { (trackObj, colors) -> AddonView in
+                        return addonViewFunc(trackObj, colors)
+                    }
+                    .id(track.uri)
                 }
         }
-        .onChange(of: self.votes) { votes in
-            var mapping: [Int: [QueuedTrackVote]] = [:]
-            
-            for vote in votes {
-                
-                guard var existing = mapping[vote.queuedTrackId] else {
-                    mapping[vote.queuedTrackId] = []
-                    continue
-                }
-                
-                existing.append(vote)
-                mapping[vote.queuedTrackId] = existing
-            }
-            
-            self.votesByTrack = mapping
-        }
+        
     }
     
 }
@@ -460,7 +446,7 @@ public struct TrackList<AddonView: View>: JoliView {
 struct TrackList_Previews: PreviewProvider {
     
     static var previews: some View {
-        TrackList(tracks: .constant(SEED_DATA.tracks)) { EmptyView() }
+        TrackList(tracks: .constant(SEED_DATA.tracks)) { (_, _) in EmptyView() }
     }
     
 }

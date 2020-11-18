@@ -11,6 +11,7 @@ import JoliCore
 import JoliApi
 import Promises
 import Combine
+import UIImageColors
 //import Sourceful
 
 public typealias Color = SwiftUI.Color
@@ -120,20 +121,20 @@ struct ListenView: JoliView {
     }
     
     @State private var membership: [PlayroomMembership] = []
-        
-//        SEED_DATA.users.map() { user in
-//        guard user.id != 3 else {
-//            return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
-//        }
-//
-//        let act = [PlayroomMembership.ActivityStatus.offline,
-//                   PlayroomMembership.ActivityStatus.online].randomElement()!
-//
-//        let mem = PlayroomMembership(inviteStatus: .accepted,
-//                                     activityStatus: act,
-//                                     playroomId: 3, user: user)
-//        return mem
-//    }
+    
+    //        SEED_DATA.users.map() { user in
+    //        guard user.id != 3 else {
+    //            return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
+    //        }
+    //
+    //        let act = [PlayroomMembership.ActivityStatus.offline,
+    //                   PlayroomMembership.ActivityStatus.online].randomElement()!
+    //
+    //        let mem = PlayroomMembership(inviteStatus: .accepted,
+    //                                     activityStatus: act,
+    //                                     playroomId: 3, user: user)
+    //        return mem
+    //    }
     
     @State var liveTracks: [Spotify.Track] = []
     @State var playrooms: [Musicroom] = []
@@ -209,6 +210,7 @@ struct ListenView: JoliView {
     @State var tripLine: CGFloat = 0
     @State var loadingFinishedAt: Date? = nil
     @GestureState private var dragOffset = CGSize.zero
+    @State var requestingVoteTrackId: Int? = nil
     @State var isDragging = false {
         didSet {
             guard isDragging else { return }
@@ -222,6 +224,61 @@ struct ListenView: JoliView {
     private func refreshContent() {
         self.loadLiveTracks()
         self.loadPlayrooms()
+    }
+    
+    @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
+    
+    func addonView(track: Playable, colors: UIImageColors?) -> some View {
+        Group() {
+            if let track = track as? QueuedTrack {
+                let heart: Binding<Hearts?> = Binding() { () -> Hearts? in
+                    
+                    guard playroom != nil else {
+                        return nil
+                    }
+                    
+                    guard let count: Int = self.votesByTrack[track.id]?.count else {
+                        return Hearts(score: HeartLevel.empty.rawValue)
+                    }
+                    
+                    return Hearts(score: CGFloat(count) * HeartLevel.quarter.rawValue)
+                    
+                } set: { (heart, trasacton) in
+                    
+                }
+                
+                JoyMeterView(heart, textStyle: UIFont.TextStyle.title2, backgroundColor: Color.red.opacity(0.5))
+                    .padding()
+                    .padding(.trailing, Sizing.large)
+                    .foregroundColor(colors?.secondaryColor ?? Color.primary)
+                    .scaleEffect(x: self.requestingVoteTrackId == track.id ? 1.32 : 1, y: self.requestingVoteTrackId == track.id ? 1.32 : 1, anchor: .center)
+                    .onTapGesture {
+                        guard self.appCoordinator.voteRequestedSubject.value == nil else {
+                            return
+                        }
+                        
+                        self.appCoordinator.voteTrack(track)
+                            .then() { vote in
+                                self.votes.append(vote)
+                            }
+                            .catch() { voteError in
+                                
+                                guard let error = voteError as? AppCoordinator.ActionError else {
+                                    print("[ListenView] unrecognised error: \(voteError)")
+                                    return
+                                }
+                                
+                                switch error {
+                                case .insufficientHeartPoints:
+                                    self.appCoordinator.insufficientPointsAttempt += 1
+                                }
+                            }
+                    }
+            }
+        }
+        .onReceive(appCoordinator.voteRequestedSubject) { requested in
+            self.requestingVoteTrackId = requested
+        }
     }
     
     var contentView: some View {
@@ -281,37 +338,29 @@ struct ListenView: JoliView {
                         .padding(.top, Sizing.xxLarge * 2)
                         .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     } else {
-                        TrackList(tracks: self.$tracks, votes: self.$votes, preview: $preview, playroom: self.$playroom) { track in
-                            
-                            guard self.appCoordinator.voteRequestedSubject.value == nil else {
-                                return
-                            }
-                            
-                            self.appCoordinator.voteTrack(track)
-                                .then() { vote in
-                                    self.votes.append(vote)
-                                }
-                                .catch() { voteError in
-                                    
-                                    guard let error = voteError as? AppCoordinator.ActionError else {
-                                        print("[ListenView] unrecognised error: \(voteError)")
-                                        return
-                                    }
-                                    
-                                    switch error {
-                                        case .insufficientHeartPoints:
-                                            self.appCoordinator.insufficientPointsAttempt += 1
-                                    }
-                                }
-                        } addonView: {
-                            EmptyView()
-                        }
+                        TrackList(tracks: self.$tracks, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
                         .background(Color.white)
                         //.padding(.top, geoProxy.safeAreaInsets.top)
                         //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
                         .padding(.top, geoProxy.safeAreaInsets.top + 100)
                         .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
                         .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                        .onChange(of: self.votes) { votes in
+                            var mapping: [Int: [QueuedTrackVote]] = [:]
+                            
+                            for vote in votes {
+                                
+                                guard var existing = mapping[vote.queuedTrackId] else {
+                                    mapping[vote.queuedTrackId] = []
+                                    continue
+                                }
+                                
+                                existing.append(vote)
+                                mapping[vote.queuedTrackId] = existing
+                            }
+                            
+                            self.votesByTrack = mapping
+                        }
                         .onAppear(){
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                 guard let currentTrack = self.strip.playing else {

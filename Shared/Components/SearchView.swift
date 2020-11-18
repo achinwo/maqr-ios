@@ -191,7 +191,7 @@ public enum SearchResultLayout: View {
                 case .threeList(let results):
                     ForEach(results){ result in
                         if let tracks = result.tracks {
-                            TrackList(tracks: .constant(tracks as! [Track])) { EmptyView() }
+                            TrackList(tracks: .constant(tracks as! [Track])) { (_, _) in EmptyView() }
                         } else if let users = result.users {
                             List {
                                 ForEach(users) { user in
