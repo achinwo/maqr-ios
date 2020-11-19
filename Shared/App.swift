@@ -22,9 +22,9 @@ let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRjQGdtYWlsLm5ldCIsImNyZWF0ZWRBdCI6IjIwMjAtMTAtMzBUMTU6NDc6MTYuNzU5WiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0._ZUvHIetv4gDS7qYs6y65tIrEnj7Nkfs_BQGczOAf_k"
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkzQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTExLTAxVDIxOjQxOjU3Ljk2MloiLCJleHBpcmVzSW4iOjE0NDAwMDB9.5FiYrRI9a_QaBp1a46bRV5fZo-pH-L5bUNozGb-_k80"
-let TOKEN: String? = nil
+let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImhhbWluYXRhLmNhbWFyYUBnbWFpbC5jb20iLCJjcmVhdGVkQXQiOiIyMDIwLTExLTE5VDE5OjM0OjM0LjU4OVoiLCJleHBpcmVzSW4iOjE0NDAwMDB9._N7o8ytCuQpx4RCk4o-mfY99UmqElSRSkZ2goeIm1BE"
 #else
-let TOKEN: String? = nil
+let TOKEN: String? = nil //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImhhbWluYXRhLmNhbWFyYUBnbWFpbC5jb20iLCJjcmVhdGVkQXQiOiIyMDIwLTExLTE5VDE5OjM0OjM0LjU4OVoiLCJleHBpcmVzSW4iOjE0NDAwMDB9._N7o8ytCuQpx4RCk4o-mfY99UmqElSRSkZ2goeIm1BE"
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
 #endif
 
@@ -314,6 +314,8 @@ struct JoliApp: AppClip {
                 appState.api.auth = auth
                 self.auth = auth
                 
+                logger.error("[App#authentication] creds: \(credentials), auth: \(auth)")
+                
                 guard let auth = auth else {
                     return Promise(nil)
                 }
@@ -334,7 +336,7 @@ struct JoliApp: AppClip {
             .catch() { error in
                 logger.error("[App#authentication] creds: \(credentials), error: \(error)")
                 
-                guard case let .sessionToken(token) = credentials else { return }
+                guard case let .sessionToken(token) = credentials, let error = error as? SpotifyError, error != SpotifyError.unathorized else { return }
                 
                 let serialized = SerializedAuths(auths: self.auths.filter() { $0.session.token != token}.sorted(by: { $0.user.name < $1.user.name }),
                                                  createdBy: self.auth?.user.createdById,
@@ -452,7 +454,11 @@ struct JoliApp: AppClip {
 //                } else {
 //                    print("[AUTHS] nothing to set!")
 //                }
-                let token = TOKEN ?? activeSessionId
+                var token = TOKEN ?? activeSessionId
+                
+                if let rawToken = UserDefaults.standard.string(forKey: "active-session-id"), token == .empty {
+                    token = rawToken
+                }
                 
                 self.auths = self.authsData.isEmpty ? [] : (try? jsonDecoder.decode(SerializedAuths.self, from: authsData))?.auths ?? []
                 self.authenticate(.sessionToken(token))
