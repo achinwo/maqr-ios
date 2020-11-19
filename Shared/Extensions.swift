@@ -37,9 +37,9 @@ public extension View {
 
 public extension Search.Engine {
     
-    typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[Search.ResultView], Never>
+    typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[ExploreView.SearchResult], Never>
     
-    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod) -> AnyPublisher<[Search.ResultView], Never> {
+    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod) -> AnyPublisher<[ExploreView.SearchResult], Never> {
         let supported = categories.filter(){ supportedCategories.contains($0) }
         
         guard !supported.isEmpty else {

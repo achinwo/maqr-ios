@@ -74,7 +74,7 @@ public struct InvitePeopleView: JoliView {
                         .aspectRatio(contentMode: ContentMode.fit)
                         .padding()
                         //.padding(.top, Sizing.medium)
-                        .frame(idealWidth: screenWidth / 1.4, idealHeight: screenWidth / 1.4)
+                        .frame(idealWidth: screenWidth / 2, idealHeight: screenWidth / 2)
                     Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle")
                         .font(Font.footnote.weight(.light))
                         .foregroundColor(.secondary)

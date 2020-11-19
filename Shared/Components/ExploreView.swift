@@ -69,7 +69,7 @@ public struct ExploreView: JoliView {
     
     @State var selectedAreas: Set<Search.Category> = [.tracks, .artists, .albums, .playrooms]
     
-    @State var searchResults: [Search.ResultView] = [] {
+    @State var searchResults: [SearchResult] = [] {
         
         didSet {
             DispatchQueue.main.async {
@@ -109,19 +109,20 @@ public struct ExploreView: JoliView {
     }
     
     var resultsByCategory: [Search.Category: [Search.ResultView]] {
-        //var res:  = [:]
-//        for resultView in self.searchResults {
-//            let result = resultView.result
-//
-//            if var catResults = res[result.category] {
-//                catResults.append(resultView)
-//            } else {
-//                res[result.category] = [resultView]
-//            }
-//        }
         
         let res = self.searchResults.reduce(into: [Search.Category: [Search.ResultView]]()) { store, res in
-            store[res.result.category, default: []].append(res)
+            
+            var views: [Search.ResultView]
+            switch res {
+                case .playrooms(let q, let engine, let rooms):
+                    views = self.makeResultViews(q: q, playrooms: rooms, engine: engine)
+                case .spotifyResult(let q, _, let result):
+                    views = self.makeResultViews(q: q, res: result)
+            }
+            
+            for view in views {
+                store[view.result.category, default: []].append(view)
+            }
         }
         
         return res
@@ -317,6 +318,11 @@ public struct ExploreView: JoliView {
         }
     }
     
+    public enum SearchResult {
+        case playrooms(Search.Query, Search.Engine, [Playroom])
+        case spotifyResult(Search.Query, Search.Engine, Spotify.SearchResult)
+    }
+    
     // MARK: - Spotify Search
     private func updateSubscriptions() {
         if let cancel = self.searchResultPublisher {
@@ -327,7 +333,7 @@ public struct ExploreView: JoliView {
         self.searchResultPublisher = model.$query
             .removeDuplicates()
             .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInteractive))
-            .map() { q -> AnyPublisher<[Search.ResultView], Never> in
+            .map() { q -> AnyPublisher<[SearchResult], Never> in
                 
                 guard !q.isEmpty else {
                     
@@ -344,13 +350,14 @@ public struct ExploreView: JoliView {
                     currentSearchTerm = q
                 }
                 
-                let spotifyPub = spotifyEngine.search(q, self.selectedAreas) { (q, categories, limit) in
+                let spotifyPub = spotifyEngine.search(q, self.selectedAreas) { (q, categories, limit) ->
+                    AnyPublisher<[SearchResult], Never> in
                     
-                    return Future<[Search.ResultView], Never>() { promise in
-                        api.searchTracks(q: q, categories: categories, limit: limit)
+                    return Future<[SearchResult], Never>() { promise in
+                        api.searchSpotify(q: q, categories: categories, limit: limit)
                             .then(){ res in
-                                let views = self.makeResultViews(q: q, res: res)
-                                promise(.success(views))
+                                //let views = self.makeResultViews(q: q, res: res)
+                                promise(.success([.spotifyResult(q, spotifyEngine, res)]))
                             }
                             .catch() { error in
                                 promise(.success([]))
@@ -362,7 +369,7 @@ public struct ExploreView: JoliView {
                 
                 let joliPub = joliEngine.search(q, self.selectedAreas) { (q, categories, limit) in
                     
-                    return Future<[Search.ResultView], Never>() { promise in
+                    return Future<[SearchResult], Never>() { promise in
                         guard var url = URLComponents(string: "/api/search") else {
                             return promise(.success([]))
                         }
@@ -380,18 +387,19 @@ public struct ExploreView: JoliView {
                                              urlSession: api.urlSession,
                                              on: .global(qos: .userInitiated))
                             .then(){ rooms in
-                                let views = self.makeResultViews(q: q, playrooms: rooms, engine: joliEngine)
-                                promise(.success(views))
+                                //let views = self.makeResultViews(q: q, playrooms: rooms, engine: joliEngine)
+                                promise(.success([.playrooms(q, joliEngine, rooms)]))
                             }
                             .catch() { error in
                                 promise(.success([]))
                                 logger.error("[searchPlayrooms] error: \(error)")
                             }
-                    }.eraseToAnyPublisher()
+                    }
+                    .eraseToAnyPublisher()
                 }
                 
                 return Publishers.CombineLatest(spotifyPub, joliPub)
-                    .scan([Search.ResultView]()) { current, pair -> [Search.ResultView] in
+                    .scan([SearchResult]()) { current, pair -> [SearchResult] in
                         return pair.0 + pair.1
                     }
                     .handleEvents() { subs in
@@ -414,7 +422,6 @@ public struct ExploreView: JoliView {
             .switchToLatest()
             .receive(on: RunLoop.main)
             .assign(to: \.searchResults, on: self)
-            
         
         print("[searchResultPublisher] created: \(String(describing: searchResultPublisher))")
     }
@@ -478,7 +485,18 @@ public struct ExploreView: JoliView {
         appendViews(res.tracks, .tracks) { track, result in
             Search.ResultView(result: result){
                 GeometryReader() { proxy in
-                    TrackView2<Never>(track: .constant(track)).eraseToAnyView()
+                    TrackView2(track: .constant(track)) { (track, colors) in
+                        Group(){
+                            if self.playroom != nil {
+                                Image(systemName: "plus")
+                                    .font(Font.title2.weight(.thin))
+                                    .foregroundColor(.secondary)
+                                    .padding()
+                            }
+                        }
+                    }
+                    .id(self.playroom?.name)
+                    .eraseToAnyView()
                 }
             }
         }

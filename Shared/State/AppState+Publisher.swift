@@ -43,7 +43,7 @@ extension AppState {
                         return
                     }
                     
-                    self.currentSearchFuture = self.api.searchTracks(q: input, limit: 25)
+                    self.currentSearchFuture = self.api.searchSpotify(q: input, limit: 25)
                         .then() { promise(.success($0.tracks)) }
                         .catch() { logger.debug("[AppState] trackSearchResult: \($0)") }
                     
