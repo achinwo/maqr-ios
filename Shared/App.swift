@@ -24,7 +24,8 @@ let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkzQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTExLTAxVDIxOjQxOjU3Ljk2MloiLCJleHBpcmVzSW4iOjE0NDAwMDB9.5FiYrRI9a_QaBp1a46bRV5fZo-pH-L5bUNozGb-_k80"
 let TOKEN: String? = nil
 #else
-let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
+let TOKEN: String? = nil
+//let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
 #endif
 
 
@@ -167,6 +168,15 @@ struct JoliApp: AppClip {
         print("[AppView#onLocalSpotifyAuth] auth: \(String(describing: auth)), error: \(String(describing: error))")
         coordinator.authorizedSpotify = auth
         coordinator.refreshDevices()
+        
+        guard let auth = auth else {
+            return
+        }
+        
+        self.spotify.appRemote.connectionParameters.accessToken = auth.accessToken
+        self.spotify.accessToken = auth.accessToken
+        
+        self.authenticate(.spotifyRefreshToken(auth.refreshToken))
     }
     
     struct SerializedAuths: Codable {
@@ -296,6 +306,44 @@ struct JoliApp: AppClip {
         logger.debug("[authorizeSpotify] spotify authresult: \(mgr)")
     }
     
+    
+    func authenticate(_ credentials: JoliApi.AuthCredentials){
+        
+        appState.api.authenticate(credentials)
+            .then() { auth -> Promise<AuthToken?> in
+                appState.api.auth = auth
+                self.auth = auth
+                
+                guard let auth = auth else {
+                    return Promise(nil)
+                }
+                
+                var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
+                newAuths.append(auth)
+                
+                let serialized = SerializedAuths(auths: newAuths.sorted(by: { $0.user.name < $1.user.name }),
+                                                 createdBy: self.auth?.user.createdById,
+                                                 updatedBy: self.auth?.user.updatedById)
+                self.authsData = (try? jsonEncoder.encode(serialized)) ?? Data()
+                
+                return self.fetchSpotifyAuthToken().then() { $0 }
+            }
+            .then() { authToken in
+                self.coordinator.authorizedSpotify = authToken
+            }
+            .catch() { error in
+                logger.error("[App#authentication] creds: \(credentials), error: \(error)")
+                
+                guard case let .sessionToken(token) = credentials else { return }
+                
+                let serialized = SerializedAuths(auths: self.auths.filter() { $0.session.token != token}.sorted(by: { $0.user.name < $1.user.name }),
+                                                 createdBy: self.auth?.user.createdById,
+                                                 updatedBy: self.auth?.user.updatedById)
+                
+                self.authsData = (try? jsonEncoder.encode(serialized)) ?? Data()
+            }
+    }
+    
     @State var isSheetPresented: Bool = false
     @State var modalView: AppPreview? = nil {
         didSet {
@@ -404,44 +452,10 @@ struct JoliApp: AppClip {
 //                } else {
 //                    print("[AUTHS] nothing to set!")
 //                }
-                
-                self.auths = self.authsData.isEmpty ? [] : (try? jsonDecoder.decode(SerializedAuths.self, from: authsData))?.auths ?? []
                 let token = TOKEN ?? activeSessionId
                 
-//                guard let token = TOKEN else {
-//
-//                    let auth = auths.first() { $0.session.token == activeSessionId }
-//                    appState.api.auth = auth
-//                    self.auth = auth
-//
-//                    return
-//                }
-                
-                appState.api.authenticate(token: token)
-                    .then() { auth -> Promise<AuthToken?> in
-                        appState.api.auth = auth
-                        self.auth = auth
-                        
-                        guard let auth = auth else {
-                            return Promise(nil)
-                        }
-                        
-                        var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
-                        newAuths.append(auth)
-                        
-                        let serialized = SerializedAuths(auths: newAuths.sorted(by: { $0.user.name < $1.user.name }),
-                                                         createdBy: self.auth?.user.createdById,
-                                                         updatedBy: self.auth?.user.updatedById)
-                        self.authsData = (try? jsonEncoder.encode(serialized)) ?? Data()
-                        
-                        return self.fetchSpotifyAuthToken().then() { $0 }
-                    }
-                    .then() { authToken in
-                        self.coordinator.authorizedSpotify = authToken
-                    }
-                    .catch() { error in
-                        logger.error("[App#authentication] error: \(error)")
-                    }
+                self.auths = self.authsData.isEmpty ? [] : (try? jsonDecoder.decode(SerializedAuths.self, from: authsData))?.auths ?? []
+                self.authenticate(.sessionToken(token))
             }
     }
     
@@ -523,11 +537,11 @@ extension JoliApp {
             appState.spotifyWebAuthorize(urlComp)
                 .then() { auth in
                     logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
-                    self.spotify.appRemote.connectionParameters.accessToken = auth.accessToken
-                    self.spotify.accessToken = auth.accessToken
+                    self.onLocalSpotifyAuth(auth, nil)
                 }
                 .catch() { error in
                     logger.error("[SceneDelegate] spotify auth error: \(error)")
+                    self.onLocalSpotifyAuth(nil, error)
                 }
             return
         }
