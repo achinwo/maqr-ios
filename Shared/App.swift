@@ -22,7 +22,7 @@ let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRjQGdtYWlsLm5ldCIsImNyZWF0ZWRBdCI6IjIwMjAtMTAtMzBUMTU6NDc6MTYuNzU5WiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0._ZUvHIetv4gDS7qYs6y65tIrEnj7Nkfs_BQGczOAf_k"
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkzQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTExLTAxVDIxOjQxOjU3Ljk2MloiLCJleHBpcmVzSW4iOjE0NDAwMDB9.5FiYrRI9a_QaBp1a46bRV5fZo-pH-L5bUNozGb-_k80"
-let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImhhbWluYXRhLmNhbWFyYUBnbWFpbC5jb20iLCJjcmVhdGVkQXQiOiIyMDIwLTExLTE5VDE5OjM0OjM0LjU4OVoiLCJleHBpcmVzSW4iOjE0NDAwMDB9._N7o8ytCuQpx4RCk4o-mfY99UmqElSRSkZ2goeIm1BE"
+let TOKEN: String? = nil // "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImhhbWluYXRhLmNhbWFyYUBnbWFpbC5jb20iLCJjcmVhdGVkQXQiOiIyMDIwLTExLTE5VDE5OjM0OjM0LjU4OVoiLCJleHBpcmVzSW4iOjE0NDAwMDB9._N7o8ytCuQpx4RCk4o-mfY99UmqElSRSkZ2goeIm1BE"
 #else
 let TOKEN: String? = nil //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImhhbWluYXRhLmNhbWFyYUBnbWFpbC5jb20iLCJjcmVhdGVkQXQiOiIyMDIwLTExLTE5VDE5OjM0OjM0LjU4OVoiLCJleHBpcmVzSW4iOjE0NDAwMDB9._N7o8ytCuQpx4RCk4o-mfY99UmqElSRSkZ2goeIm1BE"
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
@@ -50,6 +50,8 @@ struct JoliApp: AppClip {
     
     @State var auth: Auth? = nil {
         didSet {
+            
+            logger.info("[App#auth] auth: \(String(describing: auth))")
             
             self.devices = []
             self.currentPlayroom = nil
@@ -159,22 +161,18 @@ struct JoliApp: AppClip {
     }
     
     func onLocalSpotifyPlayStateChanged(localPlayState: SPTAppRemotePlayerState) {
-        print("[AppView#onLocalPlayStateChanged] localPlayState: \(localPlayState.track.name)")
+        logger.info("[AppView#onLocalPlayStateChanged] localPlayState: \(localPlayState.track.name)")
         coordinator.playRequestedSubject.send(true)
         coordinator.playRequestedSubject.send(false)
     }
     
     func onLocalSpotifyAuth(_ auth: AuthToken?, _ error: Error?){
-        print("[AppView#onLocalSpotifyAuth] auth: \(String(describing: auth)), error: \(String(describing: error))")
+        logger.info("[AppView#onLocalSpotifyAuth] auth: \(String(describing: auth)), error: \(String(describing: error))")
         coordinator.authorizedSpotify = auth
-        coordinator.refreshDevices()
         
         guard let auth = auth else {
             return
         }
-        
-        self.spotify.appRemote.connectionParameters.accessToken = auth.accessToken
-        self.spotify.accessToken = auth.accessToken
         
         self.authenticate(.spotifyRefreshToken(auth.refreshToken))
     }
@@ -306,19 +304,22 @@ struct JoliApp: AppClip {
         logger.debug("[authorizeSpotify] spotify authresult: \(mgr)")
     }
     
-    
+    // MARK: - authenticate
     func authenticate(_ credentials: JoliApi.AuthCredentials){
         
+        if case let .sessionToken(token) = credentials, token.isEmpty {
+            logger.error("[App#authentication] call aborted, empty token")
+            return
+        }
+        
         appState.api.authenticate(credentials)
-            .then() { auth -> Promise<AuthToken?> in
-                appState.api.auth = auth
-                self.auth = auth
-                
-                logger.error("[App#authentication] creds: \(credentials), auth: \(auth)")
+            .then() { auth in
                 
                 guard let auth = auth else {
-                    return Promise(nil)
+                    return
                 }
+                
+                logger.error("[App#authentication] creds: \(credentials), auth: \(auth)")
                 
                 var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
                 newAuths.append(auth)
@@ -328,10 +329,8 @@ struct JoliApp: AppClip {
                                                  updatedBy: self.auth?.user.updatedById)
                 self.authsData = (try? jsonEncoder.encode(serialized)) ?? Data()
                 
-                return self.fetchSpotifyAuthToken().then() { $0 }
-            }
-            .then() { authToken in
-                self.coordinator.authorizedSpotify = authToken
+                appState.api.auth = auth
+                self.auth = auth
             }
             .catch() { error in
                 logger.error("[App#authentication] creds: \(credentials), error: \(error)")
@@ -420,13 +419,13 @@ struct JoliApp: AppClip {
                 
                 self.assertWebsocketConnected()
             }
-            .onReceive(coordinator.$activeSessionToken) { token in
-                
-                print("[AppView] received new session token: \(token)")
+            .onReceive(coordinator.$activeSessionToken) { token in // MARK: - $activeSessionToken
                 
                 guard let token = token else {
                     return
                 }
+                
+                print("[AppView] received new session token: \(token)")
                 
                 guard token != activeSessionId else {
                     return
@@ -437,10 +436,19 @@ struct JoliApp: AppClip {
                 
                 appState.api.auth = auth
                 self.auth = auth
+                
+                DispatchQueue.main.async {
+                    self.fetchSpotifyAuthToken()
+                        .then() { authToken in
+                            self.coordinator.authorizedSpotify = authToken
+                        }
+                }
             }
             .onReceive(self.coordinator.$authorizedSpotify) { authToken in
                 spotifyDelegateInstance.accessToken = authToken?.accessToken
                 spotifyDelegateInstance.remoteConnect(token: authToken?.accessToken)
+                
+                coordinator.refreshDevices()
             }
             .onAppear() {
                 logger.debug("[Joli] setting coordinator animation namespace to \(namespace) - activeSessionId: \(activeSessionId)")
@@ -454,10 +462,10 @@ struct JoliApp: AppClip {
 //                } else {
 //                    print("[AUTHS] nothing to set!")
 //                }
-                var token = TOKEN ?? activeSessionId
+                let token = TOKEN ?? activeSessionId
                 
-                if let rawToken = UserDefaults.standard.string(forKey: "active-session-id"), token == .empty {
-                    token = rawToken
+                guard token != .empty else {
+                    return
                 }
                 
                 self.auths = self.authsData.isEmpty ? [] : (try? jsonDecoder.decode(SerializedAuths.self, from: authsData))?.auths ?? []
@@ -542,7 +550,7 @@ extension JoliApp {
         if let redirectUrl = appState.resolveSpotifyRedirectUrl(url), let urlComp = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: false) {
             appState.spotifyWebAuthorize(urlComp)
                 .then() { auth in
-                    logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
+                    //logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
                     self.onLocalSpotifyAuth(auth, nil)
                 }
                 .catch() { error in

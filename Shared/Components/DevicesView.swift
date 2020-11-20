@@ -70,14 +70,22 @@ public struct DevicesView: JoliView {
                         let auth = item.element
                         Text("\(auth.user.ranking.emoji) \(auth.user.name)")
                             .tag(item.offset)
-//                            .onTapGesture() {
-//                                self.selectedAuthToken = auth.session.token
-//                            }
                     }
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.vertical, Sizing.small)
                 .id(self.selectedAuthToken)
+                
+                Divider()
+            } else if let auth = self.auths.first {
+                HStack() {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(auth.user.name).font(.headline).foregroundColor(.gray)
+                        Text(auth.user.ranking.description.lowercased()).font(.footnote).foregroundColor(.gray)
+                    }
+                    .padding()
+                    Spacer()
+                }
                 
                 Divider()
             }

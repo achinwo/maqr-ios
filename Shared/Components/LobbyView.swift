@@ -20,7 +20,7 @@ public struct LobbyView: JoliView {
     @Binding var isLoading: Bool
     let onPlayroomSelected: ((Playroom) -> Void)?
     
-    @State var authToken: AuthToken? = nil
+    @State var refreshTokenSpotify: String? = nil
     @State var bannerDisplayedAt: Date? = nil
     
     public var body: some View {
@@ -31,7 +31,7 @@ public struct LobbyView: JoliView {
                     .opacity(self.isLoading ? 1 : 0)
                 
                 Group(){
-                    if self.authToken == nil && self.bannerDisplayedAt != nil {
+                    if self.refreshTokenSpotify == nil && self.bannerDisplayedAt != nil {
                         Button() {
                             self.appCoordinator.authorizeSpotify()
                         } label: {
@@ -168,8 +168,8 @@ public struct LobbyView: JoliView {
             }
             //.frame(height: proxy.size.height)
         }
-        .onReceive(appCoordinator.$authorizedSpotify) { auth in
-            self.authToken = auth
+        .onReceive(appCoordinator.authSubject) { auth in
+            self.refreshTokenSpotify = auth?.user.refreshTokenSpotify
         }
         .onAppear() {
             
