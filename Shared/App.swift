@@ -381,6 +381,14 @@ struct JoliApp: AppClip {
                 self.authorizeSpotify()
                 callback(nil)
             }
+            .onReceive(coordinator.$spotifyAuthRequestedAt) { requestedAt in
+                
+                guard requestedAt != nil else {
+                    return
+                }
+                
+                spotifyDelegateInstance.requestSpotifyAccess()
+            }
             .onReceive(coordinator.$localPlayRequested) { localRequest in
                 
                 guard let localRequest = localRequest, let spotifyRemote = self.spotifyRemote else {

@@ -303,9 +303,9 @@ struct ListenView: JoliView {
                                 self.votes = []
                                 self.playroom = room
                             }
-                            .frame(width: screenWidth * 0.9)
                         }
-                        .frame(minHeight: screenHeight * 0.7)
+                        .frame(width: screenWidth)
+                        .frame(minHeight: screenHeight * 1.5)
                         .background(Color.white)
                         .onChange(of: self.playroom) { value in
                             guard value == nil else {

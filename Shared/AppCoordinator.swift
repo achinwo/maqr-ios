@@ -61,6 +61,7 @@ public final class AppCoordinator: ObservableObject {
     
     @Published public var authorizedSpotify: AuthToken? = nil
     @Published public var spotifyAuthCallback: ((AuthToken?) -> Void)? = nil
+    @Published public var spotifyAuthRequestedAt: Date? = nil
     
     private var allSearchengines = [spotifyEngine]
     

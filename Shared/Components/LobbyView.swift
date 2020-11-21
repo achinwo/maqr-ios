@@ -11,6 +11,44 @@ import JoliCore
 import JoliApi
 import Promises
 
+public struct SpotifyConnectButton: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    
+    public var body: some View {
+        Button() {
+            self.appCoordinator.authorizeSpotify()
+        } label: {
+            
+            HStack() {
+                Spacer()
+                Image(uiImage: #imageLiteral(resourceName: "Spotify_Icon_RGB_Green.png"))
+                    .resizable()
+                    .frame(width: 64, height: 64, alignment: .center)
+                VStack(alignment: .leading){
+                    Text("Connect to Spotify ")
+                        .font(.subheadline)
+                        .foregroundColor(Color.green.opacity(0.9))
+                        + Text("Premium")
+                        .font(Font.subheadline.weight(.semibold))
+                        .foregroundColor(.green)
+                    Text("Access Spotify's vast library of tracks, podcasts, shows, and more.")
+                        .font(Font.caption.weight(.light))
+                        .foregroundColor(.primary)
+                }
+                Spacer()
+            }
+            .padding()
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.green.opacity(0.7), lineWidth: 2)
+        )
+        .background(Color.green.opacity(0.1))
+    }
+    
+}
+
 public struct LobbyView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -20,8 +58,11 @@ public struct LobbyView: JoliView {
     @Binding var isLoading: Bool
     let onPlayroomSelected: ((Playroom) -> Void)?
     
-    @State var refreshTokenSpotify: String? = nil
+    @SceneStorage("refreshTokenSpotify") var refreshTokenSpotify: String = .empty
     @State var bannerDisplayedAt: Date? = nil
+    
+    @State var auths: [Auth] = []
+    @State var activeSessionId: String? = nil
     
     public var body: some View {
         GeometryReader() { proxy in
@@ -31,36 +72,8 @@ public struct LobbyView: JoliView {
                     .opacity(self.isLoading ? 1 : 0)
                 
                 Group(){
-                    if self.refreshTokenSpotify == nil && self.bannerDisplayedAt != nil {
-                        Button() {
-                            self.appCoordinator.authorizeSpotify()
-                        } label: {
-                            
-                            HStack() {
-                                Spacer()
-                                Image(uiImage: #imageLiteral(resourceName: "Spotify_Icon_RGB_Green.png"))
-                                    .resizable()
-                                    .frame(width: 64, height: 64, alignment: .center)
-                                VStack(alignment: .leading){
-                                    Text("Connect to Spotify ")
-                                        .font(.subheadline)
-                                        .foregroundColor(Color.green.opacity(0.9))
-                                        + Text("Premium")
-                                        .font(Font.subheadline.weight(.semibold))
-                                        .foregroundColor(.green)
-                                    Text("Access Spotify's vast library of tracks, podcasts, shows, and more.")
-                                        .font(Font.caption.weight(.light))
-                                        .foregroundColor(.primary)
-                                }
-                                Spacer()
-                            }
-                            .padding()
-                        }
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.green.opacity(0.7), lineWidth: 2)
-                        )
-                        .background(Color.green.opacity(0.1))
+                    if self.auths.isEmpty && self.bannerDisplayedAt != nil {
+                        SpotifyConnectButton()
                         .padding()
                     }
                 }
@@ -161,7 +174,53 @@ public struct LobbyView: JoliView {
                         
                         Toggle("Autoplay", isOn: .constant(false))
                             .labelsHidden()
+                            .padding()
                     }
+                    .padding(.top)
+                    
+                    VStack(alignment: .leading){
+                        HStack(){
+                            Text("Spotify Accounts")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Button() {
+                                self.appCoordinator.spotifyAuthRequestedAt = Date()
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(Font.title2.weight(.thin))
+                                    .foregroundColor(.secondary)
+                                    .padding()
+                            }
+                        }
+                        
+                        if self.auths.isEmpty {
+                            SpotifyConnectButton().padding()
+                        }
+                        
+                        ForEach(self.auths, id: \.session.token) { auth in
+                            HStack() {
+                                
+                                let color = self.activeSessionId == auth.session.token ? Color.green : Color.gray
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(auth.user.name).font(.headline).foregroundColor(color)
+                                    Text(auth.user.ranking.description.lowercased()).font(.footnote).foregroundColor(Color.gray)
+                                }
+                                Spacer()
+                                Image(systemName: "minus")
+                                    .font(Font.largeTitle.weight(.thin))
+                                    .foregroundColor(.gray)
+                                    .padding()
+                            }
+                            .padding([.top, .horizontal])
+                        }
+                    }
+                    .padding(.top)
+                    .onReceive(self.appCoordinator.authsSubject) { auths in
+                        self.auths = auths
+                    }
+                    
                 }
                 .id("settings")
                 
@@ -169,7 +228,10 @@ public struct LobbyView: JoliView {
             //.frame(height: proxy.size.height)
         }
         .onReceive(appCoordinator.authSubject) { auth in
-            self.refreshTokenSpotify = auth?.user.refreshTokenSpotify
+            self.refreshTokenSpotify = auth?.user.refreshTokenSpotify ?? .empty
+        }
+        .onReceive(appCoordinator.$activeSessionToken) { activeSessionId in
+            self.activeSessionId = activeSessionId
         }
         .onAppear() {
             
