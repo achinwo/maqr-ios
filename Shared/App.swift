@@ -135,9 +135,7 @@ struct JoliApp: AppClip {
         
         self.websocket = Socket(url: url.appendingPathComponent("/ws"))
         
-        let publisher = self.websocket.publish(PlayState.self, interval: playbackRefreshRate, path: \.progressMs, resolver: cb)
-        
-        self.coordinator = AppCoordinator(publisher)
+        self.coordinator = AppCoordinator(self.websocket.publish(PlayState.self, interval: playbackRefreshRate, path: \.progressMs, resolver: cb))
         
         self.websocket.onConnect = self.onConnectionStateChanged
         
@@ -153,10 +151,11 @@ struct JoliApp: AppClip {
         }
         
         self.authPublishCancel = self.websocket.deserialize(AuthToken.self)
+            .autoconnect()
             .sink() { completion in
-                print("[AppView#AuthToken] completion: \(completion)")
+                logger.info("[AppView#AuthToken] completion: \(completion)")
             } receiveValue: { auth in
-                print("[AppView#AuthToken] auth: \(auth)")
+                logger.info("[AppView#AuthToken] auth: \(auth)")
             }
     }
     
@@ -299,7 +298,7 @@ struct JoliApp: AppClip {
         }
         
         //spotifyRemote.imageAPI
-        let mgr = spotifyDelegateInstance.requestSpotifyAccess(uri: uri)
+        let mgr = spotifyDelegateInstance.requestSpotifyAccess(trackUri: uri)
         
         logger.debug("[authorizeSpotify] spotify authresult: \(mgr)")
     }
@@ -456,7 +455,9 @@ struct JoliApp: AppClip {
                 spotifyDelegateInstance.accessToken = authToken?.accessToken
                 spotifyDelegateInstance.remoteConnect(token: authToken?.accessToken)
                 
-                coordinator.refreshDevices()
+                DispatchQueue.main.async {
+                    coordinator.refreshDevices()
+                }
             }
             .onAppear() {
                 logger.debug("[Joli] setting coordinator animation namespace to \(namespace) - activeSessionId: \(activeSessionId)")

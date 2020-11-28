@@ -224,7 +224,7 @@ public struct LobbyView: JoliView {
                 }
                 .id("settings")
                 
-            }
+            }.padding()
             //.frame(height: proxy.size.height)
         }
         .onReceive(appCoordinator.authSubject) { auth in

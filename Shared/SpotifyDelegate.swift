@@ -128,7 +128,7 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
         return spotifySessionManager.isSpotifyAppInstalled
     }()
     
-    func requestSpotifyAccess(uri: String? = nil) -> SPTSessionManager {
+    func requestSpotifyAccess(trackUri: String? = nil, alwaysShowAuthorizationDialog: Bool = false) -> SPTSessionManager {
         //"app-remote-control streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-birthdate user-read-email user-read-private"
         let requestedScopes: SPTScope = [
             .appRemoteControl,
@@ -154,10 +154,10 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
         //https://localhost:8080/spotify_callback/
         configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
         
-        configuration.playURI = uri
+        configuration.playURI = trackUri
         let mgr = SPTSessionManager(configuration: configuration, delegate: self)
         
-        mgr.alwaysShowAuthorizationDialog = true
+        mgr.alwaysShowAuthorizationDialog = alwaysShowAuthorizationDialog
         mgr.initiateSession(with: requestedScopes, options: .default)
         
         return mgr

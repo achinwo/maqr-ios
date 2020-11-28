@@ -281,6 +281,49 @@ struct ListenView: JoliView {
         }
     }
     
+    var lobbyView: some View {
+        ZStack(){
+            LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, isLoading: self.$loadingLiveTracks) { room in
+                self.tracks = []
+                self.votes = []
+                self.playroom = room
+            }
+        }
+        .frame(width: screenWidth)
+        .frame(minHeight: screenHeight * 1.5)
+        .background(Color.white)
+        .onChange(of: self.playroom) { value in
+            guard value == nil else {
+                return
+            }
+            
+            self.refreshContent()
+        }
+        .onFrameChange() { value in
+            
+            guard isDragging else { return }
+            
+            if value.origin.y < tripLine, isDragging {
+                DispatchQueue.main.async {
+                    self.tripLine = 0
+                }
+            }
+            
+            guard value.origin.y >= 100 && self.tripLine < 100, !self.loadingLiveTracks else { return }
+            
+            DispatchQueue.main.async {
+                self.tripLine = value.origin.y
+                
+                withImpact(.rigid) {
+                    self.refreshContent()
+                    print("[] Frame chnaged: \(value)")
+                }
+            }
+        }
+        .padding(.top, Sizing.xxLarge * 2)
+        .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+    }
+    
     var contentView: some View {
         ScrollViewReader() { scrollProxy in
             GeometryReader() { proxy in
@@ -296,47 +339,7 @@ struct ListenView: JoliView {
                 
                 ScrollView(.vertical, showsIndicators: true) {
                     if playroom == nil {
-                        
-                        ZStack(){
-                            LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, isLoading: self.$loadingLiveTracks) { room in
-                                self.tracks = []
-                                self.votes = []
-                                self.playroom = room
-                            }
-                        }
-                        .frame(width: screenWidth)
-                        .frame(minHeight: screenHeight * 1.5)
-                        .background(Color.white)
-                        .onChange(of: self.playroom) { value in
-                            guard value == nil else {
-                                return
-                            }
-                            
-                            self.refreshContent()
-                        }
-                        .onFrameChange() { value in
-                            
-                            guard isDragging else { return }
-                            
-                            if value.origin.y < tripLine, isDragging {
-                                DispatchQueue.main.async {
-                                    self.tripLine = 0
-                                }
-                            }
-                            
-                            guard value.origin.y >= 100 && self.tripLine < 100, !self.loadingLiveTracks else { return }
-                            
-                            DispatchQueue.main.async {
-                                self.tripLine = value.origin.y
-                                
-                                withImpact(.rigid) {
-                                    self.refreshContent()
-                                    print("[] Frame chnaged: \(value)")
-                                }
-                            }
-                        }
-                        .padding(.top, Sizing.xxLarge * 2)
-                        .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                        self.lobbyView
                     } else {
                         TrackList(tracks: self.$tracks, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
                         .background(Color.white)
