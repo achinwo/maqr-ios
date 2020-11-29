@@ -38,7 +38,10 @@ extension QueuedTrack {
         guard let bg = track?.colorBackground, let primary = track?.colorPrimary, let sec = track?.colorSecondary, let detail = track?.colorDetail else {
             return nil
         }
-        return .init(background: UIColor(hexString: bg), primary: UIColor(hexString: primary), secondary: UIColor(hexString: sec), detail: UIColor(hexString: detail))
+        return .init(background: UIColor(hex: bg),
+                     primary: UIColor(hex: primary),
+                     secondary: UIColor(hex: sec),
+                     detail: UIColor(hex: detail))
     }
     
 }
@@ -101,8 +104,6 @@ public struct TrackView2<AddonView: View>: JoliView {
         appCoordinator.activeDeviceSubject.value
     }
     
-    let onHeartTapped: (() -> Void)?
-    
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @State var invalidPlayAttempts = 0
@@ -120,8 +121,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                 }
         }
     
-    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, onHeartTapped: (() -> Void)? = nil){
-        self.onHeartTapped = onHeartTapped
+    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false){
         self._hearts = hearts
         self._track = track
         self.useDynamicColors = useDynamicColors
@@ -189,11 +189,11 @@ public struct TrackView2<AddonView: View>: JoliView {
         return HStack(alignment: .center) {
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
-                         placeholderImage: UIImage(systemName: "timelapse")!) { (loadedImage, error) in
+                         placeholderImage: UIImage(systemName: "timelapse")!) { (_, _) in
                 
-                guard let loadedImage = loadedImage, useDynamicColors else {
-                    return
-                }
+//                guard let loadedImage = loadedImage, useDynamicColors else {
+//                    return
+//                }
                 
             }
             .frame(width: 64, height: 64, alignment: .center)
@@ -338,9 +338,7 @@ public extension PlayState {
 
 extension TrackView2 where AddonView: View {
     
-    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false,
-                onHeartTapped: (() -> Void)? = nil, @ViewBuilder content: (Playable, UIImageColors?) -> AddonView){
-        self.onHeartTapped = onHeartTapped
+    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, @ViewBuilder content: (Playable, UIImageColors?) -> AddonView){
         self._hearts = hearts
         self._track = track
         self.useDynamicColors = useDynamicColors
@@ -423,16 +421,7 @@ public struct TrackList<AddonView: View>: JoliView {
                     
                     let track = item.element
                     
-                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(item.offset), useDynamicColors: false) {
-                        print("[Heart Tapped] \(track.title)")
-                        
-                        guard let queued = track as? QueuedTrack else {
-                            return
-                        }
-                        
-                        self.onVoteTapped?(queued)
-                        
-                    } content: { (trackObj, colors) -> AddonView in
+                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(item.offset), useDynamicColors: false) { (trackObj, colors) -> AddonView in
                         return addonViewFunc(trackObj, colors)
                     }
                     .id(track.uri)

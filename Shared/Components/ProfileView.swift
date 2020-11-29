@@ -86,7 +86,7 @@ public struct UserProfileView2: JoliView {
     var formView: some View {
         
         let imageCallback = { (img: UIImage?, error: Error?) in
-            print("image: \(img), error: \(error)")
+            print("image: \(String(describing: img)), error: \(String(describing: error))")
             
             guard var user = user as? User,
                   let image = img?.resizeImage(CGSize(width: 640, height: 640)) else {

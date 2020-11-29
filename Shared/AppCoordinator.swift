@@ -73,13 +73,7 @@ public final class AppCoordinator: ObservableObject {
         
         self.spotifyAuthCallback = { (auth: AuthToken?) -> Void in
             self.spotifyAuthCallback = nil
-            print("[AppCoordinator#authorizeSpotify] auth: \(String(describing: auth))")
-            
-            guard let auth = auth else {
-                return
-            }
-            
-            print("[AppCoordinator#authorizeSpotify] do nothing")
+            print("[AppCoordinator#authorizeSpotify] callback auth: \(String(describing: auth))")
         }
     }
     

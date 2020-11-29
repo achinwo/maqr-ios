@@ -128,6 +128,7 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
         return spotifySessionManager.isSpotifyAppInstalled
     }()
     
+    @discardableResult
     func requestSpotifyAccess(trackUri: String? = nil, alwaysShowAuthorizationDialog: Bool = false) -> SPTSessionManager {
         //"app-remote-control streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-birthdate user-read-email user-read-private"
         let requestedScopes: SPTScope = [

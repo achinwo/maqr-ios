@@ -125,7 +125,6 @@ public struct ImageView<Content: View>: View {
             )
         } else {
             let network = NetworkImage(url: imageURL) { (image, error) in
-                print("Got Image: \(image) - \(error)")
                 uiImage = image
                 self.onLoaded?(image, error)
             } content: {

@@ -41,20 +41,7 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
     private var rawMessage = PassthroughSubject<SocketMessage, SocketError>()
     
-    private var completion: Subscribers.Completion<SocketError>? = nil {
-        didSet {
-            
-            guard let completion = completion else {
-                return
-            }
-            
-//            self.soc = WebSocket(request: request, certPinner: FoundationSecurity(allowSelfSigned: allowSelfSigned))
-//            self.soc.delegate = self
-//
-//            rawMessage.send(completion: completion)
-//            self.rawMessage = PassthroughSubject<SocketMessage, SocketError>()
-        }
-    }
+    private var completion: Subscribers.Completion<SocketError>? = nil
     
     public init(url: URL, timeoutInterval: TimeInterval = 5, allowSelfSigned: Bool = true, onConnect: ((Socket, Bool) -> Void)? = nil) {
         self.onConnect = onConnect
@@ -158,7 +145,7 @@ extension Socket: WebSocketDelegate {
                 
             case .error(let error):
                 isConnected = false
-                Swift.print("websocket is error: \(error)")
+                Swift.print("websocket is error: \(String(describing: error))")
                 self.completion =  Subscribers.Completion.failure(SocketError.error(error))
         }
     }

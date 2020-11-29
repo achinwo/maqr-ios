@@ -400,7 +400,7 @@ struct JoliApp: AppClip {
                 }
                 
                 self.spotifyRemote?.playerAPI?.play(localRequest.track.uri, asRadio: true) { (res, error) in
-                    print("[App#$localPlayRequested] play: \(res) - \(error)")
+                    print("[App#$localPlayRequested] play: \(String(describing: res)) - \(String(describing: error))")
                 }
                 
                 print("[App#$localPlayRequested] local play: \(localRequest)")

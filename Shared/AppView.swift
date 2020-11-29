@@ -195,7 +195,7 @@ public struct AppView2: JoliView {
                         }
                     }
                     .onChange(of: playroom) { room in
-                        guard let pla = playroom else {
+                        guard playroom != nil else {
                             return
                         }
                         

@@ -32,7 +32,7 @@ struct MusicLibraryView: MusicroomTabView {
         var durationMs = 0.0
         
         for track in tracks {
-            durationMs = durationMs + Double(track.duration ?? 29000)
+            durationMs = durationMs + Double(track.duration)
         }
         
         let formatter = DateComponentsFormatter()

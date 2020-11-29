@@ -88,6 +88,7 @@ struct ListenView: JoliView {
         self._currentUser = currentUser
     }
     
+    @discardableResult
     func fetchTracks(_ room: Musicroom) -> Promise<[QueuedTrack]> {
         
         return QueuedTrack.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)

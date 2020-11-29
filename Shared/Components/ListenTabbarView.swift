@@ -192,7 +192,7 @@ struct ListenTabbarView: JoliView {
                                 self.isExpanded.toggle()
                             }
                         }
-                        //.gesture(combined)
+                        .gesture(combined)
                     //.offset(x: !(self.isExpanded || users.isEmpty) ? Sizing.small / 2 * -1 : 0, y: 0)
                     //.alignmentGuide(.custom) { dims in dims[.custom] }
                 }

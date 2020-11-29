@@ -38,7 +38,7 @@ class WebViewDelegate: NSObject, WKNavigationDelegate {
     }
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        logger.info("[WebViewDelegate] decidePolicyFor host: \(navigationAction.request.url?.host)")
+        logger.info("[WebViewDelegate] decidePolicyFor host: \(String(describing: navigationAction.request.url?.host))")
 
         decisionHandler(.allow)
     }
@@ -124,7 +124,7 @@ struct SettingsView: View {
                 req.httpBody = httpBody as Data
                 
                 let task = self.appState.api.urlSession.uploadTask(with: req, from: httpBody) { (data, resp, error) in
-                    logger.debug("data=\(data), resp=\(resp), error=\(error)")
+                    logger.debug("data=\(String(describing: data)), resp=\(String(describing: resp)), error=\(String(describing: error))")
                 }
                 task.resume()
                 
