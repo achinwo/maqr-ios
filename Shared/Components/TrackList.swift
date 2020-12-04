@@ -46,10 +46,20 @@ extension QueuedTrack {
     
 }
 
+extension UIColor {
+    
+    public convenience init(hex: String) {
+        let rgba = Color.rgbaFrom(hex: hex)
+        self.init(red: CGFloat(rgba.red), green: CGFloat(rgba.green), blue: CGFloat(rgba.blue), alpha: CGFloat(rgba.alpha))
+    }
+    
+}
+
 extension Color {
-    init(hex: String) {
+    
+    static func rgbaFrom(hex: String) -> (red: Double, green: Double, blue: Double, alpha: Double) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
+        var int: UInt64 = .zero
         Scanner(string: hex).scanHexInt64(&int)
         let a, r, g, b: UInt64
         switch hex.count {
@@ -63,12 +73,23 @@ extension Color {
                 (a, r, g, b) = (1, 1, 1, 0)
         }
         
-        self.init(
-            .sRGB,
+        return (
             red: Double(r) / 255,
             green: Double(g) / 255,
             blue:  Double(b) / 255,
-            opacity: Double(a) / 255
+            alpha: Double(a) / 255
+        )
+    }
+    
+    init(hex: String) {
+        let rgba = Self.rgbaFrom(hex: hex)
+        
+        self.init(
+            .sRGB,
+            red: rgba.red,
+            green: rgba.green,
+            blue: rgba.blue,
+            opacity: rgba.alpha
         )
     }
 }
@@ -199,6 +220,7 @@ public struct TrackView2<AddonView: View>: JoliView {
             .frame(width: 64, height: 64, alignment: .center)
             //.clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             .onTapGesture(count: 2) { cb(true) }
+            .onTapGesture(count: 1) { cb(false) }
             .onReceive(appCoordinator.$playStatePublisher, perform: setupPublisher)
             .onReceive(appCoordinator.voteRequestedSubject) { requested in
                 self.requestingVoteTrackId = requested
@@ -257,6 +279,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                         
                         Spacer()
                     }
+                    .onTapGesture() { cb(false) }
                     
                     if let addonView = self.addonView {
                         Spacer()
@@ -298,12 +321,16 @@ public struct TrackView2<AddonView: View>: JoliView {
             }
         }
         //.rotation3DEffect(.degrees(45), axis: (x: 0.0, y: 0.0, z: self.requestingPlay ? 1.0 : 0.0))
-        .onTapGesture() { cb(false) }
         .scaleEffect(x: self.requestingPlay ? 0.98 : 1, y: self.requestingPlay ? 0.98 : 1, anchor: .center)
         .animation(.interactiveSpring())
         .background(colors?.backgroundColor ?? Color.clear)
+        .onTapGesture {
+            menuEnabled.toggle()
+            print("[Menu] enabled: \(menuEnabled)")
+        }
     }
     
+    @State var menuEnabled: Bool = false
     
 }
 

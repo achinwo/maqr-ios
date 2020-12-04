@@ -90,7 +90,18 @@ public struct LobbyView: JoliView {
                     
                     Section(header: header) {
                         ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                            TrackView2<Never>(track: .constant(track), useDynamicColors: true)
+                            TrackView2(track: .constant(track), useDynamicColors: true) { (track, colors) in
+                                    VStack() {
+//                                        Button() {
+//                                            //appCoordinator.
+//                                        } label: {
+//                                            Text("𖧊 Follow").font(Font.subhealine)
+//                                        }
+//                                        //.padding(.all, 3)
+//                                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray))
+//                                        .disabled(true)
+                                    }
+                                }
                                 .frame(height: 64)
                                 .id(track.uri)
                         }

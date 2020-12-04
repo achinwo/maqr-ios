@@ -584,6 +584,16 @@ struct ListenView: JoliView {
                 
                 self.fetchTracks(room)
             }
+            .onReceive(self.appCoordinator.queueRequestedSubject) { req in
+                
+                guard let queued = req, queued.room.id == playroom?.id else {
+                    return
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
+                    self.fetchTracks(queued.room)
+                }
+            }
             .zIndex(100)
             
             VStack(spacing: .zero) {
@@ -640,8 +650,8 @@ struct ListenView: JoliView {
                     .animation(.spring())
                 
             }
-            .onReceive(appCoordinator.playRequestedSubject) { playing in
-                guard playing || self.loadingLiveTracks else { return }
+            .onReceive(appCoordinator.playRequestedSubject) { playable in
+                guard playable != nil || self.loadingLiveTracks else { return }
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
                     self.refreshContent()

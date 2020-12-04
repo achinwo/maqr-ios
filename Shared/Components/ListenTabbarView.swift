@@ -52,7 +52,14 @@ struct ListenTabbarView: JoliView {
     @State var volume: CGFloat = 30
     @Binding var playroom: Musicroom?
     
-    @State var hearts: Hearts? = nil
+    @State var hearts: Hearts? = nil {
+        
+        didSet {
+            self.heartsForegroundColor = hearts == nil || hearts!.score <= HeartLevel.empty.rawValue ? Color.gray : Color.red
+        }
+        
+    }
+    
     @Namespace var localNamespace
     
     @State var isDragging = false
@@ -80,6 +87,7 @@ struct ListenTabbarView: JoliView {
     }
     
     @State var requestingVote: Int? = nil
+    @State var heartsForegroundColor: Color = Color.red
     
     var body: some View {
         var label = ""
@@ -176,9 +184,8 @@ struct ListenTabbarView: JoliView {
                 
                 if playroom != nil {
                     Spacer()
-                    JoyMeterView($hearts, textStyle: .title3)
+                    JoyMeterView($hearts, textStyle: .title3, foregroundColor: self.$heartsForegroundColor)
                         //.background(Image(systemName: "heart.fill").font(.title).foregroundColor(.black))
-                        .foregroundColor(self.hearts == nil || self.hearts!.score <= HeartLevel.empty.rawValue ? Color.gray : Color.red)
                         .font(Font.title.weight(.ultraLight))
                         .onReceive(appCoordinator.voteRequestedSubject) { requesting in
                             self.requestingVote = requesting

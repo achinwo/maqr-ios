@@ -111,20 +111,22 @@ struct JoyMeterView: View {
     @State var width: CGFloat = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
     @State var labelColor: Color = .gray
     @State var backgroundColor: Color = .clear
+    @Binding var foregroundColor: Color
     
     var hearts: Hearts {
         return self.heartLevelBinding ?? Hearts(score: HeartLevel.empty.rawValue)
     }
     
-    init(_ hearts: Binding<Hearts?>, width: CGFloat? = nil, labelColor: Color? = nil, backgroundColor: Color?  = nil){
+    init(_ hearts: Binding<Hearts?>, width: CGFloat? = nil, labelColor: Color? = nil, backgroundColor: Color?  = nil, foregroundColor: Binding<Color> = .constant(Color.primary)){
         self._heartLevelBinding = hearts
+        self._foregroundColor = foregroundColor
         self.width = width ?? UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
         self.labelColor = labelColor ?? .gray
         self.backgroundColor = backgroundColor ?? self.backgroundColor
     }
     
-    init(_ heartLevel: Binding<Hearts?>, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil, backgroundColor: Color? = nil){
-        self.init(heartLevel, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor, backgroundColor: backgroundColor)
+    init(_ heartLevel: Binding<Hearts?>, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil, backgroundColor: Color? = nil, foregroundColor: Binding<Color> = .constant(Color.primary)){
+        self.init(heartLevel, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor, backgroundColor: backgroundColor, foregroundColor:foregroundColor)
     }
     
     var body: some View {
@@ -144,8 +146,9 @@ struct JoyMeterView: View {
                 .resizable()
                 .font(.system(size: width, weight: .light))
                 .frame(width: width, height: width)
+                .background(self.hearts.count < 1 ? self.backgroundColor : foregroundColor.opacity(0.1))
                 .overlay(Rectangle().background(Color.primary).offset(x: offset, y: 0))
-                .background(self.backgroundColor)
+                .foregroundColor(foregroundColor)
                 .mask(Image(systemName: "heart.fill").font(.system(size: width, weight: .light)))
             
             if self.hearts.count >= 1 {

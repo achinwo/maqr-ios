@@ -37,8 +37,9 @@ public final class AppCoordinator: ObservableObject {
     public let playingSubject = CurrentValueSubject<(Playable, PlayState)?, Never>(nil)
     public let volumeSubject = PassthroughSubject<Int, Never>()
     
-    public let playRequestedSubject = CurrentValueSubject<Bool, Never>(false)
+    public let playRequestedSubject = CurrentValueSubject<String?, Never>(nil)
     public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
+    public let queueRequestedSubject = CurrentValueSubject<(uri: String, room: Playroom)?, Never>(nil)
     public let globalModalSubject = CurrentValueSubject<AppPreview?, Never>(nil)
     
     public let authSubject = PassthroughSubject<Auth?, Never>()
@@ -209,7 +210,7 @@ public final class AppCoordinator: ObservableObject {
     @Published var localPlayRequested: (track: Playable, positionMs: Int?)? = nil
     
     public func play(_ track: Playable, positionMs: Int? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
-        self.playRequestedSubject.send(true)
+        self.playRequestedSubject.send(track.uri)
         
         let performPlay = { (device: Spotify.Device?) -> Promise<PlayState?>  in
             
@@ -237,11 +238,28 @@ public final class AppCoordinator: ObservableObject {
                     return performPlay(devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }))
                 }
                 .always {
-                    self.playRequestedSubject.send(false)
+                    self.playRequestedSubject.send(nil)
                 }
         }
         
         return performPlay(device)
+    }
+    
+    @discardableResult
+    func queueTrack(_ track: Playable, playroom activeRoom: Playroom) -> Promise<QueuedTrack> {
+        
+        self.queueRequestedSubject.send((track.uri, activeRoom))
+        
+        return activeRoom.queueTrack(track, baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: nil)
+            .then() { queuedTrack in
+                logger.info("[queueTrack] queued: \(queuedTrack)")
+            }
+            .catch() { error in
+                logger.error("[queueTrack] \(error)")
+            }
+            .always {
+                self.queueRequestedSubject.send(nil)
+            }
     }
     
     public func share(text: String){

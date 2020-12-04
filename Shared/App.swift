@@ -161,8 +161,8 @@ struct JoliApp: AppClip {
     
     func onLocalSpotifyPlayStateChanged(localPlayState: SPTAppRemotePlayerState) {
         logger.info("[AppView#onLocalPlayStateChanged] localPlayState: \(localPlayState.track.name)")
-        coordinator.playRequestedSubject.send(true)
-        coordinator.playRequestedSubject.send(false)
+        coordinator.playRequestedSubject.send(localPlayState.track.uri)
+        coordinator.playRequestedSubject.send(nil)
     }
     
     func onLocalSpotifyAuth(_ auth: AuthToken?, _ error: Error?){
@@ -422,7 +422,7 @@ struct JoliApp: AppClip {
                 self.assertWebsocketConnected()
             }
             .onReceive(coordinator.playRequestedSubject) { playing in
-                guard playing else { return }
+                guard playing != nil else { return }
                 
                 self.assertWebsocketConnected()
             }

@@ -12,6 +12,7 @@ import JoliCore
 import JoliApi
 import GradientLoadingBar
 import Sourceful
+import Promises
 
 struct GradientLoadingBarView: UIViewRepresentable {
     
@@ -283,6 +284,12 @@ public struct ExploreView: JoliView {
         .onChange(of: selectedAreas){ areas in
             self.updateSubscriptions()
         }
+        .onReceive(self.appCoordinator.playRequestedSubject) { playUri in
+            self.playRequestedUri = playUri
+        }
+        .onReceive(self.appCoordinator.queueRequestedSubject) { val in
+            self.queueRequested = val
+        }
         .onAppear(){
             self.updateSubscriptions()
             
@@ -296,6 +303,8 @@ public struct ExploreView: JoliView {
     }
     
     @State var seeAllKey: Search.Category? = nil
+    @State var playRequestedUri: String? = nil
+    @State var queueRequested: (uri: String, playroom: Playroom)? = nil
     
     private func renderContent(_ key: Search.Category, _ views: [Search.ResultView]) -> some View {
         return VStack(alignment: .leading, spacing: .zero){
@@ -487,13 +496,30 @@ public struct ExploreView: JoliView {
                 GeometryReader() { proxy in
                     TrackView2(track: .constant(track)) { (track, colors) in
                         Group(){
-                            if self.playroom != nil {
+                            if let playroom = self.playroom {
+//                                Button() {
+//                                    print("[Search.ResultView] queue \(track.title)")
+//                                    self.queueTrack(track, playroom: playroom)
+//                                } label: {
+//                                    Image(systemName: "plus")
+//                                        .font(Font.title2.weight(.thin))
+//                                        .foregroundColor(.secondary)
+//                                }//.buttonStyle()
+//                                .padding()
+//                                .background(Color.yellow)
                                 Image(systemName: "plus")
-                                    .font(Font.title2.weight(.thin))
+                                    .font(queueRequested?.uri == track.uri ?  Font.title2.weight(.semibold) : Font.title2.weight(.thin))
                                     .foregroundColor(.secondary)
                                     .padding()
+                                    .disabled(queueRequested != nil)
+                                    .onTapGesture {
+                                        print("[Search.ResultView] queue \(track.title)")
+                                        self.appCoordinator.queueTrack(track, playroom: playroom)
+                                    }
+                                    .scaleEffect(x: queueRequested?.uri == track.uri ? 0.8 : 1, y: queueRequested?.uri == track.uri ? 0.8 : 1)
                             }
                         }
+                        .id(track.uri + q)
                     }
                     .id(self.playroom?.name)
                     .eraseToAnyView()
