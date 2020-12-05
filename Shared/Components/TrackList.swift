@@ -96,7 +96,7 @@ extension Color {
 
 public struct TrackView2<AddonView: View>: JoliView {
     
-    typealias AddonView = EmptyView
+    public typealias AddonViewGetter = (Playable, UIImageColors?) -> AddonView
     
     @Binding var track: Playable
     
@@ -107,7 +107,8 @@ public struct TrackView2<AddonView: View>: JoliView {
         
         return track.colors
     }
-    var addonView: AddonView? = nil
+    
+    public var addonViewGetter: AddonViewGetter? = nil
     var useDynamicColors = false
     @GestureState var isDetectingLongPress = false
     @State var completedLongPress = false
@@ -121,14 +122,24 @@ public struct TrackView2<AddonView: View>: JoliView {
     
     @State var playStatebyUsername = [String: PlayState]()
     
+    @Namespace var animation
+    
     var activeDevice: Spotify.Device? {
         appCoordinator.activeDeviceSubject.value
+    }
+    
+    var userPlayState: PlayState? {
+        return self.playStatebyUsername.values.first() {
+            $0.email == self.appCoordinator.activeAuth?.user.email
+        }
     }
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @State var invalidPlayAttempts = 0
     @State var requestingVoteTrackId: Int? = nil
+    
+    @State var menuEnabled: Bool = false
     
     var longPress: some Gesture {
             LongPressGesture(minimumDuration: 3)
@@ -142,11 +153,28 @@ public struct TrackView2<AddonView: View>: JoliView {
                 }
         }
     
-    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false){
+    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false) {
         self._hearts = hearts
         self._track = track
         self.useDynamicColors = useDynamicColors
-        self.addonView = nil
+        self.addonViewGetter = nil
+    }
+    
+    public var controlsView: some View {
+        Group(){
+            if menuEnabled {
+                HStack(){
+                    Image(systemName: "pause")
+                        .foregroundColor(Color.primary)
+                        .matchedGeometryEffect(id: "pause-btn", in: animation)
+                }
+            }
+        }
+        .font(Font.title)
+        .padding()
+        .background(Colors.lightGray.opacity(0.6).cornerRadius(16))
+        .opacity(menuEnabled ? 1 : 0)
+        .animation(.easeInOut)
     }
     
     public var body: some View {
@@ -219,8 +247,8 @@ public struct TrackView2<AddonView: View>: JoliView {
             }
             .frame(width: 64, height: 64, alignment: .center)
             //.clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-            .onTapGesture(count: 2) { cb(true) }
             .onTapGesture(count: 1) { cb(false) }
+            .onTapGesture(count: 2) { cb(true) }
             .onReceive(appCoordinator.$playStatePublisher, perform: setupPublisher)
             .onReceive(appCoordinator.voteRequestedSubject) { requested in
                 self.requestingVoteTrackId = requested
@@ -233,104 +261,141 @@ public struct TrackView2<AddonView: View>: JoliView {
             GeometryReader() { proxy in
                 
                 HStack() {
-                    VStack(alignment: .leading) {
-                        Text(track.title)
-                            .foregroundColor(colors?.primaryColor ?? Color.primary)
-                            .animation(.easeInOut)
-                            .font(Font.headline.weight(.light))
-                            .lineLimit(2)
+                    ZStack(){
                         
-                        HStack(spacing: .zero) {
-                            if track.explicit {
-                                Text(track.explicit  ? "E" : "")
-                                    .font(Font.footnote)
-                                    .padding(.horizontal, 2)
-                                    .background(Color.gray.opacity(0.85))
-                                    .font(.footnote)
-                                    .foregroundColor(Color.white)
-                                    .cornerRadius(3)
-                                    .padding(.trailing, Sizing.small / 3)
+                        Rectangle()
+                            .foregroundColor(Color.primary.opacity(0.001))
+                            .background(Color.clear)
+                            .onTapGesture {
+                                menuEnabled.toggle()
+                                print("[Menu] enabled: \(menuEnabled)")
+                                
+                                guard menuEnabled else { return }
+                                
+                                self.hideMenuTask?.cancel()
+                                
+                                let workItem = DispatchWorkItem(qos: .userInitiated) {
+                                    menuEnabled.toggle()
+                                }
+                                
+                                self.hideMenuTask = workItem
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3), execute: workItem)
                             }
-                                //.overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
-                            Text(track.artistName)
-                                .foregroundColor(colors?.secondaryColor ?? Color.primary)
-                                .animation(.easeInOut)
-                                .font(Font.subheadline.weight(.semibold))
+                        
+                        self.trackDetailsView
+                            .onTapGesture() { cb(false) }
                             
-                            if let release = track.releasedAt {
-                                Text("•").foregroundColor(colors?.detailColor ?? Color.primary).padding(.horizontal, Sizing.small / 3)
-                                Text("\(Calendar.current.component(.year, from: release).description)")
-                                    .lineLimit(1)
-                                    .foregroundColor(colors?.detailColor ?? Color.primary)
-                                    .animation(.easeInOut)
-                                    .font(Font.subheadline.weight(.light))
-                            }
-                            
-//                            if let queued = (track as? QueuedTrack)?.track, let releaseDatePrecision = queued.releaseDatePrecision {
-//                                Text("(\(releaseDatePrecision))")
-//                                    .lineLimit(1)
-//                                    .foregroundColor(colors?.detailColor ?? Color.primary)
-//                                    .animation(.easeInOut)
-//                                    .font(Font.subheadline.weight(.light))
-//                            }
-                            
+                        HStack(){
                             Spacer()
+                            self.controlsView
                         }
-                        
-                        Spacer()
                     }
-                    .onTapGesture() { cb(false) }
                     
-                    if let addonView = self.addonView {
-                        Spacer()
-                        addonView
+                    if let state = self.userPlayState, !menuEnabled {
+                        Image(systemName: "pause")
+                            .foregroundColor(Color.primary)
+                            .font(Font.title)
+                            .matchedGeometryEffect(id: "pause-btn", in: animation)
+                    }
+//
+//                    if menuEnabled && self.addonViewGetter != nil {
+//                        Divider()
+//                    }
+                    
+                    if let getter = self.addonViewGetter {
+                        getter(track, nil)
                     }
                 }
                 .background(
-                    ZStack(alignment: .leading){
-                        
-                        let containerWidth = CGFloat(proxy.size.width)
-                        
-                        ForEach(Array(self.playStatebyUsername), id: \.key) { item in
-                            
-                            if let progressMs = item.value.progressMs, let progress = CGFloat(progressMs), let durMs = item.value.durationMs, let trackDuration = CGFloat(durMs) {
-                                
-                                let offset = containerWidth * (max(progress, 1) / trackDuration)
-                                
-                                HStack(alignment: .bottom){
-                                    RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
-                                        .fill(item.value.color.opacity(0.48))
-                                        .frame(width: 3, height: proxy.size.height)
-                                        .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
-                                        .id(item.key)
-                                    Spacer()
-                                }
-                                .frame(width: proxy.size.width, height: proxy.size.height)
-                            } else {
-                                EmptyView()
-                            }
-                            
-                        }
-                    }
-                    .frame(width: proxy.size.width, height: proxy.size.height)
-                    //.background(Color.pink)
-                    .opacity(self.playStatebyUsername.isEmpty ? 0 : 1)
-                    .animation(.easeInOut)
-                    .id(track.uri)
+                    self.liveProgressView(proxy: proxy)
                 )
             }
         }
         //.rotation3DEffect(.degrees(45), axis: (x: 0.0, y: 0.0, z: self.requestingPlay ? 1.0 : 0.0))
         .scaleEffect(x: self.requestingPlay ? 0.98 : 1, y: self.requestingPlay ? 0.98 : 1, anchor: .center)
         .animation(.interactiveSpring())
-        .background(colors?.backgroundColor ?? Color.clear)
+        //.background(colors?.backgroundColor ?? Color.clear)
         .onTapGesture {
             menuEnabled.toggle()
             print("[Menu] enabled: \(menuEnabled)")
         }
     }
     
-    @State var menuEnabled: Bool = false
+    @State var hideMenuTask: DispatchWorkItem? = nil
+    
+    public var trackDetailsView: some View {
+        return VStack(alignment: .leading) {
+                Text(track.title)
+                    .foregroundColor(colors?.primaryColor ?? Color.primary)
+                    .animation(.easeInOut)
+                    .font(Font.headline.weight(.light))
+                    .lineLimit(2)
+                
+                HStack(spacing: .zero) {
+                    if track.explicit {
+                        Text(track.explicit  ? "E" : "")
+                            .font(Font.footnote)
+                            .padding(.horizontal, 2)
+                            .background(Color.gray.opacity(0.85))
+                            .font(.footnote)
+                            .foregroundColor(Color.white)
+                            .cornerRadius(3)
+                            .padding(.trailing, Sizing.small / 3)
+                    }
+                        //.overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
+                    Text(track.artistName)
+                        .foregroundColor(colors?.secondaryColor ?? Color.primary)
+                        .animation(.easeInOut)
+                        .font(Font.subheadline.weight(.semibold))
+                    
+                    if let release = track.releasedAt {
+                        Text("•").foregroundColor(colors?.detailColor ?? Color.primary).padding(.horizontal, Sizing.small / 3)
+                        Text("\(Calendar.current.component(.year, from: release).description)")
+                            .lineLimit(1)
+                            .foregroundColor(colors?.detailColor ?? Color.primary)
+                            .animation(.easeInOut)
+                            .font(Font.subheadline.weight(.light))
+                    }
+                    
+                    Spacer()
+                }
+                Spacer()
+            }
+    }
+    
+    public func liveProgressView(proxy: GeometryProxy) -> some View {
+        ZStack(alignment: .leading){
+            
+            let containerWidth = CGFloat(proxy.size.width)
+            
+            ForEach(Array(self.playStatebyUsername), id: \.key) { item in
+                
+                if let progressMs = item.value.progressMs, let progress = CGFloat(progressMs), let durMs = item.value.durationMs, let trackDuration = CGFloat(durMs) {
+                    
+                    let offset = containerWidth * (max(progress, 1) / trackDuration)
+                    
+                    HStack(alignment: .bottom){
+                        RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
+                            .fill(item.value.color.opacity(0.48))
+                            .frame(width: 3, height: proxy.size.height)
+                            .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
+                            .id(item.key)
+                        Spacer()
+                    }
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                } else {
+                    EmptyView()
+                }
+                
+            }
+        }
+        .frame(width: proxy.size.width, height: proxy.size.height)
+        //.background(Color.pink)
+        .opacity(self.playStatebyUsername.isEmpty ? 0 : 1)
+        .animation(.easeInOut)
+        .id(track.uri)
+    }
     
 }
 
@@ -365,11 +430,11 @@ public extension PlayState {
 
 extension TrackView2 where AddonView: View {
     
-    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, @ViewBuilder content: (Playable, UIImageColors?) -> AddonView){
+    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, @ViewBuilder content: @escaping AddonViewGetter){
         self._hearts = hearts
         self._track = track
         self.useDynamicColors = useDynamicColors
-        self.addonView = content(self.track, nil)
+        self.addonViewGetter = content
     }
     
 }
