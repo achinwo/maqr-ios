@@ -161,20 +161,22 @@ public struct TrackView2<AddonView: View>: JoliView {
     }
     
     public var controlsView: some View {
-        Group(){
-            if menuEnabled {
-                HStack(){
-                    Image(systemName: "pause")
-                        .foregroundColor(Color.primary)
-                        .matchedGeometryEffect(id: "pause-btn", in: animation)
-                }
+        HStack(){
+            Image(systemName: "plus").padding(.trailing, Sizing.small)
+            Image(systemName: "square.and.arrow.up").padding(.trailing, Sizing.small)
+            Image(systemName: "info.circle")
+            
+            if self.userPlayState != nil {
+                Image(systemName: "pause")
+                    .matchedGeometryEffect(id: "pause-btn", in: animation)
+                    .padding(.horizontal, Sizing.small)
             }
         }
-        .font(Font.title)
+        .foregroundColor(Color.secondary)
+        .font(Font.headline)
         .padding()
-        .background(Colors.lightGray.opacity(0.6).cornerRadius(16))
-        .opacity(menuEnabled ? 1 : 0)
-        .animation(.easeInOut)
+        .background(BlurView(.extraLight).opacity(0.7).cornerRadius(32))
+        .animation(.easeInOut(duration: 0.3))
     }
     
     public var body: some View {
@@ -275,7 +277,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                                 self.hideMenuTask?.cancel()
                                 
                                 let workItem = DispatchWorkItem(qos: .userInitiated) {
-                                    menuEnabled.toggle()
+                                    menuEnabled = false
                                 }
                                 
                                 self.hideMenuTask = workItem
@@ -289,14 +291,18 @@ public struct TrackView2<AddonView: View>: JoliView {
                         HStack(){
                             Spacer()
                             self.controlsView
+                                .opacity(menuEnabled ? 1 : 0)
                         }
+                        .padding(.trailing, Sizing.small)
                     }
                     
-                    if let state = self.userPlayState, !menuEnabled {
+                    if self.userPlayState != nil && !menuEnabled {
+                        Spacer()
                         Image(systemName: "pause")
                             .foregroundColor(Color.primary)
                             .font(Font.title)
                             .matchedGeometryEffect(id: "pause-btn", in: animation)
+                            .padding()
                     }
 //
 //                    if menuEnabled && self.addonViewGetter != nil {
@@ -362,6 +368,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                 }
                 Spacer()
             }
+            .background(Colors.lightGray.opacity(0.001))
     }
     
     public func liveProgressView(proxy: GeometryProxy) -> some View {
