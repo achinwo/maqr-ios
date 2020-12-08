@@ -12,87 +12,20 @@ import JoliCore
 import UIImageColors
 import Promises
 
-public extension UIImageColors {
+public struct PauseButton: View {
     
-    var primaryColor: Color {
-        return Color(primary)
-    }
+    public let action: () -> ()
     
-    var backgroundColor: Color {
-        return Color(background)
-    }
-    
-    var secondaryColor: Color {
-        return Color(secondary)
-    }
-    
-    var detailColor: Color {
-        return Color(detail)
-    }
-    
-}
-
-extension QueuedTrack {
-    
-    public var colors: UIImageColors? {
-        guard let bg = track?.colorBackground, let primary = track?.colorPrimary, let sec = track?.colorSecondary, let detail = track?.colorDetail else {
-            return nil
+    public var body: some View {
+        return Button() {
+            action()
+        } label: {
+            Image(systemName: "pause")
         }
-        return .init(background: UIColor(hex: bg),
-                     primary: UIColor(hex: primary),
-                     secondary: UIColor(hex: sec),
-                     detail: UIColor(hex: detail))
     }
     
 }
 
-extension UIColor {
-    
-    public convenience init(hex: String) {
-        let rgba = Color.rgbaFrom(hex: hex)
-        self.init(red: CGFloat(rgba.red), green: CGFloat(rgba.green), blue: CGFloat(rgba.blue), alpha: CGFloat(rgba.alpha))
-    }
-    
-}
-
-extension Color {
-    
-    static func rgbaFrom(hex: String) -> (red: Double, green: Double, blue: Double, alpha: Double) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = .zero
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-            case 3: // RGB (12-bit)
-                (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-            case 6: // RGB (24-bit)
-                (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-            case 8: // ARGB (32-bit)
-                (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-            default:
-                (a, r, g, b) = (1, 1, 1, 0)
-        }
-        
-        return (
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            alpha: Double(a) / 255
-        )
-    }
-    
-    init(hex: String) {
-        let rgba = Self.rgbaFrom(hex: hex)
-        
-        self.init(
-            .sRGB,
-            red: rgba.red,
-            green: rgba.green,
-            blue: rgba.blue,
-            opacity: rgba.alpha
-        )
-    }
-}
 
 public struct TrackView2<AddonView: View>: JoliView {
     
@@ -162,50 +95,54 @@ public struct TrackView2<AddonView: View>: JoliView {
     
     public var controlsView: some View {
         HStack(){
-            Image(systemName: "plus").padding(.trailing, Sizing.small)
-            Image(systemName: "square.and.arrow.up").padding(.trailing, Sizing.small)
-            Image(systemName: "info.circle")
+            Image(systemName: "plus").padding(Sizing.small)
+            Image(systemName: "square.and.arrow.up").padding([.trailing, .vertical], Sizing.small)
             
-            if self.userPlayState != nil {
-                Image(systemName: "pause")
-                    .matchedGeometryEffect(id: "pause-btn", in: animation)
-                    .padding(.horizontal, Sizing.small)
+            
+            if let state = self.userPlayState, state.playingState == .playing {
+                Image(systemName: "info.circle").padding(.vertical, Sizing.small)
+                PauseButton() {
+                        self.appCoordinator.pausePlayback()
+                    }
+                    .matchedGeometryEffect(id: "pause-btn-\(state.userName)", in: animation)
+                    .padding(Sizing.small)
+                    //.background(Color.yellow)
+            } else {
+                Image(systemName: "info.circle").padding(Sizing.small)
             }
         }
         .foregroundColor(Color.secondary)
-        .font(Font.headline)
-        .padding()
+        .font(Font.title2)
         .background(BlurView(.extraLight).opacity(0.7).cornerRadius(32))
         .animation(.easeInOut(duration: 0.3))
     }
     
-    public var body: some View {
-        let cb: (Bool) -> () = { (fromBegining: Bool) -> Void in
-
-            self.requestingPlay = true
-            let progress: Int? = fromBegining ? nil : self.playStatebyUsername.first?.value.progressMs
-
-            appCoordinator.play(track, positionMs: progress, device: activeDevice)
-                .then(){ playState in
-
-                    guard var playState = playState else {
-                        return
-                    }
-
-                    playState.progressMs = progress
-                    playState.durationMs = self.playStatebyUsername[playState.userName]?.durationMs
-
-                    self.playStatebyUsername[playState.userName] = playState
-                }
-                .catch() { error in
-                    print("[PlayTrack] error: \(error)")
-                    invalidPlayAttempts += 1
-                }
-                .always {
-                    self.requestingPlay = false
-                }
-        }
+    private func play(_ fromBegining: Bool = false) {
+        self.requestingPlay = true
+        let progress: Int? = fromBegining ? nil : self.playStatebyUsername.first?.value.progressMs
         
+        appCoordinator.play(track, positionMs: progress, device: activeDevice)
+            .then(){ playState in
+                
+                guard var playState = playState else {
+                    return
+                }
+                
+                playState.progressMs = progress
+                playState.durationMs = self.playStatebyUsername[playState.userName]?.durationMs
+                
+                self.playStatebyUsername[playState.userName] = playState
+            }
+            .catch() { error in
+                print("[PlayTrack] error: \(error)")
+                invalidPlayAttempts += 1
+            }
+            .always {
+                self.requestingPlay = false
+            }
+    }
+    
+    public var body: some View {
         let setupPublisher = { (publisher: PlayState.Publisher) -> Void in
             guard self.playPubCancel == nil else {
                 return
@@ -249,8 +186,8 @@ public struct TrackView2<AddonView: View>: JoliView {
             }
             .frame(width: 64, height: 64, alignment: .center)
             //.clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-            .onTapGesture(count: 1) { cb(false) }
-            .onTapGesture(count: 2) { cb(true) }
+            .onTapGesture(count: 1) { self.play(false) }
+            .onTapGesture(count: 2) { self.play(true) }
             .onReceive(appCoordinator.$playStatePublisher, perform: setupPublisher)
             .onReceive(appCoordinator.voteRequestedSubject) { requested in
                 self.requestingVoteTrackId = requested
@@ -286,22 +223,25 @@ public struct TrackView2<AddonView: View>: JoliView {
                             }
                         
                         self.trackDetailsView
-                            .onTapGesture() { cb(false) }
                             
                         HStack(){
                             Spacer()
-                            self.controlsView
-                                .opacity(menuEnabled ? 1 : 0)
+                            
+                            if menuEnabled {
+                                self.controlsView
+                                    .opacity(menuEnabled ? 1 : 0)
+                            }
                         }
                         .padding(.trailing, Sizing.small)
                     }
                     
-                    if self.userPlayState != nil && !menuEnabled {
-                        Spacer()
-                        Image(systemName: "pause")
+                    if let state = self.userPlayState, state.playingState == .playing && !menuEnabled {
+                        PauseButton() {
+                                self.appCoordinator.pausePlayback()
+                            }
                             .foregroundColor(Color.primary)
                             .font(Font.title)
-                            .matchedGeometryEffect(id: "pause-btn", in: animation)
+                            .matchedGeometryEffect(id: "pause-btn-\(state.userName)", in: animation)
                             .padding()
                     }
 //
@@ -337,6 +277,9 @@ public struct TrackView2<AddonView: View>: JoliView {
                     .animation(.easeInOut)
                     .font(Font.headline.weight(.light))
                     .lineLimit(2)
+                    .onTapGesture() {
+                        self.play(false)
+                    }
                 
                 HStack(spacing: .zero) {
                     if track.explicit {
@@ -366,9 +309,12 @@ public struct TrackView2<AddonView: View>: JoliView {
                     
                     Spacer()
                 }
+                .onTapGesture() {
+                    self.play(false)
+                }
                 Spacer()
             }
-            .background(Colors.lightGray.opacity(0.001))
+            //.background(Colors.lightGray.opacity(0.001))
     }
     
     public func liveProgressView(proxy: GeometryProxy) -> some View {

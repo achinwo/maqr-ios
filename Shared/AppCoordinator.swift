@@ -246,6 +246,15 @@ public final class AppCoordinator: ObservableObject {
     }
     
     @discardableResult
+    func pausePlayback() -> Promise<Json> {
+        //                self.spotifyRemote.playerAPI?.pause(){ info, error in
+        //                    logger.debug("[pauseTrack] \(String(describing: info)) - \(String(describing: error))")
+        //
+        let path = URLComponents(string: "/api/spotify/me/player/pause")!
+        return HttpMethod.put.fetchJson(urlPath: path, payload: [:], baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+    }
+    
+    @discardableResult
     func queueTrack(_ track: Playable, playroom activeRoom: Playroom) -> Promise<QueuedTrack> {
         
         self.queueRequestedSubject.send((track.uri, activeRoom))
