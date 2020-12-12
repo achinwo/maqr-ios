@@ -55,6 +55,7 @@ public struct LobbyView: JoliView {
     
     @Binding var liveTracks: [Spotify.Track]
     @Binding var playrooms: [Musicroom]
+    @Binding var filterText: String
     @Binding var isLoading: Bool
     let onPlayroomSelected: ((Playroom) -> Void)?
     

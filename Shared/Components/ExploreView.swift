@@ -521,7 +521,6 @@ public struct ExploreView: JoliView {
                         }
                         .id(track.uri + q)
                     }
-                    .id(self.playroom?.name)
                     .eraseToAnyView()
                 }
             }

@@ -52,6 +52,22 @@ struct ShakeButtonView: View {
     }
 }
 
+public extension Search.Engine {
+    
+    typealias SearchMethod2 = (String, Set<Search.Category>, Int) -> AnyPublisher<Spotify.SearchResult?, Never>
+    
+    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod2) -> AnyPublisher<Spotify.SearchResult?, Never> {
+        let supported = categories.filter(){ supportedCategories.contains($0) }
+        
+        guard !supported.isEmpty else {
+            return Just(nil).eraseToAnyPublisher()
+        }
+        
+        return searchFn(q, supported, limit)
+    }
+    
+}
+
 struct ListenView: JoliView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
@@ -115,9 +131,9 @@ struct ListenView: JoliView {
                 
                 self.votes = allVotes
                 self.tracks = tracksByMusicrooms[room.id] ?? []
-                return tracksByMusicrooms[room.id] ?? []
+                self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
                 
-                //print("[onAppear#ListenView] tracks=\(self.tracks.count), strip=\(self.strip)")
+                return tracksByMusicrooms[room.id] ?? []
             }
     }
     
@@ -277,52 +293,61 @@ struct ListenView: JoliView {
                     }
             }
         }
-        .onReceive(appCoordinator.voteRequestedSubject) { requested in
-            self.requestingVoteTrackId = requested
-        }
     }
     
+    @State var tracksFiltered: [Playable] = []
+    @State var searchResult: Spotify.SearchResult? = nil
+    @StateObject var model = SearchStore()
+    
+    @State var searchResultCancel: AnyCancellable? = nil
+    
+    func setupSearch(){
+        print("[setupSearch] setting up search")
+        
+        self.searchResultCancel = model.$query
+            .removeDuplicates()
+            .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInteractive))
+            .map() { q -> AnyPublisher<Spotify.SearchResult?, Never> in
+                
+                guard !q.isEmpty else {
+                    return Just(nil).eraseToAnyPublisher()
+                }
+                
+                print("[ListenView] searching spotify: \(q)")
+                
+                return spotifyEngine.search(q, [.tracks]) { (q, categories, limit) ->
+                    AnyPublisher<Spotify.SearchResult?, Never> in
+                    
+                    return Future<Spotify.SearchResult?, Never>() { promise in
+                        api.searchSpotify(q: q, categories: categories, limit: limit)
+                            .then(){ res in
+                                print("[ListenView] searching spotify: \(q)")
+                                promise(.success(res))
+                            }
+                            .catch() { error in
+                                promise(.success(nil))
+                                
+                                logger.error("[searchSpotify] error: \(error)")
+                            }
+                    }.eraseToAnyPublisher()
+                }
+            }
+            .switchToLatest()
+            .receive(on: RunLoop.main)
+            .assign(to: \.searchResult, on: self)
+        
+    }
+        
     var lobbyView: some View {
         ZStack(){
-            LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, isLoading: self.$loadingLiveTracks) { room in
+            LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks) { room in
                 self.tracks = []
                 self.votes = []
                 self.playroom = room
             }
         }
         .frame(width: screenWidth)
-        .frame(minHeight: screenHeight * 1.5)
         .background(Color.white)
-        .onChange(of: self.playroom) { value in
-            guard value == nil else {
-                return
-            }
-            
-            self.refreshContent()
-        }
-        .onFrameChange() { value in
-            
-            guard isDragging else { return }
-            
-            if value.origin.y < tripLine, isDragging {
-                DispatchQueue.main.async {
-                    self.tripLine = 0
-                }
-            }
-            
-            guard value.origin.y >= 100 && self.tripLine < 100, !self.loadingLiveTracks else { return }
-            
-            DispatchQueue.main.async {
-                self.tripLine = value.origin.y
-                
-                withImpact(.rigid) {
-                    self.refreshContent()
-                    print("[] Frame chnaged: \(value)")
-                }
-            }
-        }
-        .padding(.top, Sizing.xxLarge * 2)
-        .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
     }
     
     var contentView: some View {
@@ -339,46 +364,93 @@ struct ListenView: JoliView {
                     }
                 
                 ScrollView(.vertical, showsIndicators: true) {
-                    if playroom == nil {
-                        self.lobbyView
-                    } else {
-                        TrackList(tracks: self.$tracks, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
-                        .background(Color.white)
-                        //.padding(.top, geoProxy.safeAreaInsets.top)
-                        //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
-                        .padding(.top, geoProxy.safeAreaInsets.top + 100)
-                        .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
-                        .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
-                        .onChange(of: self.votes) { votes in
-                            var mapping: [Int: [QueuedTrackVote]] = [:]
-                            
-                            for vote in votes {
-                                
-                                guard var existing = mapping[vote.queuedTrackId] else {
-                                    mapping[vote.queuedTrackId] = []
-                                    continue
-                                }
-                                
-                                existing.append(vote)
-                                mapping[vote.queuedTrackId] = existing
-                            }
-                            
-                            self.votesByTrack = mapping
+                    
+                    let isEmptySearchResult = self.searchResult?.tracks.isEmpty ?? true
+                    
+                    VStack(){
+                        
+                        Group() {
+                            self.searchResultView
+                                .padding(.horizontal)
+                                .padding(.top, geoProxy.safeAreaInsets.top + 100)
                         }
-                        .onAppear(){
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                guard let currentTrack = self.strip.playing else {
-                                    return
+                        .background(Color.white)
+                        .opacity(isEmptySearchResult ? 0 : 1)
+                        .frame(height: isEmptySearchResult ? 0 : nil)
+                        .animation(.easeInOut)
+                        
+                        if playroom == nil {
+                            self.lobbyView
+                                .frame(minHeight: screenHeight * 1.2)
+                                .padding(.top, isEmptySearchResult ? Sizing.xxLarge * 2 : nil)
+                                .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                        } else {
+                            TrackList(tracks: self.$tracksFiltered, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
+                                .background(Color.white)
+                                //.padding(.top, geoProxy.safeAreaInsets.top)
+                                //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
+                                .padding(.top, isEmptySearchResult ? geoProxy.safeAreaInsets.top + 100 : nil)
+                                .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+                                .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                                .onChange(of: self.votes) { votes in
+                                    var mapping: [Int: [QueuedTrackVote]] = [:]
+                                    
+                                    for vote in votes {
+                                        
+                                        guard var existing = mapping[vote.queuedTrackId] else {
+                                            mapping[vote.queuedTrackId] = []
+                                            continue
+                                        }
+                                        
+                                        existing.append(vote)
+                                        mapping[vote.queuedTrackId] = existing
+                                    }
+                                    
+                                    self.votesByTrack = mapping
                                 }
-                                withAnimation(){
-                                    scrollProxy.scrollTo(currentTrack.uri, anchor: .center)
+                                .onAppear(){
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                        guard let currentTrack = self.strip.playing else {
+                                            return
+                                        }
+                                        withAnimation(){
+                                            scrollProxy.scrollTo(currentTrack.uri, anchor: .center)
+                                        }
+                                    }
                                 }
+                        }
+                    }
+                    .onChange(of: self.playroom) { value in
+                        guard value == nil else {
+                            return
+                        }
+                        
+                        self.refreshContent()
+                    }
+                    .onFrameChange() { value in
+                        
+                        guard isDragging else { return }
+                        
+                        if value.origin.y < tripLine, isDragging {
+                            DispatchQueue.main.async {
+                                self.tripLine = 0
+                            }
+                        }
+                        
+                        guard value.origin.y >= 100 && self.tripLine < 100, !self.loadingLiveTracks else { return }
+                        
+                        DispatchQueue.main.async {
+                            self.tripLine = value.origin.y
+                            
+                            withImpact(.rigid) {
+                                self.refreshContent()
+                                print("[] Frame chnaged: \(value)")
                             }
                         }
                     }
                 }
                 .simultaneousGesture(dragGesture)
-                .frame(width: screenWidth)
+                .frame(width: screenWidth, height: screenHeight)
                 .background(
                     VStack() {
                         ProgressView(self.loadingLiveTracks ? "Refreshing..." : "Done!", value: self.loadingLiveTracks ? nil : 100.0, total: 100.0)
@@ -398,7 +470,60 @@ struct ListenView: JoliView {
             }
             
         }
+        .onReceive(appCoordinator.voteRequestedSubject) { requested in
+            self.requestingVoteTrackId = requested
+        }
+        .onChange(of: self.filterText) { txt in
+            print("[filterText] \(txt)")
+            self.model.query = txt
+            self.tracksFiltered = self.filterTracks(self.tracks, txt)
+        }
         .frame(maxWidth: screenWidth)
+    }
+    
+    private func filterTracks(_ tracks: [Playable], _ q: String) -> [Playable] {
+        
+        let query = q.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        
+        guard !query.isEmpty else {
+            return tracks
+        }
+        
+        return self.tracks.filter() { track in
+            
+            for fld in [track.artistName, track.title,] {
+                if fld.lowercased().contains(query) {
+                    return true
+                }
+            }
+            
+            return false
+        }
+    }
+    
+    var searchResultView: some View {
+        let header = HStack(){
+            Label(){
+                Text("Tracks Search")
+            } icon: {
+                Image(systemName: "magnifyingglass")
+                    .font(Font.title.weight(.thin))
+            }
+            .foregroundColor(.secondary)
+            .font(Font.largeTitle.weight(.thin))
+            Spacer()
+        }
+        
+        return VStack(){
+            Section(header: header) {
+                VStack(alignment: .leading, spacing: .zero){
+                    ForEach(self.searchResult?.tracks ?? [], id: \.uri) { track in
+                        TrackView2<Never>(track: .constant(track))
+                            .id(track.uri)
+                    }
+                }
+            }
+        }
     }
     
     @State var strip: (playing: Playable?, next: Playable?, runnerup: Playable?) = (nil, nil, nil)
@@ -656,6 +781,9 @@ struct ListenView: JoliView {
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
                     self.refreshContent()
                 }
+            }
+            .onAppear() {
+                setupSearch()
             }
         }
     }
