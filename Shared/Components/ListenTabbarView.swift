@@ -176,7 +176,7 @@ struct ListenTabbarView: JoliView {
                 Spacer()
                 Button(){
                     self.devicesBarActive.toggle()
-                    self.searchbarActive = false
+                    self.searchbarActive = !self.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 } label: {
                     Image(systemName: "hifispeaker")
                 }
@@ -262,15 +262,7 @@ struct ListenTabbarView: JoliView {
         
         return VStack(alignment: .center, spacing: .zero){
             
-            if self.searchbarActive {
-                SearchBar(text: self.$searchText, isEditing: self.$isSearching)
-                    .cornerRadius(8)
-                    .overlay(RoundedRectangle(cornerRadius: 8)
-                                .stroke(Colors.lightGray.opacity(self.isSearching ? 0 : 0.9), lineWidth: 1))
-                    .padding(.top, Sizing.medium)
-                    .background(Color.clear)
-                    .matchedGeometryEffect(id: "listenbar-addon", in: localNamespace)
-            } else if self.devicesBarActive {
+            if self.devicesBarActive {
                 VStack() {
                     DevicesView() { _ in
                         self.devicesBarActive.toggle()
@@ -279,7 +271,16 @@ struct ListenTabbarView: JoliView {
                 }
                 .background(Color.clear)
                 .matchedGeometryEffect(id: "listenbar-addon", in: localNamespace)
+            } else if self.searchbarActive {
+                SearchBar(text: self.$searchText, isEditing: self.$isSearching)
+                    .cornerRadius(8)
+                    .overlay(RoundedRectangle(cornerRadius: 8)
+                                .stroke(Colors.lightGray.opacity(self.isSearching ? 0 : 0.9), lineWidth: 1))
+                    .padding(.top, Sizing.medium)
+                    .background(Color.clear)
+                    .matchedGeometryEffect(id: "listenbar-addon", in: localNamespace)
             }
+            
             mainView
         }
         .onReceive(appCoordinator.userHeartsSubject) { hearts in

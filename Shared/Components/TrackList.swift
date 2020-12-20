@@ -427,35 +427,16 @@ public struct TrackList<AddonView: View>: JoliView {
         return track
     }
     
-    func heartLevelBinding(_ trackId: Array<Playable>.Index) -> Binding<Hearts?> {
-        
-        
+    func heartLevelBinding(_ track: Playable) -> Binding<Hearts?> {
         let heart: Binding<Hearts?> = Binding() { () -> Hearts? in
             
-            guard trackId < tracks.count, playroom != nil else {
-                return nil
-            }
-            
-            guard let track = tracks[trackId] as? QueuedTrack, let count: Int = self.votesByTrack[track.id]?.count else {
+            guard let track = track as? QueuedTrack, let count: Int = self.votesByTrack[track.id]?.count else {
                 return Hearts(score: HeartLevel.empty.rawValue)
             }
             
             return Hearts(score: CGFloat(count) * HeartLevel.quarter.rawValue)
             
         } set: { (heart, trasacton) in
-            
-//            withTransaction(trasacton) {
-//
-//                guard trackId < tracks.count else {
-//                    return
-//                }
-//
-//                let track = tracks[trackId]
-//                subscriptionCounts[track.uri] = heart
-//
-//                //track.subscriptionCount = heart
-//                print("[TrackList] failed to set hear \(String(describing: heart)) for \(trasacton)")
-//            }
         }
         return heart
     }
@@ -466,7 +447,7 @@ public struct TrackList<AddonView: View>: JoliView {
                     
                     let track = item.element
                     
-                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(item.offset), useDynamicColors: false) { (trackObj, colors) -> AddonView in
+                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(track), useDynamicColors: false) { (trackObj, colors) -> AddonView in
                         return addonViewFunc(trackObj, colors)
                     }
                     .id(track.uri)

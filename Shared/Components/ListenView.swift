@@ -315,7 +315,7 @@ struct ListenView: JoliView {
                 
                 print("[ListenView] searching spotify: \(q)")
                 
-                return spotifyEngine.search(q, [.tracks]) { (q, categories, limit) ->
+                return spotifyEngine.search(q, [.tracks], limit: 4) { (q, categories, limit) ->
                     AnyPublisher<Spotify.SearchResult?, Never> in
                     
                     return Future<Spotify.SearchResult?, Never>() { promise in
@@ -371,8 +371,9 @@ struct ListenView: JoliView {
                         
                         Group() {
                             self.searchResultView
-                                .padding(.horizontal)
-                                .padding(.top, geoProxy.safeAreaInsets.top + 100)
+                                .padding([.horizontal, .bottom])
+                                .padding(.top, geoProxy.safeAreaInsets.top + 80)
+                            Divider()
                         }
                         .background(Color.white)
                         .opacity(isEmptySearchResult ? 0 : 1)
@@ -381,16 +382,17 @@ struct ListenView: JoliView {
                         
                         if playroom == nil {
                             self.lobbyView
-                                .frame(minHeight: screenHeight * 1.2)
+                                .frame(minHeight: screenHeight * 1.3)
                                 .padding(.top, isEmptySearchResult ? Sizing.xxLarge * 2 : nil)
+                                .background(Color.white)
                                 .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                         } else {
                             TrackList(tracks: self.$tracksFiltered, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
-                                .background(Color.white)
                                 //.padding(.top, geoProxy.safeAreaInsets.top)
                                 //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
                                 .padding(.top, isEmptySearchResult ? geoProxy.safeAreaInsets.top + 100 : nil)
                                 .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+                                .background(Color.white)
                                 .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                                 .onChange(of: self.votes) { votes in
                                     var mapping: [Int: [QueuedTrackVote]] = [:]
@@ -504,7 +506,7 @@ struct ListenView: JoliView {
     var searchResultView: some View {
         let header = HStack(){
             Label(){
-                Text("Tracks Search")
+                Text("Track Search")
             } icon: {
                 Image(systemName: "magnifyingglass")
                     .font(Font.title.weight(.thin))
