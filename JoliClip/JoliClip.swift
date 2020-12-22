@@ -63,7 +63,16 @@ struct JoliClip: AppClip {
             .autoconnect()
             .eraseToAnyPublisher()
         
-        self.coordinator = AppCoordinator(pub)
+        let votesPubs: QueuedTrackVote.Publisher = self.websocket
+            .deserialize(QueuedTrackVote.self)
+            .autoconnect()
+            .multicast() {
+                return PassthroughSubject<QueuedTrackVote, SocketError>()
+            }
+            .autoconnect()
+            .eraseToAnyPublisher()
+        
+        self.coordinator = AppCoordinator(pub, votesPubs)
     }
     
     func onScenePhaseChange(_ phase: ScenePhase){

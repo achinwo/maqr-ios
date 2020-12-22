@@ -30,6 +30,7 @@ public final class AppCoordinator: ObservableObject {
     @Published public var insufficientPointsAttempt = 0
     
     @Published public var playStatePublisher: PlayState.Publisher
+    @Published public var votesPublisher: QueuedTrackVote.Publisher
     
     @Published public var devices: [Spotify.Device] = []
     
@@ -107,12 +108,10 @@ public final class AppCoordinator: ObservableObject {
     
     @Published var refreshingDevices = false
     
-    public init(_ playStatePublisher: PlayState.Publisher, namespace: Namespace.ID? = nil){
+    public init(_ playStatePublisher: PlayState.Publisher, _ votesPublisher: QueuedTrackVote.Publisher, namespace: Namespace.ID? = nil){
         self.namespace = namespace
         self.playStatePublisher = playStatePublisher
-        
-        //let activeDeviceSubject = self.activeDeviceSubject
-        //let deviceId = initialActiveDeviceId
+        self.votesPublisher = votesPublisher
         
         self.volumeCancel = self.volumeSubject
             .removeDuplicates()

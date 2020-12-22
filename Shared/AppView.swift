@@ -9,6 +9,7 @@
 import SwiftUI
 import JoliApi
 import JoliCore
+import Combine
 
 public struct AppView2: JoliView {
     
@@ -212,26 +213,24 @@ public struct AppView2: JoliView {
                             proxy.scrollTo(self.selectedViewId)
                         }
                     }
-//                    .highPriorityGesture(
-//                        DragGesture()
-//                            .updating(self.$draggingValue) { (value, state, trans) in
-//                                print("DRAGGING - \(value)")
-//                                state = value.translation
-//                            }
-//                            .onChanged() { value in
-//                                print("DRAG changed - \(value)")
-//                            }
-//                            .onEnded() { value in
-//                                print("DRAG ended - \(value)")
-//                            }
-//                    )
                 }
             }
             .ignoresSafeArea(.all, edges: [.top, .bottom])
             //.edgesIgnoringSafeArea()
         }
         .frame(minWidth: screenWidth)
+        .onReceive(appCoordinator.$votesPublisher) { votePublisher in
+            votePubCancel?.cancel()
+            
+            self.votePubCancel = votePublisher.sink() { completion in
+                votePubCancel?.cancel()
+            } receiveValue: { value in
+                logger.debug("[AppView] recieved vote: \(value)")
+            }
+        }
     }
+    
+    @State var votePubCancel: AnyCancellable? = nil
     
     @State private var offset = CGSize.zero
     

@@ -35,6 +35,30 @@ struct ShakeEffect: GeometryEffect {
     
 }
 
+struct ScaleEffect: GeometryEffect {
+    
+    var scaleX: CGFloat
+    var scaleY: CGFloat
+    
+    var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        get { AnimatablePair(scaleX, scaleY) }
+        set {
+            scaleX = newValue.first
+            scaleY = newValue.second
+        }
+    }
+    
+    init(x: CGFloat, y: CGFloat) {
+        self.scaleX = x
+        self.scaleY = y
+    }
+    
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        return ProjectionTransform(CGAffineTransform(scaleX: scaleX, y: scaleY))
+    }
+    
+}
+
 struct ShakeButtonView: View {
     @State var invalidAttempts = 0
     
@@ -247,7 +271,20 @@ struct ListenView: JoliView {
     
     func addonView(track: Playable, colors: UIImageColors?) -> some View {
         Group() {
-            if let track = track as? QueuedTrack {
+            if let track = track as? QueuedTrack,
+               let playing = self.strip.playing as? QueuedTrack,
+               playing.id == track.id, playing.isPlayable, track.isPlayable {
+                
+                Button() {
+                    print("[ListenView] rejoining \(track.title)")
+                } label: {
+                    Text("Rejoin").padding()
+                }
+                .font(.headline)
+                .padding(.trailing, Sizing.medium)
+                .buttonStyle(BlackWhiteButtonStyle(inverted: true))
+                
+            } else if let track = track as? QueuedTrack {
                 let heart: Binding<Hearts?> = Binding() { () -> Hearts? in
                     
                     guard playroom != nil else {
@@ -266,7 +303,7 @@ struct ListenView: JoliView {
                 
                 JoyMeterView(heart, textStyle: UIFont.TextStyle.title2, backgroundColor: Color.red.opacity(0.5))
                     .padding()
-                    .padding(.trailing, Sizing.large)
+                    .padding(.trailing, Sizing.medium)
                     .foregroundColor(colors?.secondaryColor ?? Color.primary)
                     .scaleEffect(x: self.requestingVoteTrackId == track.id ? 1.32 : 1, y: self.requestingVoteTrackId == track.id ? 1.32 : 1, anchor: .center)
                     .onTapGesture {
@@ -302,7 +339,6 @@ struct ListenView: JoliView {
     @State var searchResultCancel: AnyCancellable? = nil
     
     func setupSearch(){
-        print("[setupSearch] setting up search")
         
         self.searchResultCancel = model.$query
             .removeDuplicates()
@@ -313,7 +349,6 @@ struct ListenView: JoliView {
                     return Just(nil).eraseToAnyPublisher()
                 }
                 
-                print("[ListenView] searching spotify: \(q)")
                 
                 return spotifyEngine.search(q, [.tracks], limit: 4) { (q, categories, limit) ->
                     AnyPublisher<Spotify.SearchResult?, Never> in
@@ -321,7 +356,6 @@ struct ListenView: JoliView {
                     return Future<Spotify.SearchResult?, Never>() { promise in
                         api.searchSpotify(q: q, categories: categories, limit: limit)
                             .then(){ res in
-                                print("[ListenView] searching spotify: \(q)")
                                 promise(.success(res))
                             }
                             .catch() { error in

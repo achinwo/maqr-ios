@@ -135,7 +135,16 @@ struct JoliApp: AppClip {
         
         self.websocket = Socket(url: url.appendingPathComponent("/ws"))
         
-        self.coordinator = AppCoordinator(self.websocket.publish(PlayState.self, interval: playbackRefreshRate, path: \.progressMs, resolver: cb))
+        let votesPubs: QueuedTrackVote.Publisher = self.websocket
+            .deserialize(QueuedTrackVote.self)
+            .autoconnect()
+            .multicast() {
+                return PassthroughSubject<QueuedTrackVote, SocketError>()
+            }
+            .autoconnect()
+            .eraseToAnyPublisher()
+        
+        self.coordinator = AppCoordinator(self.websocket.publish(PlayState.self, interval: playbackRefreshRate, path: \.progressMs, resolver: cb), votesPubs)
         
         self.websocket.onConnect = self.onConnectionStateChanged
         
@@ -246,6 +255,22 @@ struct JoliApp: AppClip {
         
     }
     
+    private func updatePublishers() {
+        let publisher: PlayState.Publisher = self.websocket.publish(PlayState.self, interval: self.playbackRefreshRate, path: \.progressMs, resolver: cb)
+        
+        let votesPubs: QueuedTrackVote.Publisher = self.websocket
+            .deserialize(QueuedTrackVote.self)
+            .autoconnect()
+            .multicast() {
+                return PassthroughSubject<QueuedTrackVote, SocketError>()
+            }
+            .autoconnect()
+            .eraseToAnyPublisher()
+        
+        self.coordinator.playStatePublisher = publisher
+        self.coordinator.votesPublisher = votesPubs
+    }
+    
     func onConnectionStateChanged(_ socket: Socket, _ connected: Bool){
         print("[App#onConnectionStateChanged] connected: \(connected)")
         
@@ -261,9 +286,7 @@ struct JoliApp: AppClip {
             self.reconnectingTasks.removeAll()
             
             DispatchQueue.main.async {
-                let publisher: PlayState.Publisher = self.websocket.publish(PlayState.self, interval: self.playbackRefreshRate, path: \.progressMs, resolver: cb)
-                
-                self.coordinator.playStatePublisher = publisher
+                self.updatePublishers()
             }
         }
         
@@ -318,7 +341,7 @@ struct JoliApp: AppClip {
                     return
                 }
                 
-                logger.error("[App#authentication] creds: \(credentials), auth: \(auth)")
+                logger.debug("[App#authentication] creds: \(credentials), auth: \(auth)")
                 
                 var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
                 newAuths.append(auth)

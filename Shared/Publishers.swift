@@ -468,17 +468,28 @@ public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePub
     public func receive<S>(subscriber: S) where S : Subscriber, Self.Failure == S.Failure, Self.Output == S.Input {
         return socket.tryCompactMap() { message throws -> M? in
             
-            guard case let SocketMessage.text(typeNameOpt, jsonData) = message, let typeName = typeNameOpt else {
+            guard case let SocketMessage.text(typeNameOpt, jsonData) = message, let typeName = typeNameOpt, typeName == M.className() else {
                 return nil
             }
             
-            switch typeName {
-                case "\(PlayState.self)", "\(AuthToken.self)", "\(Playroom.self)":
-                    let obj = try M.jsonDecoder().decode(M.self, from: jsonData)
-                    return obj
-                default:
-                    return nil
+            let classes: [Codable.Type] = [
+                PlayState.self,
+                AuthToken.self,
+                Playroom.self,
+                QueuedTrackVote.self,
+            ]
+            
+            for cls in classes {
+                
+                guard "\(cls)" == M.className() else {
+                    continue
+                }
+                
+                let obj = try Playroom.jsonDecoder().decode(M.self, from: jsonData)
+                return obj
             }
+            
+            return nil
         }
         .mapError() { error -> Failure in
             
