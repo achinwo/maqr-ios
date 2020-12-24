@@ -83,11 +83,18 @@ public struct LobbyView: JoliView {
                 if !self.liveTracks.isEmpty {
                     
                     let header = HStack(){
-                        Text("Live Tracks")
-                            .font(Font.largeTitle.weight(.thin))
-                            .foregroundColor(.secondary)
+                        VStack(alignment: .leading){
+                            Text("Live Tracks")
+                                .font(Font.largeTitle.weight(.thin))
+                                .foregroundColor(.secondary)
+                            Text("See whats trending live - tap album art to follow along")
+                                .lineLimit(2)
+                                .font(Font.subheadline.weight(.light))
+                                .foregroundColor(.primary)
+                        }
                         Spacer()
                     }
+                    .padding(.bottom, Sizing.small)
                     
                     Section(header: header) {
                         ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
@@ -110,18 +117,27 @@ public struct LobbyView: JoliView {
                 }
                 
                 if !self.playrooms.isEmpty {
-                    let header = HStack(){
-                        Text("Playrooms")
-                        Spacer()
-                        Button() {
-                            print("[LobbyView] made")
-                            self.appCoordinator.globalModalSubject.send(.playroomCreate)
-                        } label: {
-                            Image(systemName: "plus").font(Font.title.weight(.thin))
-                        }
+                    let header = VStack(alignment: .leading) {
+                            
+                            HStack(alignment: .top){
+                                Text("Playrooms")
+                                Spacer()
+                                Button() {
+                                    print("[LobbyView] made")
+                                    self.appCoordinator.globalModalSubject.send(.playroomCreate)
+                                } label: {
+                                    Image(systemName: "plus").font(Font.title.weight(.thin))
+                                }
+                            }
+                            .font(Font.largeTitle.weight(.thin))
+                            .foregroundColor(.secondary)
+                        
+                            Text("Listen together and vote up your favorite tracks")
+                                .lineLimit(2)
+                                .font(Font.subheadline.weight(.light))
+                                .foregroundColor(.primary)
                     }
-                    .font(Font.largeTitle.weight(.thin))
-                    .foregroundColor(.secondary)
+                    .padding(.bottom, Sizing.small)
                     
                     let columns = [
                         //GridItem(.fixed(proxy.size.width / 2 - space), spacing: space),

@@ -168,10 +168,32 @@ struct JoliApp: AppClip {
             }
     }
     
+    @AppStorage("pendingLocalPlayUri") var pendingLocalPlayUri: String = .empty
+    @AppStorage("pendingLocalPlayPosition") var pendingLocalPlayPosition: Int = -1
+    
     func onLocalSpotifyPlayStateChanged(localPlayState: SPTAppRemotePlayerState) {
-        logger.info("[AppView#onLocalPlayStateChanged] localPlayState: \(localPlayState.track.name)")
+        logger.info("[AppView#onLocalPlayStateChanged] localPlayState: \(localPlayState.track.name) - \(pendingLocalPlayUri) - \(pendingLocalPlayPosition)")
         coordinator.playRequestedSubject.send(localPlayState.track.uri)
         coordinator.playRequestedSubject.send(nil)
+        
+        let clearPending = {
+            self.pendingLocalPlayUri = .empty
+            self.pendingLocalPlayPosition = -1
+            logger.info("[AppView#onLocalPlayStateChanged] cleared pending")
+        }
+        
+        guard !pendingLocalPlayUri.isEmpty, pendingLocalPlayUri == localPlayState.track.uri, pendingLocalPlayPosition >= 0 else {
+            clearPending()
+            return
+        }
+        
+        print("[App#onLocalSpotifyPlayStateChanged] seek to \(pendingLocalPlayPosition)...")
+        
+        self.spotifyRemote?.playerAPI?.seek(toPosition: pendingLocalPlayPosition) { (res, error) in
+            print("[App#onLocalSpotifyPlayStateChanged] seek to \(pendingLocalPlayPosition): \(String(describing: res)) - \(String(describing: error))")
+        }
+        
+        clearPending()
     }
     
     func onLocalSpotifyAuth(_ auth: AuthToken?, _ error: Error?){
@@ -418,12 +440,26 @@ struct JoliApp: AppClip {
                 }
                 
                 guard spotifyRemote.isConnected else {
+                    
+                    self.pendingLocalPlayUri = localRequest.track.uri
+                    self.pendingLocalPlayPosition = localRequest.positionMs ?? -1
+                    
+                    print("[App#$localPlayRequested] set pending: \(self.pendingLocalPlayUri) - \(self.pendingLocalPlayPosition)")
+                    
                     authorizeSpotify(uri: localRequest.track.uri)
                     return
                 }
                 
                 self.spotifyRemote?.playerAPI?.play(localRequest.track.uri, asRadio: true) { (res, error) in
                     print("[App#$localPlayRequested] play: \(String(describing: res)) - \(String(describing: error))")
+                    
+                    guard let positionMs = localRequest.positionMs else {
+                        return
+                    }
+                    
+                    self.spotifyRemote?.playerAPI?.seek(toPosition: positionMs) { (res, error) in
+                        print("[App#$localPlayRequested] seek to \(positionMs): \(String(describing: res)) - \(String(describing: error))")
+                    }
                 }
                 
                 print("[App#$localPlayRequested] local play: \(localRequest)")

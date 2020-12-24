@@ -609,7 +609,7 @@ public struct SpotifyItemView<Item>: View {
             .clipped()
 
             VStack(alignment: .leading){
-                Text(item[keyPath: titleKeyPath]).font(.body)
+                Text(item[keyPath: titleKeyPath]).font(Font.subheadline)
 
                 Text(item[keyPath: subtitleKeyPath])
                     .font(.footnote)
