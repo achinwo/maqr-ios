@@ -119,6 +119,18 @@ public extension View {
     
 }
 
+extension Array where Element == DispatchWorkItem {
+    
+    func cancelAll(){
+        print("[App#DispatchWorkItems] cancelling \(self.count) items...")
+        
+        for item in self {
+            item.cancel()
+        }
+    }
+    
+}
+
 public extension Search.Engine {
     
     typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[ExploreView.SearchResult], Never>

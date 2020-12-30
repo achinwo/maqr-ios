@@ -29,18 +29,6 @@ let TOKEN: String? = nil //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imh
 #endif
 
 
-extension Array where Element == DispatchWorkItem {
-    
-    func cancelAll(){
-        print("[App#DispatchWorkItems] cancelling \(self.count) items...")
-        
-        for item in self {
-            item.cancel()
-        }
-    }
-    
-}
-
 @main
 struct JoliApp: AppClip {
     
