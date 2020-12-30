@@ -566,122 +566,6 @@ struct ListenView: JoliView {
     
     var body: some View {
         
-        let makeTitle = { (playroom: Playroom) in
-            VStack(alignment: .trailing) {
-                Button(){
-                    withImpact(.soft) {
-                        self.playroom = nil
-                    }
-                } label: {
-                    Image(systemName: "arrow.down.right.and.arrow.up.left")
-                        .resizable()
-                        .frame(width: 18, height: 18)
-                        .font(Font.subheadline.weight(.thin))
-                        .foregroundColor(Color.secondary)
-                }
-                
-                VStack(alignment: .trailing){
-                    HStack(alignment: .center){
-                        Text("in")
-                            .font(Font.subheadline)
-                            .foregroundColor(Color.gray)
-                        Text(playroom.name)
-                            .font(Font.headline)
-                            .foregroundColor(.blue)
-                            .frame(maxWidth: screenWidth / 1.8)
-                            .fixedSize(horizontal: true, vertical: false)
-                    }
-                    
-                    Text("by Obialo")
-                        .font(Font.footnote.weight(.thin))
-                        .foregroundColor(Color.secondary)
-                }
-                .onTapGesture() {
-                    self.preview = .view() {
-                        VStack() {
-                            Text(playroom.name).font(.largeTitle)
-                            Divider()
-                            HStack() {
-                                Text("Description").font(.headline)
-                                Spacer()
-                            }
-                            Text(playroom.details).lineLimit(nil).font(.body)
-                        }
-                        .padding(.top, Sizing.large)
-                        .padding()
-                        .background(Color.clear)
-                        .eraseToAnyView()
-                    }
-                }
-            }
-        }
-        
-        
-        let makeStrip = { (playroom: Playroom) in
-            HStack(alignment: .center){
-                
-                if let playing = strip.playing {
-                    NetworkImage(string: playing.thumbnailUrl) {
-                        Rectangle().stroke(Color.gray)
-                    }
-                    .frame(width: 56, height: 56)
-                    .onTapGesture {
-                        withImpact(.soft, animated: .easeInOut) {
-                            scrollProxy?.scrollTo(playing.uri, anchor: .center)
-                        }
-                    }
-                    .id(playing.thumbnailUrl)
-                }
-                
-                if let next = strip.next, strip.playing != nil {
-                    
-                    VStack(alignment: .leading, spacing: 1){
-                        NetworkImage(string: next.thumbnailUrl) {
-                            Rectangle().stroke(Color.gray)
-                        }
-                        .frame(width: 40, height: 40)
-                        Text("Up Next")
-                            .font(Font.footnote.weight(.thin))
-                            .foregroundColor(Color.primary)
-                    }
-                    .frame(height: 56)
-                    .onTapGesture {
-                        withImpact(.soft, animated: .easeInOut) {
-                            scrollProxy?.scrollTo(next.uri, anchor: .center)
-                        }
-                    }
-                    .id(next.thumbnailUrl)
-                }
-                
-                if let runnerup = strip.runnerup, strip.playing != nil, strip.next != nil {
-                    VStack(alignment: .leading, spacing: 1){
-                        NetworkImage(string: runnerup.thumbnailUrl) {
-                            Rectangle().stroke(Color.gray)//.fill(style: Color.gray)
-                        }
-                        .frame(width: 40, height: 40)
-                        Text("Runner-up")
-                            .font(Font.footnote.weight(.thin))
-                            .foregroundColor(Color.primary)
-                    }
-                    .frame(height: 56)
-                    .onTapGesture {
-                        withImpact(.soft, animated: .easeInOut) {
-                            scrollProxy?.scrollTo(runnerup.uri, anchor: .center)
-                        }
-                    }
-                    .id(runnerup.thumbnailUrl)
-                }
-                
-                Spacer()
-                
-                makeTitle(playroom)
-            }
-            .padding(.horizontal, Sizing.small * 0.6)
-            .padding([.horizontal, .bottom], Sizing.small * 0.5)
-            .matchedGeometryEffect(id: "listen-header", in: animation)
-            .animation(.easeInOut)
-        }
-        
         return ZStack(){
             self.contentView
                 .simultaneousGesture(
@@ -771,8 +655,13 @@ struct ListenView: JoliView {
                 }
                 
                 Group(){
-                    if let playroom = playroom {
-                        makeStrip(playroom)
+                    if playroom != nil {
+                        PlayroomHeaderView(playroom: self.$playroom,
+                                           strip: self.$strip,
+                                           preview: self.$preview)
+                            .padding(.horizontal, Sizing.small * 0.6)
+                            .padding([.horizontal, .bottom], Sizing.small * 0.5)
+                            .matchedGeometryEffect(id: "listen-header", in: animation)
                     } else {
                         HStack(alignment: .top){
                             Spacer()
@@ -788,10 +677,10 @@ struct ListenView: JoliView {
                             
                             Spacer()
                         }
-                        .animation(.easeInOut)
                         .matchedGeometryEffect(id: "listen-header", in: animation)
                     }
                 }
+                .animation(.easeInOut)
                 .background(Color.white.opacity(0.90))
                 .coordinateSpace(name: "playroom-controls-space")
                 .onFrameChange() { rect in
@@ -805,7 +694,6 @@ struct ListenView: JoliView {
                     .frame(maxWidth: screenWidth)
                     .frame(minWidth: screenWidth, maxHeight: screenHeight)
                     .background(BlurView(.extraLight))
-                    //.padding(.top, 1)
                     .padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
                     .offset(x: 0, y: self.preview == nil ? screenHeight : 0)
                     .animation(.spring())
@@ -825,16 +713,6 @@ struct ListenView: JoliView {
     }
 }
 
-extension View {
-    
-    public func gradientForeground(colors: [Color]) -> some View {
-        self.overlay(AngularGradient(gradient: Gradient(colors: colors),
-                                     center: UnitPoint(x: 0.5, y: 1),
-                                     angle: Angle(degrees: 0.00)))
-            .mask(self)
-    }
-    
-}
 
 //struct ListenView_Previews: PreviewProvider {
 //    static var previews: some View {

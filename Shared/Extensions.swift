@@ -116,6 +116,13 @@ public extension View {
     func eraseToAnyView() -> AnyView {
         return AnyView(self)
     }
+        
+    func gradientForeground(colors: [Color]) -> some View {
+        self.overlay(AngularGradient(gradient: Gradient(colors: colors),
+                                     center: UnitPoint(x: 0.5, y: 1),
+                                     angle: Angle(degrees: 0.00)))
+            .mask(self)
+    }
     
 }
 
