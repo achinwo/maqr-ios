@@ -231,12 +231,12 @@ struct ListenView: JoliView {
                 }
                 
                 comp.queryItems = [
-                    URLQueryItem(name: "ids", value: trackUris.joined(separator: ","))
+                    URLQueryItem(name: "ids", value: Set(trackUris).joined(separator: ","))
                 ]
                 
                 return HttpMethod.Fetch.get(url: comp, dataType: SpotiftyTracksResponse.self, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
                     .then(on: .main) { resp -> SpotiftyTracksResponse in
-                        self.liveTracks = resp.tracks
+                        self.liveTracks = resp.tracks.sorted() { $0.name > $1.name }
                         return resp
                     }
                     .catch() { error in
@@ -699,10 +699,21 @@ struct ListenView: JoliView {
                     .animation(.spring())
                 
             }
+            .onReceive(appCoordinator.playStateChangeSubject) { timestamp in
+                guard !self.loadingLiveTracks else { return }
+                
+                let waitTime = Int.random(in: 1..<9)
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(waitTime)) {
+                    guard !self.loadingLiveTracks else { return }
+                    self.refreshContent()
+                }
+            }
             .onReceive(appCoordinator.playRequestedSubject) { playable in
-                guard playable != nil || self.loadingLiveTracks else { return }
+                guard playable != nil || !self.loadingLiveTracks else { return }
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
+                    guard !self.loadingLiveTracks else { return }
+                    
                     self.refreshContent()
                 }
             }

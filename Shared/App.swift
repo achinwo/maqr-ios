@@ -28,6 +28,7 @@ let TOKEN: String? = nil //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imh
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
 #endif
 
+var websocketCancel: AnyCancellable? = nil
 
 @main
 struct JoliApp: AppClip {
@@ -292,12 +293,36 @@ struct JoliApp: AppClip {
         socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
             print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
             
-            self.reconnectingTasks.cancelAll()
-            self.reconnectingTasks.removeAll()
             
             DispatchQueue.main.async {
+                self.reconnectingTasks.cancelAll()
+                self.reconnectingTasks.removeAll()
                 self.updatePublishers()
             }
+        }
+        
+        socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_CHANGED"]) { error in
+            
+            guard error == nil else {
+                print("[App] updated subscriptions (error): PLAYER_STATE_CHANGED - \(String(describing: error))")
+                return
+            }
+            
+            
+            websocketCancel = self.websocket.rawMessage
+                .sink() { completion in
+                    websocketCancel?.cancel()
+                    websocketCancel = nil
+                } receiveValue: { message in
+                    
+                    guard case let .text(_, _, _, subjectValue) = message, let subject = subjectValue, subject == "PLAYER_STATE_CHANGED" else {
+                        return
+                    }
+                    
+                    coordinator.playStateChangeSubject.send(Date())
+                }
+            
+            print("[App] updated subscriptions: PLAYER_STATE_CHANGED - \(String(describing: error)) - \(websocketCancel)")
         }
         
         socket.write(topic: "/subscribe", body: ["subject": "database_updates"]) { error in

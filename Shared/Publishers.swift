@@ -14,7 +14,7 @@ import Combine
 import Starscream
 
 public enum SocketMessage {
-    case text(type: String?, body: Data)
+    case text(type: String?, body: Data, topic: String, subject: String?)
 }
 
 public enum SocketError: Error {
@@ -39,7 +39,7 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
     public var onConnect: ((Socket, Bool) -> Void)?
     
-    private var rawMessage = PassthroughSubject<SocketMessage, SocketError>()
+    public var rawMessage = PassthroughSubject<SocketMessage, SocketError>()
     
     private var completion: Subscribers.Completion<SocketError>? = nil
     
@@ -117,13 +117,25 @@ extension Socket: WebSocketDelegate {
                 
                 guard let data = string.data(using: .utf8),
                       let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: AnyObject],
+                      let topic = json["topic"] as? String,
                       let bodyJson = json["data"] as? [String: AnyObject],
                       let bodyData = try? JSONSerialization.data(withJSONObject: bodyJson, options: [])
                 else {
                     break
                 }
                 
-                self.rawMessage.send(.text(type: json["type"] as? String, body: bodyData))
+                
+                
+                var subject: String? = nil
+                
+                if let url = URLComponents(string: topic), url.path == "/subscribe" {
+                    subject = url.queryItems?.first(where: { i in i.name == "subject"})?.value
+                }
+                
+                
+                //Swift.print("Received topic: \(topic), subject: \(subject)")
+                
+                self.rawMessage.send(.text(type: json["type"] as? String, body: bodyData, topic: topic, subject: subject))
             case .binary(let data):
                 Swift.print("Received data: \(data.count)")
             case .ping(_):
@@ -159,7 +171,7 @@ extension Socket: Publisher {
     public typealias Failure = SocketError
     
     public func receive<S>(subscriber: S) where S:Subscriber, Failure == S.Failure, Output == S.Input {
-        Swift.print("[Socket] subscribe: \(subscriber)")
+        Swift.print("[Socket] subscribe: \(subscriber.combineIdentifier)")
         self.rawMessage
             .receive(subscriber: subscriber)
     }
@@ -468,7 +480,7 @@ public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePub
     public func receive<S>(subscriber: S) where S : Subscriber, Self.Failure == S.Failure, Self.Output == S.Input {
         return socket.tryCompactMap() { message throws -> M? in
             
-            guard case let SocketMessage.text(typeNameOpt, jsonData) = message, let typeName = typeNameOpt, typeName == M.className() else {
+            guard case let SocketMessage.text(typeNameOpt, jsonData, _, _) = message, let typeName = typeNameOpt, typeName == M.className() else {
                 return nil
             }
             

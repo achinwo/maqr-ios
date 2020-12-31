@@ -38,6 +38,8 @@ public final class AppCoordinator: ObservableObject {
     public let playingSubject = CurrentValueSubject<(Playable, PlayState)?, Never>(nil)
     public let volumeSubject = PassthroughSubject<Int, Never>()
     
+    public let playStateChangeSubject = PassthroughSubject<Date, Never>()
+    
     public let playRequestedSubject = CurrentValueSubject<String?, Never>(nil)
     public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
     public let queueRequestedSubject = CurrentValueSubject<(uri: String, room: Playroom)?, Never>(nil)
