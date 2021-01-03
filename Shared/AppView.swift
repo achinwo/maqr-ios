@@ -34,28 +34,21 @@ public struct AppView2: JoliView {
     @State var navbarViewBounds: CGRect? = nil
     @State var filterText = ""
     
+    @State var filteredTracks: [Playable] = []
+    @State var preview: AppPreview? = nil
+    @State var votePubCancel: AnyCancellable? = nil
+    @State private var offset = CGSize.zero
+    
     @Namespace var animation
     
-    @Binding var playroom: Musicroom? {
-        didSet {
-            
-            
-        }
-    }
+    @Binding var playroom: Musicroom?
     
     @Binding var currentUser: User?
-    
-    
     
     public init(playroom: Binding<Musicroom?>, currentUser: Binding<User?>){
         self._playroom = playroom
         self._currentUser = currentUser
     }
-    
-    @State var filteredTracks: [Playable] = []
-    
-    @State var preview: AppPreview? = nil
-    
     
     public var body: some View {
         
@@ -100,19 +93,6 @@ public struct AppView2: JoliView {
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
                                        playroom: self.$playroom, currentUser: self.$currentUser)
                                 .frame(width: screenWidth)
-                                //.clipped()
-//                                .onChange(of: self.filterText) { term in
-//                                    let term = self.filterText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-//
-//                                    guard !self.filterText.isEmpty else {
-//                                        self.filteredTracks = SEED_DATA.tracks
-//                                        return
-//                                    }
-//
-//                                    self.filteredTracks = SEED_DATA.tracks.filter() { track in
-//                                        return track.artistName.lowercased().contains(term) || track.title.lowercased().contains(term)
-//                                    }
-//                                }
                                 .background(Color.white)
                                 .id(Self.viewIds.listen)
                         }
@@ -165,8 +145,6 @@ public struct AppView2: JoliView {
                                 .fixedSize()
                             }
                             .frame(width: gProx.size.width, height: gProx.size.height)
-                            
-                            //.background(Color.red)
                         }
                     )
                     .simultaneousGesture(
@@ -216,11 +194,15 @@ public struct AppView2: JoliView {
                 }
             }
             .ignoresSafeArea(.all, edges: [.top, .bottom])
-            //.edgesIgnoringSafeArea()
         }
         .frame(minWidth: screenWidth)
         .onReceive(appCoordinator.$votesPublisher) { votePublisher in
             votePubCancel?.cancel()
+            
+            guard let votePublisher = votePublisher else {
+                votePubCancel = nil
+                return
+            }
             
             self.votePubCancel = votePublisher.sink() { completion in
                 votePubCancel?.cancel()
@@ -229,10 +211,6 @@ public struct AppView2: JoliView {
             }
         }
     }
-    
-    @State var votePubCancel: AnyCancellable? = nil
-    
-    @State private var offset = CGSize.zero
     
 }
 

@@ -87,7 +87,7 @@ public struct LobbyView: JoliView {
                             Text("Live Tracks")
                                 .font(Font.largeTitle.weight(.thin))
                                 .foregroundColor(.secondary)
-                            Text("See whats trending live - tap album art to follow along")
+                            Text("See whats trending live — tap album art to follow along")
                                 .lineLimit(2)
                                 .font(Font.subheadline.weight(.light))
                                 .foregroundColor(.primary)
@@ -98,7 +98,7 @@ public struct LobbyView: JoliView {
                     
                     Section(header: header) {
                         ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                            TrackView2(track: .constant(track), useDynamicColors: true) { (track, colors) in
+                            TrackView2(track: .constant(track), useDynamicColors: false) { (track, colors) in
                                     VStack() {
 //                                        Button() {
 //                                            //appCoordinator.

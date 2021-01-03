@@ -29,8 +29,8 @@ public final class AppCoordinator: ObservableObject {
     @Published public var keyboardHeight: CGFloat = 0
     @Published public var insufficientPointsAttempt = 0
     
-    @Published public var playStatePublisher: PlayState.Publisher
-    @Published public var votesPublisher: QueuedTrackVote.Publisher
+    @Published public var playStatePublisher: PlayState.Publisher? = nil
+    @Published public var votesPublisher: QueuedTrackVote.Publisher? = nil
     
     @Published public var devices: [Spotify.Device] = []
     
@@ -110,7 +110,7 @@ public final class AppCoordinator: ObservableObject {
     
     @Published var refreshingDevices = false
     
-    public init(_ playStatePublisher: PlayState.Publisher, _ votesPublisher: QueuedTrackVote.Publisher, namespace: Namespace.ID? = nil){
+    public init(_ playStatePublisher: PlayState.Publisher? = nil, _ votesPublisher: QueuedTrackVote.Publisher? = nil, namespace: Namespace.ID? = nil){
         self.namespace = namespace
         self.playStatePublisher = playStatePublisher
         self.votesPublisher = votesPublisher
@@ -210,8 +210,10 @@ public final class AppCoordinator: ObservableObject {
     
     @Published var localPlayRequested: (track: Playable, positionMs: Int?)? = nil
     
-    public func play(_ track: Playable, positionMs: Int? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
+    public func play(_ track: Playable, positionMs: Int? = nil, contextUri: String? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
         self.playRequestedSubject.send(track.uri)
+        
+        let on = DispatchQueue.global(qos: .userInitiated)
         
         let performPlay = { (device: Spotify.Device?) -> Promise<PlayState?>  in
             
@@ -222,15 +224,22 @@ public final class AppCoordinator: ObservableObject {
             
             self.localPlayRequested = nil
             
-            return track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: DispatchQueue.global(qos: .userInitiated))
-                .then(on: .main) { ps in
+            var promise: Promise<PlayState>
+            
+            if let contextUri = contextUri {
+                promise = Track.playContent(contextUri, deviceId: device.id, positionMs: positionMs, offset: .uri(track.uri), baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession, on: on)
+            } else {
+                promise = track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: on)
+            }
+            
+            return promise.then(on: on) { ps in
                     self.playingSubject.send((track, ps))
                     return Promise(ps)
                 }
         }
         
         guard let device = device else {
-            return api.fetchSpotifyDevices(on: DispatchQueue.global(qos: .userInitiated))
+            return api.fetchSpotifyDevices(on: on)
                 .catch(){ error in
                     logger.error("[fetchSpotifyDevices] error: \(error)")
                 }

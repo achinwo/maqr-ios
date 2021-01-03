@@ -33,25 +33,40 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
     private var connecting = false
     
-    var soc: WebSocket
-    var request: URLRequest
+    var soc: WebSocket!
+    
+    public var request: URLRequest {
+        didSet {
+            
+            if self.soc != nil {
+                self.soc.disconnect()
+                self.soc.delegate = nil
+            }
+            
+            let pinner = FoundationSecurity(allowSelfSigned: allowSelfSigned) // don't validate SSL certificates
+            self.soc = WebSocket(request: request, certPinner: pinner)
+            self.soc.delegate = self
+        }
+    }
+    
     let allowSelfSigned: Bool
     
     public var onConnect: ((Socket, Bool) -> Void)?
     
-    public var rawMessage = PassthroughSubject<SocketMessage, SocketError>()
+    private var rawMessage = PassthroughSubject<SocketMessage, SocketError>()
     
     private var completion: Subscribers.Completion<SocketError>? = nil
     
-    public init(url: URL, timeoutInterval: TimeInterval = 5, allowSelfSigned: Bool = true, onConnect: ((Socket, Bool) -> Void)? = nil) {
+    public init(request: URLRequest, allowSelfSigned: Bool = true, onConnect: ((Socket, Bool) -> Void)? = nil) {
         self.onConnect = onConnect
-        request = URLRequest(url: url)
-        request.timeoutInterval = timeoutInterval
         self.allowSelfSigned = allowSelfSigned
-        
-        let pinner = FoundationSecurity(allowSelfSigned: allowSelfSigned) // don't validate SSL certificates
-        self.soc = WebSocket(request: request, certPinner: pinner)
-        self.soc.delegate = self
+        self.request = request
+    }
+    
+    public convenience init(url: URL, timeoutInterval: TimeInterval = 5, allowSelfSigned: Bool = true, onConnect: ((Socket, Bool) -> Void)? = nil) {
+        var request = URLRequest(url: url)
+        request.timeoutInterval = timeoutInterval
+        self.init(request: request, allowSelfSigned: allowSelfSigned, onConnect: onConnect)
     }
     
     public func write(string: String, completion: (() -> ())?) {
@@ -79,8 +94,7 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
     @discardableResult
     public func connect() -> Cancellable {
-        logger.debug("Connect called")
-        Swift.print("[Socket] Connect called")
+        logger.debug("[Socket] Connect called")
         
         let cancellable = AnyCancellable() {
             self.disconnectRequestCount += 1
@@ -89,6 +103,8 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
         }
         
         guard !isConnected && !connecting else { return cancellable }
+        
+        logger.debug("[Socket] setting up connection")
         
         soc.connect()
         connecting = true

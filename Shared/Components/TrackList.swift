@@ -33,13 +33,14 @@ public struct TrackView2<AddonView: View>: JoliView {
     
     @Binding var track: Playable
     
-    var colors: UIImageColors? {
-        guard let track = track as? QueuedTrack, useDynamicColors else {
-            return nil
-        }
-        
-        return track.colors
-    }
+    @State var colors: UIImageColors? = nil
+//    var colors: UIImageColors? {
+//        guard let track = track as? QueuedTrack, useDynamicColors else {
+//            return nil
+//        }
+//
+//        return track.colors
+//    }
     
     public var addonViewGetter: AddonViewGetter? = nil
     var useDynamicColors = false
@@ -143,8 +144,11 @@ public struct TrackView2<AddonView: View>: JoliView {
     }
     
     public var body: some View {
-        let setupPublisher = { (publisher: PlayState.Publisher) -> Void in
-            guard self.playPubCancel == nil else {
+        let setupPublisher = { (publisher: PlayState.Publisher?) -> Void in
+            self.playPubCancel?.cancel()
+            
+            guard let publisher = publisher else {
+                self.playPubCancel = nil
                 return
             }
             
@@ -177,12 +181,19 @@ public struct TrackView2<AddonView: View>: JoliView {
         return HStack(alignment: .center) {
             
             NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
-                         placeholderImage: UIImage(systemName: "timelapse")!) { (_, _) in
+                         placeholderImage: UIImage(systemName: "timelapse")!) { (loadedImage, _) in
                 
-//                guard let loadedImage = loadedImage, useDynamicColors else {
-//                    return
-//                }
+                guard let loadedImage = loadedImage, useDynamicColors else {
+                    return
+                }
                 
+                DispatchQueue.global(qos: .background).async {
+                    let colors = loadedImage.getColors()
+                    
+                    DispatchQueue.main.async {
+                        self.colors = colors
+                    }
+                }
             }
             .frame(width: 64, height: 64, alignment: .center)
             //.clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
@@ -261,7 +272,7 @@ public struct TrackView2<AddonView: View>: JoliView {
         //.rotation3DEffect(.degrees(45), axis: (x: 0.0, y: 0.0, z: self.requestingPlay ? 1.0 : 0.0))
         .scaleEffect(x: self.requestingPlay ? 0.98 : 1, y: self.requestingPlay ? 0.98 : 1, anchor: .center)
         .animation(.interactiveSpring())
-        //.background(colors?.backgroundColor ?? Color.clear)
+        .background(colors?.backgroundColor ?? Color.clear)
         .onTapGesture {
             menuEnabled.toggle()
             print("[Menu] enabled: \(menuEnabled)")
@@ -447,7 +458,7 @@ public struct TrackList<AddonView: View>: JoliView {
                     
                     let track = item.element
                     
-                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(track), useDynamicColors: false) { (trackObj, colors) -> AddonView in
+                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(track), useDynamicColors: playroom?.themeTrackUri == track.uri) { (trackObj, colors) -> AddonView in
                         return addonViewFunc(trackObj, colors)
                     }
                     .id(track.uri)

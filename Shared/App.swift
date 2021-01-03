@@ -115,29 +115,36 @@ struct JoliApp: AppClip {
     
     @State var authPublishCancel: AnyCancellable? = nil
     
-    init() {
+    static var wssUrlRequest: URLRequest {
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
-        
-        UITableView.appearance().separatorStyle = .none
         let url = JoliApi.Environment.current.baseUrl.ws //URL(string: "https://192.168.1.173:8080/ws")!
         
+        let headers: [String: String] = [
+            "X-PLATFORM": "ios",
+            "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
+            "X-DEVICE-MODEL": UIDevice.current.model,
+            "X-DEVICE-NAME": UIDevice.current.name,
+            "X-APP-VERSION": AppState.version.description,
+            //"X-SESSION-ID": activeSessionId,
+        ]
         
-        self.websocket = Socket(url: url.appendingPathComponent("/ws"))
+        var request = URLRequest(url: url.appendingPathComponent("/ws"), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 5)
+        request.allHTTPHeaderFields = headers
+        return request
+    }
+    
+    init() {
+        UITableView.appearance().separatorStyle = .none
         
-        let votesPubs: QueuedTrackVote.Publisher = self.websocket
-            .deserialize(QueuedTrackVote.self)
-            .autoconnect()
-            .multicast() {
-                return PassthroughSubject<QueuedTrackVote, SocketError>()
-            }
-            .autoconnect()
-            .eraseToAnyPublisher()
+        self.coordinator = AppCoordinator()
         
-        self.coordinator = AppCoordinator(self.websocket.publish(PlayState.self, interval: playbackRefreshRate, path: \.progressMs, resolver: cb), votesPubs)
+        var request = Self.wssUrlRequest
+        self.websocket = Socket(request: request)
+        
+        request.addValue(activeSessionId, forHTTPHeaderField: "X-SESSION-ID")
+        self.websocket.request = request
         
         self.websocket.onConnect = self.onConnectionStateChanged
-        
-        websocket.connect()
         
         print("[AppView.init] active token: \(activeSessionId)")
         
@@ -309,7 +316,7 @@ struct JoliApp: AppClip {
             }
             
             
-            websocketCancel = self.websocket.rawMessage
+            websocketCancel = self.websocket
                 .sink() { completion in
                     websocketCancel?.cancel()
                     websocketCancel = nil
@@ -321,8 +328,6 @@ struct JoliApp: AppClip {
                     
                     coordinator.playStateChangeSubject.send(Date())
                 }
-            
-            print("[App] updated subscriptions: PLAYER_STATE_CHANGED - \(String(describing: error)) - \(websocketCancel)")
         }
         
         socket.write(topic: "/subscribe", body: ["subject": "database_updates"]) { error in
@@ -399,6 +404,18 @@ struct JoliApp: AppClip {
                                                  updatedBy: self.auth?.user.updatedById)
                 
                 self.authsData = (try? jsonEncoder.encode(serialized)) ?? Data()
+            }
+            .always {
+                
+                defer {
+                    websocket.connect()
+                }
+                
+                guard let token = self.auth?.session.token, !self.websocket.isConnected else { return }
+                
+                var req = Self.wssUrlRequest
+                req.addValue(token, forHTTPHeaderField: "X-SESSION-ID")
+                websocket.request = req
             }
     }
     

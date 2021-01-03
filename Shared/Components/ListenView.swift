@@ -248,6 +248,8 @@ struct ListenView: JoliView {
             }
     }
     
+    
+    @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
     @State var tripLine: CGFloat = 0
     @State var loadingFinishedAt: Date? = nil
     @GestureState private var dragOffset = CGSize.zero
@@ -267,16 +269,19 @@ struct ListenView: JoliView {
         self.loadPlayrooms()
     }
     
-    @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
-    
     func addonView(track: Playable, colors: UIImageColors?) -> some View {
         Group() {
             if let track = track as? QueuedTrack,
+               let playlistUri = playroom?.playlistUri,
                let playing = self.strip.playing as? QueuedTrack,
-               playing.id == track.id, playing.isPlayable, track.isPlayable {
+               playing.id == track.id,
+               playing.isPlayable, track.isPlayable {
                 
                 Button() {
-                    print("[ListenView] rejoining \(track.title)")
+                    appCoordinator.play(track, contextUri: playlistUri, device: appCoordinator.activeDeviceSubject.value)
+                        .then() { state in
+                            print("[ListenView] rejoining \(track.title) - \(String(describing: state))")
+                        }
                 } label: {
                     Text("Rejoin").padding()
                 }
