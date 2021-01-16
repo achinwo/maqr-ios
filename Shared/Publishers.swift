@@ -33,19 +33,11 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
     private var connecting = false
     
-    var soc: WebSocket!
+    var soc: WebSocket
     
     public var request: URLRequest {
         didSet {
-            
-            if self.soc != nil {
-                self.soc.disconnect()
-                self.soc.delegate = nil
-            }
-            
-            let pinner = FoundationSecurity(allowSelfSigned: allowSelfSigned) // don't validate SSL certificates
-            self.soc = WebSocket(request: request, certPinner: pinner)
-            self.soc.delegate = self
+            self.soc.request = request
         }
     }
     
@@ -61,6 +53,10 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
         self.onConnect = onConnect
         self.allowSelfSigned = allowSelfSigned
         self.request = request
+        
+        let pinner = FoundationSecurity(allowSelfSigned: allowSelfSigned) // don't validate SSL certificates
+        self.soc = WebSocket(request: request, certPinner: pinner)
+        self.soc.delegate = self
     }
     
     public convenience init(url: URL, timeoutInterval: TimeInterval = 5, allowSelfSigned: Bool = true, onConnect: ((Socket, Bool) -> Void)? = nil) {

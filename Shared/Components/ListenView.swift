@@ -663,7 +663,8 @@ struct ListenView: JoliView {
                     if playroom != nil {
                         PlayroomHeaderView(playroom: self.$playroom,
                                            strip: self.$strip,
-                                           preview: self.$preview)
+                                           preview: self.$preview,
+                                           tracks: self.$tracks)
                             .padding(.horizontal, Sizing.small * 0.6)
                             .padding([.horizontal, .bottom], Sizing.small * 0.5)
                             .matchedGeometryEffect(id: "listen-header", in: animation)

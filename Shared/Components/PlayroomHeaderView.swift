@@ -18,6 +18,7 @@ public struct PlayroomHeaderView: JoliView {
     @Binding var playroom: Playroom?
     @Binding var strip: TrackStrip
     @Binding var preview: AppPreview?
+    @Binding var tracks: [Playable]
     
     public var body: some View {
         HStack(alignment: .center){
@@ -83,7 +84,17 @@ public struct PlayroomHeaderView: JoliView {
     }
     
     private func makeTitle(_ playroom: Playroom) -> some View {
-        VStack(alignment: .trailing) {
+        let totalCountMillisecs: Int = tracks.map() { $0.duration }.reduce(0, +)
+        
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.unitsStyle = .brief
+        
+        let formattedString = formatter.string(from: TimeInterval(totalCountMillisecs / 1000))!
+        
+        let tracksAndDurationLabel = "\(tracks.count) songs, \(formattedString)"
+        
+        return VStack(alignment: .trailing) {
             Button(){
                 withImpact(.soft) {
                     self.playroom = nil
@@ -108,7 +119,7 @@ public struct PlayroomHeaderView: JoliView {
                         .fixedSize(horizontal: true, vertical: false)
                 }
                 
-                Text("by Obialo")
+                Text(tracksAndDurationLabel)
                     .font(Font.footnote.weight(.thin))
                     .foregroundColor(Color.secondary)
             }
