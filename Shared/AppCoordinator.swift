@@ -174,6 +174,17 @@ public final class AppCoordinator: ObservableObject {
             .store(in: &cancellableSet)
     }
     
+    public func synchronizePlayroom(_ playroom: Playroom) -> Void {
+        print("[synchronizePlayroom] button clicked \"Synchronize Playlist\"")
+        HttpMethod.Fetch.get(url: "/api/musicrooms/\(playroom.id)/sync", dataType: Playroom.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .global(qos: .userInitiated))
+            .then(on: .main){ playroom in
+                print("[synchronizePlayroom] sync completed by server \(String(describing: playroom.playlistUri))")
+            }.catch(){error in
+                print("error synchronizing playlist \(error)")
+            }
+    }
+    
+    
     public func dismissKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }

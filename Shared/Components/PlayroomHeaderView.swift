@@ -65,6 +65,7 @@ public struct PlayroomHeaderView: JoliView {
                     Text("Runner-up")
                         .font(Font.footnote.weight(.thin))
                         .foregroundColor(Color.primary)
+                        .fixedSize()
                 }
                 .frame(height: 56)
                 .onTapGesture {
@@ -133,6 +134,18 @@ public struct PlayroomHeaderView: JoliView {
                             Spacer()
                         }
                         Text(playroom.details).lineLimit(nil).font(.body)
+                        
+                        Spacer()
+                        Button() {
+                            
+                            
+                            self.appCoordinator.synchronizePlayroom(playroom)
+                            
+                        } label: {
+                            Text("Synchronize Playlist")
+                        }
+                        .padding()
+                        Spacer()
                     }
                     .padding(.top, Sizing.large)
                     .padding()
