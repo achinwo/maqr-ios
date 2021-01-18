@@ -117,6 +117,7 @@ struct ListenView: JoliView {
     @State var scrollProxy: ScrollViewProxy? = nil
     
     @State var votes: [QueuedTrackVote] = []
+    @State var loadingRoomTracks = false
     
     init(geoProxy: GeometryProxy, tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Musicroom?>, currentUser: Binding<User?>) {
         self.geoProxy = geoProxy
@@ -130,9 +131,9 @@ struct ListenView: JoliView {
     
     @discardableResult
     func fetchTracks(_ room: Musicroom) -> Promise<[QueuedTrack]> {
-        
-        return QueuedTrack.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
-            .then() { tracks -> [QueuedTrack] in
+        self.loadingRoomTracks = true
+        return HttpMethod.Fetch.get(url: "/api/musicrooms/\(room.id)/queued", dataType: [QueuedTrack].self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+        .then() { tracks -> [QueuedTrack] in
                 var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
                 var allVotes: [QueuedTrackVote] = []
                 
@@ -158,6 +159,12 @@ struct ListenView: JoliView {
                 self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
                 
                 return tracksByMusicrooms[room.id] ?? []
+            }
+            .catch() { error in
+                logger.error("[fetchTracks] error fetching tracks for \(room.name): \(error)")
+            }
+            .always {
+                self.loadingRoomTracks = false
             }
     }
     
@@ -426,39 +433,45 @@ struct ListenView: JoliView {
                                 .background(Color.white)
                                 .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                         } else {
-                            TrackList(tracks: self.$tracksFiltered, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
-                                //.padding(.top, geoProxy.safeAreaInsets.top)
-                                //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
-                                .padding(.top, isEmptySearchResult ? geoProxy.safeAreaInsets.top + 100 : nil)
-                                .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
-                                .background(Color.white)
-                                .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
-                                .onChange(of: self.votes) { votes in
-                                    var mapping: [Int: [QueuedTrackVote]] = [:]
-                                    
-                                    for vote in votes {
+                            ZStack(){
+                                TrackList(tracks: self.$tracksFiltered, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
+                                    //.padding(.top, geoProxy.safeAreaInsets.top)
+                                    //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
+                                    .padding(.top, isEmptySearchResult ? geoProxy.safeAreaInsets.top + 100 : nil)
+                                    .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+                                    .background(Color.white)
+                                    .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                                    .onChange(of: self.votes) { votes in
+                                        var mapping: [Int: [QueuedTrackVote]] = [:]
                                         
-                                        guard var existing = mapping[vote.queuedTrackId] else {
-                                            mapping[vote.queuedTrackId] = []
-                                            continue
+                                        for vote in votes {
+                                            
+                                            guard var existing = mapping[vote.queuedTrackId] else {
+                                                mapping[vote.queuedTrackId] = []
+                                                continue
+                                            }
+                                            
+                                            existing.append(vote)
+                                            mapping[vote.queuedTrackId] = existing
                                         }
                                         
-                                        existing.append(vote)
-                                        mapping[vote.queuedTrackId] = existing
+                                        self.votesByTrack = mapping
                                     }
-                                    
-                                    self.votesByTrack = mapping
-                                }
-                                .onAppear(){
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                        guard let currentTrack = self.strip.playing else {
-                                            return
-                                        }
-                                        withAnimation(){
-                                            scrollProxy.scrollTo(currentTrack.uri, anchor: .center)
+                                    .onAppear(){
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                            guard let currentTrack = self.strip.playing else {
+                                                return
+                                            }
+                                            withAnimation(){
+                                                scrollProxy.scrollTo(currentTrack.uri, anchor: .center)
+                                            }
                                         }
                                     }
+                                
+                                if self.loadingPlayrooms {
+                                    Text("Loading Tracks...")
                                 }
+                            }
                         }
                     }
                     .onChange(of: self.playroom) { value in
@@ -612,7 +625,7 @@ struct ListenView: JoliView {
                 }
                 
                 let grouped = Dictionary(grouping: votes, by: { $0.queuedTrackId })
-                let items = grouped.sorted() { $0.value.count >= $1.value.count }
+                let items = grouped.sorted() { $0.value.count == $1.value.count ? $1.key > $0.key : $1.value.count < $0.value.count }
                 
                 let firstKey = items.first?.key ?? tracks.first?.id
                 let secondKey: Int? = items.count > 1 ? items[1].key : nil
