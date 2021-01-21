@@ -121,7 +121,7 @@ public struct PlayroomHeaderView: JoliView {
                 }
                 
                 Text(tracksAndDurationLabel)
-                    .font(Font.footnote.weight(.thin))
+                    .font(Font.footnote.weight(.light))
                     .foregroundColor(Color.secondary)
             }
             .onTapGesture() {

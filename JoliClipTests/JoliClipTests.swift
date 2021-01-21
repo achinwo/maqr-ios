@@ -14,10 +14,38 @@ import CancellationToken
 import Combine
 import JoliApi
 
-
 class JoliClipTests: XCTestCase {
     
-    func testExample() throws {
+    func testAutoResettingPassthrough() throws {
+        let expectation = XCTestExpectation(description: self.debugDescription)
+        let q = DispatchQueue(label: self.debugDescription)
+        
+        let pass = AutoResetSubject<Int?, Never, RunLoop>(nil, delay: .seconds(2), scheduler: RunLoop.main)
+        
+        let cancellable = pass
+            .sink() { val in
+                print("[Value] \(val)")
+            }
+        
+        q.asyncAfter(deadline: .now() + 1) {
+            //self.soc?.soc.disconnect()
+            pass.send(5)
+        }
+        
+        q.asyncAfter(deadline: .now() + 5) {
+            //self.soc?.soc.disconnect()
+            pass.send(14)
+        }
+        
+        q.asyncAfter(deadline: .now() + 16) {
+            print("[Subscribed] two=\(cancellable)")
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 20.0)
+    }
+    
+    func testSocketNowPLaying() throws {
         let expectation = XCTestExpectation(description: self.debugDescription)
         let q = DispatchQueue(label: self.debugDescription)
         
@@ -57,8 +85,6 @@ class JoliClipTests: XCTestCase {
         
         let cast = soc!
             .deserialize(PlayState.self)
-            .autoconnect()
-            .smooth(\.progressMs, duration: 60)
             .autoconnect()
             .multicast() {
                 return PassthroughSubject<PlayState, SocketError>()

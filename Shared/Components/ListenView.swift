@@ -276,8 +276,12 @@ struct ListenView: JoliView {
         self.loadPlayrooms()
     }
     
+    @State var voteCasted: QueuedTrackVote? = nil
+    
     func addonView(track: Playable, colors: UIImageColors?) -> some View {
-        Group() {
+        
+        
+        return Group() {
             if let track = track as? QueuedTrack,
                let playlistUri = playroom?.playlistUri,
                let playing = self.strip.playing as? QueuedTrack,
@@ -297,6 +301,10 @@ struct ListenView: JoliView {
                 .buttonStyle(BlackWhiteButtonStyle(inverted: true))
                 
             } else if let track = track as? QueuedTrack {
+                
+                let scaleX: CGFloat = self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
+                let scaleY: CGFloat = self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
+                
                 let heart: Binding<Hearts?> = Binding() { () -> Hearts? in
                     
                     guard playroom != nil else {
@@ -317,7 +325,10 @@ struct ListenView: JoliView {
                     .padding()
                     .padding(.trailing, Sizing.medium)
                     .foregroundColor(colors?.secondaryColor ?? Color.primary)
-                    .scaleEffect(x: self.requestingVoteTrackId == track.id ? 1.32 : 1, y: self.requestingVoteTrackId == track.id ? 1.32 : 1, anchor: .center)
+                    .scaleEffect(x: scaleX, y: scaleY, anchor: .center)
+                    .onReceive(appCoordinator.voteCastSubject) { vote in
+                        self.voteCasted = vote
+                    }
                     .onTapGesture {
                         guard self.appCoordinator.voteRequestedSubject.value == nil else {
                             return
@@ -523,6 +534,17 @@ struct ListenView: JoliView {
                 self.refreshContent()
             }
             
+        }
+        .onReceive(appCoordinator.voteCastSubject) { vote in
+            
+            guard let vote = vote,
+                  !self.votes.contains(vote),
+                  let queuedTracks = tracks as? [QueuedTrack],
+                  queuedTracks.contains(where: { $0.id == vote.queuedTrackId }) else {
+                return
+            }
+            
+            self.votes.append(vote)
         }
         .onReceive(appCoordinator.voteRequestedSubject) { requested in
             self.requestingVoteTrackId = requested

@@ -527,3 +527,43 @@ public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePub
     }
     
 }
+
+public final class AutoResetSubject<Output, Failure, S>: Subject where Failure : Error, S : Scheduler {
+    
+    private let passthroughDelayed = PassthroughSubject<Output, Never>()
+    private let passthrough = PassthroughSubject<Output, Failure>()
+    private var delayedCancel: AnyCancellable
+    
+    let resetValue: Output
+    let delay: S.SchedulerTimeType.Stride
+    
+    init(_ resetValue: Output, delay: S.SchedulerTimeType.Stride, scheduler: S) {
+        self.resetValue = resetValue
+        self.delay = delay
+        
+        let passthrough = self.passthrough
+        self.delayedCancel = passthroughDelayed
+            .delay(for: delay, scheduler: scheduler)
+            .sink() { value in
+                passthrough.send(value)
+            }
+    }
+    
+    public func send(_ value: Output) {
+        passthrough.send(value)
+        passthroughDelayed.send(resetValue)
+    }
+    
+    public func send(completion: Subscribers.Completion<Failure>) {
+        passthrough.send(completion: completion)
+    }
+    
+    public func send(subscription: Subscription) {
+        passthrough.send(subscription: subscription)
+    }
+    
+    public func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
+        passthrough.receive(subscriber: subscriber)
+    }
+    
+}

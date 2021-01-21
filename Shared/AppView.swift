@@ -208,6 +208,7 @@ public struct AppView2: JoliView {
                 votePubCancel?.cancel()
             } receiveValue: { value in
                 logger.debug("[AppView] recieved vote: \(value)")
+                appCoordinator.voteCastSubject.send(value)
             }
         }
     }

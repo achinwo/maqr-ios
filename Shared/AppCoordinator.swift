@@ -30,9 +30,27 @@ public final class AppCoordinator: ObservableObject {
     @Published public var insufficientPointsAttempt = 0
     
     @Published public var playStatePublisher: PlayState.Publisher? = nil
-    @Published public var votesPublisher: QueuedTrackVote.Publisher? = nil
+    @Published public var votesPublisher: QueuedTrackVote.Publisher? = nil {
+        
+        didSet {
+            
+            guard let votesPub = self.votesPublisher else {
+                return
+            }
+            
+            votesPub.sink() { completion in
+                logger.warning("[AppCoordinator] votes listener closed unexpectedly: \(completion)")
+            } receiveValue: { value in
+                self.voteCastSubject.send(value)
+            }
+            .store(in: &cancellableSet)
+        }
+        
+    }
     
     @Published public var devices: [Spotify.Device] = []
+    
+    public let voteCastSubject: AutoResetSubject<QueuedTrackVote?, Never, RunLoop> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: RunLoop.main)
     
     public let activeDeviceSubject = CurrentValueSubject<Spotify.Device?, Never>(nil)
     public let playingSubject = CurrentValueSubject<(Playable, PlayState)?, Never>(nil)
