@@ -168,7 +168,7 @@ struct ListenView: JoliView {
             }
     }
     
-    @State private var membership: [PlayroomMembership] = []
+    @State private var membership: [UserIdentifiable] = []
     
     //        SEED_DATA.users.map() { user in
     //        guard user.id != 3 else {
@@ -625,7 +625,7 @@ struct ListenView: JoliView {
                 
                 
                 Divider()
-                ListenTabbarView(users: membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
+                ListenTabbarView(users: $membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
                                  playroom: self.$playroom)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
@@ -663,11 +663,35 @@ struct ListenView: JoliView {
             }
             .onChange(of: playroom) { room in
                 
+                self.membership = []
+                
                 guard let room = room else {
                     return
                 }
                 
                 self.fetchTracks(room)
+                
+                guard let entitlements = room.entitlements else {
+                    return
+                }
+                
+                User.findByIds(ids: entitlements.map(){ $0.userId })
+                    .then() { users in
+                        let userMap = Dictionary(uniqueKeysWithValues: users.map{ ($0.id, $0) })
+                        
+                        self.membership = entitlements.compactMap() { entitlement -> PlayroomMembership? in
+                            guard let user = userMap[entitlement.userId] else {
+                                return nil
+                            }
+                            
+                            return PlayroomMembership(inviteStatus: entitlement.acceptedAt != nil ? .accepted : .pending,
+                                                      activityStatus: .offline,
+                                                      playroomId: room.id, user: user)
+                        }
+                        
+                        
+                    }
+                
             }
             .onReceive(self.appCoordinator.queueRequestedSubject) { req in
                 

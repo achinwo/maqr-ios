@@ -43,7 +43,7 @@ struct ListenTabbarView: JoliView {
     
     @Binding var isExpanded: Bool
     @Binding var preview: AppPreview?
-    @State var users: [UserIdentifiable]
+    @Binding var users: [UserIdentifiable]
     @Binding var searchText: String
     
     @State var isSearching = false
@@ -65,10 +65,10 @@ struct ListenTabbarView: JoliView {
     @State var isDragging = false
     @State var offset: CGSize = .zero
     
-    public init(users: [UserIdentifiable], isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>){
+    public init(users: Binding<[UserIdentifiable]>, isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>){
         
         self._playroom = playroom
-        self._users = State(initialValue: users)
+        self._users = users
         self._isExpanded = isExpanded ?? .constant(true)
         self._searchText = searchText ?? .constant("")
         self._preview = preview ?? .constant(.userProfile(SEED_DATA.users.first!.builder()))
