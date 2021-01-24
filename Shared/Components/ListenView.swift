@@ -203,7 +203,6 @@ struct ListenView: JoliView {
     @State var loadingPlayrooms = false
     
     private func loadPlayrooms() {
-        print("[loadLiveTracks] loading...")
         self.loadingPlayrooms = true
         Musicroom.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
             .then() { rooms  in
@@ -218,7 +217,7 @@ struct ListenView: JoliView {
     }
     
     private func loadLiveTracks() {
-        print("[loadLiveTracks] loading...")
+        
         self.loadingLiveTracks = true
         PlayState.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
             .then() { states -> Promise<SpotiftyTracksResponse?> in
@@ -271,7 +270,8 @@ struct ListenView: JoliView {
         }
     }
     
-    private func refreshContent() {
+    private func refreshContent(reason: String) {
+        logger.debug("[loadLiveTracks] reason: \(reason)")
         self.loadLiveTracks()
         self.loadPlayrooms()
     }
@@ -358,7 +358,7 @@ struct ListenView: JoliView {
     @State var tracksFiltered: [Playable] = []
     @State var searchResult: Spotify.SearchResult? = nil
     @StateObject var model = SearchStore()
-    
+    @State var playPubCancel: AnyCancellable? = nil
     @State var searchResultCancel: AnyCancellable? = nil
     
     func setupSearch(){
@@ -490,7 +490,7 @@ struct ListenView: JoliView {
                             return
                         }
                         
-                        self.refreshContent()
+                        self.refreshContent(reason: "room changed")
                     }
                     .onFrameChange() { value in
                         
@@ -508,7 +508,7 @@ struct ListenView: JoliView {
                             self.tripLine = value.origin.y
                             
                             withImpact(.rigid) {
-                                self.refreshContent()
+                                self.refreshContent(reason: "swipe to refresh")
                                 print("[] Frame chnaged: \(value)")
                             }
                         }
@@ -531,7 +531,7 @@ struct ListenView: JoliView {
             .animation(.easeInOut)
             .onAppear() {
                 self.scrollProxy = scrollProxy //
-                self.refreshContent()
+                self.refreshContent(reason: "listenview appeared")
             }
             
         }
@@ -671,27 +671,55 @@ struct ListenView: JoliView {
                 
                 self.fetchTracks(room)
                 
-                guard let entitlements = room.entitlements else {
-                    return
-                }
-                
-                User.findByIds(ids: entitlements.map(){ $0.userId })
+                let userIds = Array(Set(room.entitlements.map(){ $0.userId } + [room.createdByUser.id]))
+                User.findByIds(ids: userIds)
                     .then() { users in
-                        let userMap = Dictionary(uniqueKeysWithValues: users.map{ ($0.id, $0) })
+                        let userMap = Dictionary(uniqueKeysWithValues: users.map(){ ($0.id, $0) })
+                        print("[ListenView] users: \(users)")
                         
-                        self.membership = entitlements.compactMap() { entitlement -> PlayroomMembership? in
+                        self.membership = room.entitlements.compactMap() { entitlement -> PlayroomMembership? in
                             guard let user = userMap[entitlement.userId] else {
                                 return nil
                             }
                             
-                            return PlayroomMembership(inviteStatus: entitlement.acceptedAt != nil ? .accepted : .pending,
-                                                      activityStatus: .offline,
+                            return PlayroomMembership(inviteStatus: entitlement.acceptedAt != nil || room.createdByUser.id == user.id ? .accepted : .pending,
+                                                      activityStatus: user.playState?.status == "online" ? .online : .offline,
                                                       playroomId: room.id, user: user)
                         }
                         
+                        guard (self.membership as? [PlayroomMembership])?.contains(where: { $0.user.id == room.createdById }) != nil else {
+                            return
+                        }
                         
+                        let creator = PlayroomMembership(inviteStatus: .accepted, activityStatus: .offline, playroomId: room.id, user: room.createdByUser)
+                        self.membership.append(creator)
                     }
                 
+            }
+            .onReceive(appCoordinator.$playStatePublisher) { publisher in
+                guard let publisher = publisher else {
+                    return
+                }
+                
+                self.playStateCancel = publisher.sink() { completion in
+                    self.playStateCancel?.cancel()
+                } receiveValue: { value in
+                    
+                    guard self.membership.contains(where: { $0.emailAddress.email == value.email }) else {
+                        return
+                    }
+                    
+                    self.membership = self.membership.map() { membership in
+                        
+                        guard let mem = membership as? PlayroomMembership, mem.emailAddress.email == value.email else {
+                            return membership
+                        }
+                        
+                        return PlayroomMembership(inviteStatus: mem.inviteStatus,
+                                                  activityStatus: value.status == "online" ? .online : .offline,
+                                                  playroomId: mem.playroomId, user: mem.user)
+                    }
+                }
             }
             .onReceive(self.appCoordinator.queueRequestedSubject) { req in
                 
@@ -770,7 +798,7 @@ struct ListenView: JoliView {
                 let waitTime = Int.random(in: 1..<9)
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(waitTime)) {
                     guard !self.loadingLiveTracks else { return }
-                    self.refreshContent()
+                    self.refreshContent(reason: "play state changed")
                 }
             }
             .onReceive(appCoordinator.playRequestedSubject) { playable in
@@ -779,7 +807,7 @@ struct ListenView: JoliView {
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
                     guard !self.loadingLiveTracks else { return }
                     
-                    self.refreshContent()
+                    self.refreshContent(reason: "play requested")
                 }
             }
             .onAppear() {
@@ -787,6 +815,9 @@ struct ListenView: JoliView {
             }
         }
     }
+    
+    @State var playStateCancel: AnyCancellable? = nil
+
 }
 
 

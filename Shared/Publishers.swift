@@ -478,8 +478,6 @@ public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePub
     
     private let socket: S
     
-    //
-    
     public init(socket: S) {
         self.socket = socket
     }
@@ -501,6 +499,8 @@ public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePub
                 AuthToken.self,
                 Playroom.self,
                 QueuedTrackVote.self,
+                QueuedTrack.self,
+                Entitlement.self,
             ]
             
             for cls in classes {

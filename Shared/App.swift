@@ -50,6 +50,14 @@ struct JoliApp: AppClip {
             self.currentUser = auth?.user
             self.activeSessionId = auth?.session.token ?? .empty
             
+            if let sessId = self.websocket.request.allHTTPHeaderFields?["X-SESSION-ID"], sessId != self.activeSessionId {
+                var newReq = Self.wssUrlRequest
+                newReq.addValue(self.activeSessionId, forHTTPHeaderField: "X-SESSION-ID")
+                self.websocket.request = newReq
+                
+                self.websocket.soc.disconnect()
+            }
+            
             guard let user = auth?.user else {
                 self.coordinator.userHeartsSubject.send(nil)
                 return
