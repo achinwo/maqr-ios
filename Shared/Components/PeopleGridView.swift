@@ -183,6 +183,7 @@ struct PeopleGridView: JoliView {
                         self.gestureCallback?(.longpress, user)
       
                     }
+                    .id(user.emailAddress.email)
             }
         }
         

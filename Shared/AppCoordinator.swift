@@ -238,6 +238,7 @@ public final class AppCoordinator: ObservableObject {
     }
     
     @Published var localPlayRequested: (track: Playable, positionMs: Int?)? = nil
+    @Published var connectionStateSubject: CurrentValueSubject<(state: ConnectionState, changedAt: Date?), Never> = CurrentValueSubject((.stopped, nil))
     
     public func play(_ track: Playable, positionMs: Int? = nil, contextUri: String? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
         self.playRequestedSubject.send(track.uri)
@@ -324,6 +325,11 @@ public final class AppCoordinator: ObservableObject {
         let impactHeavy = UIImpactFeedbackGenerator(style: impact)
         action()
         impactHeavy.impactOccurred()
+    }
+    
+    func onConnectionStateChange(_ state: ConnectionState) {
+        logger.debug("[\(Self.self)] conection state changed: \(state)")
+        self.connectionStateSubject.send((state, Date()))
     }
     
     public struct Modifier: ViewModifier {

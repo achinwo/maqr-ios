@@ -687,7 +687,7 @@ struct ListenView: JoliView {
                                                       playroomId: room.id, user: user)
                         }
                         
-                        guard (self.membership as? [PlayroomMembership])?.contains(where: { $0.user.id == room.createdById }) != nil else {
+                        guard (self.membership as? [PlayroomMembership])?.contains(where: { $0.user.id == room.createdByUser.id }) != nil else {
                             return
                         }
                         

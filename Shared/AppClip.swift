@@ -293,6 +293,7 @@ public protocol AppClip: App {
     func onUserActivity(_ activity: NSUserActivity) -> Void
     func onScenePhaseChange(_ phase: ScenePhase) -> Void
     func onOpenUrl(url: URL) -> Void
+    func onConnectionStateChange(_ state: ConnectionState) -> Void
     
 }
 
@@ -326,6 +327,11 @@ public extension AppClip {
             .onChange(of: scenePhase, perform: self.onScenePhaseChange)
             .modifier(AppCoordinator.Modifier(coordinator))
         }
+    }
+    
+    func onConnectionStateChange(_ state: ConnectionState) {
+        logger.debug("[\(Self.self)] conection state changed: \(state)")
+        self.coordinator.onConnectionStateChange(state)
     }
     
     func onOpenUrl(url: URL){

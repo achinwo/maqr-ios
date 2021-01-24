@@ -101,12 +101,10 @@ struct JoliApp: AppClip {
     let coordinator: AppCoordinator
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @Environment(\.scenePhase) var scenePhase
     
     let spotify = spotifyDelegateInstance
     var websocket: Socket
     var cancellables: Set<AnyCancellable> = []
-    var playbackRefreshRate: TimeInterval = 0.15
     
     @State var devices: [Spotify.Device] = []
     
@@ -144,15 +142,18 @@ struct JoliApp: AppClip {
     init() {
         UITableView.appearance().separatorStyle = .none
         
-        self.coordinator = AppCoordinator()
-        
+        let coordinator = AppCoordinator()
+        self.coordinator = coordinator
+         
         var request = Self.wssUrlRequest
         self.websocket = Socket(request: request)
         
         request.addValue(activeSessionId, forHTTPHeaderField: "X-SESSION-ID")
         self.websocket.request = request
         
-        self.websocket.onConnect = self.onConnectionStateChanged
+        self.websocket.onConnect = { (socket, connected) in
+            coordinator.onConnectionStateChange(connected ? .connected : .stopped)
+        }
         
         print("[AppView.init] active token: \(activeSessionId)")
         
@@ -218,141 +219,6 @@ struct JoliApp: AppClip {
         var version: String? = nil
         var createdAt: Date = Date()
         var updatedAt: Date = Date()
-    }
-    
-    let cb: Publishers.Smooth<PlayState.Publisher, String>.StateGetter = { (state, now) in
-        
-        let uid = state.trackUri == nil ? nil : state.trackUri! + state.id.description
-        
-        guard let duration = state.durationMs, state.playingState == .playing else {
-            return (id: uid, value: state.progressMs, duration: nil, idleTimeout: 4)
-        }
-        
-        return (id: uid, value: state.progressMs, duration: TimeInterval(duration), idleTimeout: 4)
-    }
-    
-    @State var reconnectingTasks: [DispatchWorkItem] = []
-    
-    func scheduleSocketReconnect(){
-        
-        guard reconnectingTasks.isEmpty && !self.websocket.isConnected && [.background, .active].contains(scenePhase) else {
-            return
-        }
-        
-        let maxDelay = 300000 // 5 minutes
-        
-        func getDelay(for n: Int) -> Int {
-            let delay = Int(pow(2.0, Double(n))) * 1000
-            let jitter = Int.random(in: 0...1000)
-            return min(delay + jitter, maxDelay)
-        }
-        
-        let now = Date()
-        
-        var attempt = 1
-        var delay = getDelay(for: attempt)
-        
-        while delay < maxDelay {
-            
-            let thisAttempt = attempt
-            
-            print("[App#scheduleSocketReconnect] scheduling retry: \(attempt) - \(now.advanced(by: Double(delay) / 1000))")
-            
-            let workItem = DispatchWorkItem {
-                // Your async code goes in here
-                print("[App#scheduleSocketReconnect] triggered retry: \(thisAttempt) - \(Date())")
-                
-                guard !self.websocket.isConnected && [.background, .active].contains(scenePhase) else {
-                    self.reconnectingTasks.cancelAll()
-                    self.reconnectingTasks.removeAll()
-                    return
-                }
-                
-                self.websocket.connect()
-                print("[App#scheduleSocketReconnect] connect called: \(thisAttempt)")
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(delay), execute: workItem)
-            self.reconnectingTasks.append(workItem)
-            
-            attempt += 1
-            delay = getDelay(for: attempt)
-        }
-        
-    }
-    
-    private func updatePublishers() {
-        let publisher: PlayState.Publisher = self.websocket.publish(PlayState.self, interval: self.playbackRefreshRate, path: \.progressMs, resolver: cb)
-        
-        let votesPubs: QueuedTrackVote.Publisher = self.websocket
-            .deserialize(QueuedTrackVote.self)
-            .autoconnect()
-            .multicast() {
-                return PassthroughSubject<QueuedTrackVote, SocketError>()
-            }
-            .autoconnect()
-            .eraseToAnyPublisher()
-        
-        self.coordinator.playStatePublisher = publisher
-        self.coordinator.votesPublisher = votesPubs
-    }
-    
-    func onConnectionStateChanged(_ socket: Socket, _ connected: Bool){
-        print("[App#onConnectionStateChanged] connected: \(connected)")
-        
-        guard connected else {
-            scheduleSocketReconnect()
-            return
-        }
-        
-        socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
-            print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
-            
-            
-            DispatchQueue.main.async {
-                self.reconnectingTasks.cancelAll()
-                self.reconnectingTasks.removeAll()
-                self.updatePublishers()
-            }
-        }
-        
-        socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_CHANGED"]) { error in
-            
-            guard error == nil else {
-                print("[App] updated subscriptions (error): PLAYER_STATE_CHANGED - \(String(describing: error))")
-                return
-            }
-            
-            
-            websocketCancel = self.websocket
-                .sink() { completion in
-                    websocketCancel?.cancel()
-                    websocketCancel = nil
-                } receiveValue: { message in
-                    
-                    guard case let .text(_, _, _, subjectValue) = message, let subject = subjectValue, subject == "PLAYER_STATE_CHANGED" else {
-                        return
-                    }
-                    
-                    coordinator.playStateChangeSubject.send(Date())
-                }
-        }
-        
-        socket.write(topic: "/subscribe", body: ["subject": "database_updates"]) { error in
-            print("[App] updated subscriptions: database_updates - \(String(describing: error))")
-        }
-    }
-    
-    func assertWebsocketConnected() {
-        self.websocket.write(topic: "/status", body: [:]) { error in
-            
-            guard let error = error else {
-                logger.info("[App] asserting websocket connected successful")
-                return
-            }
-            
-            logger.error("[App] asserting websocket connected: \(error)")
-        }
     }
     
     
@@ -427,6 +293,7 @@ struct JoliApp: AppClip {
             }
     }
     
+    @Environment(\.scenePhase) var scenePhase
     @State var isSheetPresented: Bool = false
     @State var modalView: AppPreview? = nil {
         didSet {
@@ -436,7 +303,7 @@ struct JoliApp: AppClip {
     
     var contentView: some View {
 
-        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser)
+        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, websocket: websocket)
 //            .onReceive(appDelegate.$shortcutItemToProcess) { _ in
 //                //print(appDelegate.shortcutItemType)
 //                //Do something here
@@ -512,16 +379,6 @@ struct JoliApp: AppClip {
                 }
                 
                 self.activeDeviceId = device.id
-            }
-            .onReceive(coordinator.voteRequestedSubject) { voting in
-                guard voting != nil else { return }
-                
-                self.assertWebsocketConnected()
-            }
-            .onReceive(coordinator.playRequestedSubject) { playing in
-                guard playing != nil else { return }
-                
-                self.assertWebsocketConnected()
             }
             .onReceive(coordinator.$activeSessionToken) { token in // MARK: - $activeSessionToken
                 
