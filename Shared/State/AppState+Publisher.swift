@@ -100,7 +100,7 @@ extension AppState {
                     return
                 }
                 
-                user.activeRoomId = room?.id //.setActiveRoom(room, baseUrl: api.baseUrl.http, )
+                user.activeRoomId = room?.musicroom.id //.setActiveRoom(room, baseUrl: api.baseUrl.http, )
                 user.save(baseUrl: self.api.baseUrl.http,
                           urlSession: self.api.urlSession,
                           on: nil)

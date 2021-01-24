@@ -175,7 +175,7 @@ extension AppState {
                     guard let room = self.activeRoom else {
                         return
                     }
-                    self.fetchQueuedTracks(room, clean: true)
+                    self.fetchQueuedTracks(room.musicroom, clean: true)
             }
         }
         
@@ -247,7 +247,7 @@ extension AppState {
     }
     
     @discardableResult
-    func fetchMusicrooms() -> Promise<[Musicroom]> {
+    func fetchMusicrooms() -> Promise<[Room]> {
         return Musicroom.all(baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession, on: .global(qos: .background))
             .then(on: .main) { [weak self] (rooms) -> Promise<[User]> in
                 guard let self = self else { return Promise([]) }

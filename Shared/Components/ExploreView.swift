@@ -86,13 +86,16 @@ public struct ExploreView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @State var searchbarRect: CGRect? = nil
-    @Binding var playroom: Musicroom?
+    @Binding var playroom: Playroom?
     @Binding var selectedViewId: String
     
-    public init(geoProxy: GeometryProxy, playroom: Binding<Musicroom?>, selectedViewId: Binding<String>) {
+    let websocket: Socket
+    
+    public init(geoProxy: GeometryProxy, playroom: Binding<Playroom?>, selectedViewId: Binding<String>, websocket: Socket) {
         self.geoProxy = geoProxy
         self._playroom = playroom
         self._selectedViewId = selectedViewId
+        self.websocket = websocket
     }
     
     var areasFiltered: Set<Search.Category> {
@@ -304,7 +307,7 @@ public struct ExploreView: JoliView {
     
     @State var seeAllKey: Search.Category? = nil
     @State var playRequestedUri: String? = nil
-    @State var queueRequested: (uri: String, playroom: Playroom)? = nil
+    @State var queueRequested: (uri: String, playroom: Musicroom)? = nil
     
     private func renderContent(_ key: Search.Category, _ views: [Search.ResultView]) -> some View {
         return VStack(alignment: .leading, spacing: .zero){
@@ -328,7 +331,7 @@ public struct ExploreView: JoliView {
     }
     
     public enum SearchResult {
-        case playrooms(Search.Query, Search.Engine, [Playroom])
+        case playrooms(Search.Query, Search.Engine, [Musicroom])
         case spotifyResult(Search.Query, Search.Engine, Spotify.SearchResult)
     }
     
@@ -464,7 +467,7 @@ public struct ExploreView: JoliView {
                             self.selectedViewId = "views.listen"
                             
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, qos: .userInteractive, flags: .enforceQoS){
-                                self.playroom = room
+                                self.playroom = Playroom(musicroom: room, socket: self.websocket)
                             }
                         }
                         .eraseToAnyView()
@@ -514,7 +517,7 @@ public struct ExploreView: JoliView {
                                     .disabled(queueRequested != nil)
                                     .onTapGesture {
                                         print("[Search.ResultView] queue \(track.title)")
-                                        self.appCoordinator.queueTrack(track, playroom: playroom)
+                                        self.appCoordinator.queueTrack(track, playroom: playroom.musicroom)
                                     }
                                     .scaleEffect(x: queueRequested?.uri == track.uri ? 0.8 : 1, y: queueRequested?.uri == track.uri ? 0.8 : 1)
                             }
@@ -673,10 +676,10 @@ struct DarkBlueShadowProgressViewStyle: ProgressViewStyle {
     }
 }
 
-struct ExploreView_Previews: PreviewProvider {
-    static var previews: some View {
-        GeometryReader() { geoProxy in
-            ExploreView(geoProxy: geoProxy, playroom: .constant(nil), selectedViewId: .constant(.empty))
-        }
-    }
-}
+//struct ExploreView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        GeometryReader() { geoProxy in
+//            ExploreView(geoProxy: geoProxy, playroom: .constant(nil), selectedViewId: .constant(.empty))
+//        }
+//    }
+//}

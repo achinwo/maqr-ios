@@ -60,7 +60,7 @@ public final class AppCoordinator: ObservableObject {
     
     public let playRequestedSubject = CurrentValueSubject<String?, Never>(nil)
     public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
-    public let queueRequestedSubject = CurrentValueSubject<(uri: String, room: Playroom)?, Never>(nil)
+    public let queueRequestedSubject = CurrentValueSubject<(uri: String, room: Musicroom)?, Never>(nil)
     public let globalModalSubject = CurrentValueSubject<AppPreview?, Never>(nil)
     
     public let authSubject = PassthroughSubject<Auth?, Never>()
@@ -192,9 +192,9 @@ public final class AppCoordinator: ObservableObject {
             .store(in: &cancellableSet)
     }
     
-    public func synchronizePlayroom(_ playroom: Playroom) -> Void {
+    public func synchronizePlayroom(_ playroom: Musicroom) -> Void {
         print("[synchronizePlayroom] button clicked \"Synchronize Playlist\"")
-        HttpMethod.Fetch.get(url: "/api/musicrooms/\(playroom.id)/sync", dataType: Playroom.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .global(qos: .userInitiated))
+        HttpMethod.Fetch.get(url: "/api/musicrooms/\(playroom.id)/sync", dataType: Musicroom.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .global(qos: .userInitiated))
             .then(on: .main){ playroom in
                 print("[synchronizePlayroom] sync completed by server \(String(describing: playroom.playlistUri))")
             }.catch(){error in
@@ -295,7 +295,7 @@ public final class AppCoordinator: ObservableObject {
     }
     
     @discardableResult
-    func queueTrack(_ track: Playable, playroom activeRoom: Playroom) -> Promise<QueuedTrack> {
+    func queueTrack(_ track: Playable, playroom activeRoom: Musicroom) -> Promise<QueuedTrack> {
         
         self.queueRequestedSubject.send((track.uri, activeRoom))
         

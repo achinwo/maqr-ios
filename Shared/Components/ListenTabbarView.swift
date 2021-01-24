@@ -50,7 +50,7 @@ struct ListenTabbarView: JoliView {
     @State var searchbarActive = false
     @EnvironmentObject var appCoordinator: AppCoordinator
     @State var volume: CGFloat = 30
-    @Binding var playroom: Musicroom?
+    @Binding var playroom: Playroom?
     
     @State var hearts: Hearts? = nil {
         
@@ -65,7 +65,7 @@ struct ListenTabbarView: JoliView {
     @State var isDragging = false
     @State var offset: CGSize = .zero
     
-    public init(users: Binding<[UserIdentifiable]>, isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Musicroom?>){
+    public init(users: Binding<[UserIdentifiable]>, isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Playroom?>){
         
         self._playroom = playroom
         self._users = users

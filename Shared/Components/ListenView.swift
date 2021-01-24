@@ -110,7 +110,7 @@ struct ListenView: JoliView {
     @State var pullToRefreshCancel: AnyCancellable? = nil
     
     var animation: Namespace.ID
-    @Binding var playroom: Musicroom?
+    @Binding var playroom: Playroom?
     @Binding var currentUser: User?
     //    @State var activeDevice: Spotify.Device? = nil
     //    @State var devices: [Spotify.Device] = []
@@ -118,8 +118,9 @@ struct ListenView: JoliView {
     
     @State var votes: [QueuedTrackVote] = []
     @State var loadingRoomTracks = false
+    let websocket: Socket
     
-    init(geoProxy: GeometryProxy, tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Musicroom?>, currentUser: Binding<User?>) {
+    init(geoProxy: GeometryProxy, tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket) {
         self.geoProxy = geoProxy
         self._tabbarExpaned = tabbarExpaned
         self._preview = preview
@@ -127,6 +128,7 @@ struct ListenView: JoliView {
         self.animation = animation
         self._playroom = playroom
         self._currentUser = currentUser
+        self.websocket = websocket
     }
     
     @discardableResult
@@ -147,7 +149,7 @@ struct ListenView: JoliView {
                     roomTracks.append(track)
                     tracksByMusicrooms[track.roomId] = roomTracks
                     
-                    guard let votes = track.votes, track.roomId == playroom?.id else {
+                    guard let votes = track.votes, track.roomId == playroom?.musicroom.id else {
                         continue
                     }
                     
@@ -400,7 +402,7 @@ struct ListenView: JoliView {
             LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks) { room in
                 self.tracks = []
                 self.votes = []
-                self.playroom = room
+                self.playroom = Playroom(musicroom: room, socket: self.websocket)
             }
         }
         .frame(width: screenWidth)
@@ -669,7 +671,7 @@ struct ListenView: JoliView {
                     return
                 }
                 
-                self.fetchTracks(room)
+                self.fetchTracks(room.musicroom)
                 
                 let userIds = Array(Set(room.entitlements.map(){ $0.userId } + [room.createdByUser.id]))
                 User.findByIds(ids: userIds)
@@ -684,14 +686,14 @@ struct ListenView: JoliView {
                             
                             return PlayroomMembership(inviteStatus: entitlement.acceptedAt != nil || room.createdByUser.id == user.id ? .accepted : .pending,
                                                       activityStatus: user.playState?.status == "online" ? .online : .offline,
-                                                      playroomId: room.id, user: user)
+                                                      playroomId: room.musicroom.id, user: user)
                         }
                         
                         guard (self.membership as? [PlayroomMembership])?.contains(where: { $0.user.id == room.createdByUser.id }) != nil else {
                             return
                         }
                         
-                        let creator = PlayroomMembership(inviteStatus: .accepted, activityStatus: .offline, playroomId: room.id, user: room.createdByUser)
+                        let creator = PlayroomMembership(inviteStatus: .accepted, activityStatus: .offline, playroomId: room.musicroom.id, user: room.createdByUser)
                         self.membership.append(creator)
                     }
                 
@@ -723,7 +725,7 @@ struct ListenView: JoliView {
             }
             .onReceive(self.appCoordinator.queueRequestedSubject) { req in
                 
-                guard let queued = req, queued.room.id == playroom?.id else {
+                guard let queued = req, queued.room.id == playroom?.musicroom.id else {
                     return
                 }
                 

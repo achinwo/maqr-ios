@@ -412,13 +412,13 @@ public struct TrackList<AddonView: View>: JoliView {
     @Binding var tracks: [Playable]
     @Binding var votes: [QueuedTrackVote]
     @Binding var preview: AppPreview?
-    @Binding var playroom: Musicroom?
+    @Binding var playroom: Playroom?
     
     @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
     let addonViewFunc: (Playable, UIImageColors?) -> AddonView
     
     public init(tracks: Binding<[Playable]>, votes: Binding<[QueuedTrackVote]>? = .constant([]), preview: Binding<AppPreview?> = .constant(nil),
-                playroom: Binding<Musicroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil, @ViewBuilder addonView: @escaping (Playable, UIImageColors?) -> AddonView){
+                playroom: Binding<Playroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil, @ViewBuilder addonView: @escaping (Playable, UIImageColors?) -> AddonView){
         self.onVoteTapped = onVoteTapped
         self._tracks = tracks
         self._preview = preview
@@ -469,10 +469,10 @@ public struct TrackList<AddonView: View>: JoliView {
     
 }
 
-struct TrackList_Previews: PreviewProvider {
-    
-    static var previews: some View {
-        TrackList(tracks: .constant(SEED_DATA.tracks)) { (_, _) in EmptyView() }
-    }
-    
-}
+//struct TrackList_Previews: PreviewProvider {
+//    
+//    static var previews: some View {
+//        TrackList(tracks: .constant(SEED_DATA.tracks)) { (_, _) in EmptyView() }
+//    }
+//    
+//}

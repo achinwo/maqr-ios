@@ -137,9 +137,7 @@ public struct PlayroomHeaderView: JoliView {
                         
                         Spacer()
                         Button() {
-                            
-                            
-                            self.appCoordinator.synchronizePlayroom(playroom)
+                            self.appCoordinator.synchronizePlayroom(playroom.musicroom)
                             
                         } label: {
                             Text("Synchronize Playlist")

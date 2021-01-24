@@ -13,6 +13,29 @@ import CancellationToken
 import Combine
 import Starscream
 
+
+public class Playroom: ObservableObject, Room, Equatable {
+    
+    public static func == (lhs: Playroom, rhs: Playroom) -> Bool {
+        return lhs.musicroom == rhs.musicroom
+    }
+    
+    @Published public var playingState: PlayingState? = nil
+    
+    @Published public var musicroom: Musicroom
+    
+    @Published public var entitlements: [Entitlement]
+    
+    @Published public var name: String
+    
+    public init(musicroom: Musicroom, socket: Socket){
+        self.musicroom = musicroom
+        self.entitlements = musicroom.entitlements
+        self.name = musicroom.name
+    }
+    
+}
+
 public enum SocketMessage {
     case text(type: String?, body: Data, topic: String, subject: String?)
 }
@@ -497,7 +520,7 @@ public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePub
             let classes: [Codable.Type] = [
                 PlayState.self,
                 AuthToken.self,
-                Playroom.self,
+                Musicroom.self,
                 QueuedTrackVote.self,
                 QueuedTrack.self,
                 Entitlement.self,
@@ -509,7 +532,7 @@ public struct DbPublisher<M: Persisted, S: ConnectablePublisher>: ConnectablePub
                     continue
                 }
                 
-                let obj = try Playroom.jsonDecoder().decode(M.self, from: jsonData)
+                let obj = try Musicroom.jsonDecoder().decode(M.self, from: jsonData)
                 return obj
             }
             

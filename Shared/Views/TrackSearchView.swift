@@ -90,7 +90,7 @@ struct TrackSearchView: View {
                 List {
                     // Filtered list of names
                     ForEach(self.appState.trackSearchResult, id: \.uri) { (track: Playable) in
-                        TrackView(track: track)
+                        //TrackView(track: track)
                     }
                 }
                 .resignKeyboardOnDragGesture()

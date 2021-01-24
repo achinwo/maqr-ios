@@ -154,8 +154,6 @@ public extension Search.Engine {
     
 }
 
-public typealias Playroom = Musicroom
-
 public extension Search {
     
     struct ResultView: JoliView, Identifiable {

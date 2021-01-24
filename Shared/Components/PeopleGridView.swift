@@ -36,7 +36,7 @@ public struct PersonGenericImage: View {
 public struct InvitePeopleView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
-    @State var playroom: Musicroom?
+    @State var playroom: Room?
     
     public var body: some View {
         let view = VStack(alignment: .center){

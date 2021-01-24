@@ -41,12 +41,12 @@ public struct AppView2: JoliView {
     
     @Namespace var animation
     
-    @Binding var playroom: Musicroom?
+    @Binding var playroom: Playroom?
     
     @Binding var currentUser: User?
     let websocket: Socket
     
-    public init(playroom: Binding<Musicroom?>, currentUser: Binding<User?>, websocket: Socket){
+    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket){
         self._playroom = playroom
         self._currentUser = currentUser
         self.websocket = websocket
@@ -200,7 +200,7 @@ public struct AppView2: JoliView {
                 ScrollViewReader() { (proxy: ScrollViewProxy) in
                     ScrollView(.horizontal, showsIndicators: false){
                         HStack(alignment: .top, spacing: .zero){
-                            ExploreView(geoProxy: geoProxy, playroom: self.$playroom, selectedViewId: self.$selectedViewId)
+                            ExploreView(geoProxy: geoProxy, playroom: self.$playroom, selectedViewId: self.$selectedViewId, websocket: self.websocket)
                                 .frame(width: screenWidth)
                                 .frame(minHeight: screenHeight - geoProxy.safeAreaInsets.top - geoProxy.safeAreaInsets.bottom)
                                 .onChange(of: self.scrollPosition) { value in
@@ -234,7 +234,7 @@ public struct AppView2: JoliView {
                             
                             ListenView(geoProxy: geoProxy, tabbarExpaned: self.$isExpanded,
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
-                                       playroom: self.$playroom, currentUser: self.$currentUser)
+                                       playroom: self.$playroom, currentUser: self.$currentUser, websocket: self.websocket)
                                 .frame(width: screenWidth)
                                 .background(Color.white)
                                 .id(Self.viewIds.listen)

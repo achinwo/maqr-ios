@@ -220,3 +220,123 @@ extension User: UserVerified {
 }
 
 var thing = SEED_DATA.users.first?.email
+
+public protocol Room {
+    
+    var musicroom: Musicroom { get }
+    
+    var createdByUser: User { get }
+    var deletedAt: Date? { get }
+    var deletedById: Int? { get }
+    var deletedByUser: User? { get }
+    var details: String { get }
+    var entitlements: [Entitlement] { get set }
+    var imageLarge: String? { get }
+    var imageMedium: String? { get }
+    var imageSmall: String? { get }
+    var membership: Membership { get }
+    var name: String { get set }
+    var playingState: PlayingState? { get }
+    var playingStateChangedAt: Date? { get }
+    var playlistUri: String? { get }
+    var progressMs: Int? { get }
+    var snapshotId: String? { get }
+    var themeTrackUri: String { get }
+    var themeTrackUri2: String? { get }
+    var trackUri: String? { get }
+    var updatedAt: Date { get }
+    var updatedById: Int? { get }
+    var updatedByUser: User? { get }
+}
+
+public extension Room {
+    
+    var createdByUser: User {
+        return musicroom.createdByUser
+    }
+    
+    var deletedAt: Date? {
+        return musicroom.deletedAt
+    }
+    
+    var deletedById: Int? {
+        return musicroom.deletedById
+    }
+    
+    var deletedByUser: User? {
+        return musicroom.deletedByUser
+    }
+    
+    var details: String {
+        return musicroom.details
+    }
+    
+    var imageLarge: String? {
+        return musicroom.imageLarge
+    }
+    
+    var imageMedium: String? {
+        return musicroom.imageMedium
+    }
+    
+    var imageSmall: String? {
+        return musicroom.imageSmall
+    }
+    
+    var membership: Membership {
+        return musicroom.membership
+    }
+    
+    var playingState: PlayingState? {
+        return musicroom.playingState
+    }
+    
+    var playingStateChangedAt: Date? {
+        return musicroom.playingStateChangedAt
+    }
+    
+    var playlistUri: String? {
+        return musicroom.playlistUri
+    }
+    
+    var progressMs: Int? {
+        return musicroom.progressMs
+    }
+    
+    var snapshotId: String? {
+        return musicroom.snapshotId
+    }
+    
+    var themeTrackUri: String {
+        return musicroom.themeTrackUri
+    }
+    
+    var themeTrackUri2: String? {
+        return musicroom.themeTrackUri2
+    }
+    
+    var trackUri: String? {
+        return musicroom.trackUri
+    }
+    
+    var updatedAt: Date {
+        return musicroom.updatedAt
+    }
+    
+    var updatedById: Int? {
+        return musicroom.updatedById
+    }
+    
+    var updatedByUser: User? {
+        return musicroom.updatedByUser
+    }
+    
+}
+
+extension Musicroom: Room {
+    
+    public var musicroom: Musicroom {
+        return self
+    }
+    
+}

@@ -57,7 +57,7 @@ public struct LobbyView: JoliView {
     @Binding var playrooms: [Musicroom]
     @Binding var filterText: String
     @Binding var isLoading: Bool
-    let onPlayroomSelected: ((Playroom) -> Void)?
+    let onPlayroomSelected: ((Musicroom) -> Void)?
     
     @SceneStorage("refreshTokenSpotify") var refreshTokenSpotify: String = .empty
     @State var bannerDisplayedAt: Date? = nil

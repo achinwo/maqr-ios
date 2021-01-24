@@ -96,7 +96,7 @@ struct JoliApp: AppClip {
     
     @State var currentUser: User? = nil
     
-    @State var currentPlayroom: Musicroom? = nil//SEED_DATA.musicrooms.first
+    @State var currentPlayroom: Playroom? = nil//SEED_DATA.musicrooms.first
     
     let coordinator: AppCoordinator
     
@@ -116,8 +116,8 @@ struct JoliApp: AppClip {
         return appState.api
     }
     
-    let jsonDecoder = Playroom.jsonDecoder()
-    let jsonEncoder = Playroom.jsonEncoder()
+    let jsonDecoder = Musicroom.jsonDecoder()
+    let jsonEncoder = Musicroom.jsonEncoder()
     
     @State var authPublishCancel: AnyCancellable? = nil
     
