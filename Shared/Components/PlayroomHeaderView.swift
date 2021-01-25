@@ -84,6 +84,8 @@ public struct PlayroomHeaderView: JoliView {
         }
     }
     
+    @State var connectionState: ConnectionState = .stopped
+    
     private func makeTitle(_ playroom: Playroom) -> some View {
         let totalCountMillisecs: Int = tracks.map() { $0.duration }.reduce(0, +)
         
@@ -115,7 +117,7 @@ public struct PlayroomHeaderView: JoliView {
                         .foregroundColor(Color.gray)
                     Text(playroom.name)
                         .font(Font.headline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(self.connectionState == .connected ? Color.blue : Color.secondary)
                         .frame(maxWidth: screenWidth / 1.8)
                         .fixedSize(horizontal: true, vertical: false)
                 }
@@ -123,6 +125,9 @@ public struct PlayroomHeaderView: JoliView {
                 Text(tracksAndDurationLabel)
                     .font(Font.footnote.weight(.light))
                     .foregroundColor(Color.secondary)
+            }
+            .onReceive(self.appCoordinator.connectionStateSubject) { conn in
+                self.connectionState = conn.state
             }
             .onTapGesture() {
                 self.preview = .view() {

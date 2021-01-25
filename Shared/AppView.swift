@@ -162,7 +162,7 @@ public struct AppView2: JoliView {
             }
             
             
-            websocketCancel = self.websocket
+            self.websocketCancel = self.websocket
                 .sink() { completion in
                     websocketCancel?.cancel()
                     websocketCancel = nil
@@ -180,6 +180,8 @@ public struct AppView2: JoliView {
             print("[App] updated subscriptions: database_updates - \(String(describing: error))")
         }
     }
+    
+    @State var websocketCancel: AnyCancellable? = nil
     
     func assertWebsocketConnected() {
         self.websocket.write(topic: "/status", body: [:]) { error in
@@ -339,6 +341,9 @@ public struct AppView2: JoliView {
             .ignoresSafeArea(.all, edges: [.top, .bottom])
         }
         .frame(minWidth: screenWidth)
+        .onReceive(appCoordinator.$activeSessionToken) { sessionId in
+            self.assertWebsocketConnected()
+        }
         .onReceive(appCoordinator.connectionStateSubject) { info in
             self.onConnectionStateChanged(websocket, info.state == ConnectionState.connected)
         }

@@ -467,7 +467,7 @@ public struct ExploreView: JoliView {
                             self.selectedViewId = "views.listen"
                             
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, qos: .userInteractive, flags: .enforceQoS){
-                                self.playroom = Playroom(musicroom: room, socket: self.websocket)
+                                self.playroom = Playroom(musicroom: room, socket: self.websocket, api: api)
                             }
                         }
                         .eraseToAnyView()

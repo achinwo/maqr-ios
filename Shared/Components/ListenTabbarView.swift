@@ -43,7 +43,6 @@ struct ListenTabbarView: JoliView {
     
     @Binding var isExpanded: Bool
     @Binding var preview: AppPreview?
-    @Binding var users: [UserIdentifiable]
     @Binding var searchText: String
     
     @State var isSearching = false
@@ -65,10 +64,9 @@ struct ListenTabbarView: JoliView {
     @State var isDragging = false
     @State var offset: CGSize = .zero
     
-    public init(users: Binding<[UserIdentifiable]>, isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Playroom?>){
+    public init(isExpanded: Binding<Bool>? = nil, searchText: Binding<String>? = nil, preview: Binding<AppPreview?>? = nil, playroom: Binding<Playroom?>){
         
         self._playroom = playroom
-        self._users = users
         self._isExpanded = isExpanded ?? .constant(true)
         self._searchText = searchText ?? .constant("")
         self._preview = preview ?? .constant(.userProfile(SEED_DATA.users.first!.builder()))
@@ -92,14 +90,14 @@ struct ListenTabbarView: JoliView {
     var body: some View {
         var label = ""
         
-        if self.isExpanded {
-            label = "\(label)\(users.count)" //•
+        if let playroom = playroom, self.isExpanded {
+            label = "\(label)\(playroom.membership.count)" //•
         }
         
         let mainView = DisclosureGroup(isExpanded: self._isExpanded) {
             
             ScrollView(.horizontal) {
-                PeopleGridView(users: self.$users) { (gestureType, user) in
+                PeopleGridView(playroom: self.$playroom) { (gestureType, user) in
                     
                         guard let user = user else {
                             withImpact(.soft, animated: .spring()){
@@ -133,6 +131,7 @@ struct ListenTabbarView: JoliView {
                     }
                     .padding()
             }
+            .opacity(self.isExpanded ? 1 : 0)
             .accentColor(.primary)
             .background(Colors.lightGray.opacity(0.3))
             .cornerRadius(Sizing.large)
@@ -289,6 +288,14 @@ struct ListenTabbarView: JoliView {
         }
         .onReceive(self.appCoordinator.$insufficientPointsAttempt) { insufficientPointsAttempt in
             self.insufficientPointsAttempt = insufficientPointsAttempt
+        }
+        .onChange(of: self.playroom) { room in
+            
+            guard room == nil, self.isExpanded else {
+                return
+            }
+            
+            self.isExpanded = false
         }
         .onChange(of: self.isSearching) { value in
             if self.searchbarActive && !value {

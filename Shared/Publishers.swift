@@ -24,14 +24,96 @@ public class Playroom: ObservableObject, Room, Equatable {
     
     @Published public var musicroom: Musicroom
     
-    @Published public var entitlements: [Entitlement]
+    @Published public var entitlements: [Entitlement] {
+        didSet {
+            self.updateMembership()
+        }
+    }
     
     @Published public var name: String
     
-    public init(musicroom: Musicroom, socket: Socket){
+    @Published public var membership: [PlayroomMembership] = []
+    
+    let api: JoliApi
+    
+    var entitlementCancel: AnyCancellable? = nil
+    var playStateCancel: AnyCancellable? = nil
+    
+    func updateMembership() {
+        let userIds = entitlements.compactMap() { $0.userId }
+        
+        User.findByIds(ids: userIds, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then(on: .main) { users in
+                print("[Playroom] fetched \(users.count) users for \(self.entitlements.count) entitlements")
+                let userMap = Dictionary(uniqueKeysWithValues: users.map() { ($0.id, $0) })
+                
+                self.membership = self.entitlements.compactMap() { entitlement in
+                    
+                    guard let user = userMap[entitlement.userId] else {
+                        return nil
+                    }
+                    
+                    return PlayroomMembership(inviteStatus: entitlement.acceptedAt == nil ? .pending : .accepted,
+                                              activityStatus: .offline,
+                                              playroom: self.musicroom, user: user)
+                }
+            }
+    }
+    
+    public init(musicroom: Musicroom, socket: Socket, api: JoliApi){
         self.musicroom = musicroom
         self.entitlements = musicroom.entitlements
         self.name = musicroom.name
+        self.api = api
+        
+        self.entitlementCancel = socket
+            .deserialize(Entitlement.self)
+            .autoconnect()
+            .sink() { completion in
+                self.entitlementCancel?.cancel()
+            } receiveValue: { value in
+                //print("[Playroom#Entitlement] \(value)")
+                guard !self.entitlements.contains(value) else {
+                    return
+                }
+                
+                var ents = self.entitlements
+                ents.append(value)
+                self.entitlements = ents
+            }
+        
+        self.playStateCancel = socket
+            .deserialize(PlayState.self)
+            .autoconnect()
+            .sink() { completion in
+                self.playStateCancel?.cancel()
+            } receiveValue: { value in
+                //print("[Playroom#PlayState] \(value)")
+                guard self.membership.contains(where: { $0.emailAddress.email == value.email } ) else {
+                    return
+                }
+                
+                self.membership = self.membership.map() { membership in
+                    
+                    guard membership.emailAddress.email == value.email else {
+                        return membership
+                    }
+                    
+                    return PlayroomMembership(inviteStatus: membership.inviteStatus,
+                                              activityStatus: value.status == "online" ? .online : .offline,
+                                              playroom: membership.playroom, user: membership.user)
+                }
+            }
+        
+        updateMembership()
+    }
+    
+    deinit {
+        self.playStateCancel?.cancel()
+        self.entitlementCancel?.cancel()
+        
+        self.playStateCancel = nil
+        self.entitlementCancel = nil
     }
     
 }
@@ -95,7 +177,8 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     public func write(topic: String, body: [String: Any], completion: @escaping (Error?) -> ()) {
         let payload: [String: Any] = [
             "topic": topic,
-            "data": body
+            "data": body,
+            "headers": self.soc.request.allHTTPHeaderFields ?? [:]
         ]
         
         do {
@@ -168,7 +251,7 @@ extension Socket: WebSocketDelegate {
                 }
                 
                 
-                //Swift.print("Received topic: \(topic), subject: \(subject)")
+                //Swift.print("Received topic: \(topic), subject: \(subject), displayName: \(bodyJson["displayName"]), status: \(bodyJson["status"])")
                 
                 self.rawMessage.send(.text(type: json["type"] as? String, body: bodyData, topic: topic, subject: subject))
             case .binary(let data):

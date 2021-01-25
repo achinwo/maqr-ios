@@ -125,35 +125,34 @@ struct PeopleGridView: JoliView {
         GridItem(.fixed(100)),
     ]
     
-    @Binding var users: [UserIdentifiable]
-    var otherUsers: [UserIdentifiable] {
-        return users.filter() { !$0.isOwnDevice }
-    }
+    @Binding var playroom: Playroom?
+    
+    @State var users: [PlayroomMembership] = []
     @State var selectedUser: UserIdentifiable? = nil
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     @Namespace var localNamespace
     
-    
-    var currentUser: UserIdentifiable? {
-        return users.first() { $0.isOwnDevice }
-    }
-    
-    public init(users: Binding<[UserIdentifiable]>, _ onUserTapGesture: ((GestureType, UserIdentifiable?) -> Void)? = nil){
-        self._users = users
+    public init(playroom: Binding<Playroom?>, _ onUserTapGesture: ((GestureType, UserIdentifiable?) -> Void)? = nil){
         self.gestureCallback = onUserTapGesture
+        self._playroom = playroom
     }
     
     var body: some View {
         let width = Sizing.xxxLarge * 0.7
         let grid = HStack(alignment: .center) {
             
-            if let currentUser = currentUser {
-                UserAvatarView(user: currentUser, width: width)
+            if let room = playroom {
+                let createdBy: UserIdentifiable = self.users.first(where: { $0.user.id == room.createdByUser.id }) ?? room.createdByUser
+                UserAvatarView(user: createdBy, width: width)
                     .onTapGesture {
-                        self.gestureCallback?(.tap, currentUser)
+                        self.gestureCallback?(.tap, createdBy)
                     }
+                    .onReceive(room.$membership) { membership in
+                        self.users = membership
+                    }
+                    
                 Divider().accentColor(.primary)
             }
             
@@ -168,7 +167,8 @@ struct PeopleGridView: JoliView {
                 }
                 .matchedGeometryEffect(id: "preview", in: appCoordinator.namespace ?? localNamespace)
             
-            ForEach(self.otherUsers, id: \.emailAddress.email) { user in
+            let otherUsers = self.users.filter() { $0.user.id != playroom?.musicroom.createdById }
+            ForEach(otherUsers) { user in
                 UserAvatarView(user: user, width: width)
                     .scaleEffect(selectedUser?.emailAddress.email == user.emailAddress.email ? 1.16 : 1)
 //                    .scaleEffect(x: selectedUser == user ? 1.2 : 1,
@@ -186,7 +186,6 @@ struct PeopleGridView: JoliView {
                     .id(user.emailAddress.email)
             }
         }
-        
         return grid
     }
     
@@ -248,15 +247,15 @@ public struct UserAvatarView: JoliView {
 }
 
 
-struct PeopleGridView_Previews: PreviewProvider {
-    
-    @State static var isExpanded = true
-    
-    static var previews: some View {
-        let users = SEED_DATA.users
-        return VStack() {
-            PeopleGridView(users: .constant(users)).padding()
-            Spacer()
-        }
-    }
-}
+//struct PeopleGridView_Previews: PreviewProvider {
+//
+//    @State static var isExpanded = true
+//
+//    static var previews: some View {
+//        let users = SEED_DATA.users
+//        return VStack() {
+//            PeopleGridView(users: .constant(users)).padding()
+//            Spacer()
+//        }
+//    }
+//}

@@ -170,8 +170,6 @@ struct ListenView: JoliView {
             }
     }
     
-    @State private var membership: [UserIdentifiable] = []
-    
     //        SEED_DATA.users.map() { user in
     //        guard user.id != 3 else {
     //            return PlayroomMembership(inviteStatus: .pending, activityStatus: .offline, playroomId: 3, user: user)
@@ -402,7 +400,7 @@ struct ListenView: JoliView {
             LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks) { room in
                 self.tracks = []
                 self.votes = []
-                self.playroom = Playroom(musicroom: room, socket: self.websocket)
+                self.playroom = Playroom(musicroom: room, socket: self.websocket, api: api)
             }
         }
         .frame(width: screenWidth)
@@ -470,6 +468,33 @@ struct ListenView: JoliView {
                                         
                                         self.votesByTrack = mapping
                                     }
+//                                    .onReceive(appCoordinator.$playStatePublisher) { publisher in
+//                                        guard let publisher = publisher else {
+//                                            return
+//                                        }
+//
+//                                        self.playStateCancel = publisher
+//                                            //.debounce
+//                                            .sink() { completion in
+//                                                self.playStateCancel?.cancel()
+//                                            } receiveValue: { value in
+//
+//                                                guard self.membership.contains(where: { $0.emailAddress.email == value.email }) else {
+//                                                    return
+//                                                }
+//
+//                                                self.membership = self.membership.map() { membership in
+//
+//                                                    guard let mem = membership as? PlayroomMembership, mem.emailAddress.email == value.email else {
+//                                                        return membership
+//                                                    }
+//
+//                                                    return PlayroomMembership(inviteStatus: mem.inviteStatus,
+//                                                                              activityStatus: value.status == "online" ? .online : .offline,
+//                                                                              playroom: mem.playroom, user: mem.user)
+//                                                }
+//                                            }
+//                                    }
                                     .onAppear(){
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                             guard let currentTrack = self.strip.playing else {
@@ -627,7 +652,7 @@ struct ListenView: JoliView {
                 
                 
                 Divider()
-                ListenTabbarView(users: $membership, isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
+                ListenTabbarView(isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
                                  playroom: self.$playroom)
                     .padding(.bottom, geoProxy.safeAreaInsets.bottom)
                     .frame(width: screenWidth)
@@ -665,63 +690,11 @@ struct ListenView: JoliView {
             }
             .onChange(of: playroom) { room in
                 
-                self.membership = []
-                
                 guard let room = room else {
                     return
                 }
                 
                 self.fetchTracks(room.musicroom)
-                
-                let userIds = Array(Set(room.entitlements.map(){ $0.userId } + [room.createdByUser.id]))
-                User.findByIds(ids: userIds)
-                    .then() { users in
-                        let userMap = Dictionary(uniqueKeysWithValues: users.map(){ ($0.id, $0) })
-                        print("[ListenView] users: \(users)")
-                        
-                        self.membership = room.entitlements.compactMap() { entitlement -> PlayroomMembership? in
-                            guard let user = userMap[entitlement.userId] else {
-                                return nil
-                            }
-                            
-                            return PlayroomMembership(inviteStatus: entitlement.acceptedAt != nil || room.createdByUser.id == user.id ? .accepted : .pending,
-                                                      activityStatus: user.playState?.status == "online" ? .online : .offline,
-                                                      playroomId: room.musicroom.id, user: user)
-                        }
-                        
-                        guard (self.membership as? [PlayroomMembership])?.contains(where: { $0.user.id == room.createdByUser.id }) != nil else {
-                            return
-                        }
-                        
-                        let creator = PlayroomMembership(inviteStatus: .accepted, activityStatus: .offline, playroomId: room.musicroom.id, user: room.createdByUser)
-                        self.membership.append(creator)
-                    }
-                
-            }
-            .onReceive(appCoordinator.$playStatePublisher) { publisher in
-                guard let publisher = publisher else {
-                    return
-                }
-                
-                self.playStateCancel = publisher.sink() { completion in
-                    self.playStateCancel?.cancel()
-                } receiveValue: { value in
-                    
-                    guard self.membership.contains(where: { $0.emailAddress.email == value.email }) else {
-                        return
-                    }
-                    
-                    self.membership = self.membership.map() { membership in
-                        
-                        guard let mem = membership as? PlayroomMembership, mem.emailAddress.email == value.email else {
-                            return membership
-                        }
-                        
-                        return PlayroomMembership(inviteStatus: mem.inviteStatus,
-                                                  activityStatus: value.status == "online" ? .online : .offline,
-                                                  playroomId: mem.playroomId, user: mem.user)
-                    }
-                }
             }
             .onReceive(self.appCoordinator.queueRequestedSubject) { req in
                 

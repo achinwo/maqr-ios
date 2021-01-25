@@ -28,8 +28,6 @@ let TOKEN: String? = nil //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imh
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGkyQGpvbGltYy5hcHAiLCJjcmVhdGVkQXQiOiIyMDIwLTEwLTI5VDE0OjA1OjE3LjkxOFoiLCJleHBpcmVzSW4iOjE0NDAwMDB9.pUfqJ22dsM-hLlYJA424EJQiTCi9VwGWz8DLWX4Zq44"
 #endif
 
-var websocketCancel: AnyCancellable? = nil
-
 @main
 struct JoliApp: AppClip {
     
@@ -43,20 +41,16 @@ struct JoliApp: AppClip {
             logger.info("[App#auth] auth: \(String(describing: auth))")
             
             self.devices = []
-            self.currentPlayroom = nil
+            //self.currentPlayroom = nil
             self.activeDeviceId = .empty
+            
+            var newReq = Self.wssUrlRequest
+            newReq.addValue(auth?.session.token ?? "", forHTTPHeaderField: "X-SESSION-ID")
+            self.websocket.request = newReq
             
             self.coordinator.activeSessionToken = auth?.session.token
             self.currentUser = auth?.user
             self.activeSessionId = auth?.session.token ?? .empty
-            
-            if let sessId = self.websocket.request.allHTTPHeaderFields?["X-SESSION-ID"], sessId != self.activeSessionId {
-                var newReq = Self.wssUrlRequest
-                newReq.addValue(self.activeSessionId, forHTTPHeaderField: "X-SESSION-ID")
-                self.websocket.request = newReq
-                
-                self.websocket.soc.disconnect()
-            }
             
             guard let user = auth?.user else {
                 self.coordinator.userHeartsSubject.send(nil)
