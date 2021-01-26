@@ -34,10 +34,12 @@ public class Playroom: ObservableObject, Room, Equatable {
     
     @Published public var membership: [PlayroomMembership] = []
     
+    var userStatus: [String: PlayroomMembership.ActivityStatus] = [:]
     let api: JoliApi
     
     var entitlementCancel: AnyCancellable? = nil
     var playStateCancel: AnyCancellable? = nil
+    var connectionStateCancel: AnyCancellable? = nil
     
     func updateMembership() {
         let userIds = entitlements.compactMap() { $0.userId }
@@ -54,8 +56,13 @@ public class Playroom: ObservableObject, Room, Equatable {
                     }
                     
                     return PlayroomMembership(inviteStatus: entitlement.acceptedAt == nil ? .pending : .accepted,
-                                              activityStatus: .offline,
+                                              activityStatus: self.userStatus[user.email] ?? .offline,
                                               playroom: self.musicroom, user: user)
+                }
+            }
+            .catch() { error in
+                self.membership = self.membership.map() { mem in
+                    return PlayroomMembership(inviteStatus: mem.inviteStatus, activityStatus: .offline, playroom: self.musicroom, user: mem.user)
                 }
             }
     }
@@ -65,6 +72,16 @@ public class Playroom: ObservableObject, Room, Equatable {
         self.entitlements = musicroom.entitlements
         self.name = musicroom.name
         self.api = api
+        
+        self.connectionStateCancel = socket.$isConnected
+            .sink() { value in
+                guard !value else {
+                    return
+                }
+                
+                self.userStatus.removeAll()
+                self.updateMembership()
+            }
         
         self.entitlementCancel = socket
             .deserialize(Entitlement.self)
@@ -93,6 +110,9 @@ public class Playroom: ObservableObject, Room, Equatable {
                     return
                 }
                 
+                let status: PlayroomMembership.ActivityStatus = value.status == "online" ? .online : .offline
+                self.userStatus[value.email] = status
+                
                 self.membership = self.membership.map() { membership in
                     
                     guard membership.emailAddress.email == value.email else {
@@ -100,7 +120,7 @@ public class Playroom: ObservableObject, Room, Equatable {
                     }
                     
                     return PlayroomMembership(inviteStatus: membership.inviteStatus,
-                                              activityStatus: value.status == "online" ? .online : .offline,
+                                              activityStatus: status,
                                               playroom: membership.playroom, user: membership.user)
                 }
             }
