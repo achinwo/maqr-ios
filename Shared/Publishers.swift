@@ -12,7 +12,7 @@ import JoliApi
 import CancellationToken
 import Combine
 import Starscream
-
+import Promises
 
 public class Playroom: ObservableObject, Room, Equatable {
     
@@ -34,15 +34,36 @@ public class Playroom: ObservableObject, Room, Equatable {
     
     @Published public var membership: [PlayroomMembership] = []
     
+    @Published public var queue: [QueuedTrack] = []
+    @Published public var loadingRoomTracks: Bool = false
+    
     var userStatus: [String: PlayroomMembership.ActivityStatus] = [:]
     let api: JoliApi
     
     var entitlementCancel: AnyCancellable? = nil
     var playStateCancel: AnyCancellable? = nil
     var connectionStateCancel: AnyCancellable? = nil
+    var queuedTrackCancel: AnyCancellable? = nil
+    
+    @discardableResult
+    func updateQueuedTracks() -> Promise<[QueuedTrack]> {
+        self.loadingRoomTracks = true
+        return HttpMethod.Fetch.get(url: "/api/musicrooms/\(musicroom.id)/queued", dataType: [QueuedTrack].self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+            .then() { tracks in
+                self.queue = tracks
+            }
+            .catch() { error in
+                logger.error("[fetchTracks] error fetching tracks for \(self.musicroom.name): \(error)")
+            }
+            .always {
+                self.loadingRoomTracks = false
+            }
+    }
     
     func updateMembership() {
         let userIds = entitlements.compactMap() { $0.userId }
+        
+        guard !userIds.isEmpty else { return }
         
         User.findByIds(ids: userIds, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(on: .main) { users in
@@ -99,6 +120,18 @@ public class Playroom: ObservableObject, Room, Equatable {
                 self.entitlements = ents
             }
         
+        self.queuedTrackCancel = socket
+            .deserialize(QueuedTrack.self)
+            .autoconnect()
+            .sink() { completion in
+                self.queuedTrackCancel?.cancel()
+            } receiveValue: { value in
+                
+                guard value.roomId == musicroom.id else { return }
+                
+                self.updateQueuedTracks()
+            }
+        
         self.playStateCancel = socket
             .deserialize(PlayState.self)
             .autoconnect()
@@ -131,7 +164,9 @@ public class Playroom: ObservableObject, Room, Equatable {
     deinit {
         self.playStateCancel?.cancel()
         self.entitlementCancel?.cancel()
+        self.queuedTrackCancel?.cancel()
         
+        self.queuedTrackCancel = nil
         self.playStateCancel = nil
         self.entitlementCancel = nil
     }

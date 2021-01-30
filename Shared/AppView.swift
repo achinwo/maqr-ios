@@ -184,14 +184,15 @@ public struct AppView2: JoliView {
     @State var websocketCancel: AnyCancellable? = nil
     
     func assertWebsocketConnected() {
+        //print("[AppView#assertWebsocketConnected] attempting...")
         self.websocket.write(topic: "/status", body: [:]) { error in
             
             guard let error = error else {
-                logger.info("[App] asserting websocket connected successful")
+                logger.info("[assertWebsocketConnected] asserting websocket connected successful")
                 return
             }
             
-            logger.error("[App] asserting websocket connected: \(error)")
+            logger.error("[assertWebsocketConnected] asserting websocket connected: \(error)")
         }
     }
     
@@ -314,6 +315,8 @@ public struct AppView2: JoliView {
                     )
                     .onChange(of: self.selectedViewId) { value in
                         withAnimation(){
+                            // Tree House as Clubhouse
+                            // Personal Inventory Management Tool as Objects
                             print("[AppView2] scrolling to: \(value)")
                             proxy.scrollTo(value)
                         }
@@ -348,7 +351,11 @@ public struct AppView2: JoliView {
             self.onConnectionStateChanged(websocket, info.state == ConnectionState.connected)
         }
         .onReceive(appCoordinator.voteRequestedSubject) { voting in
-            guard voting != nil else { return }
+            print("[App#voteRequestedSubject] voting: \(voting)")
+            guard voting != nil else {
+                print("[App#voteRequestedSubject] voting, aborting...")
+                return
+            }
             
             self.assertWebsocketConnected()
         }

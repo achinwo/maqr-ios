@@ -117,7 +117,6 @@ struct ListenView: JoliView {
     @State var scrollProxy: ScrollViewProxy? = nil
     
     @State var votes: [QueuedTrackVote] = []
-    @State var loadingRoomTracks = false
     let websocket: Socket
     
     init(geoProxy: GeometryProxy, tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket) {
@@ -129,45 +128,6 @@ struct ListenView: JoliView {
         self._playroom = playroom
         self._currentUser = currentUser
         self.websocket = websocket
-    }
-    
-    @discardableResult
-    func fetchTracks(_ room: Musicroom) -> Promise<[QueuedTrack]> {
-        self.loadingRoomTracks = true
-        return HttpMethod.Fetch.get(url: "/api/musicrooms/\(room.id)/queued", dataType: [QueuedTrack].self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
-        .then() { tracks -> [QueuedTrack] in
-                var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
-                var allVotes: [QueuedTrackVote] = []
-                
-                for track in tracks.filter({ $0.isPlayable }) {
-                    var roomTracks = tracksByMusicrooms[track.roomId] ?? []
-                    
-                    guard !roomTracks.contains(track) else {
-                        continue
-                    }
-                    
-                    roomTracks.append(track)
-                    tracksByMusicrooms[track.roomId] = roomTracks
-                    
-                    guard let votes = track.votes, track.roomId == playroom?.musicroom.id else {
-                        continue
-                    }
-                    
-                    allVotes.append(contentsOf: votes)
-                }
-                
-                self.votes = allVotes
-                self.tracks = tracksByMusicrooms[room.id] ?? []
-                self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
-                
-                return tracksByMusicrooms[room.id] ?? []
-            }
-            .catch() { error in
-                logger.error("[fetchTracks] error fetching tracks for \(room.name): \(error)")
-            }
-            .always {
-                self.loadingRoomTracks = false
-            }
     }
     
     //        SEED_DATA.users.map() { user in
@@ -278,6 +238,18 @@ struct ListenView: JoliView {
     
     @State var voteCasted: QueuedTrackVote? = nil
     
+    func assertWebsocketConnected() {
+        self.websocket.write(topic: "/status", body: [:]) { error in
+            
+            guard let error = error else {
+                logger.info("[assertWebsocketConnected] asserting websocket connected successful")
+                return
+            }
+            
+            logger.error("[assertWebsocketConnected] asserting websocket connected: \(error)")
+        }
+    }
+    
     func addonView(track: Playable, colors: UIImageColors?) -> some View {
         
         
@@ -336,6 +308,7 @@ struct ListenView: JoliView {
                         
                         self.appCoordinator.voteTrack(track)
                             .then() { vote in
+                                guard !self.votes.contains(vote) else { return }
                                 self.votes.append(vote)
                             }
                             .catch() { voteError in
@@ -437,13 +410,7 @@ struct ListenView: JoliView {
                         .frame(height: isEmptySearchResult ? 0 : nil)
                         .animation(.easeInOut)
                         
-                        if playroom == nil {
-                            self.lobbyView
-                                .frame(minHeight: screenHeight * 1.3)
-                                .padding(.top, isEmptySearchResult ? Sizing.xxLarge * 2 : nil)
-                                .background(Color.white)
-                                .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
-                        } else {
+                        if let playroom = playroom {
                             ZStack(){
                                 TrackList(tracks: self.$tracksFiltered, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
                                     //.padding(.top, geoProxy.safeAreaInsets.top)
@@ -452,6 +419,31 @@ struct ListenView: JoliView {
                                     .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
                                     .background(Color.white)
                                     .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                                    .onReceive(playroom.$queue) { tracks in
+                                        var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
+                                        var allVotes: [QueuedTrackVote] = []
+                                        
+                                        for track in tracks.filter({ $0.isPlayable }) {
+                                            var roomTracks = tracksByMusicrooms[track.roomId] ?? []
+                                            
+                                            guard !roomTracks.contains(track) else {
+                                                continue
+                                            }
+                                            
+                                            roomTracks.append(track)
+                                            tracksByMusicrooms[track.roomId] = roomTracks
+                                            
+                                            guard let votes = track.votes, track.roomId == playroom.musicroom.id else {
+                                                continue
+                                            }
+                                            
+                                            allVotes.append(contentsOf: votes)
+                                        }
+                                        
+                                        self.votes = allVotes
+                                        self.tracks = tracksByMusicrooms[playroom.musicroom.id] ?? []
+                                        self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
+                                    }
                                     .onChange(of: self.votes) { votes in
                                         var mapping: [Int: [QueuedTrackVote]] = [:]
                                         
@@ -468,33 +460,6 @@ struct ListenView: JoliView {
                                         
                                         self.votesByTrack = mapping
                                     }
-//                                    .onReceive(appCoordinator.$playStatePublisher) { publisher in
-//                                        guard let publisher = publisher else {
-//                                            return
-//                                        }
-//
-//                                        self.playStateCancel = publisher
-//                                            //.debounce
-//                                            .sink() { completion in
-//                                                self.playStateCancel?.cancel()
-//                                            } receiveValue: { value in
-//
-//                                                guard self.membership.contains(where: { $0.emailAddress.email == value.email }) else {
-//                                                    return
-//                                                }
-//
-//                                                self.membership = self.membership.map() { membership in
-//
-//                                                    guard let mem = membership as? PlayroomMembership, mem.emailAddress.email == value.email else {
-//                                                        return membership
-//                                                    }
-//
-//                                                    return PlayroomMembership(inviteStatus: mem.inviteStatus,
-//                                                                              activityStatus: value.status == "online" ? .online : .offline,
-//                                                                              playroom: mem.playroom, user: mem.user)
-//                                                }
-//                                            }
-//                                    }
                                     .onAppear(){
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                             guard let currentTrack = self.strip.playing else {
@@ -510,6 +475,12 @@ struct ListenView: JoliView {
                                     Text("Loading Tracks...")
                                 }
                             }
+                        } else {
+                            self.lobbyView
+                                .frame(minHeight: screenHeight * 1.3)
+                                .padding(.top, isEmptySearchResult ? Sizing.xxLarge * 2 : nil)
+                                .background(Color.white)
+                                .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                         }
                     }
                     .onChange(of: self.playroom) { value in
@@ -694,16 +665,16 @@ struct ListenView: JoliView {
                     return
                 }
                 
-                self.fetchTracks(room.musicroom)
+                room.updateQueuedTracks()
             }
             .onReceive(self.appCoordinator.queueRequestedSubject) { req in
                 
-                guard let queued = req, queued.room.id == playroom?.musicroom.id else {
+                guard let queued = req, let playroom = playroom, queued.room.id == playroom.musicroom.id else {
                     return
                 }
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
-                    self.fetchTracks(queued.room)
+                    playroom.updateQueuedTracks()
                 }
             }
             .zIndex(100)
@@ -739,8 +710,8 @@ struct ListenView: JoliView {
                                 .gradientForeground(colors: [Color.red, Color.orange, Color.yellow, Color.green, Color.blue, Color.purple, Color.pink])
                                 .scaleEffect(x: self.loadingLiveTracks ? 1.5 : 1.0, y: self.loadingLiveTracks ? 1.5 : 1.0)
                                 .onTapGesture {
-                                    self.loadPlayrooms()
-                                    self.loadLiveTracks()
+                                    self.assertWebsocketConnected()
+                                    self.refreshContent(reason: "logo tapped")
                                 }
                             
                             Spacer()
