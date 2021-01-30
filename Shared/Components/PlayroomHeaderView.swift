@@ -19,18 +19,50 @@ public struct PlayroomHeaderView: JoliView {
     @Binding var strip: TrackStrip
     @Binding var preview: AppPreview?
     @Binding var tracks: [Playable]
+    @Binding var scrollProxy: ScrollViewProxy?
+    
+    @State var playbackProgress: Int? = nil
+    @State var tappedUri: String? = nil
+    
+    let tappedSubject: AutoResetSubject<String?, Never, DispatchQueue> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))
     
     public var body: some View {
-        HStack(alignment: .center){
+        HStack(alignment: .bottom){
             
             if let playing = strip.playing {
-                NetworkImage(string: playing.thumbnailUrl) {
-                    Rectangle().stroke(Color.gray)
+                
+                let containerWidth = CGFloat(56.0)
+                
+                VStack(alignment: .leading, spacing: .zero){
+                    NetworkImage(string: playing.thumbnailUrl) {
+                        Rectangle().stroke(Color.gray)
+                    }
+                    .frame(width: containerWidth, height: 56)
+                    
+                    let progressWidth = containerWidth * (max(CGFloat(playbackProgress ?? 0), 1.0) / CGFloat(playing.duration))
+                    
+                    RoundedRectangle(cornerSize: CGSize(width: 2, height: 2))
+                        .fill(Color.green)
+                        .frame(width: progressWidth, height: 2)
+                        .padding(.top, 2)
+                        
                 }
-                .frame(width: 56, height: 56)
+                .frame(width: containerWidth, height: 60)
+                .scaleEffect(x: self.tappedUri == playing.uri ? 1.02 : 1, y: self.tappedUri == playing.uri ? 1.02 : 1, anchor: .center)
+                .onReceive(self.appCoordinator.playingSubject) { item in
+                    
+                    guard let item = item, let room = playroom,
+                          item.track.uri == playing.uri,
+                          room.playlistUri == item.playState.playlistUri else {
+                        return
+                    }
+                    
+                    self.playbackProgress = item.playState.progressMs
+                }
                 .onTapGesture {
                     withImpact(.soft, animated: .easeInOut) {
-                        //scrollProxy?.scrollTo(playing.uri, anchor: .center)
+                        self.tappedSubject.send(playing.uri)
+                        scrollProxy?.scrollTo(playing.uri, anchor: .center)
                     }
                 }
                 .id(playing.thumbnailUrl)
@@ -42,15 +74,17 @@ public struct PlayroomHeaderView: JoliView {
                     NetworkImage(string: next.thumbnailUrl) {
                         Rectangle().stroke(Color.gray)
                     }
-                    .frame(width: 40, height: 40)
+                    .frame(width: 42, height: 42)
                     Text("Up Next")
                         .font(Font.footnote.weight(.thin))
                         .foregroundColor(Color.primary)
                 }
-                .frame(height: 56)
+                .frame(height: 60)
+                .scaleEffect(x: self.tappedUri == next.uri ? 1.02 : 1, y: self.tappedUri == next.uri ? 1.02 : 1, anchor: .center)
                 .onTapGesture {
                     withImpact(.soft, animated: .easeInOut) {
-                        //scrollProxy?.scrollTo(next.uri, anchor: .center)
+                        self.tappedSubject.send(next.uri)
+                        scrollProxy?.scrollTo(next.uri, anchor: .center)
                     }
                 }
                 .id(next.thumbnailUrl)
@@ -61,16 +95,18 @@ public struct PlayroomHeaderView: JoliView {
                     NetworkImage(string: runnerup.thumbnailUrl) {
                         Rectangle().stroke(Color.gray)//.fill(style: Color.gray)
                     }
-                    .frame(width: 40, height: 40)
+                    .frame(width: 42, height: 42)
                     Text("Runner-up")
                         .font(Font.footnote.weight(.thin))
                         .foregroundColor(Color.primary)
                         .fixedSize()
                 }
-                .frame(height: 56)
+                .frame(height: 60)
+                .scaleEffect(x: self.tappedUri == runnerup.uri ? 1.02 : 1, y: self.tappedUri == runnerup.uri ? 1.02 : 1, anchor: .center)
                 .onTapGesture {
                     withImpact(.soft, animated: .easeInOut) {
-                        //scrollProxy?.scrollTo(runnerup.uri, anchor: .center)
+                        self.tappedSubject.send(runnerup.uri)
+                        scrollProxy?.scrollTo(runnerup.uri, anchor: .center)
                     }
                 }
                 .id(runnerup.thumbnailUrl)
@@ -81,6 +117,9 @@ public struct PlayroomHeaderView: JoliView {
             if let playroom = playroom {
                 makeTitle(playroom)
             }
+        }
+        .onReceive(self.tappedSubject) { uri in
+            self.tappedUri = uri
         }
     }
     

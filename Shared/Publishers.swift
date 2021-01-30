@@ -705,6 +705,7 @@ public final class AutoResetSubject<Output, Failure, S>: Subject where Failure :
         let passthrough = self.passthrough
         self.delayedCancel = passthroughDelayed
             .delay(for: delay, scheduler: scheduler)
+            .receive(on: DispatchQueue.main)
             .sink() { value in
                 passthrough.send(value)
             }

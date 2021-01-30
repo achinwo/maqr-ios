@@ -697,10 +697,13 @@ struct ListenView: JoliView {
                         PlayroomHeaderView(playroom: self.$playroom,
                                            strip: self.$strip,
                                            preview: self.$preview,
-                                           tracks: self.$tracks)
+                                           tracks: self.$tracks,
+                                           scrollProxy: self.$scrollProxy
+                                           )
                             .padding(.horizontal, Sizing.small * 0.6)
                             .padding([.horizontal, .bottom], Sizing.small * 0.5)
                             .matchedGeometryEffect(id: "listen-header", in: animation)
+                            .frame(maxWidth: screenWidth)
                     } else {
                         HStack(alignment: .top){
                             Spacer()

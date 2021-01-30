@@ -53,7 +53,7 @@ public final class AppCoordinator: ObservableObject {
     public let voteCastSubject: AutoResetSubject<QueuedTrackVote?, Never, RunLoop> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: RunLoop.main)
     
     public let activeDeviceSubject = CurrentValueSubject<Spotify.Device?, Never>(nil)
-    public let playingSubject = CurrentValueSubject<(Playable, PlayState)?, Never>(nil)
+    public let playingSubject = CurrentValueSubject<(track: Playable, playState: PlayState)?, Never>(nil)
     public let volumeSubject = PassthroughSubject<Int, Never>()
     
     public let playStateChangeSubject = PassthroughSubject<Date, Never>()
