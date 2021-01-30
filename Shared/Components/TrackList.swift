@@ -29,7 +29,7 @@ public struct PauseButton: View {
 
 public struct TrackView2<AddonView: View>: JoliView {
     
-    public typealias AddonViewGetter = (Playable, UIImageColors?) -> AddonView
+    public typealias AddonViewGetter = (Playable, [PlayState], UIImageColors?) -> AddonView
     
     @Binding var track: Playable
     
@@ -261,7 +261,7 @@ public struct TrackView2<AddonView: View>: JoliView {
 //                    }
                     
                     if let getter = self.addonViewGetter {
-                        getter(track, nil)
+                        getter(track, Array(self.playStatebyUsername.values), nil)
                     }
                 }
                 .background(
@@ -415,10 +415,10 @@ public struct TrackList<AddonView: View>: JoliView {
     @Binding var playroom: Playroom?
     
     @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
-    let addonViewFunc: (Playable, UIImageColors?) -> AddonView
+    let addonViewFunc: (Playable, [PlayState], UIImageColors?) -> AddonView
     
     public init(tracks: Binding<[Playable]>, votes: Binding<[QueuedTrackVote]>? = .constant([]), preview: Binding<AppPreview?> = .constant(nil),
-                playroom: Binding<Playroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil, @ViewBuilder addonView: @escaping (Playable, UIImageColors?) -> AddonView){
+                playroom: Binding<Playroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil, @ViewBuilder addonView: @escaping (Playable, [PlayState], UIImageColors?) -> AddonView){
         self.onVoteTapped = onVoteTapped
         self._tracks = tracks
         self._preview = preview
@@ -458,8 +458,8 @@ public struct TrackList<AddonView: View>: JoliView {
                     
                     let track = item.element
                     
-                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(track), useDynamicColors: playroom?.themeTrackUri == track.uri) { (trackObj, colors) -> AddonView in
-                        return addonViewFunc(trackObj, colors)
+                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(track), useDynamicColors: playroom?.themeTrackUri == track.uri) { (trackObj, states, colors) -> AddonView in
+                        return addonViewFunc(trackObj, states, colors)
                     }
                     .id(track.uri)
                 }

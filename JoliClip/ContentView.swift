@@ -32,7 +32,7 @@ struct ContentView: View {
                         
                 Text("Browse Songs").font(.title)
                 ScrollView(){
-                    TrackList(tracks: .constant(SEED_DATA.tracks)) { (_, _) in  EmptyView() }
+                    TrackList(tracks: .constant(SEED_DATA.tracks)) { (_, _, _) in  EmptyView() }
                         .onTapGesture {
                             self.mgr.sheet.show() {
                                 print("Partial sheet dismissed")

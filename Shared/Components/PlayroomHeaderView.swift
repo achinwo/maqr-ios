@@ -26,6 +26,10 @@ public struct PlayroomHeaderView: JoliView {
     
     let tappedSubject: AutoResetSubject<String?, Never, DispatchQueue> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))
     
+    var memberColors: [Color] {
+        return [Color.blue, Color.purple, Color.orange, Color.yellow, Color.green, Color.pink]
+    }
+    
     public var body: some View {
         HStack(alignment: .bottom){
             
@@ -42,7 +46,7 @@ public struct PlayroomHeaderView: JoliView {
                     let progressWidth = containerWidth * (max(CGFloat(playbackProgress ?? 0), 1.0) / CGFloat(playing.duration))
                     
                     RoundedRectangle(cornerSize: CGSize(width: 2, height: 2))
-                        .fill(Color.green)
+                        .gradientForeground(colors: memberColors)//.fill(Color.green)
                         .frame(width: progressWidth, height: 2)
                         .padding(.top, 2)
                         

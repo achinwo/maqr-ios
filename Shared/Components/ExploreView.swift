@@ -497,7 +497,7 @@ public struct ExploreView: JoliView {
         appendViews(res.tracks, .tracks) { track, result in
             Search.ResultView(result: result){
                 GeometryReader() { proxy in
-                    TrackView2(track: .constant(track)) { (track, colors) in
+                    TrackView2(track: .constant(track)) { (track, playStates, colors) in
                         Group(){
                             if let playroom = self.playroom {
 //                                Button() {

@@ -250,20 +250,22 @@ struct ListenView: JoliView {
         }
     }
     
-    func addonView(track: Playable, colors: UIImageColors?) -> some View {
+    func addonView(track: Playable, playStates: [PlayState], colors: UIImageColors?) -> some View {
         
         
         return Group() {
             if let track = track as? QueuedTrack,
-               let playlistUri = playroom?.playlistUri,
+               let room = playroom,
+               let playlistUri = room.playlistUri,
                let playing = self.strip.playing as? QueuedTrack,
                playing.id == track.id,
                playing.isPlayable, track.isPlayable {
                 
                 Button() {
-                    appCoordinator.play(track, contextUri: playlistUri, device: appCoordinator.activeDeviceSubject.value)
+                    let state = playStates.first() { $0.email == room.createdByUser.email } ?? playStates.first
+                    appCoordinator.play(track, positionMs: state?.progressMs, contextUri: playlistUri, device: appCoordinator.activeDeviceSubject.value)
                         .then() { state in
-                            print("[ListenView] rejoining \(track.title) - \(String(describing: state))")
+                            print("[ListenView] rejoining \(track.title) at \(String(describing: state?.progressMs)) - \(String(describing: state))")
                         }
                 } label: {
                     Text("Rejoin").padding()

@@ -263,9 +263,11 @@ public final class AppCoordinator: ObservableObject {
             }
             
             return promise.then(on: on) { ps in
+                DispatchQueue.main.async() {
                     self.playingSubject.send((track, ps))
-                    return Promise(ps)
                 }
+                return Promise(ps)
+            }
         }
         
         guard let device = device else {

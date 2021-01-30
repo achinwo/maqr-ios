@@ -98,7 +98,7 @@ public struct LobbyView: JoliView {
                     
                     Section(header: header) {
                         ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                            TrackView2(track: .constant(track), useDynamicColors: false) { (track, colors) in
+                            TrackView2(track: .constant(track), useDynamicColors: false) { (track, playStates, colors) in
                                     VStack() {
 //                                        Button() {
 //                                            //appCoordinator.
