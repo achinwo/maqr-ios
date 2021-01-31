@@ -47,11 +47,21 @@ public class Playroom: ObservableObject, Room, Equatable {
     
     @discardableResult
     func updateQueuedTracks() -> Promise<[QueuedTrack]> {
-        self.loadingRoomTracks = true
-        return HttpMethod.Fetch.get(url: "/api/musicrooms/\(musicroom.id)/queued", dataType: [QueuedTrack].self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+        return self.fetchQueuedTracks()
             .then() { tracks in
                 self.queue = tracks
             }
+    }
+    
+    func fetchQueuedTracks(limit: Int? = nil) -> Promise<[QueuedTrack]> {
+        self.loadingRoomTracks = true
+        var uri = "/api/musicrooms/\(musicroom.id)/queued"
+        
+        if let limit = limit {
+            uri = "\(uri)?limit=\(limit)"
+        }
+        
+        return HttpMethod.Fetch.get(url: uri, dataType: [QueuedTrack].self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
             .catch() { error in
                 logger.error("[fetchTracks] error fetching tracks for \(self.musicroom.name): \(error)")
             }

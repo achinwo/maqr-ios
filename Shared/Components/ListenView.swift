@@ -445,6 +445,12 @@ struct ListenView: JoliView {
                                         self.votes = allVotes
                                         self.tracks = tracksByMusicrooms[playroom.musicroom.id] ?? []
                                         self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
+                                        
+                                        self.strip = (
+                                            playing: tracks.first,
+                                            next: tracks.count > 1 ? tracks[1] : nil,
+                                            runnerup: tracks.count > 2 ? tracks[2] : nil
+                                        )
                                     }
                                     .onChange(of: self.votes) { votes in
                                         var mapping: [Int: [QueuedTrackVote]] = [:]
@@ -641,25 +647,19 @@ struct ListenView: JoliView {
             .frame(width: screenWidth)
             .onChange(of: votes) { votes in
                 
-                guard let tracks = tracks as? [QueuedTrack] else {
+                guard let playroom = playroom else {
                     self.strip = (nil, nil, nil)
                     return
                 }
                 
-                let grouped = Dictionary(grouping: votes, by: { $0.queuedTrackId })
-                let items = grouped.sorted() { $0.value.count == $1.value.count ? $1.key > $0.key : $1.value.count < $0.value.count }
-                
-                let firstKey = items.first?.key ?? tracks.first?.id
-                let secondKey: Int? = items.count > 1 ? items[1].key : nil
-                let thirdKey = items.count > 2 ? items[2].key : nil
-                
-                
-                self.strip = (
-                    playing: tracks.first() { $0.id == firstKey },
-                    next: tracks.first() { $0.id == secondKey },
-                    runnerup: tracks.first() { $0.id == thirdKey}
-                )
-                
+                playroom.fetchQueuedTracks(limit: 3)
+                    .then() { tracks in
+                        self.strip = (
+                            playing: tracks.first,
+                            next: tracks.count > 1 ? tracks[1] : nil,
+                            runnerup: tracks.count > 2 ? tracks[2] : nil
+                        )
+                    }
             }
             .onChange(of: playroom) { room in
                 
