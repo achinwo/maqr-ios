@@ -45,28 +45,30 @@ public class Playroom: ObservableObject, Room, Equatable {
     var connectionStateCancel: AnyCancellable? = nil
     var queuedTrackCancel: AnyCancellable? = nil
     
+    private var cancellationSet: Set<AnyCancellable> = []
+    
     @discardableResult
     func updateQueuedTracks() -> Promise<[QueuedTrack]> {
+        self.loadingRoomTracks = true
         return self.fetchQueuedTracks()
             .then() { tracks in
                 self.queue = tracks
             }
+            .always {
+                self.loadingRoomTracks = false
+            }
     }
     
-    func fetchQueuedTracks(limit: Int? = nil) -> Promise<[QueuedTrack]> {
-        self.loadingRoomTracks = true
-        var uri = "/api/musicrooms/\(musicroom.id)/queued"
+    func fetchQueuedTracks(limit: Int? = nil, includePlayed: Bool = false) -> Promise<[QueuedTrack]> {
+        var uri = "/api/musicrooms/\(musicroom.id)/queued?includePlayed=\(includePlayed)"
         
         if let limit = limit {
-            uri = "\(uri)?limit=\(limit)"
+            uri = "\(uri)&limit=\(limit)"
         }
         
         return HttpMethod.Fetch.get(url: uri, dataType: [QueuedTrack].self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
             .catch() { error in
                 logger.error("[fetchTracks] error fetching tracks for \(self.musicroom.name): \(error)")
-            }
-            .always {
-                self.loadingRoomTracks = false
             }
     }
     
@@ -104,7 +106,7 @@ public class Playroom: ObservableObject, Room, Equatable {
         self.name = musicroom.name
         self.api = api
         
-        self.connectionStateCancel = socket.$isConnected
+        socket.$isConnected
             .sink() { value in
                 guard !value else {
                     return
@@ -113,8 +115,9 @@ public class Playroom: ObservableObject, Room, Equatable {
                 self.userStatus.removeAll()
                 self.updateMembership()
             }
+            .store(in: &cancellationSet)
         
-        self.entitlementCancel = socket
+        socket
             .deserialize(Entitlement.self)
             .autoconnect()
             .sink() { completion in
@@ -129,8 +132,9 @@ public class Playroom: ObservableObject, Room, Equatable {
                 ents.append(value)
                 self.entitlements = ents
             }
+            .store(in: &cancellationSet)
         
-        self.queuedTrackCancel = socket
+        socket
             .deserialize(QueuedTrack.self)
             .autoconnect()
             .sink() { completion in
@@ -141,8 +145,9 @@ public class Playroom: ObservableObject, Room, Equatable {
                 
                 self.updateQueuedTracks()
             }
+            .store(in: &cancellationSet)
         
-        self.playStateCancel = socket
+        socket
             .deserialize(PlayState.self)
             .autoconnect()
             .sink() { completion in
@@ -167,18 +172,16 @@ public class Playroom: ObservableObject, Room, Equatable {
                                               playroom: membership.playroom, user: membership.user)
                 }
             }
+            .store(in: &cancellationSet)
         
         updateMembership()
     }
     
     deinit {
-        self.playStateCancel?.cancel()
-        self.entitlementCancel?.cancel()
-        self.queuedTrackCancel?.cancel()
-        
-        self.queuedTrackCancel = nil
-        self.playStateCancel = nil
-        self.entitlementCancel = nil
+        for sub in self.cancellationSet {
+            sub.cancel()
+        }
+        self.cancellationSet = []
     }
     
 }

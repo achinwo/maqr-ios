@@ -222,8 +222,6 @@ extension User: UserVerified {
     
 }
 
-var thing = SEED_DATA.users.first?.email
-
 public protocol Room {
     
     var musicroom: Musicroom { get }
@@ -248,7 +246,7 @@ public protocol Room {
     var themeTrackUri2: String? { get }
     var trackUri: String? { get }
     var updatedAt: Date { get }
-    var updatedById: Int? { get }
+    var updatedById: Int { get }
     var updatedByUser: User? { get }
 }
 
@@ -326,7 +324,7 @@ public extension Room {
         return musicroom.updatedAt
     }
     
-    var updatedById: Int? {
+    var updatedById: Int {
         return musicroom.updatedById
     }
     
