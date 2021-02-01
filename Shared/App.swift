@@ -333,6 +333,7 @@ struct JoliApp: AppClip {
                 spotifyDelegateInstance.requestSpotifyAccess()
             }
             .onReceive(coordinator.$localPlayRequested) { localRequest in
+                print("[App#$localPlayRequested] FIRST - local play: \(localRequest)")
                 
                 guard let localRequest = localRequest, let spotifyRemote = self.spotifyRemote else {
                     return
@@ -349,19 +350,29 @@ struct JoliApp: AppClip {
                     return
                 }
                 
-                self.spotifyRemote?.playerAPI?.play(localRequest.track.uri, asRadio: true) { (res, error) in
+                let callback: SPTAppRemoteCallback = { (res, error) in
                     print("[App#$localPlayRequested] play: \(String(describing: res)) - \(String(describing: error))")
                     
                     guard let positionMs = localRequest.positionMs else {
                         return
                     }
                     
-                    self.spotifyRemote?.playerAPI?.seek(toPosition: positionMs) { (res, error) in
+                    spotifyRemote.playerAPI?.seek(toPosition: positionMs) { (res, error) in
                         print("[App#$localPlayRequested] seek to \(positionMs): \(String(describing: res)) - \(String(describing: error))")
                     }
                 }
                 
+                
                 print("[App#$localPlayRequested] local play: \(localRequest)")
+                if let contextUri = localRequest.contextUri {
+                    spotifyRemote.contentAPI?.fetchContentItem(forURI: contextUri) { item, error in
+                        print("[App#$localPlayRequested] local play playlsit: \(localRequest) --- \(String(describing: item)) --- \(String(describing: error))")
+                    }
+                    //playerApi.play(<#T##contentItem: SPTAppRemoteContentItem##SPTAppRemoteContentItem#>, skipToTrackIndex: <#T##Int#>, callback: <#T##SPTAppRemoteCallback?##SPTAppRemoteCallback?##(Any?, Error?) -> Void#>)
+                    //playerApi.play(<#T##contentItem: SPTAppRemoteContentItem##SPTAppRemoteContentItem#>, callback: callback)
+                } else {
+                    spotifyRemote.playerAPI?.play(localRequest.track.uri, asRadio: true, callback: callback)
+                }
             }
             .onReceive(coordinator.globalModalSubject) { view in
                 self.modalView = view

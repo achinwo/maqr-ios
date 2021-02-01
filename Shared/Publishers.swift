@@ -48,7 +48,7 @@ public class Playroom: ObservableObject, Room, Equatable {
     private var cancellationSet: Set<AnyCancellable> = []
     
     @discardableResult
-    func updateQueuedTracks() -> Promise<[QueuedTrack]> {
+    public func updateQueuedTracks() -> Promise<[QueuedTrack]> {
         self.loadingRoomTracks = true
         return self.fetchQueuedTracks()
             .then() { tracks in
@@ -59,7 +59,7 @@ public class Playroom: ObservableObject, Room, Equatable {
             }
     }
     
-    func fetchQueuedTracks(limit: Int? = nil, includePlayed: Bool = false) -> Promise<[QueuedTrack]> {
+    public func fetchQueuedTracks(limit: Int? = nil, includePlayed: Bool = false) -> Promise<[QueuedTrack]> {
         var uri = "/api/musicrooms/\(musicroom.id)/queued?includePlayed=\(includePlayed)"
         
         if let limit = limit {
@@ -72,7 +72,7 @@ public class Playroom: ObservableObject, Room, Equatable {
             }
     }
     
-    func updateMembership() {
+    public func updateMembership() {
         let userIds = entitlements.compactMap() { $0.userId }
         
         guard !userIds.isEmpty else { return }

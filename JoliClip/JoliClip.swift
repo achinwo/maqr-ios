@@ -37,13 +37,28 @@ struct JoliClip: AppClip {
         }
     }
     
+    @State var filterText: String = ""
+    @State var preview: AppPreview? = nil
+    @State var tabbarExpaned = false
+    
     var contentView: some View {
-        ContentView()
+        ContentView(websocket: websocket, tabbarExpaned: $tabbarExpaned, preview: $preview, filterText: $filterText)
     }
     
     init() {
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
         let url = JoliApi.Environment.current.baseUrl.ws //URL(string: "https://192.168.1.173:8080/ws")!
+        
+        print("[URL] \(JoliApi.Environment.current.baseUrl)")
+        
+        let headers: [String: String] = [
+            "X-PLATFORM": "ios",
+            "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
+            "X-DEVICE-MODEL": UIDevice.current.model,
+            "X-DEVICE-NAME": UIDevice.current.name,
+        ]
+        
+        let api = JoliApi(baseUrl: JoliApi.Environment.current.baseUrl, headers: headers)
         
         self.websocket = Socket(url: url.appendingPathComponent("/ws")) { (socket, connected) in
             
@@ -73,6 +88,13 @@ struct JoliClip: AppClip {
             .eraseToAnyPublisher()
         
         self.coordinator = AppCoordinator(pub, votesPubs)
+        self.coordinator.api = api
+    }
+    
+    func onUserActivity(_ activity: NSUserActivity) -> Void {
+        self.coordinator.currentLocation = AppLocation(activity) ?? .home
+        
+        logger.debug("[\(Self.self)] onUserActivity: \(self.coordinator.currentLocation)")
     }
     
     func onScenePhaseChange(_ phase: ScenePhase){

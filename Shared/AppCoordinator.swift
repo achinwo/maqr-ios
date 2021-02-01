@@ -17,7 +17,7 @@ import Promises
 // MARK: - AppCoordinator
 public final class AppCoordinator: ObservableObject {
     
-    public var currentLocation: AppLocation = .home
+    @Published public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
     public var api: JoliApi!
     
@@ -237,7 +237,7 @@ public final class AppCoordinator: ObservableObject {
             
     }
     
-    @Published var localPlayRequested: (track: Playable, positionMs: Int?)? = nil
+    @Published var localPlayRequested: (track: Playable, positionMs: Int?, contextUri: String?)? = nil
     @Published var connectionStateSubject: CurrentValueSubject<(state: ConnectionState, changedAt: Date?), Never> = CurrentValueSubject((.stopped, nil))
     
     public func play(_ track: Playable, positionMs: Int? = nil, contextUri: String? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
@@ -248,7 +248,7 @@ public final class AppCoordinator: ObservableObject {
         let performPlay = { (device: Spotify.Device?) -> Promise<PlayState?>  in
             
             guard let device = device, ![.smartphone, .tablet].contains(device.type) else {
-                self.localPlayRequested = (track, positionMs)
+                self.localPlayRequested = (track, positionMs, contextUri)
                 return Promise(nil)
             }
             

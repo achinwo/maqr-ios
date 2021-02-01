@@ -173,6 +173,7 @@ public enum AppLocation: RawRepresentable {
     
     case home
     case upgrade
+    case error
     
     static var `default` = "/"
     
@@ -198,7 +199,7 @@ public enum AppLocation: RawRepresentable {
         case .upgrade:
             return "/upgrade"
             case .invited(let inviteId):
-                return "/join/\(inviteId)"
+                return "/playroom/invite/\(inviteId)"
             case .playroom(let roomId):
                 return "/r/\(roomId)"
             default:
@@ -208,7 +209,7 @@ public enum AppLocation: RawRepresentable {
     
     static var patterns = (
         home: Regex("^/$"),
-        invited: Regex("^/join/(?<inviteId>.+)$"),
+        invited: Regex("^/playroom/invite/(?<inviteId>.+)$"),
         playroom: Regex("^/r/(?<roomId>.+)$")
     )
     

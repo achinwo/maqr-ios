@@ -105,7 +105,7 @@ public struct Hearts: CustomStringConvertible {
     }
 }
 
-struct JoyMeterView: View {
+public struct JoyMeterView: View {
     
     @Binding private var heartLevelBinding: Hearts?
     @State var width: CGFloat = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
@@ -117,7 +117,7 @@ struct JoyMeterView: View {
         return self.heartLevelBinding ?? Hearts(score: HeartLevel.empty.rawValue)
     }
     
-    init(_ hearts: Binding<Hearts?>, width: CGFloat? = nil, labelColor: Color? = nil, backgroundColor: Color?  = nil, foregroundColor: Binding<Color> = .constant(Color.primary)){
+    public init(_ hearts: Binding<Hearts?>, width: CGFloat? = nil, labelColor: Color? = nil, backgroundColor: Color?  = nil, foregroundColor: Binding<Color> = .constant(Color.primary)){
         self._heartLevelBinding = hearts
         self._foregroundColor = foregroundColor
         self.width = width ?? UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
@@ -125,11 +125,11 @@ struct JoyMeterView: View {
         self.backgroundColor = backgroundColor ?? self.backgroundColor
     }
     
-    init(_ heartLevel: Binding<Hearts?>, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil, backgroundColor: Color? = nil, foregroundColor: Binding<Color> = .constant(Color.primary)){
+    public init(_ heartLevel: Binding<Hearts?>, textStyle: UIFont.TextStyle = .largeTitle, labelColor: Color? = nil, backgroundColor: Color? = nil, foregroundColor: Binding<Color> = .constant(Color.primary)){
         self.init(heartLevel, width: UIFont.preferredFont(forTextStyle: textStyle).pointSize, labelColor: labelColor, backgroundColor: backgroundColor, foregroundColor:foregroundColor)
     }
     
-    var body: some View {
+    public var body: some View {
         let getOffset = { () -> CGFloat in
             guard self.hearts.level.rawValue > 0 else {
                 return width * -1

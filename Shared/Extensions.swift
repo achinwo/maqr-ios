@@ -188,7 +188,7 @@ public extension Search {
     }
 }
 
-extension View {
+public extension View {
     
     var screenSize: CGSize {
         return UIScreen.main.bounds.size
