@@ -230,6 +230,9 @@ struct ListenView: JoliView {
         }
     }
     
+    @State var needsRefreshSubject = PassthroughSubject<String, Never>()
+    @State var needsRefreshCancel: AnyCancellable? = nil
+    
     private func refreshContent(reason: String) {
         logger.debug("[loadLiveTracks] reason: \(reason)")
         self.loadLiveTracks()
@@ -335,6 +338,8 @@ struct ListenView: JoliView {
     @StateObject var model = SearchStore()
     @State var playPubCancel: AnyCancellable? = nil
     @State var searchResultCancel: AnyCancellable? = nil
+    
+    @State var strip: (playing: Playable?, next: Playable?, runnerup: Playable?) = (nil, nil, nil)
     
     func setupSearch(){
         
@@ -496,7 +501,7 @@ struct ListenView: JoliView {
                             return
                         }
                         
-                        self.refreshContent(reason: "room changed")
+                        self.needsRefreshSubject.send("room changed")
                     }
                     .onFrameChange() { value in
                         
@@ -514,7 +519,7 @@ struct ListenView: JoliView {
                             self.tripLine = value.origin.y
                             
                             withImpact(.rigid) {
-                                self.refreshContent(reason: "swipe to refresh")
+                                self.needsRefreshSubject.send("swipe to refresh")
                                 print("[] Frame chnaged: \(value)")
                             }
                         }
@@ -537,7 +542,7 @@ struct ListenView: JoliView {
             .animation(.easeInOut)
             .onAppear() {
                 self.scrollProxy = scrollProxy //
-                self.refreshContent(reason: "listenview appeared")
+                self.needsRefreshSubject.send("listenview appeared")
             }
             
         }
@@ -608,8 +613,6 @@ struct ListenView: JoliView {
         }
     }
     
-    @State var strip: (playing: Playable?, next: Playable?, runnerup: Playable?) = (nil, nil, nil)
-    
     var body: some View {
         
         return ZStack(){
@@ -628,8 +631,6 @@ struct ListenView: JoliView {
             
             VStack(spacing: .zero) {
                 Spacer()
-                
-                
                 Divider()
                 ListenTabbarView(isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
                                  playroom: self.$playroom)
@@ -683,11 +684,11 @@ struct ListenView: JoliView {
             
             VStack(spacing: .zero) {
                 HStack(spacing: .zero){
-                    Spacer()
+                    //Spacer()
                 }
                 .animation(.easeIn)
                 .frame(width: screenWidth, height: geoProxy.safeAreaInsets.top)
-                .background(Color.white.opacity(0.89))
+                .background(BlurView(.extraLight))//Color.white.opacity(0.89))
                 .onFrameChange() { rect in
                     DispatchQueue.main.async {
                         self.navbarViewBounds = rect
@@ -710,13 +711,13 @@ struct ListenView: JoliView {
                         HStack(alignment: .top){
                             Spacer()
                             //ShakeButtonView()
-                            Text("ꚠ")
+                            Text(Strings.appSymbol.stringValue)
                                 .font(Font.title.weight(.thin))
                                 .gradientForeground(colors: [Color.red, Color.orange, Color.yellow, Color.green, Color.blue, Color.purple, Color.pink])
                                 .scaleEffect(x: self.loadingLiveTracks ? 1.5 : 1.0, y: self.loadingLiveTracks ? 1.5 : 1.0)
                                 .onTapGesture {
                                     self.assertWebsocketConnected()
-                                    self.refreshContent(reason: "logo tapped")
+                                    self.needsRefreshSubject.send("logo tapped")
                                 }
                             
                             Spacer()
@@ -746,10 +747,11 @@ struct ListenView: JoliView {
             .onReceive(appCoordinator.playStateChangeSubject) { timestamp in
                 guard !self.loadingLiveTracks else { return }
                 
-                let waitTime = Int.random(in: 1..<9)
+                let waitTime = Int.random(in: 1..<3)
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(waitTime)) {
                     guard !self.loadingLiveTracks else { return }
-                    self.refreshContent(reason: "play state changed")
+                    
+                    self.needsRefreshSubject.send("play state changed")
                 }
             }
             .onReceive(appCoordinator.playRequestedSubject) { playable in
@@ -758,17 +760,54 @@ struct ListenView: JoliView {
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
                     guard !self.loadingLiveTracks else { return }
                     
-                    self.refreshContent(reason: "play requested")
+                    self.needsRefreshSubject.send("play requested")
                 }
+            }
+            .onReceive(appCoordinator.connectionStateSubject) { state in
+                guard state.state == .connected else { return }
+                self.needsRefreshSubject.send("server connected")
             }
             .onAppear() {
                 setupSearch()
+                
+                self.needsRefreshCancel?.cancel()
+                
+                self.needsRefreshCancel = self.needsRefreshSubject
+                    .debounce(for: .seconds(2), scheduler: DispatchQueue.global(qos: .userInitiated))
+                    .receive(on: DispatchQueue.main)
+                    .sink() { reason in
+                        print("[ListenView] recieved refresh request: \(reason)")
+                        self.refreshContent(reason: reason)
+                    }
+                
+                self.needsRefreshSubject.send("view appeared")
             }
         }
     }
     
     @State var playStateCancel: AnyCancellable? = nil
 
+}
+
+public struct TrackAddonView: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    
+    public init() {
+        
+    }
+    
+    
+    public var body: some View {
+        EmptyView()
+    }
+    
+}
+
+public extension Character {
+    var stringValue: String {
+        return String(self)
+    }
 }
 
 

@@ -31,6 +31,8 @@ public enum Strings {
     public static let reallyLogoutTitle = NSLocalizedString("reallyLogoutTitle", comment: "Confirm user really wants to log out")
     public static let reallyLogoutMessage = NSLocalizedString("reallyLogoutMessage", comment: "Confirm user really wants to log out")
     
+    public static let appSymbol: Character = "ꚠ"
+    
     #if DEBUG
     public static let appName = "Joli (Dev)"
     #else

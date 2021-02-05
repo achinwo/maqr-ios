@@ -106,18 +106,20 @@ public struct AppView2: JoliView {
     
     var playbackRefreshRate: TimeInterval = 0.15
     
+    static var defaultIdleTime: Double {
+        return Strings.appName == "Joli" ? 4 : 6
+    }
+    
     let cb: Publishers.Smooth<PlayState.Publisher, String>.StateGetter = { (state, now) in
         
         let uid = state.trackUri == nil ? nil : state.trackUri! + state.id.description
         
         guard let duration = state.durationMs, state.playingState == .playing else {
-            return (id: uid, value: state.progressMs, duration: nil, idleTimeout: 4)
+            return (id: uid, value: state.progressMs, duration: nil, idleTimeout: defaultIdleTime)
         }
         
-        return (id: uid, value: state.progressMs, duration: TimeInterval(duration), idleTimeout: 4)
+        return (id: uid, value: state.progressMs, duration: TimeInterval(duration), idleTimeout: defaultIdleTime)
     }
-    
-    
     
     private func updatePublishers() {
         let publisher: PlayState.Publisher = self.websocket.publish(PlayState.self, interval: self.playbackRefreshRate, path: \.progressMs, resolver: cb)
