@@ -30,6 +30,8 @@
 		923C2B0424CC7506009E2380 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 923C2B0324CC7506009E2380 /* PartialSheet */; };
 		923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		923C2B0624CC752E009E2380 /* JoliPlayground.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9251F1C525CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
+		9251F1C625CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		92595B4D253A1AD200609558 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
 		92595B4E253A1AD200609558 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
 		925C6FF324CB722A0016963F /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 925C6FF224CB722A0016963F /* FBLPromises */; };
@@ -228,6 +230,7 @@
 		920958AA25601EE10014626D /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		9222BE1724CD8A5800F19973 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
+		9251F1C425CE190200906D9D /* RefreshableScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableScrollView.swift; sourceTree = "<group>"; };
 		92595B4C253A1AD200609558 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		925E5C72236A742100D95AB7 /* SpotifyiOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SpotifyiOS.framework; sourceTree = "<group>"; };
 		925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Joli-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -580,6 +583,7 @@
 				92A32DD124C79C06007C960E /* TrackList.swift */,
 				927AE0C02554AC020027493D /* LobbyView.swift */,
 				92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */,
+				9251F1C425CE190200906D9D /* RefreshableScrollView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1026,6 +1030,7 @@
 				927E0E3624E9ADC000C8257D /* AppClip.swift in Sources */,
 				9203B31724CB070200F465CC /* ProfileView.swift in Sources */,
 				928A392424E9E2FA00A029A1 /* JoyMeterView.swift in Sources */,
+				9251F1C525CE190200906D9D /* RefreshableScrollView.swift in Sources */,
 				928A391C24E9DAE700A029A1 /* ListenView.swift in Sources */,
 				928F75F424F7B13400CF708B /* SearchView.swift in Sources */,
 				92BD11CE24CB0BCB00AAB7DE /* ImagePicker.swift in Sources */,
@@ -1105,6 +1110,7 @@
 				92A32E3124CA22FA007C960E /* Publishers.swift in Sources */,
 				92A32D8924C79A13007C960E /* Styles.swift in Sources */,
 				927E0E3B24E9AFFF00C8257D /* Preview.swift in Sources */,
+				9251F1C625CE190200906D9D /* RefreshableScrollView.swift in Sources */,
 				929FFE1D24FAF096000BDCF0 /* User.swift in Sources */,
 				9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */,
 				92A32E0824C79C07007C960E /* ProfileView.swift in Sources */,

@@ -211,6 +211,7 @@ struct ListenView: JoliView {
             }
             .always() {
                 loadingLiveTracks = false
+                self.refreshModel.triggeredSwipeRefresh = false
             }
     }
     
@@ -387,6 +388,23 @@ struct ListenView: JoliView {
         .background(Color.white)
     }
     
+    class Model: ObservableObject {
+        
+        @Published var triggeredSwipeRefresh = false {
+            didSet {
+                if oldValue == false && triggeredSwipeRefresh == true {
+                    print("[ListenView] trigger refresh")
+                    self.lastResfreshedAt = Date()
+                }
+            }
+        }
+        
+        @Published var lastResfreshedAt: Date? = nil
+        
+    }
+    
+    @StateObject var refreshModel = Model()
+    
     var contentView: some View {
         ScrollViewReader() { scrollProxy in
             GeometryReader() { proxy in
@@ -400,9 +418,9 @@ struct ListenView: JoliView {
                         }
                     }
                 
-                ScrollView(.vertical, showsIndicators: true) {
-                    
-                    let isEmptySearchResult = self.searchResult?.tracks.isEmpty ?? true
+                let isEmptySearchResult = self.searchResult?.tracks.isEmpty ?? true
+                
+                RefreshableScrollView(refreshing: self.$refreshModel.triggeredSwipeRefresh, showsIndicators: true) {
                     
                     VStack(){
                         
@@ -496,48 +514,46 @@ struct ListenView: JoliView {
                                 .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                         }
                     }
-                    .onChange(of: self.playroom) { value in
-                        guard value == nil else {
-                            return
-                        }
+                    .onReceive(self.refreshModel.$lastResfreshedAt) { date in
+                        guard date != nil else { return }
                         
-                        self.needsRefreshSubject.send("room changed")
+                        self.refreshContent(reason: "swipe to refresh")
                     }
-                    .onFrameChange() { value in
-                        
-                        guard isDragging else { return }
-                        
-                        if value.origin.y < tripLine, isDragging {
-                            DispatchQueue.main.async {
-                                self.tripLine = 0
-                            }
-                        }
-                        
-                        guard value.origin.y >= 100 && self.tripLine < 100, !self.loadingLiveTracks else { return }
-                        
-                        DispatchQueue.main.async {
-                            self.tripLine = value.origin.y
-                            
-                            withImpact(.rigid) {
-                                self.needsRefreshSubject.send("swipe to refresh")
-                                print("[] Frame chnaged: \(value)")
-                            }
-                        }
-                    }
+//                    .onFrameChange() { value in
+//
+//                        guard isDragging else { return }
+//
+//                        if value.origin.y < tripLine, isDragging {
+//                            DispatchQueue.main.async {
+//                                self.tripLine = 0
+//                            }
+//                        }
+//
+//                        guard value.origin.y >= 100 && self.tripLine < 100, !self.loadingLiveTracks else { return }
+//
+//                        DispatchQueue.main.async {
+//                            self.tripLine = value.origin.y
+//
+//                            withImpact(.rigid) {
+//                                self.needsRefreshSubject.send("swipe to refresh")
+//                                print("[] Frame chnaged: \(value)")
+//                            }
+//                        }
+//                    }
                 }
                 .simultaneousGesture(dragGesture)
                 .frame(width: screenWidth, height: screenHeight)
-                .background(
-                    VStack() {
-                        ProgressView(self.loadingLiveTracks ? "Refreshing..." : "Done!", value: self.loadingLiveTracks ? nil : 100.0, total: 100.0)
-                            .opacity(self.loadingLiveTracks ? 1 : 0.5)
-                            .progressViewStyle(CircularProgressViewStyle())
-                            .font(Font.headline.weight(.thin))
-                        Spacer()
-                    }
-                    .opacity(self.playroom == nil ? 1 : 0)
-                    .padding(.top, Sizing.xxLarge * 2.6)
-                )
+//                .background(
+//                    VStack() {
+//                        ProgressView(self.loadingLiveTracks ? "Refreshing..." : "Done!", value: self.loadingLiveTracks ? nil : 100.0, total: 100.0)
+//                            .opacity(self.loadingLiveTracks ? 1 : 0.5)
+//                            .progressViewStyle(CircularProgressViewStyle())
+//                            .font(Font.headline.weight(.thin))
+//                        Spacer()
+//                    }
+//                    .opacity(self.playroom == nil ? 1 : 0)
+//                    .padding(.top, Sizing.xxLarge * 2.6)
+//                )
             }
             .animation(.easeInOut)
             .onAppear() {
@@ -564,6 +580,13 @@ struct ListenView: JoliView {
             print("[filterText] \(txt)")
             self.model.query = txt
             self.tracksFiltered = self.filterTracks(self.tracks, txt)
+        }
+        .onChange(of: self.playroom) { value in
+            guard value == nil else {
+                return
+            }
+            
+            self.needsRefreshSubject.send("room changed")
         }
         .frame(maxWidth: screenWidth)
     }
