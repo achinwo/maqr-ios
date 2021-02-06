@@ -740,7 +740,7 @@ struct ListenView: JoliView {
                                 .scaleEffect(x: self.loadingLiveTracks ? 1.5 : 1.0, y: self.loadingLiveTracks ? 1.5 : 1.0)
                                 .onTapGesture {
                                     self.assertWebsocketConnected()
-                                    self.needsRefreshSubject.send("logo tapped")
+                                    self.refreshContent(reason: "logo tapped")
                                 }
                             
                             Spacer()

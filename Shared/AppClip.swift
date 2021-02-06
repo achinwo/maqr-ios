@@ -296,6 +296,7 @@ public protocol AppClip: App {
     func onOpenUrl(url: URL) -> Void
     func onConnectionStateChange(_ state: ConnectionState) -> Void
     
+    func onInternalError(_ error: Error) -> Void
 }
 
 public extension AppClip {
@@ -328,6 +329,10 @@ public extension AppClip {
             .onChange(of: scenePhase, perform: self.onScenePhaseChange)
             .modifier(AppCoordinator.Modifier(coordinator))
         }
+    }
+    
+    func onInternalError(_ error: Error) {
+        logger.debug("[\(Self.self)] error raised: \(error)")
     }
     
     func onConnectionStateChange(_ state: ConnectionState) {
