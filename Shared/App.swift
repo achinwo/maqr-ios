@@ -170,6 +170,10 @@ struct JoliApp: AppClip {
     @AppStorage("pendingLocalPlayUri") var pendingLocalPlayUri: String = .empty
     @AppStorage("pendingLocalPlayPosition") var pendingLocalPlayPosition: Int = -1
     
+    func onInternalError(_ errorInfo: AppCoordinator.ErrorInfo) {
+        logger.error("[\(Self.self)#onInternalError] error raised: \(errorInfo)")
+    }
+    
     func onLocalSpotifyPlayStateChanged(localPlayState: SPTAppRemotePlayerState) {
         logger.info("[AppView#onLocalPlayStateChanged] localPlayState: \(localPlayState.track.name) - \(pendingLocalPlayUri) - \(pendingLocalPlayPosition)")
         coordinator.playRequestedSubject.send(localPlayState.track.uri)
@@ -315,6 +319,7 @@ struct JoliApp: AppClip {
                         .background(Color.yellow)
                 }
             }
+            .onReceive(coordinator.internalErrorSubject, perform: self.onInternalError)
             .onReceive(coordinator.$spotifyAuthCallback) { callback in
                 
                 guard let callback = callback else {

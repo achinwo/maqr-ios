@@ -195,6 +195,7 @@ public struct AppView2: JoliView {
             }
             
             logger.error("[assertWebsocketConnected] asserting websocket connected: \(error)")
+            appCoordinator.globalErrorHandler()(error)
         }
     }
     

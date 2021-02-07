@@ -168,9 +168,7 @@ struct ListenView: JoliView {
             .then() { rooms  in
                 self.playrooms = rooms
             }
-            .catch() { error in
-                logger.error("[PlayrromsFetch] error: \(error)")
-            }
+            .catch(appCoordinator.globalErrorHandler())
             .always() {
                 self.loadingPlayrooms = false
             }
@@ -205,9 +203,7 @@ struct ListenView: JoliView {
                         self.liveTracks = resp.tracks.sorted() { $0.name > $1.name }
                         return resp
                     }
-                    .catch() { error in
-                        logger.error("[SpotifyTracksFetch] \(comp) - \(error)")
-                    }
+                    .catch(appCoordinator.globalErrorHandler())
             }
             .always() {
                 loadingLiveTracks = false

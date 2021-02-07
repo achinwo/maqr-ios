@@ -50,6 +50,10 @@ public final class AppCoordinator: ObservableObject {
     
     @Published public var devices: [Spotify.Device] = []
     
+    public typealias ErrorInfo = (error: Error, file: String, function: String, line: Int)
+    
+    public let internalErrorSubject = PassthroughSubject<ErrorInfo, Never>()
+    
     public let voteCastSubject: AutoResetSubject<QueuedTrackVote?, Never, RunLoop> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: RunLoop.main)
     
     public let activeDeviceSubject = CurrentValueSubject<Spotify.Device?, Never>(nil)
@@ -89,6 +93,12 @@ public final class AppCoordinator: ObservableObject {
     
     public enum ActionError: Error {
         case insufficientHeartPoints
+    }
+    
+    public func globalErrorHandler(file: String = #file, function: String = #function, line: Int = #line) -> (Error) -> Void {
+        return { (error: Error) -> Void in
+            self.internalErrorSubject.send((error, file, function, line))
+        }
     }
     
     public func authorizeSpotify(){

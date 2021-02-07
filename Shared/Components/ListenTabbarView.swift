@@ -284,7 +284,6 @@ struct ListenTabbarView: JoliView {
         }
         .onReceive(appCoordinator.userHeartsSubject) { hearts in
             self.hearts = hearts
-            print("[ListenTabbarView] hearts: \(String(describing: hearts))")
         }
         .onReceive(self.appCoordinator.$insufficientPointsAttempt) { insufficientPointsAttempt in
             self.insufficientPointsAttempt = insufficientPointsAttempt
