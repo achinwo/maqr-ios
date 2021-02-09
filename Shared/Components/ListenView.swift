@@ -246,7 +246,7 @@ struct ListenView: JoliView {
                 return
             }
             
-            logger.error("[assertWebsocketConnected] asserting websocket connected: \(error)")
+            logger.error("[assertWebsocketConnected] asserting websocket connected: \(String(describing: error))")
         }
     }
     
@@ -361,7 +361,7 @@ struct ListenView: JoliView {
                             .catch() { error in
                                 promise(.success(nil))
                                 
-                                logger.error("[searchSpotify] error: \(error)")
+                                logger.error("[searchSpotify] error: \(String(describing: error))")
                             }
                     }.eraseToAnyPublisher()
                 }

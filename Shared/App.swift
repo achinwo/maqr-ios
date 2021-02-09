@@ -14,6 +14,7 @@ import JoliApi
 import Promises
 import Foundation
 import Combine
+import SwiftyBeaver
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 //eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imhhd2FAZ21haWwubmV0IiwiY3JlYXRlZEF0IjoiMjAyMC0xMS0xMlQxOTowMTozMC4xNzVaIiwiZXhwaXJlc0luIjoxNDQwMDAwfQ.DVEEwDmG0pW9EBQwcdJGJvpqLfrhNJmbyRlq30Aar0o
@@ -161,9 +162,9 @@ struct JoliApp: AppClip {
         self.authPublishCancel = self.websocket.deserialize(AuthToken.self)
             .autoconnect()
             .sink() { completion in
-                logger.info("[AppView#AuthToken] completion: \(completion)")
+                logger.info("[AppView#AuthToken] completion: \(String(describing: completion))")
             } receiveValue: { auth in
-                logger.info("[AppView#AuthToken] auth: \(auth)")
+                logger.info("[AppView#AuthToken] auth: \(String(describing: auth))")
             }
     }
     
@@ -171,7 +172,14 @@ struct JoliApp: AppClip {
     @AppStorage("pendingLocalPlayPosition") var pendingLocalPlayPosition: Int = -1
     
     func onInternalError(_ errorInfo: AppCoordinator.ErrorInfo) {
-        logger.error("[\(Self.self)#onInternalError] error raised: \(errorInfo)")
+        logger.error("[\(Self.self)#onInternalError] error raised: \(errorInfo.error as NSObject)")
+        
+        self.coordinator.serverLogDestination?.send(SwiftyBeaver.Level.error,
+                                        msg: String(describing: errorInfo.error),
+                                        thread: Thread.current.debugDescription,
+                                        file: errorInfo.file,
+                                        function: errorInfo.function,
+                                        line: errorInfo.line)
     }
     
     func onLocalSpotifyPlayStateChanged(localPlayState: SPTAppRemotePlayerState) {
@@ -253,7 +261,7 @@ struct JoliApp: AppClip {
                     return
                 }
                 
-                logger.debug("[App#authentication] creds: \(credentials), auth: \(auth)")
+                logger.debug("[App#authentication] creds: \(String(describing: credentials)), auth: \(String(describing: auth))")
                 
                 var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
                 newAuths.append(auth)
@@ -267,7 +275,7 @@ struct JoliApp: AppClip {
                 self.auth = auth
             }
             .catch() { error in
-                logger.error("[App#authentication] creds: \(credentials), error: \(error)")
+                logger.error("[App#authentication] creds: \(String(describing: credentials)), error: \(String(describing: error))")
                 
                 guard case let .sessionToken(token) = credentials, let error = error as? SpotifyError, error != SpotifyError.unathorized else { return }
                 
@@ -338,7 +346,7 @@ struct JoliApp: AppClip {
                 spotifyDelegateInstance.requestSpotifyAccess()
             }
             .onReceive(coordinator.$localPlayRequested) { localRequest in
-                print("[App#$localPlayRequested] FIRST - local play: \(localRequest)")
+                logger.debug("[App#$localPlayRequested] FIRST - local play: \(String(describing: localRequest))")
                 
                 guard let localRequest = localRequest, let spotifyRemote = self.spotifyRemote else {
                     return
@@ -424,11 +432,13 @@ struct JoliApp: AppClip {
                 }
             }
             .onAppear() {
-                logger.debug("[Joli] setting coordinator animation namespace to \(namespace) - activeSessionId: \(activeSessionId)")
+                logger.debug("[Joli] setting coordinator animation namespace to \(String(describing: namespace)) - activeSessionId: \(activeSessionId)")
                 
                 self.coordinator.namespace = namespace
                 self.coordinator.api = api
                 self.coordinator.initialActiveDeviceId = activeDeviceId == .empty ? nil : activeDeviceId
+                
+                self.coordinator.serverLogDestination = ServerDestination(url: api.baseUrlHttp, urlSession: api.urlSession)
                 
 //                if let authsSerialized = try? jsonDecoder.decode(SerializedAuths.self, from: authsData) {
 //                    print("[AUTHS] existing: \(authsSerialized)")
@@ -527,7 +537,7 @@ extension JoliApp {
                     self.onLocalSpotifyAuth(auth, nil)
                 }
                 .catch() { error in
-                    logger.error("[SceneDelegate] spotify auth error: \(error)")
+                    logger.error("[SceneDelegate] spotify auth error: \(String(describing: error))")
                     self.onLocalSpotifyAuth(nil, error)
                 }
             return
@@ -540,7 +550,7 @@ extension JoliApp {
             self.spotify.appRemote.connectionParameters.accessToken = access_token
             self.spotify.accessToken = access_token
         } else if let error_description = parameters?[SPTAppRemoteErrorDescriptionKey] {
-            logger.debug("Spotify error:", error_description)
+            logger.debug("Spotify error: \(error_description)")
         }
     }
     

@@ -150,7 +150,7 @@ public struct LobbyView: JoliView {
                         LazyVGrid(columns: columns) {
                             ForEach(self.playrooms, id: \.id) { room in
                                 SpotifyItemView(item: room,
-                                                images: [],
+                                                images: room.images,
                                                 titleKeyPath: \.name,
                                                 subtitleKeyPath: \.details)
                                     .frame(height: 64)
@@ -270,6 +270,18 @@ public struct LobbyView: JoliView {
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
                 self.bannerDisplayedAt = Date()
             }
+        }
+    }
+    
+}
+
+public extension Musicroom {
+    
+    var images: [Spotify.Image] {
+        return [self.imageLarge, self.imageSmall, self.imageMedium].compactMap() { url in
+            guard let url = url else { return nil }
+            
+            return Spotify.Image(url: url)
         }
     }
     

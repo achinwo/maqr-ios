@@ -26,7 +26,7 @@ extension AppState {
             }
             logger.debug("[setAudioSession] App is active")
         } catch {
-            logger.debug("[setAudioSession] Failed to update audio session: \(error)")
+            logger.debug("[setAudioSession] Failed to update audio session: \(String(describing: error))")
         }
     }
     
@@ -35,7 +35,7 @@ extension AppState {
             do{
                 try callback(device ?? self.spotifyDevice, cancelled)
             }catch{
-                logger.error("[triggerAndClearDeviceCallbacks] \(error)")
+                logger.error("[triggerAndClearDeviceCallbacks] \(String(describing: error))")
             }
         }
         self.deviceReadyCallbacks.removeAll()
@@ -87,7 +87,7 @@ extension AppState {
     // MARK: - errorHandler
     public func errorHandler(_ funcName: String = #function) -> (Error) -> Void {
         return { (error: Error) in
-            logger.error("[\(funcName)] error: \(error)")
+            logger.error("[\(funcName)] error: \(String(describing: error))")
             
             guard case let NetworkError.errorMessage(err) = error,
                 let message = err.message,
@@ -110,7 +110,7 @@ extension AppState {
                     logger.info("[queueTrack] queued: \(queuedTrack)")
                     self.fetchQueuedTracks(activeRoom)
             }.catch() { error in
-                logger.error("[queueTrack] \(error)")
+                logger.error("[queueTrack] \(String(describing: error))")
                 self.assertSpotifyAuthorized()
             }
         }
@@ -162,7 +162,7 @@ extension AppState {
                     
                 }
             }.catch() { error in
-                logger.error("[playTrack] \(error)")
+                logger.error("[playTrack] \(String(describing: error))")
                 self.assertSpotifyAuthorized()
             }
         }
@@ -285,7 +285,7 @@ extension AppState {
                 }
         }
         .catch() { error in
-            logger.error("[fetchTracks] error: \(error)")
+            logger.error("[fetchTracks] error: \(String(describing: error))")
         }
     }
     
@@ -313,7 +313,7 @@ extension AppState {
                 }
         }
         .catch() { error in
-            logger.error("[fetchQueuedTracks] error: \(error)")
+            logger.error("[fetchQueuedTracks] error: \(String(describing: error))")
         }
     }
     
@@ -339,7 +339,7 @@ extension AppState {
                 self.updateVotes(votes)
         }
         .catch() { error in
-            logger.error("[fetchTrackVotes] error: \(error)")
+            logger.error("[fetchTrackVotes] error: \(String(describing: error))")
         }
     }
     

@@ -17,11 +17,11 @@ public typealias UIImage = NSImage
 #else
 import UIKit
 #endif
-
+import os
 
 // genstrings -a -o en.lproj ../*.swift && genstrings -a -o fr.lproj ../*.swift
 //
-public let logger = JoliApi.getLogger()
+internal let logger = Logger(subsystem: "com.jolimc.Joli", category: "global.client")
 
 public enum Strings {
     

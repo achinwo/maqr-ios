@@ -273,7 +273,7 @@ class AppState: ObservableObject {
                 self.serverVersion = version
             }
             .catch() { error in
-                logger.error("[serverResolve] error: \(error)", context: error)
+                logger.error("[serverResolve] error: \(String(describing: error))")
             }
         
     }

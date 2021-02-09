@@ -97,6 +97,7 @@ public class ServerDestination: BaseDestination, ObservableObject {
     }
     
     // append to file. uses full base class functionality
+    @discardableResult
     override public func send(_ level: SwiftyBeaver.Level, msg: String, thread: String,
                               file: String, function: String, line: Int, context: Any? = nil) -> String? {
         let formattedString = super.send(level, msg: msg, thread: thread, file: file, function: function, line: line, context: context)

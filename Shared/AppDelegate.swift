@@ -159,11 +159,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         completionHandler(.failed)
         return
       }
-        logger.info("[AppDelegate] handled notificatiom", context: aps)
+        logger.info("[AppDelegate] handled notificatiom: \(String(describing: aps))")
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        logger.error("Failed to register: \(error)")
+        logger.error("Failed to register: \(String(describing: error))")
     }
     
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
@@ -185,7 +185,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: nil)
         
-        logger.addDestination(ServerDestination(url: self.env.baseUrl.http, urlSession: self.appState.api.urlSession))
+        //logger.addDestination(ServerDestination(url: self.env.baseUrl.http, urlSession: self.appState.api.urlSession))
         
         logger.debug("[AppDelegate#willFinishLaunchingWithOptions] notifOptions:\(String(describing: launchOptions))")
         return true
@@ -215,7 +215,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 //            logger.debug("Failed to activate audio session")
 //        }
         
-        logger.debug("[AppDelegate] application started - env:\(env), baseUrl:\(env.baseUrl), notifOptions:\(String(describing: launchOptions))")
+        logger.debug("[AppDelegate] application started - env:\(self.env), baseUrl:\(self.env.baseUrl), notifOptions:\(String(describing: launchOptions))")
         
 //        Promise<Void>() { (resolve, reject) in
 //

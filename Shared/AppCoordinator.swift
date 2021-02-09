@@ -20,7 +20,7 @@ public final class AppCoordinator: ObservableObject {
     @Published public var currentLocation: AppLocation = .home
     public var sheet: PartialSheetManager = PartialSheetManager()
     public var api: JoliApi!
-    
+    public var serverLogDestination: ServerDestination? = nil
     private var cancellableSet: Set<AnyCancellable> = []
     
     @Published public var isSearching: Search.Category = []
@@ -39,7 +39,7 @@ public final class AppCoordinator: ObservableObject {
             }
             
             votesPub.sink() { completion in
-                logger.warning("[AppCoordinator] votes listener closed unexpectedly: \(completion)")
+                logger.warning("[AppCoordinator] votes listener closed unexpectedly: \(String(describing: completion))")
             } receiveValue: { value in
                 self.voteCastSubject.send(value)
             }
@@ -128,9 +128,7 @@ public final class AppCoordinator: ObservableObject {
                 
                 self.activeDeviceSubject.send(activeDevice)
             }
-            .catch() { error in
-                print("[AppCoordinator#devicesPublisher] error: \(error)")
-            }
+            .catch(self.globalErrorHandler())
             .always {
                 self.refreshingDevices = false
             }
@@ -282,9 +280,7 @@ public final class AppCoordinator: ObservableObject {
         
         guard let device = device else {
             return api.fetchSpotifyDevices(on: on)
-                .catch(){ error in
-                    logger.error("[fetchSpotifyDevices] error: \(error)")
-                }
+                .catch(self.globalErrorHandler())
                 .then() { (devices) -> Promise<PlayState?> in
                     logger.debug("Devices: \(devices)")
                     return performPlay(devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }))
@@ -316,7 +312,7 @@ public final class AppCoordinator: ObservableObject {
                 logger.info("[queueTrack] queued: \(queuedTrack)")
             }
             .catch() { error in
-                logger.error("[queueTrack] \(error)")
+                logger.error("[queueTrack] \(String(describing: error))")
             }
             .always {
                 self.queueRequestedSubject.send(nil)

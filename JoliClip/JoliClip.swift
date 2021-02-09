@@ -12,13 +12,16 @@ import JoliCore
 import CancellationToken
 import Combine
 import JoliApi
+import os
+
+internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "[global.invite.room]")
 
 @main
 struct JoliClip: AppClip {
     
     @Namespace var namespace {
         didSet {
-            logger.debug("[Joli] setting coordinator animation namespace to \(namespace)")
+            logger.debug("[Joli] setting coordinator animation namespace to \(String(describing: namespace))")
             coordinator.namespace = namespace
         }
     }

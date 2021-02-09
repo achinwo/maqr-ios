@@ -40,7 +40,7 @@ extension AppState {
                 self.selectedSpotifyDeviceIdx = devices.firstIndex() { $0.isActive }
         }
         .catch(){ error in
-            logger.error("[fetchSpotifyDevices] error: \(error)")
+            logger.error("[fetchSpotifyDevices] error: \(String(describing: error))")
         }
     }
     

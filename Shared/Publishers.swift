@@ -68,7 +68,7 @@ public class Playroom: ObservableObject, Room, Equatable {
         
         return HttpMethod.Fetch.get(url: uri, dataType: [QueuedTrack].self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
             .catch() { error in
-                logger.error("[fetchTracks] error fetching tracks for \(self.musicroom.name): \(error)")
+                logger.error("[fetchTracks] error fetching tracks for \(self.musicroom.name): \(String(describing: error))")
             }
     }
     

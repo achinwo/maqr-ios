@@ -181,7 +181,7 @@ public struct DevicesView: JoliView {
                     
                     ForEach(devices) { device in
                         Button(){
-                            logger.debug("[DevicesView] setting active device: \(device)")
+                            logger.debug("[DevicesView] setting active device: \(String(describing: device))")
                             
                             self.appCoordinator.activeDeviceSubject.send(device)
                         } label: {

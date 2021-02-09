@@ -166,7 +166,7 @@ public extension Regex {
     }
 }
 
-public enum AppLocation: RawRepresentable {
+public enum AppLocation: RawRepresentable, CustomStringConvertible {
     
     case invited(String) // joli.live/r/abc
     case playroom(String)
@@ -212,6 +212,10 @@ public enum AppLocation: RawRepresentable {
         invited: Regex("^/playroom/invite/(?<inviteId>.+)$"),
         playroom: Regex("^/r/(?<roomId>.+)$")
     )
+    
+    public var description: String {
+        return "\(Self.self)(\(rawValue))"
+    }
     
 }
 
@@ -332,7 +336,7 @@ public extension AppClip {
     }
     
     func onInternalError(_ error: Error) {
-        logger.debug("[\(Self.self)] error raised: \(error)")
+        logger.debug("[\(Self.self)] error raised: \(String(describing: error))")
     }
     
     func onConnectionStateChange(_ state: ConnectionState) {

@@ -374,7 +374,7 @@ public struct ExploreView: JoliView {
                             .catch() { error in
                                 promise(.success([]))
                                 
-                                logger.error("[searchSpotify] error: \(error)")
+                                logger.error("[searchSpotify] error: \(String(describing: error))")
                             }
                     }.eraseToAnyPublisher()
                 }
@@ -404,7 +404,7 @@ public struct ExploreView: JoliView {
                             }
                             .catch() { error in
                                 promise(.success([]))
-                                logger.error("[searchPlayrooms] error: \(error)")
+                                logger.error("[searchPlayrooms] error: \(String(describing: error))")
                             }
                     }
                     .eraseToAnyPublisher()

@@ -75,7 +75,7 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
     }
     
     func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
-        logger.debug("Spotify: session failure \(error)")
+        logger.debug("Spotify: session failure \(String(describing: error))")
     }
     
     func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
@@ -86,8 +86,7 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
         self.appRemote.playerAPI?.delegate = self
         self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
             if let error = error {
-                logger.debug("Spotify: playstae subsrcibe error: \(error)")
-                logger.debug(error.localizedDescription)
+                logger.debug("Spotify: playstae subsrcibe error: \(String(describing: error))")
                 return
             }
             
@@ -104,7 +103,7 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
     }
     
     func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
-        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(playerState)")
+        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(String(describing: playerState))")
         self.playStateCallback?(playerState)
     }
     

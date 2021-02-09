@@ -194,7 +194,7 @@ public struct AppView2: JoliView {
                 return
             }
             
-            logger.error("[assertWebsocketConnected] asserting websocket connected: \(error)")
+            logger.error("[assertWebsocketConnected] asserting websocket connected: \(String(describing: error))")
             appCoordinator.globalErrorHandler()(error)
         }
     }
@@ -354,7 +354,7 @@ public struct AppView2: JoliView {
             self.onConnectionStateChanged(websocket, info.state == ConnectionState.connected)
         }
         .onReceive(appCoordinator.voteRequestedSubject) { voting in
-            print("[App#voteRequestedSubject] voting: \(voting)")
+            print("[App#voteRequestedSubject] voting: \(String(describing: voting))")
             guard voting != nil else {
                 print("[App#voteRequestedSubject] voting, aborting...")
                 return
