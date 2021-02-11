@@ -81,7 +81,7 @@ public struct ExploreView: JoliView {
     
     @AppStorage("explore.search.term") var currentSearchTerm: String = ""
     
-    @State var searchResultPublisher: AnyCancellable? = nil
+    @State var searchResultCancel: AnyCancellable? = nil
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -337,12 +337,12 @@ public struct ExploreView: JoliView {
     
     // MARK: - Spotify Search
     private func updateSubscriptions() {
-        if let cancel = self.searchResultPublisher {
+        if let cancel = self.searchResultCancel {
             cancel.cancel()
             print("[searchResultPublisher] cancelled: \(cancel)")
         }
         
-        self.searchResultPublisher = model.$query
+        self.searchResultCancel = model.$query
             .removeDuplicates()
             .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInteractive))
             .map() { q -> AnyPublisher<[SearchResult], Never> in
@@ -435,7 +435,7 @@ public struct ExploreView: JoliView {
             .receive(on: RunLoop.main)
             .assign(to: \.searchResults, on: self)
         
-        print("[searchResultPublisher] created: \(String(describing: searchResultPublisher))")
+        print("[searchResultPublisher] created: \(String(describing: searchResultCancel))")
     }
     
     func makeResultViews(q: Search.Query, playrooms: [Musicroom], engine: Search.Engine) -> [Search.ResultView] {

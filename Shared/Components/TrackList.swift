@@ -340,8 +340,9 @@ public struct TrackView2<AddonView: View>: JoliView {
                     let offset = containerWidth * (max(progress, 1) / trackDuration)
                     
                     HStack(alignment: .bottom){
+                        
                         RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
-                            .fill(item.value.color.opacity(0.48))
+                            .fill((self.appCoordinator.activeAuth == nil ? .secondary : item.value.color).opacity(0.48))
                             .frame(width: 3, height: proxy.size.height)
                             .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
                             .id(item.key)

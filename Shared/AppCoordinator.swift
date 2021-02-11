@@ -158,9 +158,7 @@ public final class AppCoordinator: ObservableObject {
     //
     //                        self.activeDeviceSubject.send(device)
                         }
-                        .catch() { error in
-                            print("[AppCoord] volume set error: \(error)")
-                        }
+                        .catch(self.globalErrorHandler())
                 }
                 
                 setVolume()
@@ -205,9 +203,8 @@ public final class AppCoordinator: ObservableObject {
         HttpMethod.Fetch.get(url: "/api/musicrooms/\(playroom.id)/sync", dataType: Musicroom.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .global(qos: .userInitiated))
             .then(on: .main){ playroom in
                 print("[synchronizePlayroom] sync completed by server \(String(describing: playroom.playlistUri))")
-            }.catch(){error in
-                print("error synchronizing playlist \(error)")
             }
+            .catch(self.globalErrorHandler())
     }
     
     
@@ -239,6 +236,7 @@ public final class AppCoordinator: ObservableObject {
                         return vote
                     }
             }
+            .catch(self.globalErrorHandler())
             .always {
                 self.voteRequestedSubject.send(nil)
             }
@@ -311,9 +309,7 @@ public final class AppCoordinator: ObservableObject {
             .then() { queuedTrack in
                 logger.info("[queueTrack] queued: \(queuedTrack)")
             }
-            .catch() { error in
-                logger.error("[queueTrack] \(String(describing: error))")
-            }
+            .catch(self.globalErrorHandler())
             .always {
                 self.queueRequestedSubject.send(nil)
             }

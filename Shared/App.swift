@@ -172,7 +172,7 @@ struct JoliApp: AppClip {
     @AppStorage("pendingLocalPlayPosition") var pendingLocalPlayPosition: Int = -1
     
     func onInternalError(_ errorInfo: AppCoordinator.ErrorInfo) {
-        logger.error("[\(Self.self)#onInternalError] error raised: \(errorInfo.error as NSObject)")
+        logger.error("[\(Self.self)#onInternalError] error raised: \(errorInfo.error as NSObject) - \(errorInfo.function)")
         
         self.coordinator.serverLogDestination?.send(SwiftyBeaver.Level.error,
                                         msg: String(describing: errorInfo.error),

@@ -52,7 +52,7 @@ public struct SpotifyConnectButton: JoliView {
 public struct LobbyView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    
+    @Binding var recentTracks: [Playable]
     @Binding var liveTracks: [Spotify.Track]
     @Binding var playrooms: [Musicroom]
     @Binding var filterText: String
@@ -64,6 +64,54 @@ public struct LobbyView: JoliView {
     
     @State var auths: [Auth] = []
     @State var activeSessionId: String? = nil
+    
+    public var tracksView: some View {
+        
+        var desc: String
+        
+        if self.liveTracks.isEmpty {
+            desc = "Popular songs recently played"
+        } else {
+            desc = "See whats trending live — tap album art to follow along"
+        }
+        
+        let header = HStack(){
+            let headerText = "\(!self.liveTracks.isEmpty ? "Live" : "Recent") Tracks"
+            VStack(alignment: .leading){
+                Text(headerText)
+                    .font(Font.largeTitle.weight(.thin))
+                    .foregroundColor(.secondary)
+                Text(desc)
+                    .lineLimit(2)
+                    .font(Font.subheadline.weight(.light))
+                    .foregroundColor(.primary)
+            }
+            Spacer()
+        }
+        .padding(.bottom, Sizing.small)
+        
+        let tracks: [Playable] = !self.liveTracks.isEmpty ? self.liveTracks : self.recentTracks
+        
+        return Section(header: header) {
+            ForEach(tracks, id: \.uri) { (track: Playable) in
+                TrackView2(track: .constant(track), useDynamicColors: false) { (track, playStates, colors) in
+                        VStack() {
+//                                        Button() {
+//                                            //appCoordinator.
+//                                        } label: {
+//                                            Text("𖧊 Follow").font(Font.subhealine)
+//                                        }
+//                                        //.padding(.all, 3)
+//                                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray))
+//                                        .disabled(true)
+                        }
+                    }
+                    .frame(height: 64)
+                    .id(track.uri)
+            }
+        }
+    }
+    
     
     public var body: some View {
         GeometryReader() { proxy in
@@ -80,40 +128,8 @@ public struct LobbyView: JoliView {
                 }
                 .animation(.easeInOut)
                 
-                if !self.liveTracks.isEmpty {
-                    
-                    let header = HStack(){
-                        VStack(alignment: .leading){
-                            Text("Live Tracks")
-                                .font(Font.largeTitle.weight(.thin))
-                                .foregroundColor(.secondary)
-                            Text("See whats trending live — tap album art to follow along")
-                                .lineLimit(2)
-                                .font(Font.subheadline.weight(.light))
-                                .foregroundColor(.primary)
-                        }
-                        Spacer()
-                    }
-                    .padding(.bottom, Sizing.small)
-                    
-                    Section(header: header) {
-                        ForEach(self.liveTracks, id: \.uri) { (track: Spotify.Track) in
-                            TrackView2(track: .constant(track), useDynamicColors: false) { (track, playStates, colors) in
-                                    VStack() {
-//                                        Button() {
-//                                            //appCoordinator.
-//                                        } label: {
-//                                            Text("𖧊 Follow").font(Font.subhealine)
-//                                        }
-//                                        //.padding(.all, 3)
-//                                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray))
-//                                        .disabled(true)
-                                    }
-                                }
-                                .frame(height: 64)
-                                .id(track.uri)
-                        }
-                    }
+                if !(self.liveTracks.isEmpty && self.recentTracks.isEmpty) {
+                    self.tracksView
                 }
                 
                 if !self.playrooms.isEmpty {

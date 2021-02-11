@@ -145,13 +145,12 @@ struct ListenView: JoliView {
     //    }
     
     @State var liveTracks: [Spotify.Track] = []
+    @State var recentTracks: [Playable] = []
     @State var playrooms: [Musicroom] = []
     
     public struct SpotiftyTracksResponse: Codable {
         public var tracks: [Spotify.Track]
     }
-    
-    
     
     @State var loadingLiveTracks = false {
         didSet {
@@ -180,6 +179,9 @@ struct ListenView: JoliView {
         PlayState.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
             .then() { states -> Promise<SpotiftyTracksResponse?> in
                 //print("[PlayStates] states: \(states)")
+                let tracks: Set<Track> = Set(states.compactMap() { $0.track })
+                self.recentTracks = tracks.sorted() { $0.name > $1.name }
+                
                 let trackUris = states
                     .sorted(by: { $0.updatedAt > $1.updatedAt })
                     .compactMap() { state -> String? in
@@ -374,7 +376,7 @@ struct ListenView: JoliView {
         
     var lobbyView: some View {
         ZStack(){
-            LobbyView(liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks) { room in
+            LobbyView(recentTracks: self.$recentTracks, liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks) { room in
                 self.tracks = []
                 self.votes = []
                 self.playroom = Playroom(musicroom: room, socket: self.websocket, api: api)
