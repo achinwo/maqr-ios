@@ -506,7 +506,7 @@ struct ListenView: JoliView {
                             }
                         } else {
                             self.lobbyView
-                                .frame(minHeight: screenHeight * 1.3)
+                                .frame(minHeight: 68.0 * CGFloat(recentTracks.count + liveTracks.count) + CGFloat(screenHeight) + CGFloat(68.0 * CGFloat(playrooms.count) / 2.0))
                                 .padding(.top, isEmptySearchResult ? Sizing.xxLarge * 2 : nil)
                                 .background(Color.white)
                                 .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)

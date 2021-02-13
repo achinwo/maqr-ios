@@ -575,15 +575,15 @@
 				928A392324E9E2FA00A029A1 /* JoyMeterView.swift */,
 				9263B87724F080E6008962EC /* ListenTabbarView.swift */,
 				928A391B24E9DAE600A029A1 /* ListenView.swift */,
+				927AE0C02554AC020027493D /* LobbyView.swift */,
 				92A7120C24D85EC500AD6729 /* NetworkImageView.swift */,
 				92A32DC424C79C06007C960E /* PeopleGridView.swift */,
+				92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */,
 				927E0E3924E9AFFF00C8257D /* Preview.swift */,
 				92A32DDA24C79C07007C960E /* ProfileView.swift */,
+				9251F1C425CE190200906D9D /* RefreshableScrollView.swift */,
 				928F75F324F7B13400CF708B /* SearchView.swift */,
 				92A32DD124C79C06007C960E /* TrackList.swift */,
-				927AE0C02554AC020027493D /* LobbyView.swift */,
-				92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */,
-				9251F1C425CE190200906D9D /* RefreshableScrollView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
