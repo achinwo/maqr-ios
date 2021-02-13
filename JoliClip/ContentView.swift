@@ -35,11 +35,13 @@ struct ContentView: JoliView {
                         ScrollView(.vertical, showsIndicators: true) {
                             
                             if loadingView {
-                                ProgressView("Loading Playroom")
+                                ProgressView("Loading Playroom").padding()
                             } else if let error = errorMessage {
-                                Text(error)
+                                Text(error).padding()
                             } else if let playroom = playroom {
                                 tracksView(playroom, geoProxy)
+                            } else {
+                                Text(Self.GENERIC_ERROR_MESSAGE).padding()
                             }
                             
                             
@@ -90,29 +92,38 @@ struct ContentView: JoliView {
                     self.playroomId = inviteId
                     self.fetchPlayroomByInviteId(inviteId)
                 case .error:
-                    self.errorMessage = "An error occured while loading your Plaroom invitation, please try again later."
+                    self.errorMessage = Self.GENERIC_ERROR_MESSAGE
                 default:
                     break
             }
         }
     }
     
+    static var GENERIC_ERROR_MESSAGE: String {
+        return "An error occured while loading your Playroom invitation, please try again later."
+    }
+    
     @discardableResult
-    func fetchPlayroomByInviteId(_ inviteId: String) -> Promise<Musicroom> {
+    func fetchPlayroomByInviteId(_ inviteId: String) -> Promise<Entitlement> {
         
-        let url = "/api/musicrooms/invites/\(inviteId)"
+        let url = "/i/\(inviteId)"
         self.loadingView = true
-        return HttpMethod.Fetch.get(url: url, dataType: Musicroom.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then(){ room -> Musicroom in
-                let play = Playroom(musicroom: room, socket: websocket, api: api)
+        return HttpMethod.Fetch.get(url: url, dataType: Entitlement.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then(){ entitlement -> Entitlement in
+                
+                guard let musicroom = entitlement.musicroom else {
+                    return entitlement
+                }
+                
+                let play = Playroom(musicroom: musicroom, socket: websocket, api: api)
                 self.playroom = play
                 play.updateQueuedTracks()
                 
-                return room
+                return entitlement
             }
             .catch() { error in
                 print("[fetchPlayroomByInviteId] error: \(error)")
-                self.errorMessage = "An error occured while loading your Plaroom invitation, please try again later."
+                self.errorMessage = Self.GENERIC_ERROR_MESSAGE
             }
             .always {
                 self.loadingView = false

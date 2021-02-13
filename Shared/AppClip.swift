@@ -199,7 +199,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible {
         case .upgrade:
             return "/upgrade"
             case .invited(let inviteId):
-                return "/playroom/invite/\(inviteId)"
+                return "/i/\(inviteId)"
             case .playroom(let roomId):
                 return "/r/\(roomId)"
             default:
@@ -209,7 +209,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible {
     
     static var patterns = (
         home: Regex("^/$"),
-        invited: Regex("^/playroom/invite/(?<inviteId>.+)$"),
+        invited: Regex("^/(playroom/invite|i)/(?<inviteId>.+)$"),
         playroom: Regex("^/r/(?<roomId>.+)$")
     )
     

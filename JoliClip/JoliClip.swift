@@ -14,7 +14,7 @@ import Combine
 import JoliApi
 import os
 
-internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "[global.invite.room]")
+internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "global.invite.room")
 
 @main
 struct JoliClip: AppClip {

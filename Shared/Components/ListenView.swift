@@ -373,13 +373,56 @@ struct ListenView: JoliView {
             .assign(to: \.searchResult, on: self)
         
     }
-        
+    
+    @State var creatingRoomEntitlement = false
+    
     var lobbyView: some View {
         ZStack(){
             LobbyView(recentTracks: self.$recentTracks, liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks) { room in
                 self.tracks = []
                 self.votes = []
                 self.playroom = Playroom(musicroom: room, socket: self.websocket, api: api)
+                
+                guard let auth = appCoordinator.activeAuth, !room.entitlements.contains(where: { $0.userId == auth.user.id }) else {
+                    return
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    self.preview = .view() {
+                        VStack(){
+                            Spacer()
+                            Text(room.name).font(.largeTitle).padding().padding(.top, Sizing.xxxLarge)
+                            Text(room.details).font(.subheadline).foregroundColor(.secondary).padding()
+                            
+                            if self.creatingRoomEntitlement {
+                                ProgressView().padding()
+                                    .matchedGeometryEffect(id: "entering-room", in: animation)
+                            } else {
+                                Button("Enter") {
+                                    var entitlement = EntitlementRecord()
+                                    entitlement.userId = auth.user.id
+                                    entitlement.type = "musicroom"
+                                    entitlement.targetRecordId = room.id
+                                    
+                                    self.creatingRoomEntitlement = true
+                                    entitlement.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                                        .then() { ent in
+                                            logger.debug("[ListenView#lobbyView] created entitlement: \(ent)")
+                                            self.preview = nil
+                                        }
+                                        .always {
+                                            self.creatingRoomEntitlement = false
+                                        }
+                                }
+                                .font(Font.title)
+                                .padding()
+                                .matchedGeometryEffect(id: "entering-room", in: animation)
+                            }
+                            
+                            Spacer()
+                        }.eraseToAnyView()
+                    }
+                }
             }
         }
         .frame(width: screenWidth)
