@@ -709,7 +709,7 @@ struct ListenView: JoliView {
                 }
                 .animation(.easeIn)
                 .frame(width: screenWidth, height: geoProxy.safeAreaInsets.top)
-                .background(BlurView(.extraLight))//Color.white.opacity(0.89))
+                .background(Color.white.opacity(0.89))
                 .onFrameChange() { rect in
                     DispatchQueue.main.async {
                         self.navbarViewBounds = rect
@@ -727,6 +727,7 @@ struct ListenView: JoliView {
                             .padding(.horizontal, Sizing.small * 0.6)
                             .padding([.horizontal, .bottom], Sizing.small * 0.5)
                             .matchedGeometryEffect(id: "listen-header", in: animation)
+                            .background(Color.white.opacity(0.90))
                             .frame(maxWidth: screenWidth)
                     } else {
                         HStack(alignment: .top){
@@ -735,11 +736,16 @@ struct ListenView: JoliView {
                             Text(Strings.appSymbol.stringValue)
                                 .font(Font.title.weight(.thin))
                                 .gradientForeground(colors: [Color.red, Color.orange, Color.yellow, Color.green, Color.blue, Color.purple, Color.pink])
-                                .scaleEffect(x: self.loadingLiveTracks ? 1.5 : 1.0, y: self.loadingLiveTracks ? 1.5 : 1.0)
+                                .scaleEffect(x: self.loadingLiveTracks ? 1.6 : 1.0, y: self.loadingLiveTracks ? 1.6 : 1.0)
                                 .onTapGesture {
                                     self.assertWebsocketConnected()
                                     self.refreshContent(reason: "logo tapped")
                                 }
+                                .background(
+                                    Circle()
+                                        .fill(Color.white.opacity(0.90))
+                                        .scaleEffect(x: 1.4, y: 1.4)
+                                )
                             
                             Spacer()
                         }
@@ -747,7 +753,6 @@ struct ListenView: JoliView {
                     }
                 }
                 .animation(.easeInOut)
-                .background(Color.white.opacity(0.90))
                 .coordinateSpace(name: "playroom-controls-space")
                 .onFrameChange() { rect in
                     DispatchQueue.main.async {

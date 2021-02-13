@@ -472,7 +472,7 @@ public extension Publishers {
         
         var connected: Bool = false
         
-        public init(_ target: C, path: ValueKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 1, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .default, options:  RunLoop.SchedulerOptions? = nil, resolver: @escaping StateGetter){
+        public init(_ target: C, path: ValueKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 1, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .common, options:  RunLoop.SchedulerOptions? = nil, resolver: @escaping StateGetter){
             self.duration = duration
             timer = Timer.TimerPublisher(interval: interval,
                                          tolerance: tolerance,

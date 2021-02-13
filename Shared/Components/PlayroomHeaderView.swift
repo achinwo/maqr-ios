@@ -27,7 +27,12 @@ public struct PlayroomHeaderView: JoliView {
     let tappedSubject: AutoResetSubject<String?, Never, DispatchQueue> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))
     
     var memberColors: [Color] {
-        return [Color.blue, Color.purple, Color.orange, Color.yellow, Color.green, Color.pink]
+        
+        guard self.appCoordinator.activeAuth != nil else {
+            return [Color.secondary, Color.black]
+        }
+        
+        return [Color.green, Color.blue, Color.purple]
     }
     
     public var body: some View {
