@@ -12,6 +12,18 @@ import JoliCore
 import StoreKit
 import Promises
 import UIImageColors
+import Combine
+
+extension View {
+    
+    public func onReceive<P, Root>(_ publisher: P, assign: WritableKeyPath<Root, P.Output>, target: Root) -> some View where P : Publisher, P.Failure == Never {
+        return self.onReceive(publisher) { value in
+            var target = target
+            target[keyPath: assign] = value
+        }
+    }
+    
+}
 
 struct ContentView: JoliView {
     
@@ -27,21 +39,37 @@ struct ContentView: JoliView {
     
     @State var loadingView = false
     
+    var refreskButton: some View {
+        Button() {
+            
+            guard case let .invited(inviteId) = self.currentLocation else {
+                return
+            }
+            
+            self.fetchPlayroomByInviteId(inviteId)
+        } label: {
+            Label("Refresh", systemImage: "arrow.clockwise")
+        }
+    }
+    
     var body: some View {
         return NavigationView(){
             GeometryReader() { geoProxy in
                 ZStack(){
                     ScrollViewReader() { scrollProxy in
                         ScrollView(.vertical, showsIndicators: true) {
-                            
-                            if loadingView {
-                                ProgressView("Loading Playroom").padding()
-                            } else if let error = errorMessage {
-                                Text(error).padding()
-                            } else if let playroom = playroom {
-                                tracksView(playroom, geoProxy)
-                            } else {
-                                Text(Self.GENERIC_ERROR_MESSAGE).padding()
+                            VStack(){
+                                if loadingView {
+                                    ProgressView("Loading Playroom").padding()
+                                } else if let error = errorMessage {
+                                    Text(error).font(Font.title.weight(.light)).padding()
+                                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+                                } else if let playroom = playroom {
+                                    tracksView(playroom, geoProxy)
+                                } else {
+                                    Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
+                                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+                                }
                             }
                             
                             
@@ -83,10 +111,11 @@ struct ContentView: JoliView {
                     
                 }
             }
-            .navigationTitle(playroom?.name ?? "")
+            .navigationTitle(playroom?.name ?? Strings.appSymbol.stringValue)
             //.ignoresSafeArea()
         }
-        .onReceive(appCoordinator.$currentLocation) { location in
+        .onReceive(appCoordinator.$currentLocation, assign: \.currentLocation, target: self)
+        .onChange(of: currentLocation) { location in
             switch location {
                 case .invited(let inviteId):
                     self.playroomId = inviteId
@@ -98,6 +127,8 @@ struct ContentView: JoliView {
             }
         }
     }
+    
+    @State var currentLocation: AppLocation = .home
     
     static var GENERIC_ERROR_MESSAGE: String {
         return "An error occured while loading your Playroom invitation, please try again later."
@@ -218,6 +249,9 @@ struct ContentView: JoliView {
                 }
                 
                 self.votesByTrack = mapping
+            }
+            .onReceive(appCoordinator.voteRequestedSubject) { requested in
+                self.requestingVoteTrackId = requested
             }
     }
     

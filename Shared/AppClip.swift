@@ -166,7 +166,7 @@ public extension Regex {
     }
 }
 
-public enum AppLocation: RawRepresentable, CustomStringConvertible {
+public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     
     case invited(String) // joli.live/r/abc
     case playroom(String)

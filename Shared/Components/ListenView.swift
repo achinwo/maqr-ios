@@ -403,6 +403,7 @@ struct ListenView: JoliView {
                                     entitlement.userId = auth.user.id
                                     entitlement.type = "musicroom"
                                     entitlement.targetRecordId = room.id
+                                    entitlement.acceptedAt = Date()
                                     
                                     self.creatingRoomEntitlement = true
                                     entitlement.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)

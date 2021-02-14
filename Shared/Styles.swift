@@ -10,15 +10,15 @@ import SwiftUI
 import JoliCore
 import JoliApi
 
-struct GradientBackgroundStyle: ButtonStyle {
+public struct GradientBackgroundStyle: ButtonStyle {
     
-    var colors: [Color]
+    public var colors: [Color]
     
-    init(colors: [Color]? = nil){
+    public init(colors: [Color]? = nil){
         self.colors = colors ?? [Color.blue, Color.green]
     }
     
-    func makeBody(configuration: Self.Configuration) -> some View {
+    public func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
             //.frame(minWidth: 0, maxWidth: .infinity)
             .foregroundColor(.white)
@@ -28,7 +28,7 @@ struct GradientBackgroundStyle: ButtonStyle {
     }
 }
 
-struct BlackWhiteButtonStyle: ButtonStyle {
+public struct BlackWhiteButtonStyle: ButtonStyle {
     
     var white: Color = .white
     var black: Color = .black
@@ -39,12 +39,12 @@ struct BlackWhiteButtonStyle: ButtonStyle {
         self.black = black
     }
     
-    init(inverted: Bool) {
+    public init(inverted: Bool) {
         self.init()
         isInverted = inverted
     }
     
-    func makeBody(configuration: Self.Configuration) -> some View {
+    public func makeBody(configuration: Self.Configuration) -> some View {
         let fgColor = isInverted ? self.white : self.black
         return configuration.label
             //.frame(minWidth: 0, maxWidth: .infinity)
@@ -59,10 +59,10 @@ struct BlackWhiteButtonStyle: ButtonStyle {
     }
 }
 
-struct NeumorphicButtonStyle: ButtonStyle {
+public struct NeumorphicButtonStyle: ButtonStyle {
     var bgColor: Color
 
-    func makeBody(configuration: Self.Configuration) -> some View {
+    public func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
             .padding(20)
             .background(
@@ -81,7 +81,7 @@ struct NeumorphicButtonStyle: ButtonStyle {
     }
 }
 
-extension CGFloat {
+public extension CGFloat {
     static var percent40: CGFloat {
         return 40
     }
