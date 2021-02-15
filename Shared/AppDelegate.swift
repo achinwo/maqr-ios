@@ -9,7 +9,6 @@
 import UIKit
 import AVKit
 import JoliApi
-import SwiftyBeaver
 import UserNotifications
 import Promises
 
@@ -170,14 +169,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         appDelegateSingleton = self
         
         UNUserNotificationCenter.current().delegate = self
-        
-//        let cloud = SBPlatformDestination(appID: "Qxn1Mn", appSecret: "21jhvbtglMuzJhilb6m97owddeQdbjkq", encryptionKey: "xVDA8e89pdb7AuxldgYsNuezdqlHriko") // to cloud
-//        cloud.analyticsUserName = UIDevice.current.name
-//        cloud.sendingPoints.threshold = 2
-        
-        //SwiftyBeaver
-        
-        //logger.addDestination(cloud)
         
         if debug {
             JoliApi.Environment.loadEnvConfig()
