@@ -15,7 +15,7 @@ public struct SpotifyConnectButton: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    public var body: some View {
+    public var contentView: some View {
         Button() {
             self.appCoordinator.authorizeSpotify()
         } label: {
@@ -113,7 +113,7 @@ public struct LobbyView: JoliView {
     }
     
     
-    public var body: some View {
+    public var contentView: some View {
         GeometryReader() { proxy in
             VStack(alignment: .center){
                 

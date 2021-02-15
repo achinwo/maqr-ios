@@ -35,7 +35,7 @@ public struct PlayroomHeaderView: JoliView {
         return [Color.green, Color.blue, Color.purple]
     }
     
-    public var body: some View {
+    public var contentView: some View {
         HStack(alignment: .bottom){
             
             if let playing = strip.playing {

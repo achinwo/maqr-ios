@@ -38,7 +38,7 @@ public struct InvitePeopleView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var playroom: Room?
     
-    public var body: some View {
+    public var contentView: some View {
         let view = VStack(alignment: .center){
             HStack(alignment: VerticalAlignment.top){
                 let width = UIFont.preferredFont(forTextStyle: .title2).pointSize
@@ -139,7 +139,7 @@ struct PeopleGridView: JoliView {
         self._playroom = playroom
     }
     
-    var body: some View {
+    var contentView: some View {
         let width = Sizing.xxxLarge * 0.7
         let grid = HStack(alignment: .center) {
             
@@ -208,7 +208,7 @@ public struct UserAvatarView: JoliView {
     public let user: UserIdentifiable
     public let width: CGFloat
     
-    public var body: some View {
+    public var contentView: some View {
         let url = (user.imageLarge != nil ?
                     URL(string: "images/\(user.imageLarge!)", relativeTo: api.baseUrlHttp)
                     : nil)

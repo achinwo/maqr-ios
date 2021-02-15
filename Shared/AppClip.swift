@@ -240,17 +240,25 @@ public extension PartialSheetManager {
 }
 
 public protocol JoliView: View {
+    associatedtype Content: View
+    
     var appCoordinator: AppCoordinator { get }
     var api: JoliApi { get }
+    
+    var contentView: Content { get }
 }
 
-extension JoliView {
+public extension JoliView {
     
-    public var api: JoliApi {
+    var body: some View {
+         self.contentView
+    }
+    
+    var api: JoliApi {
         return appCoordinator.api
     }
     
-    public func withImpact(_ impact: UIImpactFeedbackGenerator.FeedbackStyle = .soft, animated: Animation? = nil, _ action: () -> Void){
+    func withImpact(_ impact: UIImpactFeedbackGenerator.FeedbackStyle = .soft, animated: Animation? = nil, _ action: () -> Void){
         if let animation = animated {
             withAnimation(animation) {
                 appCoordinator.withImpact(impact, action)

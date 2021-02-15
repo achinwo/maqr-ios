@@ -52,7 +52,7 @@ struct ContentView: JoliView {
         }
     }
     
-    var body: some View {
+    var contentView: some View {
         return NavigationView(){
             GeometryReader() { geoProxy in
                 ZStack(){

@@ -199,7 +199,7 @@ public struct AppView2: JoliView {
         }
     }
     
-    public var body: some View {
+    public var contentView: some View {
         
         return GeometryReader() { geoProxy in
             ZStack(){

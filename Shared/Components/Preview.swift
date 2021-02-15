@@ -13,7 +13,7 @@ public struct PlayroomCreateView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    public var body: some View {
+    public var contentView: some View {
         VStack(alignment: .leading){
             Section(header: Text("Title")){
                 Text("room name")
@@ -82,7 +82,7 @@ struct AppPreviewView: JoliView {
     @Binding var currentUser: User?
     var animation: Namespace.ID
     
-    var body: some View {
+    var contentView: some View {
         ZStack(){
             
             VStack(spacing: .zero){

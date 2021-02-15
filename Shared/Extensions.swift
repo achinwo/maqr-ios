@@ -175,7 +175,7 @@ public extension Search {
             self.content = content
         }
         
-        public var body: some View {
+        public var contentView: some View {
 //            let tap = TapGesture()
 //                .updating($isTapping) { currentState, state, transaction in
 //                    state = true

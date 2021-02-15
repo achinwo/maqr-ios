@@ -87,7 +87,7 @@ struct ListenTabbarView: JoliView {
     @State var requestingVote: Int? = nil
     @State var heartsForegroundColor: Color = Color.red
     
-    var body: some View {
+    var contentView: some View {
         var label = ""
         
         if let playroom = playroom, self.isExpanded {

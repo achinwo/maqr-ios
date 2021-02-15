@@ -197,7 +197,7 @@ public struct UserProfileView2: JoliView {
         }
     }
     
-    public var body: some View {
+    public var contentView: some View {
         let view = self.formView
 //        .sheet(isPresented: self.$editProfilePresented) {
 //            print("thing is dismissed!")

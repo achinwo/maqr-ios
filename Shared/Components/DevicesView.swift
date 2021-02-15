@@ -52,7 +52,7 @@ public struct DevicesView: JoliView {
     @State var auths: [Auth] = []
     @State var accentColor = Color.primary
     
-    public var body: some View {
+    public var contentView: some View {
 //        Picker(selection: self.$appState.selectedTabIdx, label: Text("Room")){
 //            ForEach(MusicroomTab.allCases, id: \.self){ roomTab in
 //                Text("\(roomTab.emoji != nil ? "\(roomTab.emoji!) " : "")\(roomTab.title)")

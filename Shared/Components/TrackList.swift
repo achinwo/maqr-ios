@@ -143,7 +143,7 @@ public struct TrackView2<AddonView: View>: JoliView {
             }
     }
     
-    public var body: some View {
+    public var contentView: some View {
         let setupPublisher = { (publisher: PlayState.Publisher?) -> Void in
             self.playPubCancel?.cancel()
             
@@ -453,7 +453,7 @@ public struct TrackList<AddonView: View>: JoliView {
         return heart
     }
     
-    public var body: some View {
+    public var contentView: some View {
         return VStack(alignment: .center, spacing: 0) {
                 ForEach(Array(tracks.enumerated()), id: \.element.uri) { item in
                     

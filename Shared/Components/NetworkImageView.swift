@@ -9,7 +9,7 @@
 import SwiftUI
 import Kingfisher
 
-public struct NetworkImage<Content: SwiftUI.View>: JoliView {
+public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -20,10 +20,10 @@ public struct NetworkImage<Content: SwiftUI.View>: JoliView {
     @State private var image: UIImage? = nil
     @State public var imageURL: URL? = nil
     
-    public let placeholderContent: Content
+    public let placeholderContent: PlaceHolderContent
     public let animation: Animation = .easeInOut
     
-    init(string: String?, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
+    init(string: String?, onLoaded: Callback? = nil, @ViewBuilder content: () -> PlaceHolderContent) {
         guard let string = string else {
             self.init(url: nil, onLoaded: onLoaded, content: content)
             return
@@ -31,7 +31,7 @@ public struct NetworkImage<Content: SwiftUI.View>: JoliView {
         self.init(url: URL(string: string), onLoaded: onLoaded, content: content)
     }
     
-    init(url: URL? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
+    init(url: URL? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> PlaceHolderContent) {
         //self.placeholderImage = placeholderImage
         self.callback = onLoaded
         self.placeholderContent = content()
@@ -39,7 +39,7 @@ public struct NetworkImage<Content: SwiftUI.View>: JoliView {
         self._imageURL = State(initialValue: url)
     }
     
-    public var body: some SwiftUI.View {
+    public var contentView: some SwiftUI.View {
         
         return ZStack(){
                 if let image = image {
@@ -78,7 +78,7 @@ public struct NetworkImage<Content: SwiftUI.View>: JoliView {
     }
 }
 
-extension NetworkImage where Content == SwiftUI.Image {
+extension NetworkImage where PlaceHolderContent == SwiftUI.Image {
     
     init(imageURL: URL, placeholderImage: UIImage, onLoaded: Callback? = nil) {
         self.placeholderContent = SwiftUI.Image(uiImage: placeholderImage)

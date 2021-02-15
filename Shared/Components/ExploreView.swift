@@ -132,7 +132,7 @@ public struct ExploreView: JoliView {
         return res
     }
     
-    public var body: some View {
+    public var contentView: some View {
         
         let searchBar = VStack(alignment: .center, spacing: 0) {
             SearchBar(text: $model.query)

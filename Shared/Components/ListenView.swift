@@ -868,7 +868,7 @@ public struct TrackAddonView: JoliView {
     }
     
     
-    public var body: some View {
+    public var contentView: some View {
         EmptyView()
     }
     
