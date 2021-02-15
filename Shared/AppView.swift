@@ -345,6 +345,7 @@ public struct AppView2: JoliView {
                 }
             }
             .ignoresSafeArea(.all, edges: [.top, .bottom])
+            .frame(width: geoProxy.size.width, height: geoProxy.size.height)
         }
         .frame(minWidth: screenWidth)
         .onReceive(appCoordinator.$activeSessionToken) { sessionId in

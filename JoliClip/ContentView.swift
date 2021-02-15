@@ -89,26 +89,6 @@ struct ContentView: JoliView {
                         }
                     }
                     
-                    //            PlayroomHeaderView(playroom: self.$playroom,
-                    //                               strip: self.$strip,
-                    //                               preview: self.$preview,
-                    //                               tracks: self.$tracks,
-                    //                               scrollProxy: self.$scrollProxy
-                    //            )
-                    //            .padding(.horizontal, Sizing.small * 0.6)
-                    //            .padding([.horizontal, .bottom], Sizing.small * 0.5)
-                    //            //.frame(maxWidth: screenWidth)
-                    //
-                    //            Divider().opacity(self.playroom == nil ? 0 : 1).animation(.easeInOut)
-                    
-                    //            AppPreviewView(preview: self.$preview, currentUser: self.$currentUser, animation: animation)
-                    //                .frame(maxWidth: screenWidth)
-                    //                .frame(minWidth: screenWidth, maxHeight: screenHeight)
-                    //                .background(BlurView(.extraLight))
-                    //                .padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
-                    //                .offset(x: 0, y: self.preview == nil ? screenHeight : 0)
-                    //                .animation(.spring())
-                    
                 }
             }
             .navigationTitle(playroom?.name ?? Strings.appSymbol.stringValue)
@@ -142,6 +122,7 @@ struct ContentView: JoliView {
         return HttpMethod.Fetch.get(url: url, dataType: Entitlement.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(){ entitlement -> Entitlement in
                 
+                self.errorMessage = nil
                 guard let musicroom = entitlement.musicroom else {
                     return entitlement
                 }
