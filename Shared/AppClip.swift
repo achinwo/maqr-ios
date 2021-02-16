@@ -246,16 +246,32 @@ public protocol JoliView: View {
     var api: JoliApi { get }
     
     var contentView: Content { get }
+//    var visibility: (appearedAt: Date?, disappearedAt: Date?)  { nonmutating set get }
+    
+    func onConnectionStateChange(_ state: ConnectionState) -> Void
 }
 
 public extension JoliView {
     
     var body: some View {
          self.contentView
+//            .onAppear() {
+//                self.visibility = (appearedAt: Date(), disappearedAt: self.visibility.disappearedAt)
+//            }
+//            .onDisappear() {
+//                self.visibility = (appearedAt: self.visibility.appearedAt, disappearedAt: Date())
+//            }
+//            .onReceive(appCoordinator.connectionStateSubject) { state in
+//                self.onConnectionStateChange(state.state)
+//            }
     }
     
     var api: JoliApi {
         return appCoordinator.api
+    }
+    
+    func onConnectionStateChange(_ state: ConnectionState) -> Void {
+        
     }
     
     func withImpact(_ impact: UIImpactFeedbackGenerator.FeedbackStyle = .soft, animated: Animation? = nil, _ action: () -> Void){

@@ -8,6 +8,8 @@
 
 import Foundation
 import JoliCore
+import AuthenticationServices
+import SwiftUI
 
 #if os(OSX)
 import AppKit
@@ -338,6 +340,17 @@ extension Musicroom: Room {
     
     public var musicroom: Musicroom {
         return self
+    }
+    
+}
+
+public final class SignInWithApple: UIViewRepresentable {
+
+    public func makeUIView(context: Context) -> ASAuthorizationAppleIDButton {
+        return ASAuthorizationAppleIDButton()
+    }
+    
+    public func updateUIView(_ uiView: ASAuthorizationAppleIDButton, context: Context) {
     }
     
 }

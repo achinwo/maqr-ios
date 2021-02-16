@@ -15,6 +15,7 @@ import Promises
 import Foundation
 import Combine
 import SwiftyBeaver
+import AuthenticationServices
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
 //eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imhhd2FAZ21haWwubmV0IiwiY3JlYXRlZEF0IjoiMjAyMC0xMS0xMlQxOTowMTozMC4xNzVaIiwiZXhwaXJlc0luIjoxNDQwMDAwfQ.DVEEwDmG0pW9EBQwcdJGJvpqLfrhNJmbyRlq30Aar0o
@@ -307,6 +308,76 @@ struct JoliApp: AppClip {
         }
     }
     
+    @Environment(\.window) var window: UIWindow?
+    
+    
+    private func checkAppleSignedIn() {
+        let provider = ASAuthorizationAppleIDProvider()
+        provider.getCredentialState(forUserID: "currentUserIdentifier") { state, error in
+            switch state {
+                case .authorized:
+                    logger.info("Credentials are valid.")
+                    break
+                case .revoked:
+                    logger.info("Credential revoked, log them out")
+                    break
+                case .notFound:
+                    logger.info("Credentials not found, show login UI")
+                    break
+                case .transferred:
+                    logger.info("Credentials transferred")
+                    break
+                
+                @unknown default:
+                    logger.info("CredentialsL: unknown case \"\(String(describing: state))\"")
+            }
+        }
+    }
+    
+    private func showAppleLogin() {
+        // 1
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        
+        // 2
+        request.requestedScopes = [.fullName, .email]
+        
+        // 3
+        performSignIn(using: [request])
+    }
+    
+    @State var appleSignInDelegates: SignInWithAppleDelegates! = nil
+    
+    private func performSignIn(using requests: [ASAuthorizationRequest]) {
+        appleSignInDelegates = SignInWithAppleDelegates(window: UIApplication.shared.keyWindow) { success in
+            if success {
+                // update UI
+            } else {
+                // show the user an error
+            }
+        }
+        
+        let controller = ASAuthorizationController(authorizationRequests: requests)
+        controller.delegate = appleSignInDelegates as! ASAuthorizationControllerDelegate
+        controller.presentationContextProvider = appleSignInDelegates
+        
+        controller.performRequests()
+    }
+    
+    private func performExistingAccountSetupFlows() {
+        // 1
+        #if !targetEnvironment(simulator)
+        
+        // 2
+        let requests = [
+            ASAuthorizationAppleIDProvider().createRequest(),
+            ASAuthorizationPasswordProvider().createRequest()
+        ]
+        
+        // 2
+        performSignIn(using: requests)
+        #endif
+    }
+    
     var contentView: some View {
 
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, websocket: websocket)
@@ -315,6 +386,25 @@ struct JoliApp: AppClip {
 //                //Do something here
 //                logger.debug("[Joli] shortcutItem change: \(String(describing: appDelegate.shortcutItemToProcess))")
 //            }
+//            .overlay(
+//                GeometryReader() { proxy in
+//                    VStack(){
+//                        Spacer()
+//                        HStack(){
+//                            Spacer()
+//                            SignInWithApple()
+//                                .onTapGesture(perform: showAppleLogin)
+//                                .padding()
+//                                .frame(width: 280, height: 80)
+//                            Spacer()
+//                        }
+//                        .padding()
+//                        .background(Color.white)
+//                    }
+//                    .padding(.bottom, proxy.safeAreaInsets.bottom)
+//                }
+//                .ignoresSafeArea(.all, edges: .bottom)
+//            )
             .sheet(isPresented: $isSheetPresented){
                 print("[App] sheet dismissed")
                 self.modalView = nil
@@ -551,6 +641,117 @@ extension JoliApp {
             self.spotify.accessToken = access_token
         } else if let error_description = parameters?[SPTAppRemoteErrorDescriptionKey] {
             logger.debug("Spotify error: \(error_description)")
+        }
+    }
+    
+}
+
+
+class SignInWithAppleDelegates: NSObject {
+    private let signInSucceeded: (Bool) -> Void
+    // 1
+    private weak var window: UIWindow!
+    
+    // 2
+    init(window: UIWindow?, onSignedIn: @escaping (Bool) -> Void) {
+        // 3
+        self.window = window
+        self.signInSucceeded = onSignedIn
+    }
+}
+
+extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
+    
+    private func registerNewAccount(credential: ASAuthorizationAppleIDCredential) {
+        // 1
+//        let userData = UserData(email: credential.email!,
+//                                name: credential.fullName!,
+//                                identifier: credential.user)
+//
+//        // 2
+//        let keychain = UserDataKeychain()
+        print("[SignInWithAppleDelegates] recieved new credentials: \(credential)")
+        do {
+            //try keychain.store(userData)
+        } catch {
+            self.signInSucceeded(false)
+        }
+        
+        // 3
+        do {
+//            let success = try WebApi.Register(
+//                user: userData,
+//                identityToken: credential.identityToken,
+//                authorizationCode: credential.authorizationCode
+//            )
+            //self.signInSucceeded(success)
+        } catch {
+            self.signInSucceeded(false)
+        }
+    }
+    
+    private func signInWithExistingAccount(credential: ASAuthorizationAppleIDCredential) {
+        // You *should* have a fully registered account here.  If you get back an error
+        // from your server that the account doesn't exist, you can look in the keychain
+        // for the credentials and rerun setup
+        
+        // if (WebAPI.login(credential.user,
+        //                  credential.identityToken,
+        //                  credential.authorizationCode)) {
+        //   ...
+        // }
+        print("[SignInWithAppleDelegates] existing credentials: \(credential)")
+        self.signInSucceeded(true)
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        
+        
+        switch authorization.credential {
+            case let appleIdCredential as ASAuthorizationAppleIDCredential:
+                if let _ = appleIdCredential.email, let _ = appleIdCredential.fullName {
+                    // 2
+                    registerNewAccount(credential: appleIdCredential)
+                } else {
+                    // 3
+                    signInWithExistingAccount(credential: appleIdCredential)
+                }
+            default:
+                logger.error("Unknown Apple Auth creds: \(String(describing: authorization.credential))")
+        }
+        
+        
+        
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        logger.error("[SignInWithAppleDelegates] error: \(String(describing: error))")
+    }
+    
+}
+
+extension SignInWithAppleDelegates: ASAuthorizationControllerPresentationContextProviding {
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.window
+    }
+    
+}
+
+enum WindowKey: EnvironmentKey {
+    static var defaultValue: UIWindow? {
+        return nil
+    }
+}
+
+extension EnvironmentValues {
+    
+    var window: UIWindow? {
+        get {
+            self[WindowKey.self]
+        }
+        set {
+            self[WindowKey.self] = newValue
         }
     }
     
