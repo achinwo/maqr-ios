@@ -114,163 +114,160 @@ public struct LobbyView: JoliView {
     
     
     public var contentView: some View {
-        GeometryReader() { proxy in
-            VStack(alignment: .center){
-                
-                Divider()
-                    .opacity(self.isLoading ? 1 : 0)
-                
-                Group(){
-                    if self.auths.isEmpty && self.bannerDisplayedAt != nil {
-                        SpotifyConnectButton()
-                        .padding()
-                    }
+        VStack(alignment: .center){
+            
+            Divider()
+                .opacity(self.isLoading ? 1 : 0)
+            
+            Group(){
+                if self.auths.isEmpty && self.bannerDisplayedAt != nil {
+                    SpotifyConnectButton()
+                    .padding()
                 }
-                .animation(.easeInOut)
-                
-                if !(self.liveTracks.isEmpty && self.recentTracks.isEmpty) {
-                    self.tracksView
-                }
-                
-                if !self.playrooms.isEmpty {
-                    let header = VStack(alignment: .leading) {
-                            
-                            HStack(alignment: .top){
-                                Text("Playrooms")
-                                Spacer()
-                                Button() {
-                                    print("[LobbyView] made")
-                                    self.appCoordinator.globalModalSubject.send(.playroomCreate)
-                                } label: {
-                                    Image(systemName: "plus").font(Font.title.weight(.thin))
-                                }
-                            }
-                            .font(Font.largeTitle.weight(.thin))
-                            .foregroundColor(.secondary)
+            }
+            .animation(.easeInOut)
+            
+            if !(self.liveTracks.isEmpty && self.recentTracks.isEmpty) {
+                self.tracksView
+            }
+            
+            if !self.playrooms.isEmpty {
+                let header = VStack(alignment: .leading) {
                         
-                            Text("Listen together and vote up your favorite tracks")
-                                .lineLimit(2)
-                                .font(Font.subheadline.weight(.light))
-                                .foregroundColor(.primary)
-                    }
-                    .padding(.bottom, Sizing.small)
-                    
-                    let columns = [
-                        //GridItem(.fixed(proxy.size.width / 2 - space), spacing: space),
-                        //GridItem(.fixed(proxy.size.width / 2 - space), spacing: space)
-                        GridItem(),
-                        GridItem()
-                    ]
-                    
-                    Section(header: header) {
-                        LazyVGrid(columns: columns) {
-                            ForEach(self.playrooms, id: \.id) { room in
-                                SpotifyItemView(item: room,
-                                                images: room.images,
-                                                titleKeyPath: \.name,
-                                                subtitleKeyPath: \.details)
-                                    .frame(height: 64)
-                                    .onTapGesture {
-                                        self.onPlayroomSelected?(room)
-                                    }
-                                    //.background(Color.yellow)
-                                    .id(room.id)
-                            }
-                        }
-                    }
-                    
-                }
-                
-                //                                Group(){
-                //                                    Color.white
-                //                                }
-                //                                .frame(width: screenWidth, height: screenWidth)
-                
-                Divider().padding(.vertical, Sizing.xxLarge)
-                
-                let header = HStack(){
-                    Label(){
-                        Text("Settings")
-                    } icon: {
-                        Image(systemName: "gearshape")
-                            .font(Font.title.weight(.thin))
-                    }
-                    .foregroundColor(.secondary)
-                    .font(Font.largeTitle.weight(.thin))
-                    
-                    Spacer()
-                }
-                
-                Section(header: header) {
-                    HStack(alignment: .top){
-                        VStack(alignment: .leading) {
-                            Text("Autoplay")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            
-                            Text("Begin playback immediately when joining a playroom")
-                                .font(.footnote)
-                                .foregroundColor(Color.secondary)
-                        }
-                        .frame(maxWidth: screenWidth / 2)
-                        
-                        Spacer()
-                        
-                        Toggle("Autoplay", isOn: .constant(false))
-                            .labelsHidden()
-                            .padding()
-                    }
-                    .padding(.top)
-                    
-                    VStack(alignment: .leading){
-                        HStack(){
-                            Text("Spotify Accounts")
-                                .font(.headline)
-                                .foregroundColor(.primary)
+                        HStack(alignment: .top){
+                            Text("Playrooms")
                             Spacer()
                             Button() {
-                                self.appCoordinator.spotifyAuthRequestedAt = Date()
+                                print("[LobbyView] made")
+                                self.appCoordinator.globalModalSubject.send(.playroomCreate)
                             } label: {
-                                Image(systemName: "plus")
-                                    .font(Font.title2.weight(.thin))
-                                    .foregroundColor(.secondary)
-                                    .padding()
+                                Image(systemName: "plus").font(Font.title.weight(.thin))
                             }
                         }
-                        
-                        if self.auths.isEmpty {
-                            SpotifyConnectButton().padding()
-                        }
-                        
-                        ForEach(self.auths, id: \.session.token) { auth in
-                            HStack() {
-                                
-                                let color = self.activeSessionId == auth.session.token ? Color.green : Color.gray
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(auth.user.name).font(.headline).foregroundColor(color)
-                                    Text(auth.user.ranking.description.lowercased()).font(.footnote).foregroundColor(Color.gray)
+                        .font(Font.largeTitle.weight(.thin))
+                        .foregroundColor(.secondary)
+                    
+                        Text("Listen together and vote up your favorite tracks")
+                            .lineLimit(2)
+                            .font(Font.subheadline.weight(.light))
+                            .foregroundColor(.primary)
+                }
+                .padding(.bottom, Sizing.small)
+                
+                let columns = [
+                    //GridItem(.fixed(proxy.size.width / 2 - space), spacing: space),
+                    //GridItem(.fixed(proxy.size.width / 2 - space), spacing: space)
+                    GridItem(),
+                    GridItem()
+                ]
+                
+                Section(header: header) {
+                    LazyVGrid(columns: columns) {
+                        ForEach(self.playrooms, id: \.id) { room in
+                            SpotifyItemView(item: room,
+                                            images: room.images,
+                                            titleKeyPath: \.name,
+                                            subtitleKeyPath: \.details)
+                                .frame(height: 64)
+                                .onTapGesture {
+                                    self.onPlayroomSelected?(room)
                                 }
-                                Spacer()
-                                Image(systemName: "minus")
-                                    .font(Font.largeTitle.weight(.thin))
-                                    .foregroundColor(.gray)
-                                    .padding()
-                            }
-                            .padding([.top, .horizontal])
+                                //.background(Color.yellow)
+                                .id(room.id)
                         }
                     }
-                    .padding(.top)
-                    .onReceive(self.appCoordinator.authsSubject) { auths in
-                        self.auths = auths
+                }
+                
+            }
+            
+            //                                Group(){
+            //                                    Color.white
+            //                                }
+            //                                .frame(width: screenWidth, height: screenWidth)
+            
+            Divider().padding(.vertical, Sizing.xxLarge)
+            
+            let header = HStack(){
+                Label(){
+                    Text("Settings")
+                } icon: {
+                    Image(systemName: "gearshape")
+                        .font(Font.title.weight(.thin))
+                }
+                .foregroundColor(.secondary)
+                .font(Font.largeTitle.weight(.thin))
+                
+                Spacer()
+            }
+            
+            Section(header: header) {
+                HStack(alignment: .top){
+                    VStack(alignment: .leading) {
+                        Text("Autoplay")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        Text("Begin playback immediately when joining a playroom")
+                            .font(.footnote)
+                            .foregroundColor(Color.secondary)
+                    }
+                    .frame(maxWidth: screenWidth / 2)
+                    
+                    Spacer()
+                    
+                    Toggle("Autoplay", isOn: .constant(false))
+                        .labelsHidden()
+                        .padding()
+                }
+                .padding(.top)
+                
+                VStack(alignment: .leading){
+                    HStack(){
+                        Text("Spotify Accounts")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Button() {
+                            self.appCoordinator.spotifyAuthRequestedAt = Date()
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(Font.title2.weight(.thin))
+                                .foregroundColor(.secondary)
+                                .padding()
+                        }
                     }
                     
+                    if self.auths.isEmpty {
+                        SpotifyConnectButton().padding()
+                    }
+                    
+                    ForEach(self.auths, id: \.session.token) { auth in
+                        HStack() {
+                            
+                            let color = self.activeSessionId == auth.session.token ? Color.green : Color.gray
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(auth.user.name).font(.headline).foregroundColor(color)
+                                Text(auth.user.ranking.description.lowercased()).font(.footnote).foregroundColor(Color.gray)
+                            }
+                            Spacer()
+                            Image(systemName: "minus")
+                                .font(Font.largeTitle.weight(.thin))
+                                .foregroundColor(.gray)
+                                .padding()
+                        }
+                        .padding([.top, .horizontal])
+                    }
                 }
-                .id("settings")
+                .padding(.top)
+                .onReceive(self.appCoordinator.authsSubject) { auths in
+                    self.auths = auths
+                }
                 
-            }.padding()
-            //.frame(height: proxy.size.height)
-        }
+            }
+            .id("settings")
+            
+        }.padding()
         .onReceive(appCoordinator.authSubject) { auth in
             self.refreshTokenSpotify = auth?.user.refreshTokenSpotify ?? .empty
         }
