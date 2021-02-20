@@ -12,6 +12,8 @@
 	<array>
 		<string>applinks:dev.jolimc.com</string>
 		<string>webcredentials:dev.jolimc.com</string>
+		<string>webcredentials:joli.live</string>
+		<string>applinks:joli.live</string>
 	</array>
 	<key>com.apple.security.application-groups</key>
 	<array>

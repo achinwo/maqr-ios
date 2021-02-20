@@ -14,6 +14,7 @@ import JoliApi
 import JoliCore
 import Promises
 import Combine
+import AuthenticationServices
 
 public struct ShortCodeGenerator {
 
@@ -254,15 +255,15 @@ public protocol JoliView: View {
 public extension JoliView {
     
     var body: some View {
-         self.contentView
+        self.contentView
+            .onReceive(appCoordinator.connectionStateSubject) { state in
+                self.onConnectionStateChange(state.state)
+            }
 //            .onAppear() {
 //                self.visibility = (appearedAt: Date(), disappearedAt: self.visibility.disappearedAt)
 //            }
 //            .onDisappear() {
 //                self.visibility = (appearedAt: self.visibility.appearedAt, disappearedAt: Date())
-//            }
-//            .onReceive(appCoordinator.connectionStateSubject) { state in
-//                self.onConnectionStateChange(state.state)
 //            }
     }
     
@@ -270,9 +271,7 @@ public extension JoliView {
         return appCoordinator.api
     }
     
-    func onConnectionStateChange(_ state: ConnectionState) -> Void {
-        
-    }
+    func onConnectionStateChange(_ state: ConnectionState) -> Void { }
     
     func withImpact(_ impact: UIImpactFeedbackGenerator.FeedbackStyle = .soft, animated: Animation? = nil, _ action: () -> Void){
         if let animation = animated {
@@ -318,6 +317,7 @@ public protocol AppClip: App {
     var scenePhase: ScenePhase { get }
     var coordinator: AppCoordinator { nonmutating get }
     var namespace: Namespace.ID { get }
+    var appleSignInDelegates: SignInWithAppleDelegates? { get nonmutating set }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void
     func onScenePhaseChange(_ phase: ScenePhase) -> Void
@@ -344,6 +344,40 @@ public extension AppClip {
         
         let json = JoliApi.Environment.CACHED_ENV_CONFIG
         return JoliApi.Environment(rawValue: json["env"] as? String ?? JoliApi.Environment.local.rawValue) ?? .development
+    }
+    
+    func presentSignInWithApple() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName, .email]
+        performSignIn(using: [request])
+    }
+    
+    func performSignIn(using requests: [ASAuthorizationRequest]) {
+        appleSignInDelegates = SignInWithAppleDelegates(window: UIApplication.shared.windows.last) { success in
+            if success {
+                // update UI
+            } else {
+                // show the user an error
+            }
+        }
+        
+        let controller = ASAuthorizationController(authorizationRequests: requests)
+        controller.delegate = appleSignInDelegates
+        controller.presentationContextProvider = appleSignInDelegates
+        
+        controller.performRequests()
+    }
+    
+    func performExistingAccountSetupFlows() {
+        #if !targetEnvironment(simulator)
+        let requests = [
+            ASAuthorizationAppleIDProvider().createRequest(),
+            ASAuthorizationPasswordProvider().createRequest()
+        ]
+        
+        // 2
+        performSignIn(using: requests)
+        #endif
     }
     
     var body: some Scene {

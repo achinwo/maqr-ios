@@ -19,13 +19,14 @@ internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "global
 @main
 struct JoliClip: AppClip {
     
+    @State var appleSignInDelegates: SignInWithAppleDelegates?
+    
     @Namespace var namespace {
         didSet {
             logger.debug("[Joli] setting coordinator animation namespace to \(String(describing: namespace))")
             coordinator.namespace = namespace
         }
     }
-    
     
     var coordinator: AppCoordinator
     
@@ -46,6 +47,25 @@ struct JoliClip: AppClip {
     
     var contentView: some View {
         ContentView(websocket: websocket, tabbarExpaned: $tabbarExpaned, preview: $preview, filterText: $filterText)
+            .overlay(
+                GeometryReader() { proxy in
+                    VStack(){
+                        Spacer()
+                        HStack(){
+                            Spacer()
+                            SignInWithApple()
+                                .onTapGesture(perform: self.presentSignInWithApple)
+                                .padding()
+                                .frame(width: 280, height: 80)
+                            Spacer()
+                        }
+                        .padding()
+                        .background(Color.white)
+                    }
+                    .padding(.bottom, proxy.safeAreaInsets.bottom)
+                }
+                .ignoresSafeArea(.all, edges: .bottom)
+            )
     }
     
     init() {

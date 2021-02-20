@@ -240,7 +240,6 @@ public protocol Room {
     var membership: Membership { get }
     var name: String { get set }
     var playingState: PlayingState? { get }
-    var playingStateChangedAt: Date? { get }
     var playlistUri: String? { get }
     var progressMs: Int? { get }
     var snapshotId: String? { get }
@@ -294,10 +293,6 @@ public extension Room {
         return musicroom.playingState
     }
     
-    var playingStateChangedAt: Date? {
-        return musicroom.playingStateChangedAt
-    }
-    
     var playlistUri: String? {
         return musicroom.playlistUri
     }
@@ -340,17 +335,6 @@ extension Musicroom: Room {
     
     public var musicroom: Musicroom {
         return self
-    }
-    
-}
-
-public final class SignInWithApple: UIViewRepresentable {
-
-    public func makeUIView(context: Context) -> ASAuthorizationAppleIDButton {
-        return ASAuthorizationAppleIDButton()
-    }
-    
-    public func updateUIView(_ uiView: ASAuthorizationAppleIDButton, context: Context) {
     }
     
 }

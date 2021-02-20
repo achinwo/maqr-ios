@@ -27,6 +27,8 @@
 		9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
 		923657552530654B008A8A83 /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		9236575C2530654D008A8A83 /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
+		923BD58E25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
+		923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
 		923C2B0424CC7506009E2380 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 923C2B0324CC7506009E2380 /* PartialSheet */; };
 		923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		923C2B0624CC752E009E2380 /* JoliPlayground.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -230,6 +232,7 @@
 		920958AA25601EE10014626D /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		9222BE1724CD8A5800F19973 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
+		923BD58D25E16D63003863AB /* SignInWithApple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApple.swift; sourceTree = "<group>"; };
 		9251F1C425CE190200906D9D /* RefreshableScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableScrollView.swift; sourceTree = "<group>"; };
 		92595B4C253A1AD200609558 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		925E5C72236A742100D95AB7 /* SpotifyiOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SpotifyiOS.framework; sourceTree = "<group>"; };
@@ -474,6 +477,7 @@
 				926E8FE024C76DE100378436 /* Styles.swift */,
 				929FFE1B24FAF096000BDCF0 /* User.swift */,
 				920958AA25601EE10014626D /* Logging.swift */,
+				923BD58D25E16D63003863AB /* SignInWithApple.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1034,6 +1038,7 @@
 				928A391C24E9DAE700A029A1 /* ListenView.swift in Sources */,
 				928F75F424F7B13400CF708B /* SearchView.swift in Sources */,
 				92BD11CE24CB0BCB00AAB7DE /* ImagePicker.swift in Sources */,
+				923BD58E25E16D63003863AB /* SignInWithApple.swift in Sources */,
 				92595B4D253A1AD200609558 /* AppCoordinator.swift in Sources */,
 				927E0E3A24E9AFFF00C8257D /* Preview.swift in Sources */,
 				92870E49259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */,
@@ -1116,6 +1121,7 @@
 				92A32E0824C79C07007C960E /* ProfileView.swift in Sources */,
 				92A32E0424C79C07007C960E /* ActivityView.swift in Sources */,
 				92A32DEE24C79C07007C960E /* ShareSheet.swift in Sources */,
+				923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */,
 				928A392124E9E1A600A029A1 /* SpotifyDelegate.swift in Sources */,
 				927E0E3724E9ADC000C8257D /* AppClip.swift in Sources */,
 				92A32E0024C79C07007C960E /* AppView.swift in Sources */,
