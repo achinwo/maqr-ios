@@ -14,9 +14,9 @@ import Promises
 import UIImageColors
 import Combine
 
-extension View {
+public extension View {
     
-    public func onReceive<P, Root>(_ publisher: P, assign: WritableKeyPath<Root, P.Output>, target: Root) -> some View where P : Publisher, P.Failure == Never {
+    func onReceive<P, Root>(_ publisher: P, assign: WritableKeyPath<Root, P.Output>, target: Root) -> some View where P : Publisher, P.Failure == Never {
         return self.onReceive(publisher) { value in
             var target = target
             target[keyPath: assign] = value
@@ -53,42 +53,37 @@ struct ContentView: JoliView {
     }
     
     var contentView: some View {
+        
         return NavigationView(){
             GeometryReader() { geoProxy in
-                ZStack(){
-                    ScrollViewReader() { scrollProxy in
-                        ScrollView(.vertical, showsIndicators: true) {
-                            VStack(){
-                                if loadingView {
-                                    ProgressView("Loading Playroom").padding()
-                                } else if let error = errorMessage {
-                                    Text(error).font(Font.title.weight(.light)).padding()
-                                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
-                                } else if let playroom = playroom {
-                                    tracksView(playroom, geoProxy)
-                                } else {
-                                    Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
-                                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
-                                }
+                ScrollViewReader() { scrollProxy in
+                    ScrollView(.vertical, showsIndicators: true) {
+                        VStack(){
+                            if loadingView {
+                                ProgressView("Loading Playroom").padding()
+                            } else if let error = errorMessage {
+                                Text(error).font(Font.title.weight(.light)).padding()
+                                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+                            } else if let playroom = playroom {
+                                tracksView(playroom, geoProxy)
+                            } else {
+                                Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
+                                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
                             }
-                            
-                            
-                            //            #if APPCLIP
-                            //            Button("Show Recommended App") {
-                            //                self.showRecommended.toggle()
-                            //            }
-                            //            .appStoreOverlay(isPresented: $showRecommended) {
-                            //                SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
-                            //            }
-                            //            #endif
-                            
-                            
                         }
-                        .onAppear() {
-                            self.scrollProxy = scrollProxy
-                        }
+                        //            #if APPCLIP
+                        //            Button("Show Recommended App") {
+                        //                self.showRecommended.toggle()
+                        //            }
+                        //            .appStoreOverlay(isPresented: $showRecommended) {
+                        //                SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
+                        //            }
+                        //            #endif
                     }
-                    
+                    .frame(maxWidth: screenWidth)
+                    .onAppear() {
+                        self.scrollProxy = scrollProxy
+                    }
                 }
             }
             .navigationTitle(playroom?.name ?? Strings.appSymbol.stringValue)
@@ -256,6 +251,7 @@ struct ContentView: JoliView {
                 } label: {
                     Text("Rejoin").padding()
                 }
+                .buttonStyle(BlackWhiteButtonStyle(inverted: true))
                 .font(.headline)
                 .padding(.trailing, Sizing.medium)
                 

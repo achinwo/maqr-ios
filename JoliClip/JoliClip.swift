@@ -47,6 +47,7 @@ struct JoliClip: AppClip {
     
     var contentView: some View {
         ContentView(websocket: websocket, tabbarExpaned: $tabbarExpaned, preview: $preview, filterText: $filterText)
+            .frame(maxWidth: UIScreen.main.bounds.width, maxHeight: UIScreen.main.bounds.height)
             .overlay(
                 GeometryReader() { proxy in
                     VStack(){
@@ -60,7 +61,7 @@ struct JoliClip: AppClip {
                             Spacer()
                         }
                         .padding()
-                        .background(Color.white)
+                        .background(Color.white.opacity(0.7))
                     }
                     .padding(.bottom, proxy.safeAreaInsets.bottom)
                 }
