@@ -129,6 +129,7 @@
 		92BD11D524CB104D00AAB7DE /* UIImageColors in Frameworks */ = {isa = PBXBuildFile; productRef = 92BD11D424CB104D00AAB7DE /* UIImageColors */; };
 		92BD11D924CB104D00AAB7DE /* LetterAvatarKit in Frameworks */ = {isa = PBXBuildFile; productRef = 92BD11D824CB104D00AAB7DE /* LetterAvatarKit */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
+		92E74FED25E665A60010286C /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92E74FEC25E665A60010286C /* KeychainAccess */; };
 		92EC6264252CBE220092E497 /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC6263252CBE220092E497 /* Promises */; };
 		92EC626C252CBE3A0092E497 /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC626B252CBE3A0092E497 /* FBLPromises */; };
 		92EC626E252CBE3A0092E497 /* FBLPromisesTestHelpers in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC626D252CBE3A0092E497 /* FBLPromisesTestHelpers */; };
@@ -334,6 +335,7 @@
 				928A392A24E9EB5A00A029A1 /* MapKit.framework in Frameworks */,
 				9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */,
 				925C6FF324CB722A0016963F /* FBLPromises in Frameworks */,
+				92E74FED25E665A60010286C /* KeychainAccess in Frameworks */,
 				92BD11D924CB104D00AAB7DE /* LetterAvatarKit in Frameworks */,
 				9203B31924CB079200F465CC /* JoliApi in Frameworks */,
 				927DD09925263C92005BAAF7 /* GradientLoadingBar in Frameworks */,
@@ -697,6 +699,7 @@
 				9266BDC82506EB8700DAE077 /* SFSafeSymbols */,
 				927DD09825263C92005BAAF7 /* GradientLoadingBar */,
 				921BA270253E0819007C2FE0 /* Sourceful */,
+				92E74FEC25E665A60010286C /* KeychainAccess */,
 			);
 			productName = JoliPlayground;
 			productReference = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */;
@@ -904,6 +907,7 @@
 				9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */,
 				927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */,
 				921BA25B253E03B4007C2FE0 /* XCRemoteSwiftPackageReference "Sourceful" */,
+				92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1966,6 +1970,14 @@
 				minimumVersion = 5.14.0;
 			};
 		};
+		92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.2.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -2016,6 +2028,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */;
 			productName = LetterAvatarKit;
+		};
+		92E74FEC25E665A60010286C /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
 		};
 		92EC6263252CBE220092E497 /* Promises */ = {
 			isa = XCSwiftPackageProductDependency;
