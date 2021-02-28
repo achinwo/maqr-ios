@@ -61,9 +61,9 @@ extension View where Self == ActivityIndicator {
 }
 
 // MARK: - SignInView
-struct SignInView: View {
+struct SignInView: JoliView {
     
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var appCoordinator: AppCoordinator
     @EnvironmentObject var loginViewModel: LoginViewModel
     @State var submissionInProgress = false
     
@@ -73,7 +73,7 @@ struct SignInView: View {
         self.presentationMode = presentationMode
     }
     
-    var body: some View {
+    var contentView: some View {
         let img = Images.joliIconRounded.uiImage
         return VStack() {
             VStack(alignment: .center) {
@@ -143,25 +143,25 @@ struct SignInView: View {
         self.submissionInProgress = true
         //loginViewModel.performLogin()
         
-        appState.api.authenticate(email:loginViewModel.email, password: loginViewModel.password)
-            .then() { auth in
-                self.appState.auth = auth
-                logger.debug("[LogOnView] got auth: \(String(describing: auth))")
-                self.presentationMode?.wrappedValue.dismiss()
-        }.always(){
-            self.submissionInProgress = false
-        }
+//        api.authenticate(email:loginViewModel.email, password: loginViewModel.password)
+//            .then() { auth in
+//                self.appState.auth = auth
+//                logger.debug("[LogOnView] got auth: \(String(describing: auth))")
+//                self.presentationMode?.wrappedValue.dismiss()
+//        }.always(){
+//            self.submissionInProgress = false
+//        }
         
     }
     
 }
 
 // MARK: - LogOnView
-struct LogOnView: View {
+struct LogOnView: JoliView {
     
     @Environment(\.presentationMode) var presentationMode
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var appKeyboardState: AppKeyboardState
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    //@EnvironmentObject var appKeyboardState: AppKeyboardState
     
     var loginModel = LoginViewModel()
     @State var activityIdx = 0
@@ -173,7 +173,7 @@ struct LogOnView: View {
         self.completionHandler = completionHandler
     }
     
-    var body: some View {
+    var contentView: some View {
         let onEnded = { (val: DragGesture.Value) in
             logger.debug("Gesture ended: \(val.translation.width)")
             guard abs(val.translation.height) < abs(val.translation.width) else { return }
@@ -204,15 +204,15 @@ struct LogOnView: View {
                 
                 if self.activityIdx == 0 {
                     SignInView(presentationMode: self.presentationMode)
-                    .keyboardAwarePadding()
+                    //.keyboardAwarePadding()
                 } else {
                     SignUpView()
-                    .keyboardAwarePadding()
+                    //.keyboardAwarePadding()
                 }
             }
             .environmentObject(self.loginModel)
             .animation(.spring())
-            .offset(x: 0, y: self.appKeyboardState.keyboardHeight == 0 ? 0 : geometry.size.height / 3 * -1)
+            //.offset(x: 0, y: self.appKeyboardState.keyboardHeight == 0 ? 0 : geometry.size.height / 3 * -1)
             .simultaneousGesture(gesture)
             .navigationBarTitle("Account", displayMode: .large)
             .navigationBarItems(trailing: Button(action: {

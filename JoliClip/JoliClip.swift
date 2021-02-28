@@ -13,13 +13,16 @@ import CancellationToken
 import Combine
 import JoliApi
 import os
+import Version
 
 internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "global.invite.room")
 
 @main
 struct JoliClip: AppClip {
     
+    @State var serverVersion: Version? = nil
     @State var appleSignInDelegates: SignInWithAppleDelegates?
+    let apnTokenPublisher: NotificationCenter.Publisher = NotificationCenter.default.publisher(for: Notifications.apnToken)
     
     @Namespace var namespace {
         didSet {
@@ -75,14 +78,7 @@ struct JoliClip: AppClip {
         
         print("[URL] \(JoliApi.Environment.current.baseUrl)")
         
-        let headers: [String: String] = [
-            "X-PLATFORM": "ios",
-            "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
-            "X-DEVICE-MODEL": UIDevice.current.model,
-            "X-DEVICE-NAME": UIDevice.current.name,
-        ]
-        
-        let api = JoliApi(baseUrl: JoliApi.Environment.current.baseUrl, headers: headers)
+        let api = JoliApi(baseUrl: JoliApi.Environment.current.baseUrl, headers: Self.defaultHeaders)
         
         self.websocket = Socket(url: url.appendingPathComponent("/ws")) { (socket, connected) in
             

@@ -25,6 +25,9 @@ internal let logger = Logger(subsystem: "com.jolimc.Joli", category: "global.cli
 
 public enum Strings {
     
+    static let URL_SCHEME = "joli"
+    static let SPOTIFY_URL_BASEPATH = "spotify-callback"
+    
     public static let volume = NSLocalizedString("volume", comment: "Sound volume")
     public static let profile = NSLocalizedString("profile", comment: "User Profile Label")
     public static let photoUpload = NSLocalizedString("photoUpload", comment: "Upload picture")
@@ -38,6 +41,10 @@ public enum Strings {
     #else
     public static let appName = "Joli"
     #endif
+}
+
+public enum Notifications {
+    public static let apnToken = Notification.Name("joli.apn.token")
 }
 
 public enum Images: String {

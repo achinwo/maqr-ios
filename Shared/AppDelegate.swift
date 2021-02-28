@@ -11,7 +11,7 @@ import AVKit
 import JoliApi
 import UserNotifications
 import Promises
-
+import Combine
 
 var appDelegateSingleton: AppDelegate!
 
@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     let debug = false
     #endif
     
-    var appState: AppState!
+    //var appState: AppState!
     var audioSession = AVAudioSession.sharedInstance()
     
     var window: UIWindow?
@@ -67,15 +67,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             
             let computedVolume = Int(volume * 100)
             
-            self.appState.api.fetchSpotifyDevices(on: DispatchQueue.main)
-                .then() { devices in
-                    
-                    guard let activeIdx = devices.firstIndex(where: { $0.isActive }) else {
-                        return
-                    }
-                    
-                    self.appState.api.setVolume(computedVolume, deviceId: devices[activeIdx].id)
-            }
+//            self.appState.api.fetchSpotifyDevices(on: DispatchQueue.main)
+//                .then() { devices in
+//
+//                    guard let activeIdx = devices.firstIndex(where: { $0.isActive }) else {
+//                        return
+//                    }
+//
+//                    self.appState.api.setVolume(computedVolume, deviceId: devices[activeIdx].id)
+//            }
             
             //observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?)
         } else {
@@ -140,14 +140,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-      let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
-      let token = tokenParts.joined()
-        logger.info("Device Token: \(token)")
-        
-        appState.api.setNotificationToken(token).then() { device in
-            logger.info("Token Saved: \(device)")
-        }
-        
+        NotificationCenter.default.post(name: Notifications.apnToken, object: [Notifications.apnToken: deviceToken])
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
@@ -174,7 +167,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             JoliApi.Environment.loadEnvConfig()
         }
         
-        self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: nil)
+        //self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: nil)
         
         //logger.addDestination(ServerDestination(url: self.env.baseUrl.http, urlSession: self.appState.api.urlSession))
         

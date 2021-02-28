@@ -90,27 +90,13 @@
 		92A32DC224C79B6C007C960E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32DC024C79B6B007C960E /* Preview Assets.xcassets */; };
 		92A32DDC24C79C07007C960E /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
 		92A32DDE24C79C07007C960E /* PeopleGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC424C79C06007C960E /* PeopleGridView.swift */; };
-		92A32DE024C79C07007C960E /* MusicroomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC524C79C06007C960E /* MusicroomView.swift */; };
-		92A32DE224C79C07007C960E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC724C79C06007C960E /* SettingsView.swift */; };
-		92A32DE424C79C07007C960E /* TrackSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC824C79C06007C960E /* TrackSearchView.swift */; };
 		92A32DE624C79C07007C960E /* ServiceAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC924C79C06007C960E /* ServiceAlert.swift */; };
-		92A32DE824C79C07007C960E /* FeedbackSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCA24C79C06007C960E /* FeedbackSettingsView.swift */; };
-		92A32DE924C79C07007C960E /* FeedbackSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCA24C79C06007C960E /* FeedbackSettingsView.swift */; };
 		92A32DEA24C79C07007C960E /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCB24C79C06007C960E /* App.swift */; };
-		92A32DEC24C79C07007C960E /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCC24C79C06007C960E /* UserProfileView.swift */; };
-		92A32DEE24C79C07007C960E /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCD24C79C06007C960E /* ShareSheet.swift */; };
 		92A32DF024C79C07007C960E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCE24C79C06007C960E /* AppDelegate.swift */; };
-		92A32DF224C79C07007C960E /* PlayQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCF24C79C06007C960E /* PlayQueueView.swift */; };
 		92A32DF424C79C07007C960E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD024C79C06007C960E /* Extensions.swift */; };
 		92A32DF624C79C07007C960E /* TrackList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD124C79C06007C960E /* TrackList.swift */; };
-		92A32DF824C79C07007C960E /* MusicLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD224C79C06007C960E /* MusicLibraryView.swift */; };
-		92A32DFA24C79C07007C960E /* MusicroomList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD324C79C06007C960E /* MusicroomList.swift */; };
 		92A32DFC24C79C07007C960E /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD424C79C07007C960E /* ImageView.swift */; };
-		92A32DFE24C79C07007C960E /* CircleImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD524C79C07007C960E /* CircleImage.swift */; };
 		92A32E0024C79C07007C960E /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD624C79C07007C960E /* AppView.swift */; };
-		92A32E0224C79C07007C960E /* MusicroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD724C79C07007C960E /* MusicroomCreateView.swift */; };
-		92A32E0424C79C07007C960E /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD824C79C07007C960E /* ActivityView.swift */; };
-		92A32E0624C79C07007C960E /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD924C79C07007C960E /* TrackView.swift */; };
 		92A32E0824C79C07007C960E /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDA24C79C07007C960E /* ProfileView.swift */; };
 		92A32E0A24C79C07007C960E /* LogOnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDB24C79C07007C960E /* LogOnView.swift */; };
 		92A32E1E24C7A9F2007C960E /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
@@ -128,6 +114,7 @@
 		92BD11D324CB104D00AAB7DE /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92BD11D224CB104D00AAB7DE /* Kingfisher */; };
 		92BD11D524CB104D00AAB7DE /* UIImageColors in Frameworks */ = {isa = PBXBuildFile; productRef = 92BD11D424CB104D00AAB7DE /* UIImageColors */; };
 		92BD11D924CB104D00AAB7DE /* LetterAvatarKit in Frameworks */ = {isa = PBXBuildFile; productRef = 92BD11D824CB104D00AAB7DE /* LetterAvatarKit */; };
+		92D31DB325EAFF9100522E28 /* LogOnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDB24C79C07007C960E /* LogOnView.swift */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
 		92E74FED25E665A60010286C /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92E74FEC25E665A60010286C /* KeychainAccess */; };
 		92EC6264252CBE220092E497 /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC6263252CBE220092E497 /* Promises */; };
@@ -291,27 +278,14 @@
 		92A32DC024C79B6B007C960E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		92A32DC324C79C06007C960E /* ImagePicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		92A32DC424C79C06007C960E /* PeopleGridView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeopleGridView.swift; sourceTree = "<group>"; };
-		92A32DC524C79C06007C960E /* MusicroomView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MusicroomView.swift; sourceTree = "<group>"; };
 		92A32DC624C79C06007C960E /* Joli.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = Joli.entitlements; path = ../Shared/Joli.entitlements; sourceTree = "<group>"; };
-		92A32DC724C79C06007C960E /* SettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		92A32DC824C79C06007C960E /* TrackSearchView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrackSearchView.swift; sourceTree = "<group>"; };
 		92A32DC924C79C06007C960E /* ServiceAlert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceAlert.swift; sourceTree = "<group>"; };
-		92A32DCA24C79C06007C960E /* FeedbackSettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedbackSettingsView.swift; sourceTree = "<group>"; };
 		92A32DCB24C79C06007C960E /* App.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
-		92A32DCC24C79C06007C960E /* UserProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
-		92A32DCD24C79C06007C960E /* ShareSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
 		92A32DCE24C79C06007C960E /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		92A32DCF24C79C06007C960E /* PlayQueueView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayQueueView.swift; sourceTree = "<group>"; };
 		92A32DD024C79C06007C960E /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		92A32DD124C79C06007C960E /* TrackList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrackList.swift; sourceTree = "<group>"; };
-		92A32DD224C79C06007C960E /* MusicLibraryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MusicLibraryView.swift; sourceTree = "<group>"; };
-		92A32DD324C79C06007C960E /* MusicroomList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MusicroomList.swift; sourceTree = "<group>"; };
 		92A32DD424C79C07007C960E /* ImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageView.swift; sourceTree = "<group>"; };
-		92A32DD524C79C07007C960E /* CircleImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircleImage.swift; sourceTree = "<group>"; };
 		92A32DD624C79C07007C960E /* AppView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
-		92A32DD724C79C07007C960E /* MusicroomCreateView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MusicroomCreateView.swift; sourceTree = "<group>"; };
-		92A32DD824C79C07007C960E /* ActivityView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
-		92A32DD924C79C07007C960E /* TrackView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
 		92A32DDA24C79C07007C960E /* ProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		92A32DDB24C79C07007C960E /* LogOnView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogOnView.swift; sourceTree = "<group>"; };
 		92A32E2324C7AF93007C960E /* Joli.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Joli.entitlements; sourceTree = "<group>"; };
@@ -463,10 +437,8 @@
 			children = (
 				92DBFB31250393500039FF4E /* Components */,
 				927E0E3424E9AD5300C8257D /* Extensions */,
-				92A32DBF24C79B6B007C960E /* Preview Content */,
 				92A32D8D24C79B3D007C960E /* Resources */,
 				92A32DAF24C79B59007C960E /* State */,
-				92DBFB32250393990039FF4E /* Views */,
 				92A32DCB24C79C06007C960E /* App.swift */,
 				927E0E3524E9ADC000C8257D /* AppClip.swift */,
 				92595B4C253A1AD200609558 /* AppCoordinator.swift */,
@@ -525,10 +497,11 @@
 		92A32D8D24C79B3D007C960E /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				92A32D8F24C79B3D007C960E /* Development */,
-				92A32D9524C79B3D007C960E /* Production */,
 				92A32D9424C79B3D007C960E /* Assets.xcassets */,
+				92A32D8F24C79B3D007C960E /* Development */,
 				92A32D9924C79B3D007C960E /* Localizable.strings */,
+				92A32DBF24C79B6B007C960E /* Preview Content */,
+				92A32D9524C79B3D007C960E /* Production */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -574,6 +547,7 @@
 		92DBFB31250393500039FF4E /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				92A32DDB24C79C07007C960E /* LogOnView.swift */,
 				9208ACF224CC559400773730 /* DevicesView.swift */,
 				9222BE1724CD8A5800F19973 /* ExploreView.swift */,
 				92A32DC324C79C06007C960E /* ImagePicker.swift */,
@@ -592,27 +566,6 @@
 				92A32DD124C79C06007C960E /* TrackList.swift */,
 			);
 			path = Components;
-			sourceTree = "<group>";
-		};
-		92DBFB32250393990039FF4E /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				92A32DD824C79C07007C960E /* ActivityView.swift */,
-				92A32DD524C79C07007C960E /* CircleImage.swift */,
-				92A32DCA24C79C06007C960E /* FeedbackSettingsView.swift */,
-				92A32DD324C79C06007C960E /* MusicroomList.swift */,
-				92A32DC524C79C06007C960E /* MusicroomView.swift */,
-				92A32DCF24C79C06007C960E /* PlayQueueView.swift */,
-				92A32DC724C79C06007C960E /* SettingsView.swift */,
-				92A32DCD24C79C06007C960E /* ShareSheet.swift */,
-				92A32DC824C79C06007C960E /* TrackSearchView.swift */,
-				92A32DD924C79C07007C960E /* TrackView.swift */,
-				92A32DCC24C79C06007C960E /* UserProfileView.swift */,
-				92A32DDB24C79C07007C960E /* LogOnView.swift */,
-				92A32DD224C79C06007C960E /* MusicLibraryView.swift */,
-				92A32DD724C79C07007C960E /* MusicroomCreateView.swift */,
-			);
-			path = Views;
 			sourceTree = "<group>";
 		};
 		92F379D62363534D005FE2AB = {
@@ -1031,6 +984,7 @@
 				92A7120D24D85EC500AD6729 /* NetworkImageView.swift in Sources */,
 				92BD11D124CB0BD800AAB7DE /* TrackList.swift in Sources */,
 				920958AB25601EE10014626D /* Logging.swift in Sources */,
+				92D31DB325EAFF9100522E28 /* LogOnView.swift in Sources */,
 				9203B32924CB07F800F465CC /* Styles.swift in Sources */,
 				9203B32A24CB07FD00F465CC /* Consts.swift in Sources */,
 				927AE0C12554AC020027493D /* LobbyView.swift in Sources */,
@@ -1086,10 +1040,7 @@
 			files = (
 				92595B4E253A1AD200609558 /* AppCoordinator.swift in Sources */,
 				920958B225601F020014626D /* Logging.swift in Sources */,
-				92A32DE424C79C07007C960E /* TrackSearchView.swift in Sources */,
 				92A32E2C24C7BB53007C960E /* Consts.swift in Sources */,
-				92A32DEC24C79C07007C960E /* UserProfileView.swift in Sources */,
-				92A32DF824C79C07007C960E /* MusicLibraryView.swift in Sources */,
 				92A32E0A24C79C07007C960E /* LogOnView.swift in Sources */,
 				9208ACF324CC559400773730 /* DevicesView.swift in Sources */,
 				928A391D24E9DAE700A029A1 /* ListenView.swift in Sources */,
@@ -1104,17 +1055,12 @@
 				928A392524E9E2FA00A029A1 /* JoyMeterView.swift in Sources */,
 				92A32DF624C79C07007C960E /* TrackList.swift in Sources */,
 				92A32DB924C79B59007C960E /* AppState+Spotify.swift in Sources */,
-				92A32DE824C79C07007C960E /* FeedbackSettingsView.swift in Sources */,
 				92A32DF024C79C07007C960E /* AppDelegate.swift in Sources */,
 				927AE0C22554AC020027493D /* LobbyView.swift in Sources */,
 				92A32DF424C79C07007C960E /* Extensions.swift in Sources */,
-				92A32E0624C79C07007C960E /* TrackView.swift in Sources */,
 				92A32DEA24C79C07007C960E /* App.swift in Sources */,
-				92A32DFE24C79C07007C960E /* CircleImage.swift in Sources */,
 				92A32DB524C79B59007C960E /* AppState.swift in Sources */,
-				92A32DF224C79C07007C960E /* PlayQueueView.swift in Sources */,
 				92A32DDE24C79C07007C960E /* PeopleGridView.swift in Sources */,
-				92A32DE024C79C07007C960E /* MusicroomView.swift in Sources */,
 				92A32DDC24C79C07007C960E /* ImagePicker.swift in Sources */,
 				92A32E3124CA22FA007C960E /* Publishers.swift in Sources */,
 				92A32D8924C79A13007C960E /* Styles.swift in Sources */,
@@ -1123,16 +1069,11 @@
 				929FFE1D24FAF096000BDCF0 /* User.swift in Sources */,
 				9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */,
 				92A32E0824C79C07007C960E /* ProfileView.swift in Sources */,
-				92A32E0424C79C07007C960E /* ActivityView.swift in Sources */,
-				92A32DEE24C79C07007C960E /* ShareSheet.swift in Sources */,
 				923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */,
 				928A392124E9E1A600A029A1 /* SpotifyDelegate.swift in Sources */,
 				927E0E3724E9ADC000C8257D /* AppClip.swift in Sources */,
 				92A32E0024C79C07007C960E /* AppView.swift in Sources */,
 				92A32DBD24C79B59007C960E /* AppState+Publisher.swift in Sources */,
-				92A32DE224C79C07007C960E /* SettingsView.swift in Sources */,
-				92A32E0224C79C07007C960E /* MusicroomCreateView.swift in Sources */,
-				92A32DFA24C79C07007C960E /* MusicroomList.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1142,7 +1083,6 @@
 			files = (
 				92A32E2D24C7BB53007C960E /* Consts.swift in Sources */,
 				92A32DB824C79B59007C960E /* UserSettings.swift in Sources */,
-				92A32DE924C79C07007C960E /* FeedbackSettingsView.swift in Sources */,
 				920958B325601F030014626D /* Logging.swift in Sources */,
 				9270C353252CB4AD0030E6AD /* App.swift in Sources */,
 				92A32E3224CA22FA007C960E /* Publishers.swift in Sources */,

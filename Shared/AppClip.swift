@@ -15,6 +15,7 @@ import JoliCore
 import Promises
 import Combine
 import AuthenticationServices
+import Version
 
 public struct ShortCodeGenerator {
 
@@ -318,6 +319,13 @@ public protocol AppClip: App {
     var coordinator: AppCoordinator { nonmutating get }
     var namespace: Namespace.ID { get }
     var appleSignInDelegates: SignInWithAppleDelegates? { get nonmutating set }
+    var serverVersion: Version? { get nonmutating set }
+    var apnTokenPublisher: NotificationCenter.Publisher { get }
+    
+    static var version: Version { get }
+    static var isAppclip: Bool { get }
+    static var debug: Bool { get }
+    static var defaultHeaders: [String: String] { get }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void
     func onScenePhaseChange(_ phase: ScenePhase) -> Void
@@ -325,11 +333,12 @@ public protocol AppClip: App {
     func onConnectionStateChange(_ state: ConnectionState) -> Void
     
     func onInternalError(_ error: Error) -> Void
+    func onNotificationRecieved(_ message: Data) -> Void
 }
 
 public extension AppClip {
     
-    var debug: Bool {
+    static var debug: Bool {
         #if DEBUG
         return true
         #else
@@ -337,8 +346,38 @@ public extension AppClip {
         #endif
     }
     
+    static var isAppclip: Bool {
+        #if APPCLIP
+        return true
+        #else
+        return false
+        #endif
+    }
+    
+    static var version: Version {
+        
+        guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+              let version = Version("\(appVersion).\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0")") else {
+            return Version.init(1, 0, 0)
+        }
+        
+        return version
+    }
+    
+    static var defaultHeaders: [String: String] {
+        return [
+            "X-PLATFORM": "ios",
+            "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
+            "X-DEVICE-MODEL": UIDevice.current.model,
+            "X-DEVICE-NAME": UIDevice.current.name,
+            "X-APP-VERSION": Self.version.description,
+            "X-APP-SKU": Self.isAppclip ? "APPCLIP" : "FULL",
+            //"X-SESSION-ID": activeSessionId,
+        ]
+    }
+    
     var env: JoliApi.Environment {
-        guard self.debug else {
+        guard Self.debug else {
             return .production
         }
         
@@ -389,6 +428,14 @@ public extension AppClip {
             .onOpenURL(perform: self.onOpenUrl)
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: self.onUserActivity)
             .onChange(of: scenePhase, perform: self.onScenePhaseChange)
+            .onReceive(apnTokenPublisher) { (notification: Notification) in
+                guard let notif = notification.object as? [Notification.Name: Data],
+                      let data = notif[Notifications.apnToken] else {
+                    return
+                }
+                
+                self.onNotificationRecieved(data)
+            }
             .modifier(AppCoordinator.Modifier(coordinator))
         }
     }
@@ -422,6 +469,20 @@ public extension AppClip {
     
     func onUserActivity(_ activity: NSUserActivity) -> Void {
         self.coordinator.currentLocation = AppLocation(activity) ?? .home
+    }
+    
+    func onNotificationRecieved(_ deviceToken: Data) {
+        let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+        let token = tokenParts.joined()
+        logger.debug("[\(Self.self)] Device Token: \(token)")
+        
+        self.coordinator.api.setNotificationToken(token)
+            .then() { device in
+                logger.info("Token Saved: \(device)")
+            }
+            .catch() { error in
+                self.onInternalError(error)
+            }
     }
     
 }

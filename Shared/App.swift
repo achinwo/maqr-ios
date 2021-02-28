@@ -16,8 +16,11 @@ import Foundation
 import Combine
 import SwiftyBeaver
 import AuthenticationServices
+import Version
 
 let spotifyDelegateInstance: SpotifyDelegate = SpotifyDelegate()
+var notificationCenterCancel: AnyCancellable? = nil
+
 //eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imhhd2FAZ21haWwubmV0IiwiY3JlYXRlZEF0IjoiMjAyMC0xMS0xMlQxOTowMTozMC4xNzVaIiwiZXhwaXJlc0luIjoxNDQwMDAwfQ.DVEEwDmG0pW9EBQwcdJGJvpqLfrhNJmbyRlq30Aar0o
 #if DEBUG
 //let TOKEN: String? = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvbGlAam9saW1jLmFwcCIsImNyZWF0ZWRBdCI6IjIwMjAtMTAtMjhUMTU6MTQ6MzIuODgwWiIsImV4cGlyZXNJbiI6MTQ0MDAwMH0.CdMbtPMDYMWvnkZyJthTA_-LbR8V1wIZu8GAgZaZ7zk"
@@ -32,6 +35,8 @@ let TOKEN: String? = nil //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imh
 
 @main
 struct JoliApp: AppClip {
+    
+    @State var serverVersion: Version? = nil
     
     @AppStorage("spotify.devices.active") var activeDeviceId: String = .empty
     
@@ -104,38 +109,27 @@ struct JoliApp: AppClip {
     
     @State var devices: [Spotify.Device] = []
     
-    var appState: AppState {
-        return appDelegate.appState
-    }
-    
-    var api: JoliApi {
-        return appState.api
-    }
+    var api: JoliApi
     
     let jsonDecoder = Musicroom.jsonDecoder()
     let jsonEncoder = Musicroom.jsonEncoder()
     
     @State var authPublishCancel: AnyCancellable? = nil
     
+    @AppStorage("pendingLocalPlayUri") var pendingLocalPlayUri: String = .empty
+    @AppStorage("pendingLocalPlayPosition") var pendingLocalPlayPosition: Int = -1
+    
+    let apnTokenPublisher: NotificationCenter.Publisher = NotificationCenter.default.publisher(for: Notifications.apnToken)
+    
     static var wssUrlRequest: URLRequest {
-        JoliApi.Environment.loadEnvConfig(from: Bundle.main)
-        let url = JoliApi.Environment.current.baseUrl.ws //URL(string: "https://192.168.1.173:8080/ws")!
-        
-        let headers: [String: String] = [
-            "X-PLATFORM": "ios",
-            "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
-            "X-DEVICE-MODEL": UIDevice.current.model,
-            "X-DEVICE-NAME": UIDevice.current.name,
-            "X-APP-VERSION": AppState.version.description,
-            //"X-SESSION-ID": activeSessionId,
-        ]
-        
+        let url = JoliApi.Environment.current.baseUrl.ws
         var request = URLRequest(url: url.appendingPathComponent("/ws"), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 5)
-        request.allHTTPHeaderFields = headers
+        request.allHTTPHeaderFields = Self.defaultHeaders
         return request
     }
     
     init() {
+        JoliApi.Environment.loadEnvConfig(from: Bundle.main)
         UITableView.appearance().separatorStyle = .none
         
         let coordinator = AppCoordinator()
@@ -143,6 +137,10 @@ struct JoliApp: AppClip {
          
         var request = Self.wssUrlRequest
         self.websocket = Socket(request: request)
+        self.api = JoliApi(baseUrl: JoliApi.Environment.current.baseUrl, headers: request.allHTTPHeaderFields ?? [:])
+        api.urlSessionConfiguration = api.urlSessionConfiguration.withAuthHeader(activeSessionId)
+        
+        coordinator.api = self.api
         
         request.addValue(activeSessionId, forHTTPHeaderField: "X-SESSION-ID")
         self.websocket.request = request
@@ -168,9 +166,6 @@ struct JoliApp: AppClip {
                 logger.info("[AppView#AuthToken] auth: \(String(describing: auth))")
             }
     }
-    
-    @AppStorage("pendingLocalPlayUri") var pendingLocalPlayUri: String = .empty
-    @AppStorage("pendingLocalPlayPosition") var pendingLocalPlayPosition: Int = -1
     
     func onInternalError(_ errorInfo: AppCoordinator.ErrorInfo) {
         logger.error("[\(Self.self)#onInternalError] error raised: \(errorInfo.error as NSObject) - \(errorInfo.function)")
@@ -255,7 +250,7 @@ struct JoliApp: AppClip {
             return
         }
         
-        appState.api.authenticate(credentials)
+        api.authenticate(credentials)
             .then() { auth in
                 
                 guard let auth = auth else {
@@ -272,7 +267,7 @@ struct JoliApp: AppClip {
                                                  updatedBy: self.auth?.user.updatedById)
                 self.authsData = (try? jsonEncoder.encode(serialized)) ?? Data()
                 
-                appState.api.auth = auth
+                api.auth = auth
                 self.auth = auth
             }
             .catch() { error in
@@ -461,7 +456,7 @@ struct JoliApp: AppClip {
                 self.activeSessionId = token
                 let auth = auths.first() { $0.session.token == token }
                 
-                appState.api.auth = auth
+                api.auth = auth
                 self.auth = auth
                 
                 DispatchQueue.main.async {
@@ -483,7 +478,6 @@ struct JoliApp: AppClip {
                 logger.debug("[Joli] setting coordinator animation namespace to \(String(describing: namespace)) - activeSessionId: \(activeSessionId)")
                 
                 self.coordinator.namespace = namespace
-                self.coordinator.api = api
                 self.coordinator.initialActiveDeviceId = activeDeviceId == .empty ? nil : activeDeviceId
                 
                 self.coordinator.serverLogDestination = ServerDestination(url: api.baseUrlHttp, urlSession: api.urlSession)
@@ -522,9 +516,6 @@ extension JoliApp {
         switch phase {
             case .active:
                 print("App became active2")
-//                appState.api.wsClient.connect() { connectionState in
-//                    self.appState.onServerConnectionStateChanged(connectionState)
-//                }
                 
                 websocket.connect()
                 print("[Reconnecting]")
@@ -555,7 +546,7 @@ extension JoliApp {
                 if self.spotify.appRemote.isConnected {
                     self.spotify.appRemote.disconnect()
                 }
-                //appState.api.wsClient.disconnect()
+
                 appDelegate.stopObservingVolumeChanges()
                 
                 let application = UIApplication.shared
@@ -575,11 +566,51 @@ extension JoliApp {
         }
     }
     
+    func spotifyWebAuthorize(_ urlPath: URLComponents) -> Promise<AuthToken> {
+        //spotifyAuthorizationInProgress = true
+        
+        return HttpMethod.Fetch.get(url: urlPath,
+                                    dataType: AuthToken.self,
+                                    baseUrl: api.baseUrl.rawValue.http,
+                                    urlSession: api.urlSession)
+            .then(){ auth -> Promise<AuthToken> in
+                //self.spotifyWebAuthorized = !auth.isExpired
+                return Promise(auth)
+            }
+            .always() {
+                //self.spotifyAuthorizationInProgress = false
+            }
+    }
+    
+    func resolveSpotifyRedirectUrl(_ url: URL) -> URL? {
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        
+        guard let scheme = components?.scheme,
+              let basePath = components?.host,
+              let codeQuery = components?.queryItems?.first(where: { $0.name == "code" }),
+              [Strings.URL_SCHEME, "spotify-ios-quick-start"].contains(scheme),
+              [Strings.SPOTIFY_URL_BASEPATH, "spotify-login-callback"].contains(basePath) else {
+            return nil
+        }
+        
+        var redirectUrl = URLComponents(string: "/spotify_callback")
+        redirectUrl?.queryItems = [codeQuery,
+                                   URLQueryItem(name: "redirect",
+                                                value: (scheme == Strings.URL_SCHEME ?
+                                                            "joli://\(Strings.SPOTIFY_URL_BASEPATH)"
+                                                            : "https://localhost:8080/spotify_callback/"
+                                                        //: "spotify-ios-quick-start://spotify-login-callback/"
+                                                )),
+                                   URLQueryItem(name: "platform", value: "ios")]
+        
+        return redirectUrl?.url(relativeTo: api.baseUrl.rawValue.http)
+    }
+    
     func onOpenUrl(url: URL){
         logger.info("[SceneDelegate] url: \(url)")
         
-        if let redirectUrl = appState.resolveSpotifyRedirectUrl(url), let urlComp = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: false) {
-            appState.spotifyWebAuthorize(urlComp)
+        if let redirectUrl = resolveSpotifyRedirectUrl(url), let urlComp = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: false) {
+            spotifyWebAuthorize(urlComp)
                 .then() { auth in
                     //logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
                     self.onLocalSpotifyAuth(auth, nil)
