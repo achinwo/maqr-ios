@@ -9,30 +9,6 @@ import UIKit
 import SwiftUI
 import JoliCore
 
-public struct PlayroomCreateView: JoliView {
-    
-    @EnvironmentObject public var appCoordinator: AppCoordinator
-    
-    public var contentView: some View {
-        VStack(alignment: .leading){
-            Section(header: Text("Title")){
-                Text("room name")
-                //TextEditor(text: .constant("some description"))
-            }
-            
-            Section(header: Text("Theme Song")){
-                Text("choose theme song")
-            }
-            
-            Section(header: Text("Location")){
-                Text("room")
-            }
-        }
-        .background(Color.green)
-    }
-    
-}
-
 public enum AppPreview: View, Equatable {
     
     public static func == (lhs: AppPreview, rhs: AppPreview) -> Bool {
