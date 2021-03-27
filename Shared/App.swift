@@ -165,6 +165,7 @@ struct JoliApp: AppClip {
             } receiveValue: { auth in
                 logger.info("[AppView#AuthToken] auth: \(String(describing: auth))")
             }
+        
     }
     
     func onInternalError(_ errorInfo: AppCoordinator.ErrorInfo) {

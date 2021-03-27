@@ -253,7 +253,7 @@ class AppState: ObservableObject {
         self.api = JoliApi(baseUrl: self.baseUrl, headers: headers)
         api.urlSessionConfiguration = api.urlSessionConfiguration.withAuthHeader(self.userSettings.authToken)
         
-        JoliApi.setDefault(self.api)
+        //JoliApi.setDefault(self.api)
         
         if let authToken = self.userSettings.authToken {
             logger.info("[AppState] authenticating with token: \(authToken)")

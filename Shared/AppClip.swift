@@ -354,6 +354,14 @@ public extension AppClip {
         #endif
     }
     
+    private func isSimulatorOrTestFlight() -> Bool {
+        guard let path = Bundle.main.appStoreReceiptURL?.path else {
+            return false
+        }
+        
+        return path.contains("CoreSimulator") || path.contains("sandboxReceipt")
+    }
+    
     static var version: Version {
         
         guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
@@ -437,6 +445,15 @@ public extension AppClip {
                 self.onNotificationRecieved(data)
             }
             .modifier(AppCoordinator.Modifier(coordinator))
+            .onAppear() {
+                JoliApi.resolveServer(self.coordinator.api.baseUrl.http)
+                    .timeout(3.0)
+                    .then(on: .main) { version in
+                        logger.info("[\(Self.self)] server version: \(version)")
+                        self.serverVersion = version
+                    }
+                    .catch(self.coordinator.globalErrorHandler())
+            }
         }
     }
     
@@ -474,15 +491,12 @@ public extension AppClip {
     func onNotificationRecieved(_ deviceToken: Data) {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         let token = tokenParts.joined()
-        logger.debug("[\(Self.self)] Device Token: \(token)")
         
         self.coordinator.api.setNotificationToken(token)
             .then() { device in
                 logger.info("Token Saved: \(device)")
             }
-            .catch() { error in
-                self.onInternalError(error)
-            }
+            .catch(self.coordinator.globalErrorHandler())
     }
     
 }
