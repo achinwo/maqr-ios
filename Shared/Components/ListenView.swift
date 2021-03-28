@@ -191,6 +191,7 @@ struct ListenView: JoliView {
                     }
                     .catch(appCoordinator.globalErrorHandler())
             }
+            .catch(appCoordinator.globalErrorHandler())
             .always() {
                 loadingLiveTracks = false
                 self.refreshModel.triggeredSwipeRefresh = false
