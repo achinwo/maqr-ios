@@ -298,12 +298,7 @@ struct JoliApp: AppClip {
     
     @Environment(\.scenePhase) var scenePhase
     @State var isSheetPresented: Bool = false
-    @State var modalView: AppPreview? = nil {
-        didSet {
-            isSheetPresented = modalView != nil
-        }
-    }
-    
+    @State var modalView: AppPreview? = nil
     @Environment(\.window) var window: UIWindow?
     
     
@@ -367,9 +362,12 @@ struct JoliApp: AppClip {
                     AppPreviewView(preview: self.$modalView, currentUser: self.$currentUser, animation: namespace)
                         .frame(width: proxy.size.width, height: proxy.size.height + proxy.safeAreaInsets.bottom)
                         .animation(.spring())
-                        .edgesIgnoringSafeArea(.bottom)
+                        .edgesIgnoringSafeArea([.bottom])
                         .background(Color.yellow)
                 }
+            }
+            .onChange(of: self.modalView) { modal in
+                isSheetPresented = modalView != nil
             }
             .onReceive(coordinator.internalErrorSubject, perform: self.onInternalError)
             .onReceive(coordinator.$spotifyAuthCallback) { callback in
