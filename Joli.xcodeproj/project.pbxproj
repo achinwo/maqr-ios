@@ -123,6 +123,7 @@
 		92EC626C252CBE3A0092E497 /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC626B252CBE3A0092E497 /* FBLPromises */; };
 		92EC626E252CBE3A0092E497 /* FBLPromisesTestHelpers in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC626D252CBE3A0092E497 /* FBLPromisesTestHelpers */; };
 		92EC6270252CBE3A0092E497 /* PromisesTestHelpers in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC626F252CBE3A0092E497 /* PromisesTestHelpers */; };
+		92EDE394261120D000688802 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD624C79C07007C960E /* AppView.swift */; };
 		92F8597225C791810057B3BC /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 /* End PBXBuildFile section */
 
@@ -1008,6 +1009,7 @@
 				9203B32B24CB080000F465CC /* Publishers.swift in Sources */,
 				9208ACF524CC559400773730 /* DevicesView.swift in Sources */,
 				92BD11D024CB0BD200AAB7DE /* PeopleGridView.swift in Sources */,
+				92EDE394261120D000688802 /* AppView.swift in Sources */,
 				92BD11CF24CB0BCF00AAB7DE /* ImageView.swift in Sources */,
 				9203B32824CB07F200F465CC /* Extensions.swift in Sources */,
 				929FFE1C24FAF096000BDCF0 /* User.swift in Sources */,

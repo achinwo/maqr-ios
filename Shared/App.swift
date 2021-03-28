@@ -363,8 +363,9 @@ struct JoliApp: AppClip {
                         .frame(width: proxy.size.width, height: proxy.size.height + proxy.safeAreaInsets.bottom)
                         .animation(.spring())
                         .edgesIgnoringSafeArea([.bottom])
-                        .background(Color.yellow)
+                        //.background(Color.yellow)
                 }
+                .environmentObject(coordinator)
             }
             .onChange(of: self.modalView) { modal in
                 isSheetPresented = modalView != nil

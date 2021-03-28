@@ -293,6 +293,9 @@ public struct ExploreView: JoliView {
         .onReceive(self.appCoordinator.queueRequestedSubject) { val in
             self.queueRequested = val
         }
+        .onReceive(self.appCoordinator.$pendingTrackChoice) { pendingChoice in
+            self.selectionModeCategory = pendingChoice?.category
+        }
         .onAppear(){
             self.updateSubscriptions()
             
@@ -477,6 +480,8 @@ public struct ExploreView: JoliView {
         return results
     }
     
+    @State var selectionModeCategory: Search.Category? = nil
+    
     func makeResultViews(q: Search.Query, res: Spotify.SearchResult) -> [Search.ResultView] {
         
         var results: [Search.ResultView] = []
@@ -499,7 +504,15 @@ public struct ExploreView: JoliView {
                 GeometryReader() { proxy in
                     TrackView2(track: .constant(track)) { (track, playStates, colors) in
                         Group(){
-                            if let playroom = self.playroom {
+                            
+                            if self.selectionModeCategory != nil {
+                                Image(systemName: "checkmark.circle")
+                                    .font(Font.title2.weight(.thin))
+                                    .padding()
+                                    .onTapGesture {
+                                        self.appCoordinator.pendingTrackChoice?.callback(track)
+                                    }
+                            } else if let playroom = self.playroom {
 //                                Button() {
 //                                    print("[Search.ResultView] queue \(track.title)")
 //                                    self.queueTrack(track, playroom: playroom)

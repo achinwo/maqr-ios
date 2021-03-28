@@ -89,6 +89,12 @@ public final class AppCoordinator: ObservableObject {
     @Published public var spotifyAuthCallback: ((AuthToken?) -> Void)? = nil
     @Published public var spotifyAuthRequestedAt: Date? = nil
     
+    @Published public var pendingTrackChoice: (category: Search.Category, callback: (Playable) -> Void)? = nil
+    
+    public var appViewScrollPosition = PassthroughSubject<AppView2.ScrollPosition, Never>()
+    
+    //public let playRequestedSubject = CurrentValueSubject([:] as [AppPreview: ])
+    
     private var allSearchengines = [spotifyEngine]
     
     public enum ActionError: Error {
@@ -111,6 +117,18 @@ public final class AppCoordinator: ObservableObject {
     
     var activeAuth: Auth? {
         return self.authsSubject.value.first() { $0.session.token == activeSessionToken }
+    }
+    
+    public func pickTrack(callback: @escaping (_ track: Playable) -> Void) -> Void {
+        logger.debug("[AppCoordinator#pickTrack] picking track")
+        dismissKeyboard()
+        self.appViewScrollPosition.send(.leadingEdge)
+        self.pendingTrackChoice = (category: .tracks,
+                                   callback: { tck in
+                                        self.pendingTrackChoice = nil
+                                        self.appViewScrollPosition.send(.trailingEdge)
+                                        callback(tck)
+                                   })
     }
     
     public func refreshDevices(){

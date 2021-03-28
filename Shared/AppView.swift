@@ -13,7 +13,7 @@ import Combine
 
 public struct AppView2: JoliView {
     
-    enum ScrollPosition: Equatable {
+    public enum ScrollPosition: Equatable {
         case leadingEdge
         case trailingEdge
         case point(CGPoint)
@@ -367,6 +367,16 @@ public struct AppView2: JoliView {
             guard playing != nil else { return }
             
             self.assertWebsocketConnected()
+        }
+        .onReceive(appCoordinator.appViewScrollPosition) { scrollPosition in
+            switch scrollPosition {
+                case .leadingEdge:
+                    self.selectedViewId = Self.viewIds.explore
+                case .trailingEdge:
+                    self.selectedViewId = Self.viewIds.listen
+                default:
+                    break
+            }
         }
         .onReceive(appCoordinator.$votesPublisher) { votePublisher in
             votePubCancel?.cancel()

@@ -363,7 +363,7 @@ struct ListenView: JoliView {
     
     var lobbyView: some View {
         ZStack(){
-            LobbyView(recentTracks: self.$recentTracks, liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks) { room in
+            LobbyView(recentTracks: self.$recentTracks, liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks, preview: self.$preview) { room in
                 self.tracks = []
                 self.votes = []
                 self.playroom = Playroom(musicroom: room, socket: self.websocket, api: api)

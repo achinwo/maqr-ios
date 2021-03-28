@@ -57,6 +57,7 @@ public struct LobbyView: JoliView {
     @Binding var playrooms: [Musicroom]
     @Binding var filterText: String
     @Binding var isLoading: Bool
+    @Binding var preview: AppPreview?
     let onPlayroomSelected: ((Musicroom) -> Void)?
     
     @SceneStorage("refreshTokenSpotify") var refreshTokenSpotify: String = .empty
@@ -139,7 +140,9 @@ public struct LobbyView: JoliView {
                             Spacer()
                             Button() {
                                 print("[LobbyView] made")
-                                self.appCoordinator.globalModalSubject.send(.playroomCreate)
+                                
+                                self.preview = .playroomCreate
+                                //self.appCoordinator.globalModalSubject.send(.playroomCreate)
                             } label: {
                                 Image(systemName: "plus").font(Font.title.weight(.thin))
                             }
