@@ -312,7 +312,7 @@ struct JoliApp: AppClip {
     
     var contentView: some View {
 
-        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, websocket: websocket)
+        AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify)
 //            .onReceive(appDelegate.$shortcutItemToProcess) { _ in
 //                //print(appDelegate.shortcutItemType)
 //                //Do something here
@@ -547,7 +547,7 @@ extension JoliApp {
     func onScenePhaseChange(_ phase: ScenePhase){
         switch phase {
             case .active:
-                print("App became active2")
+                print("App became active2 - \(String(describing: shortcutItemToProcess))")
                 
                 websocket.connect()
                 print("[Reconnecting]")
@@ -568,7 +568,8 @@ extension JoliApp {
                     }
                     let alertController = UIAlertController(title: "Quick Action", message: message, preferredStyle: .alert)
                     alertController.addAction(UIAlertAction(title: "Close", style: .default, handler: nil))
-                    appDelegate.window?.rootViewController?.present(alertController, animated: true, completion: nil)
+                    
+                    UIApplication.shared.keyWindow?.rootViewController?.present(alertController, animated: true, completion: nil)
                     
                     // Reset the shortcut item so it's never processed twice.
                     shortcutItemToProcess = nil
@@ -662,6 +663,8 @@ extension JoliApp {
             self.spotify.accessToken = access_token
         } else if let error_description = parameters?[SPTAppRemoteErrorDescriptionKey] {
             logger.debug("Spotify error: \(error_description)")
+        } else {
+            self.coordinator.currentLocation = AppLocation(url) ?? self.coordinator.currentLocation
         }
     }
     

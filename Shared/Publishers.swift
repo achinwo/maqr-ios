@@ -745,4 +745,5 @@ public final class AutoResetSubject<Output, Failure, S>: Subject where Failure :
 
 public protocol PlaybackController: ConnectablePublisher, ObservableObject where Output == JoliCore.ConnectionState, Failure == Error {
     var connectionState: JoliCore.ConnectionState { get }
+    func play(_ track: Playable, positionMs: Int?, contextUri: String?, device: Spotify.Device?) -> Future<Any, Failure>
 }

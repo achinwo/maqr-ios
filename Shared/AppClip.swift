@@ -225,14 +225,23 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
 public extension AppLocation {
     
     init?(_ activity: NSUserActivity){
-        guard let incomingUrl = activity.webpageURL,
-              let components = URLComponents(url: incomingUrl, resolvingAgainstBaseURL: true) else {
-            logger.info("[AppLocation] unable to resolve: \(activity)")
+        guard let incomingUrl = activity.webpageURL else {
+            logger.error("[AppLocation] unable to resolve activity: \(activity)")
+            return nil
+        }
+        
+        self.init(incomingUrl)
+    }
+    
+    init?(_ url: URL){
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
+            logger.error("[AppLocation] unable to resolve: \(url)")
             return nil
         }
         
         self.init(rawValue: components.path)
     }
+    
 }
 
 public extension PartialSheetManager {
@@ -283,6 +292,32 @@ public extension JoliView {
         } else {
             appCoordinator.withImpact(impact, action)
         }
+    }
+}
+
+public protocol JoliContentView: JoliView {
+    
+    associatedtype PlaybackControllerType = Never
+    
+    init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket)
+}
+
+extension JoliContentView where PlaybackControllerType: PlaybackController {
+
+    init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType) {
+        self.init(playroom: playroom, currentUser: currentUser, websocket: websocket)
+    }
+    
+}
+
+
+public enum ViewIdentifier: String, Identifiable {
+    case explore = "views.explore"
+    case listen = "views.listen"
+    case notset = "views.none"
+    
+    public var id: String {
+        return rawValue
     }
 }
 

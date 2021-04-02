@@ -13,8 +13,6 @@ import UserNotifications
 import Promises
 import Combine
 
-var appDelegateSingleton: AppDelegate!
-
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     #if DEBUG
@@ -25,8 +23,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     //var appState: AppState!
     var audioSession = AVAudioSession.sharedInstance()
-    
-    var window: UIWindow?
     
     private struct Observation {
         static let VolumeKey = "outputVolume"
@@ -159,17 +155,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        appDelegateSingleton = self
         
         UNUserNotificationCenter.current().delegate = self
         
         if debug {
             JoliApi.Environment.loadEnvConfig()
         }
-        
-        //self.appState = AppState(baseUrl: self.env.baseUrl, serverVersion: nil)
-        
-        //logger.addDestination(ServerDestination(url: self.env.baseUrl.http, urlSession: self.appState.api.urlSession))
         
         logger.debug("[AppDelegate#willFinishLaunchingWithOptions] notifOptions:\(String(describing: launchOptions))")
         return true
@@ -221,6 +212,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        
         if let shortcutItem = options.shortcutItem {
             shortcutItemToProcess = shortcutItem
         }
@@ -236,8 +228,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 var shortcutItemToProcess: UIApplicationShortcutItem?
 
 class CustomSceneDelegate: UIResponder, UIWindowSceneDelegate {
+    
     func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
         shortcutItemToProcess = shortcutItem
         logger.debug("[AppDelegate] windowScene=\(shortcutItem)")
     }
+    
 }

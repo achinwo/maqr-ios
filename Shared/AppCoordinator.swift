@@ -92,7 +92,7 @@ public final class AppCoordinator: ObservableObject {
     
     @Published public var pendingTrackChoice: (category: Search.Category, callback: (Playable) -> Void)? = nil
     
-    public var appViewScrollPosition = PassthroughSubject<AppView2.ScrollPosition, Never>()
+    public var appViewScrollPosition = PassthroughSubject<ScrollPosition, Never>()
     
     //public let playRequestedSubject = CurrentValueSubject([:] as [AppPreview: ])
     

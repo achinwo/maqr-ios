@@ -380,8 +380,15 @@ struct ResignKeyboardOnDragGesture: ViewModifier {
     
 }
 
-extension View {
+public extension View {
     func resignKeyboardOnDragGesture() -> some View {
         return modifier(ResignKeyboardOnDragGesture())
+    }
+    
+    func onReceive<P, Root>(_ publisher: P, assign: WritableKeyPath<Root, P.Output>, target: Root) -> some View where P : Publisher, P.Failure == Never {
+        return self.onReceive(publisher) { value in
+            var target = target
+            target[keyPath: assign] = value
+        }
     }
 }

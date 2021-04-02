@@ -10,16 +10,17 @@ import SwiftUI
 import JoliApi
 import JoliCore
 import Combine
+import Promises
 
-public struct AppView2: JoliView {
+public enum ScrollPosition: Equatable {
+    case leadingEdge
+    case trailingEdge
+    case point(CGPoint)
+}
+
+public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentView {
     
-    public enum ScrollPosition: Equatable {
-        case leadingEdge
-        case trailingEdge
-        case point(CGPoint)
-    }
     
-    static let viewIds: (explore: String, listen: String, notset: String) = ("views.explore", "views.listen", "views.none")
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var scrollPosition: ScrollPosition = .leadingEdge
@@ -29,7 +30,7 @@ public struct AppView2: JoliView {
     @State var heartLevel: HeartLevel = .full
     @State var draggingValue: CGSize = .zero
     
-    @AppStorage("selectedViewId") var selectedViewId: String = viewIds.notset
+    @AppStorage("selectedViewId") var selectedViewId: ViewIdentifier = ViewIdentifier.notset
     @State var peopleViewBounds: CGRect? = nil
     @State var navbarViewBounds: CGRect? = nil
     @State var filterText = ""
@@ -46,10 +47,17 @@ public struct AppView2: JoliView {
     @Binding var currentUser: User?
     let websocket: Socket
     
-    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket){
+    var localPlaybackController: PlaybackControllerType? = nil
+    
+    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket) {
         self._playroom = playroom
         self._currentUser = currentUser
         self.websocket = websocket
+    }
+    
+    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
+        self.init(playroom: playroom, currentUser: currentUser, websocket: websocket)
+        self.localPlaybackController = localPlaybackController
     }
     
     @State var reconnectingTasks: [DispatchWorkItem] = []
@@ -184,6 +192,7 @@ public struct AppView2: JoliView {
     }
     
     @State var websocketCancel: AnyCancellable? = nil
+    @State var currentLocation: AppLocation = .home
     
     func assertWebsocketConnected() {
         //print("[AppView#assertWebsocketConnected] attempting...")
@@ -217,15 +226,15 @@ public struct AppView2: JoliView {
                                     
                                     switch value {
                                         case .leadingEdge:
-                                            self.selectedViewId = Self.viewIds.explore
+                                            self.selectedViewId = .explore
                                         case .trailingEdge:
-                                            self.selectedViewId = Self.viewIds.listen
+                                            self.selectedViewId = .listen
                                         default:
                                             break
                                     }
                                 }
                                 .background(Color.white)
-                                .id(Self.viewIds.explore)
+                                .id(ViewIdentifier.explore)
                                 .simultaneousGesture(
                                     TapGesture()
                                         .onEnded() { value in
@@ -243,7 +252,7 @@ public struct AppView2: JoliView {
                                        playroom: self.$playroom, currentUser: self.$currentUser, websocket: self.websocket)
                                 .frame(width: screenWidth)
                                 .background(Color.white)
-                                .id(Self.viewIds.listen)
+                                .id(ViewIdentifier.listen)
                         }
                         .onFrameChange(){ frame in
                             
@@ -333,8 +342,8 @@ public struct AppView2: JoliView {
                     }
                     .onAppear() {
                         
-                        guard self.selectedViewId != Self.viewIds.notset else {
-                            self.selectedViewId = Self.viewIds.listen
+                        guard self.selectedViewId != .notset else {
+                            self.selectedViewId = .listen
                             return
                         }
                         
@@ -371,9 +380,21 @@ public struct AppView2: JoliView {
         .onReceive(appCoordinator.appViewScrollPosition) { scrollPosition in
             switch scrollPosition {
                 case .leadingEdge:
-                    self.selectedViewId = Self.viewIds.explore
+                    self.selectedViewId = .explore
                 case .trailingEdge:
-                    self.selectedViewId = Self.viewIds.listen
+                    self.selectedViewId = .listen
+                default:
+                    break
+            }
+        }
+        .onReceive(appCoordinator.$currentLocation, assign: \.currentLocation, target: self)
+        .onChange(of: currentLocation) { location in
+            switch location {
+                case .invited(let inviteId):
+                    self.fetchPlayroomByInviteId(inviteId)
+                case .error:
+                    //self.errorMessage = Self.GENERIC_ERROR_MESSAGE
+                    print("[\(Self.self)] error handling lacation: \(location)")
                 default:
                     break
             }
@@ -393,6 +414,33 @@ public struct AppView2: JoliView {
                 appCoordinator.voteCastSubject.send(value)
             }
         }
+    }
+    
+    @discardableResult
+    func fetchPlayroomByInviteId(_ inviteId: String) -> Promise<Entitlement> {
+        
+        let url = "/i/\(inviteId)"
+        return HttpMethod.Fetch.get(url: url, dataType: Entitlement.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then(){ entitlement -> Entitlement in
+                
+                guard let musicroom = entitlement.musicroom else {
+                    return entitlement
+                }
+                
+                let play = Playroom(musicroom: musicroom, socket: websocket, api: api)
+                self.playroom = play
+                play.updateQueuedTracks()
+                
+                return entitlement
+            }
+            .catch() { error in
+                print("[fetchPlayroomByInviteId] error: \(error)")
+                self.appCoordinator.globalErrorHandler()(error)
+            }
+            .always {
+                //self.loadingView = false
+            }
+        
     }
     
 }

@@ -87,11 +87,11 @@ public struct ExploreView: JoliView {
     
     @State var searchbarRect: CGRect? = nil
     @Binding var playroom: Playroom?
-    @Binding var selectedViewId: String
+    @Binding var selectedViewId: ViewIdentifier
     
     let websocket: Socket
     
-    public init(geoProxy: GeometryProxy, playroom: Binding<Playroom?>, selectedViewId: Binding<String>, websocket: Socket) {
+    public init(geoProxy: GeometryProxy, playroom: Binding<Playroom?>, selectedViewId: Binding<ViewIdentifier>, websocket: Socket) {
         self.geoProxy = geoProxy
         self._playroom = playroom
         self._selectedViewId = selectedViewId
@@ -467,7 +467,7 @@ public struct ExploreView: JoliView {
                                     subtitleKeyPath: \.details)
                         .onTapGesture {
                             print("[Explore] tapped: \(room)")
-                            self.selectedViewId = "views.listen"
+                            self.selectedViewId = .listen
                             
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, qos: .userInteractive, flags: .enforceQoS){
                                 self.playroom = Playroom(musicroom: room, socket: self.websocket, api: api)

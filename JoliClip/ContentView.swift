@@ -14,23 +14,14 @@ import Promises
 import UIImageColors
 import Combine
 
-public extension View {
-    
-    func onReceive<P, Root>(_ publisher: P, assign: WritableKeyPath<Root, P.Output>, target: Root) -> some View where P : Publisher, P.Failure == Never {
-        return self.onReceive(publisher) { value in
-            var target = target
-            target[keyPath: assign] = value
-        }
-    }
-    
-}
-
-struct ContentView: JoliView {
+struct ContentView: JoliContentView {
     
     @State var showRecommended = false
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    @State var playroom: Playroom? = nil
+    @Binding var playroom: Playroom?
+    @Binding var currentUser: User?
+    
     @State var errorMessage: String? = nil
     @State var playroomId: String? = nil
     @State var scrollProxy: ScrollViewProxy? = nil
@@ -38,6 +29,16 @@ struct ContentView: JoliView {
     let websocket: Socket
     
     @State var loadingView = false
+    
+    @State var filterText: String = ""
+    @State var preview: AppPreview? = nil
+    @State var tabbarExpaned = false
+    
+    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket){
+        self._playroom = playroom
+        self._currentUser = currentUser
+        self.websocket = websocket
+    }
     
     var refreskButton: some View {
         Button() {
@@ -145,10 +146,6 @@ struct ContentView: JoliView {
     @State var votes: [QueuedTrackVote] = []
     
     @State var tracks: [Playable] = []
-    
-    @Binding var tabbarExpaned: Bool
-    @Binding var preview: AppPreview?
-    @Binding var filterText: String
     
     @State var tracksFiltered: [Playable] = []
     

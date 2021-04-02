@@ -127,8 +127,8 @@ class AppState: ObservableObject {
     
     var didChange = PassthroughSubject<AppState, Never>()
     
-    var appDelegate: AppDelegate {
-        return appDelegateSingleton
+    var appDelegate: AppDelegate! {
+        return nil
     }
     
     var env: JoliApi.Environment {

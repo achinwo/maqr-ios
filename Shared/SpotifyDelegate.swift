@@ -14,6 +14,13 @@ import Combine
 
 public class SpotifyDelegate: NSObject, PlaybackController {
     
+    public func play(_ track: Playable, positionMs: Int?, contextUri: String?, device: Spotify.Device?) -> Future<Any, Error> {
+        return Future() { promise in
+            
+        }
+    }
+    
+    
     @Published public var connectionState: ConnectionState = .stopped
     
     public func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {

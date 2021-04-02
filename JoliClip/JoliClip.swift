@@ -50,12 +50,11 @@ struct JoliClip: AppClip {
         }
     }
     
-    @State var filterText: String = ""
-    @State var preview: AppPreview? = nil
-    @State var tabbarExpaned = false
+    @State var playroom: Playroom? = nil
+    @State var currentUser: User? = nil
     
     var contentView: some View {
-        ContentView(websocket: websocket, tabbarExpaned: $tabbarExpaned, preview: $preview, filterText: $filterText)
+        ContentView(playroom: self.$playroom, currentUser: self.$currentUser, websocket: websocket)
             .frame(maxWidth: UIScreen.main.bounds.width, maxHeight: UIScreen.main.bounds.height)
             .overlay(
                 GeometryReader() { proxy in
