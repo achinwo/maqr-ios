@@ -16,6 +16,7 @@ import Promises
 import Combine
 import AuthenticationServices
 import Version
+import KeychainAccess
 
 public struct ShortCodeGenerator {
 
@@ -198,8 +199,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     
     public var rawValue: String {
         switch self {
-        case .upgrade:
-            return "/upgrade"
+            case .upgrade:
+                return "/upgrade"
             case .invited(let inviteId):
                 return "/i/\(inviteId)"
             case .playroom(let roomId):
@@ -321,6 +322,10 @@ public protocol AppClip: App {
     var appleSignInDelegates: SignInWithAppleDelegates? { get nonmutating set }
     var serverVersion: Version? { get nonmutating set }
     var apnTokenPublisher: NotificationCenter.Publisher { get }
+    
+    var keychain: Keychain { get }
+    var auths: [Auth] { get nonmutating set }
+    var activeSessionToken: String? { get nonmutating set }
     
     static var version: Version { get }
     static var isAppclip: Bool { get }

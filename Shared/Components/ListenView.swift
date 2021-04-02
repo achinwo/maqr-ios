@@ -554,6 +554,9 @@ struct ListenView: JoliView {
             
             self.votes.append(vote)
         }
+        .onReceive(appCoordinator.globalPreviewSubject) { view in
+            self.preview = view
+        }
         .onReceive(appCoordinator.voteRequestedSubject) { requested in
             self.requestingVoteTrackId = requested
         }

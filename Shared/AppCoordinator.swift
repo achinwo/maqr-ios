@@ -66,6 +66,7 @@ public final class AppCoordinator: ObservableObject {
     public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
     public let queueRequestedSubject = CurrentValueSubject<(uri: String, room: Musicroom)?, Never>(nil)
     public let globalModalSubject = CurrentValueSubject<AppPreview?, Never>(nil)
+    public let globalPreviewSubject = PassthroughSubject<AppPreview?, Never>()
     
     public let authSubject = PassthroughSubject<Auth?, Never>()
     

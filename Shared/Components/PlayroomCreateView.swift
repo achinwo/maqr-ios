@@ -225,6 +225,7 @@ public struct PlayroomCreateView: JoliView {
             .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
             .then() { room in
                 logger.debug("[PlayroomCreate] created: \(room)")
+                self.appCoordinator.globalPreviewSubject.send(nil)
             }
             .catch(self.appCoordinator.globalErrorHandler())
             .always {

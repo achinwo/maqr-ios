@@ -145,7 +145,7 @@ class AppState: ObservableObject {
         return version
     }
     
-    var spotifyDelegate: SpotifyDelegate = spotifyDelegateInstance
+    var spotifyDelegate: SpotifyDelegate = SpotifyDelegate()
     
     var spotifyRemote: SPTAppRemote? {
         return spotifyDelegate.appRemote

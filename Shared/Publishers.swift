@@ -742,3 +742,7 @@ public final class AutoResetSubject<Output, Failure, S>: Subject where Failure :
     }
     
 }
+
+public protocol PlaybackController: ConnectablePublisher, ObservableObject where Output == JoliCore.ConnectionState, Failure == Error {
+    var connectionState: JoliCore.ConnectionState { get }
+}

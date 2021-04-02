@@ -14,11 +14,17 @@ import Combine
 import JoliApi
 import os
 import Version
+import KeychainAccess
 
 internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "global.invite.room")
 
 @main
 struct JoliClip: AppClip {
+    
+    @State var activeSessionToken: String?
+    @State var auths: [Auth] = []
+    
+    let keychain: Keychain = Keychain(service: "live.joli.session-token")
     
     @State var serverVersion: Version? = nil
     @State var appleSignInDelegates: SignInWithAppleDelegates?
@@ -70,7 +76,12 @@ struct JoliClip: AppClip {
                 }
                 .ignoresSafeArea(.all, edges: .bottom)
             )
+            .onAppear() {
+                self.coordinator.serverLogDestination = ServerDestination(url: api.baseUrlHttp, urlSession: api.urlSession)
+            }
     }
+    
+    var api: JoliApi
     
     init() {
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
@@ -78,7 +89,7 @@ struct JoliClip: AppClip {
         
         print("[URL] \(JoliApi.Environment.current.baseUrl)")
         
-        let api = JoliApi(baseUrl: JoliApi.Environment.current.baseUrl, headers: Self.defaultHeaders)
+        api = JoliApi(baseUrl: JoliApi.Environment.current.baseUrl, headers: Self.defaultHeaders)
         
         self.websocket = Socket(url: url.appendingPathComponent("/ws")) { (socket, connected) in
             

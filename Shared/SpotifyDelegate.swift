@@ -8,8 +8,33 @@
 
 import Foundation
 import JoliCore
+import Combine
 
-class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate, SPTSessionManagerDelegate {
+
+
+public class SpotifyDelegate: NSObject, PlaybackController {
+    
+    @Published public var connectionState: ConnectionState = .stopped
+    
+    public func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
+        self.subscribe(subscriber)
+    }
+    
+    public func connect() -> Cancellable {
+        
+        let cancellation = AnyCancellable() {
+            logger.debug("[\(Self.self)#\(#function)] disconnecting...")
+            self.appRemote.disconnect()
+        }
+        
+        guard !self.appRemote.isConnected else {
+            return cancellation
+        }
+        
+        self.remoteConnect()
+        
+        return cancellation
+    }
     
     let SpotifyClientID = "e3966e30011d4895997ce89c797de5a5"
     let SpotifyRedirectURL = URL(string: "joli://spotify-callback/")!
@@ -49,62 +74,6 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
         let token = token ?? accessToken
         self.appRemote.connectionParameters.accessToken = token
         self.appRemote.connect()
-    }
-    
-    func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
-        logger.debug("Spotify: created session \(session)")
-        
-        remoteConnect(token: session.accessToken)
-        
-        let builder = Builder<AuthToken>.init(properties: [
-            .accessToken: session.accessToken as AnyObject,
-            .refreshToken: session.refreshToken as AnyObject,
-            .scope: session.scope as AnyObject,
-            .expiresIn: 3016 as AnyObject,
-            .tokenType: "Bearer" as AnyObject,
-        ])
-        
-        builder.save()
-            .then(){ auth in
-                logger.info("[\(#function)] AUth: \(auth)")
-                self.authCallback?(auth, nil)
-            }
-            .catch() { error in
-                self.authCallback?(nil, error)
-            }
-    }
-    
-    func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
-        logger.debug("Spotify: session failure \(String(describing: error))")
-    }
-    
-    func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
-        logger.debug("Spotify connected!")
-        //let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
-        //self.appRemote.authorizeAndPlayURI(playURI)
-        
-        self.appRemote.playerAPI?.delegate = self
-        self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
-            if let error = error {
-                logger.debug("Spotify: playstae subsrcibe error: \(String(describing: error))")
-                return
-            }
-            
-            logger.info("[PlayerState] \(String(describing: result))")
-        })
-    }
-    
-    func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
-        logger.debug("Spotify: disconnected \(String(describing: error))")
-    }
-    
-    func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
-        logger.debug("Spotify: failed: \(String(describing: error))")
-    }
-    
-    func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
-        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(String(describing: playerState))")
-        self.playStateCallback?(playerState)
     }
     
     lazy var spotifySessionManager: SPTSessionManager = {
@@ -161,6 +130,66 @@ class SpotifyDelegate: NSObject, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDe
         mgr.initiateSession(with: requestedScopes, options: .default)
         
         return mgr
+    }
+    
+}
+
+extension SpotifyDelegate: SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate, SPTSessionManagerDelegate {
+    
+    public func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
+        logger.debug("Spotify: session failure \(String(describing: error))")
+    }
+    
+    public func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
+        logger.debug("Spotify connected!")
+        //let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
+        //self.appRemote.authorizeAndPlayURI(playURI)
+        
+        self.appRemote.playerAPI?.delegate = self
+        self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
+            if let error = error {
+                logger.debug("Spotify: playstae subsrcibe error: \(String(describing: error))")
+                return
+            }
+            
+            logger.info("[PlayerState] \(String(describing: result))")
+        })
+    }
+    
+    public func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
+        logger.debug("Spotify: disconnected \(String(describing: error))")
+    }
+    
+    public func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
+        logger.debug("Spotify: failed: \(String(describing: error))")
+    }
+    
+    public func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
+        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(String(describing: playerState))")
+        self.playStateCallback?(playerState)
+    }
+    
+    public func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
+        logger.debug("Spotify: created session \(session)")
+        
+        remoteConnect(token: session.accessToken)
+        
+        let builder = Builder<AuthToken>.init(properties: [
+            .accessToken: session.accessToken as AnyObject,
+            .refreshToken: session.refreshToken as AnyObject,
+            .scope: session.scope as AnyObject,
+            .expiresIn: 3016 as AnyObject,
+            .tokenType: "Bearer" as AnyObject,
+        ])
+        
+        builder.save()
+            .then(){ auth in
+                logger.info("[\(#function)] AUth: \(auth)")
+                self.authCallback?(auth, nil)
+            }
+            .catch() { error in
+                self.authCallback?(nil, error)
+            }
     }
     
 }
