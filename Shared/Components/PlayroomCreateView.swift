@@ -58,7 +58,7 @@ public struct PlayroomCreateView: JoliView {
                             
                             Divider()
                         }
-                        .background(Color.yellow.opacity(0.6))
+                        .background(Color.systemYellow.opacity(0.6))
                         .foregroundColor(Color.secondary)
                         
                         
@@ -175,11 +175,11 @@ public struct PlayroomCreateView: JoliView {
                                     Text("Create Playroom")
                                         .fontWeight(.semibold)
                                         .font(.headline)
-                                        .foregroundColor(disabled ? Color.gray : Color.purple)
+                                        .foregroundColor(disabled ? Color.systemGray : Color.systemPurple)
                                         .padding()
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 36)
-                                                .stroke(disabled ? Color.gray : Color.purple, lineWidth: 2)
+                                                .stroke(disabled ? Color.systemGray : Color.systemPurple, lineWidth: 2)
                                         )
                                     
                                     if self.creatingPlayroom {

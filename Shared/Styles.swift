@@ -15,7 +15,7 @@ public struct GradientBackgroundStyle: ButtonStyle {
     public var colors: [Color]
     
     public init(colors: [Color]? = nil){
-        self.colors = colors ?? [Color.blue, Color.green]
+        self.colors = colors ?? [Color.systemBlue, Color.systemGreen]
     }
     
     public func makeBody(configuration: Self.Configuration) -> some View {
@@ -30,11 +30,11 @@ public struct GradientBackgroundStyle: ButtonStyle {
 
 public struct BlackWhiteButtonStyle: ButtonStyle {
     
-    var white: Color = .white
-    var black: Color = .black
+    var white: Color = .systemBackground
+    var black: Color = .label
     var isInverted = false
     
-    init(white: Color = .white, black: Color = .black){
+    init(white: Color = .systemBackground, black: Color = .label){
         self.white = white
         self.black = black
     }

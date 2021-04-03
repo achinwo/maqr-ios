@@ -20,8 +20,6 @@ public enum ScrollPosition: Equatable {
 
 public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentView {
     
-    
-    
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var scrollPosition: ScrollPosition = .leadingEdge
     
@@ -233,7 +231,7 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                                             break
                                     }
                                 }
-                                .background(Color.white)
+                                .background(Color.systemBackground)
                                 .id(ViewIdentifier.explore)
                                 .simultaneousGesture(
                                     TapGesture()
@@ -251,7 +249,7 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
                                        playroom: self.$playroom, currentUser: self.$currentUser, websocket: self.websocket)
                                 .frame(width: screenWidth)
-                                .background(Color.white)
+                                .background(Color.systemBackground)
                                 .id(ViewIdentifier.listen)
                         }
                         .onFrameChange(){ frame in
@@ -293,7 +291,14 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                                 .background(Color.yellow)
                                 .fixedSize()
                                 
-                                Spacer()
+                                if let localPlayback = localPlaybackController {
+                                    Spacer()
+                                        .onReceive(localPlayback.playbackStatePublisher) { (localPlaybackState: PlaybackState?) -> Void in
+                                            logger.debug("[\(Self.self)] got playback: \(String(describing: localPlaybackState))")
+                                        }
+                                } else {
+                                    Spacer()
+                                }
                                 
                                 VStack(){
                                     

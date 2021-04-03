@@ -14,9 +14,6 @@ import Combine
 import UIImageColors
 //import Sourceful
 
-public typealias Color = SwiftUI.Color
-public typealias View = SwiftUI.View
-
 struct ShakeEffect: GeometryEffect {
     
     var position: CGFloat
@@ -68,7 +65,7 @@ struct ShakeButtonView: View {
                 self.invalidAttempts += 1
             }) { Text("Shake") }
             Rectangle()
-                .fill(Color.purple)
+                .fill(Color.systemPurple)
                 .frame(width: 200, height: 200)
                 .modifier(ShakeEffect(shakes: invalidAttempts * 2))
                 .animation(Animation.linear)
@@ -282,7 +279,7 @@ struct ListenView: JoliView {
                     
                 }
                 
-                JoyMeterView(heart, textStyle: UIFont.TextStyle.title2, backgroundColor: Color.red.opacity(0.5))
+                JoyMeterView(heart, textStyle: UIFont.TextStyle.title2, backgroundColor: Color.systemRed.opacity(0.5))
                     .padding()
                     .padding(.trailing, Sizing.medium)
                     .foregroundColor(colors?.secondaryColor ?? Color.primary)
@@ -412,7 +409,7 @@ struct ListenView: JoliView {
             }
         }
         .frame(width: screenWidth)
-        .background(Color.white)
+        .background(Color.systemBackground)
     }
     
     class Model: ObservableObject {
@@ -446,7 +443,7 @@ struct ListenView: JoliView {
                             .padding(.top, geoProxy.safeAreaInsets.top + 80)
                         Divider()
                     }
-                    .background(Color.white)
+                    .background(Color.systemBackground)
                     .opacity(isEmptySearchResult ? 0 : 1)
                     .frame(height: isEmptySearchResult ? 0 : nil)
                     .animation(.easeInOut)
@@ -458,7 +455,7 @@ struct ListenView: JoliView {
                                 //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
                                 .padding(.top, isEmptySearchResult ? geoProxy.safeAreaInsets.top + 100 : nil)
                                 .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
-                                .background(Color.white)
+                                .background(Color.systemBackground)
                                 .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                                 .onReceive(playroom.$queue) { tracks in
                                     var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
@@ -526,7 +523,7 @@ struct ListenView: JoliView {
                         self.lobbyView
                             //.frame(minHeight: 68.0 * CGFloat(recentTracks.count + liveTracks.count) + CGFloat(screenHeight) + CGFloat(68.0 * CGFloat(playrooms.count) / 2.0))
                             .padding(.top, isEmptySearchResult ? Sizing.xxLarge * 2 : nil)
-                            .background(Color.white)
+                            .background(Color.systemBackground)
                             .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     }
                 }
@@ -619,6 +616,8 @@ struct ListenView: JoliView {
         }
     }
     
+    @Environment(\.colorScheme) var colorScheme
+    
     var body: some View {
         
         return ZStack(){
@@ -648,7 +647,7 @@ struct ListenView: JoliView {
                             self.peopleViewBounds = rect
                         }
                     }
-                    .background(BlurView(.systemUltraThinMaterialLight))
+                    .background(BlurView(colorScheme == .dark ? .systemThinMaterialDark : .systemUltraThinMaterialLight))
                 //Color.white.blur(radius: 20).opacity(0.9))
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
@@ -695,7 +694,7 @@ struct ListenView: JoliView {
                 }
                 .animation(.easeIn)
                 .frame(width: screenWidth, height: geoProxy.safeAreaInsets.top)
-                .background(Color.white.opacity(0.89))
+                .background(Color.systemBackground.opacity(0.89))
                 .onFrameChange() { rect in
                     DispatchQueue.main.async {
                         self.navbarViewBounds = rect
@@ -713,7 +712,7 @@ struct ListenView: JoliView {
                             .padding(.horizontal, Sizing.small * 0.6)
                             .padding([.horizontal, .bottom], Sizing.small * 0.5)
                             .matchedGeometryEffect(id: "listen-header", in: animation)
-                            .background(Color.white.opacity(0.90))
+                            .background(Color.systemBackground.opacity(0.90))
                             .frame(maxWidth: screenWidth)
                     } else {
                         HStack(alignment: .top){
@@ -721,7 +720,7 @@ struct ListenView: JoliView {
                             //ShakeButtonView()
                             Text(Strings.appSymbol.stringValue)
                                 .font(Font.title.weight(.thin))
-                                .gradientForeground(colors: [Color.red, Color.orange, Color.yellow, Color.green, Color.blue, Color.purple, Color.pink])
+                                .gradientForeground(colors: [Color.systemRed, Color.systemOrange, Color.systemYellow, Color.systemGreen, Color.systemBlue, Color.systemPurple, Color.systemPink])
                                 .scaleEffect(x: self.loadingLiveTracks ? 1.6 : 1.0, y: self.loadingLiveTracks ? 1.6 : 1.0)
                                 .onTapGesture {
                                     self.assertWebsocketConnected()
@@ -729,7 +728,7 @@ struct ListenView: JoliView {
                                 }
                                 .background(
                                     Circle()
-                                        .fill(Color.white.opacity(0.90))
+                                        .fill(Color.systemBackground.opacity(0.90))
                                         .scaleEffect(x: 1.4, y: 1.4)
                                 )
                             
@@ -750,7 +749,7 @@ struct ListenView: JoliView {
                 AppPreviewView(preview: self.$preview, currentUser: self.$currentUser, animation: animation)
                     .frame(maxWidth: screenWidth)
                     .frame(minWidth: screenWidth, maxHeight: screenHeight)
-                    .background(BlurView(.extraLight))
+                    .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
                     .padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
                     .offset(x: 0, y: self.preview == nil ? screenHeight : 0)
                     .animation(.spring())

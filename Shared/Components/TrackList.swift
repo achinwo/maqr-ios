@@ -297,9 +297,9 @@ public struct TrackView2<AddonView: View>: JoliView {
                         Text(track.explicit  ? "E" : "")
                             .font(Font.footnote)
                             .padding(.horizontal, 2)
-                            .background(Color.gray.opacity(0.85))
+                            .background(Color.systemGray.opacity(0.85))
                             .font(.footnote)
-                            .foregroundColor(Color.white)
+                            .foregroundColor(Color.primary)
                             .cornerRadius(3)
                             .padding(.trailing, Sizing.small / 3)
                     }
@@ -376,13 +376,13 @@ public extension PlayState {
     
     static var allColors: [Color] {
         return [
-            .red,
-            .yellow,
-            .blue,
-            .pink,
-            .green,
-            .orange,
-            .purple,
+            .systemRed,
+            .systemYellow,
+            .systemBlue,
+            .systemPink,
+            .systemGreen,
+            .systemOrange,
+            .systemPurple,
         ]
     }
     

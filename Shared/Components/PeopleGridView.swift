@@ -93,7 +93,11 @@ public struct InvitePeopleView: JoliView {
             HStack(){
                 Button() {
                     print("Share view")
-                    appCoordinator.share(text: "https://api.jolimc.com/join/")
+                    guard let playroom = playroom else {
+                        return
+                    }
+                    
+                    appCoordinator.share(room: playroom)
                 } label: {
                     Label("Copy link", systemImage: "link")
                 }
@@ -157,11 +161,10 @@ struct PeopleGridView: JoliView {
             }
             
             Image(systemName: "plus.circle")
-                .renderingMode(.original)
                 .resizable()
                 .font(.system(size: width, weight: Font.Weight.ultraLight, design: .default))
+                .foregroundColor(.primary)
                 .frame(width: width, height: width)
-                .foregroundColor(.gray)
                 .onTapGesture(){
                     self.gestureCallback?(.tap, nil)
                 }
@@ -227,7 +230,7 @@ public struct UserAvatarView: JoliView {
                             Text("Invited")
                                 .fontWeight(.thin)
                                 .padding([.leading, .trailing], 4)
-                                .foregroundColor(.white)
+                                .foregroundColor(.primary)
                                 .background(Color.secondary)
                                 .font(.caption2)
                                 .clipShape(Capsule())
@@ -236,7 +239,7 @@ public struct UserAvatarView: JoliView {
                                 .fill(member.activityStatus == .online ? Color.green : Color.gray)
                                 .overlay(
                                     Circle()
-                                        .stroke(member.activityStatus == .online ? Color.green : Color.white, lineWidth: 0.5)
+                                        .stroke(member.activityStatus == .online ? Color.green : Color.systemBackground, lineWidth: 0.5)
                                 )
                                 .frame(width: max(width / 4, 15), height: max(width / 4, 15))
                         }

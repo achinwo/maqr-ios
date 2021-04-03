@@ -334,13 +334,26 @@ public final class AppCoordinator: ObservableObject {
             }
     }
     
-    public func share(text: String){
+    public func share(room: Room, completionHandler: ((Bool) -> Void)? = nil){
+        let someText: String = "Hi, lets listen to songs together in \(room.name)"
+        
+        guard let url = URL(string: "/i/GIqYQm", relativeTo: self.api.baseUrlHttp) else {
+            completionHandler?(false)
+            return
+        }
+        
+        self.share(text: someText, url: url, completionHandler: completionHandler)
+    }
+    
+    public func share(text: String, url: URL, completionHandler: ((Bool) -> Void)? = nil){
         isSharePresented.toggle()
-        //
-        let text = "You have been invited to join the room. Go to https://api.jolimc.com/join/abcd to join the room."
-        let av = UIActivityViewController(activityItems: [text], applicationActivities: [ShareActivity()])
+        
+        let sharedObjects: [AnyObject] = [url as AnyObject, text as AnyObject]
+        
+        let av = UIActivityViewController(activityItems: sharedObjects, applicationActivities: [ShareActivity()])
         UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true) {
             print("[AppCoordinator#share] share view presented")
+            completionHandler?(true)
         }
     }
     

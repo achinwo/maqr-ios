@@ -10,7 +10,87 @@ import Foundation
 import JoliCore
 import Combine
 
-
+public struct SpotifyPlaybackState: PlaybackState, CustomStringConvertible, CustomDebugStringConvertible {
+    
+    private let sptState: SPTAppRemotePlayerState
+    
+    public init(_ spotifyPlayerState: SPTAppRemotePlayerState){
+        self.sptState = spotifyPlayerState
+    }
+    
+    public var contextTitle: String {
+        return sptState.contextTitle
+    }
+    
+    public var description: String {
+        return sptState.description
+    }
+    
+    public var debugDescription: String {
+        return sptState.debugDescription ?? self.description
+    }
+    
+    public var isPaused: Bool {
+        return sptState.isPaused
+    }
+    
+    public var explicit: Bool {
+        return true
+    }
+    
+    public var contextUri: URL {
+        return self.sptState.contextURI
+    }
+    
+    public var repeatMode: PlaybackRepeatMode {
+        return PlaybackRepeatMode(rawValue: self.sptState.playbackOptions.repeatMode.rawValue) ?? PlaybackRepeatMode.off
+    }
+    
+    public var isShuffling: Bool {
+        return self.sptState.playbackOptions.isShuffling
+    }
+    
+    public var speed: Float {
+        return self.sptState.playbackSpeed
+    }
+    
+    public var position: Int {
+        return self.sptState.playbackPosition
+    }
+    
+    public var title: String {
+        self.sptState.track.name
+    }
+    
+    public var thumbnailUrl: String {
+        self.sptState.track.imageIdentifier
+    }
+    
+    public var albumCoverUrl: String {
+        self.sptState.track.imageIdentifier
+    }
+    
+    public var artistName: String {
+        self.sptState.track.artist.name
+    }
+    
+    public var uri: String {
+        self.sptState.track.uri
+    }
+    
+    public var isPlayable: Bool {
+        return true
+    }
+    
+    public var duration: Int {
+        Int(self.sptState.track.duration)
+    }
+    
+    public var releasedAt: Date? {
+        return nil
+    }
+    
+}
 
 public class SpotifyDelegate: NSObject, PlaybackController {
     
@@ -20,8 +100,14 @@ public class SpotifyDelegate: NSObject, PlaybackController {
         }
     }
     
+    public var combineIdentifier: String {
+        return "PlaybackController/Spotify"
+    }
     
     @Published public var connectionState: ConnectionState = .stopped
+    @Published public var playbackState: PlaybackState? = nil
+    
+    public var playbackStatePublisher: Published<PlaybackState?>.Publisher { $playbackState }
     
     public func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
         self.subscribe(subscriber)
@@ -174,6 +260,7 @@ extension SpotifyDelegate: SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate
     public func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
         logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(String(describing: playerState))")
         self.playStateCallback?(playerState)
+        self.playbackState = SpotifyPlaybackState(playerState)
     }
     
     public func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {

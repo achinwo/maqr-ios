@@ -175,7 +175,7 @@ struct ContentView: JoliContentView {
             //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
             //.padding(.top, 100)
             //.padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
-            .background(Color.white)
+            .background(Color.systemBackground)
             .onReceive(playroom.$queue) { tracks in
                 var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
                 var allVotes: [QueuedTrackVote] = []
@@ -273,7 +273,7 @@ struct ContentView: JoliContentView {
                     
                 }
                 
-                JoyMeterView(heart, textStyle: UIFont.TextStyle.title2, backgroundColor: Color.red.opacity(0.5))
+                JoyMeterView(heart, textStyle: UIFont.TextStyle.title2, backgroundColor: Color.systemRed.opacity(0.5))
                     .padding()
                     .padding(.trailing, Sizing.medium)
                     .foregroundColor(colors?.secondaryColor ?? Color.primary)

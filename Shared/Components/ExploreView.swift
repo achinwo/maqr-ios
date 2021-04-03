@@ -236,7 +236,7 @@ public struct ExploreView: JoliView {
                                     .rotation3DEffect(self.seeAllKey != item.key ? Angle(degrees: -180) : Angle.zero, axis: (0, 90, 0))
                                         
                                     self.renderContent(item.key, item.value)
-                                        .background(Color.white)
+                                        .background(Color.systemBackground)
                                         //.opacity(self.seeAllKey == item.key ? 0 : 1)
                                         .zIndex(self.seeAllKey == item.key ? 0 : 10)
                                         .animation(.easeInOut)
@@ -274,7 +274,7 @@ public struct ExploreView: JoliView {
                         GeometryReader { geometry in
                             //Rectangle()
                             //.fill(Color.clear)
-                            return Color.white.opacity(0.86)
+                            return Color.systemBackground.opacity(0.86)
                                 .preference(key: BoundsPreferenceKey.self,
                                             value: geometry.frame(in: .named("myZstack")))
                         }
@@ -616,8 +616,8 @@ public struct SpotifyItemView<Item>: View {
                 Image(systemName: "music.note.list")
                     .resizable()
                     .padding()
-                    .foregroundColor(.white)
-                    .background(Color.gray)
+                    .foregroundColor(.primary)
+                    .background(Color.systemGray)
                     .frame(width: 64, height: 64, alignment: .bottomLeading)
                     .clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
             }

@@ -54,7 +54,7 @@ struct ListenTabbarView: JoliView {
     @State var hearts: Hearts? = nil {
         
         didSet {
-            self.heartsForegroundColor = hearts == nil || hearts!.score <= HeartLevel.empty.rawValue ? Color.gray : Color.red
+            self.heartsForegroundColor = hearts == nil || hearts!.score <= HeartLevel.empty.rawValue ? Color.systemGray : Color.systemRed
         }
         
     }
@@ -85,7 +85,7 @@ struct ListenTabbarView: JoliView {
     }
     
     @State var requestingVote: Int? = nil
-    @State var heartsForegroundColor: Color = Color.red
+    @State var heartsForegroundColor: Color = Color.systemRed
     
     var contentView: some View {
         var label = ""
@@ -240,7 +240,7 @@ struct ListenTabbarView: JoliView {
                 Spacer()
                 Image(systemName: "arrow.uturn.backward.circle")
                     .font(Font.title3.weight(self.isExpanded ? .light : .thin))
-                    .foregroundColor(Color.gray)
+                    .foregroundColor(Color.systemGray)
                     .onTapGesture(){}
                 
             }
@@ -248,7 +248,7 @@ struct ListenTabbarView: JoliView {
             .padding()
             .padding(.trailing, .zero)
             .frame(minWidth: screenWidth / 2)
-            .background(Color.gray.opacity(0.001))
+            .background(Color.systemGray.opacity(0.001))
             .offset(x: Sizing.small)
             .onTapGesture(){
                 withAnimation(){

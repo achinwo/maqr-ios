@@ -247,11 +247,11 @@ public struct LobbyView: JoliView {
                     ForEach(self.auths, id: \.session.token) { auth in
                         HStack() {
                             
-                            let color = self.activeSessionId == auth.session.token ? Color.green : Color.gray
+                            let color = self.activeSessionId == auth.session.token ? Color.systemGreen : Color.systemGray
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(auth.user.name).font(.headline).foregroundColor(color)
-                                Text(auth.user.ranking.description.lowercased()).font(.footnote).foregroundColor(Color.gray)
+                                Text(auth.user.ranking.description.lowercased()).font(.footnote).foregroundColor(Color.systemGray)
                             }
                             Spacer()
                             Image(systemName: "minus")

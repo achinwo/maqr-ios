@@ -38,6 +38,7 @@ public enum AppPreview: View, Equatable {
                 }
             case .playroomCreate:
                 PlayroomCreateView()
+                    .background(Color.clear)
             default:
                 EmptyView()
         }
