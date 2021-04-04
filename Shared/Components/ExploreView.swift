@@ -11,7 +11,7 @@ import Combine
 import JoliCore
 import JoliApi
 import GradientLoadingBar
-import Sourceful
+//import Sourceful
 import Promises
 
 struct GradientLoadingBarView: UIViewRepresentable {
@@ -186,15 +186,15 @@ public struct ExploreView: JoliView {
                             let header = HStack(){
                                 Text("\(item.key.emoji ?? "")\(item.key.emoji == nil ? "" : " ")\(item.key.labelPlural)")
                                 Spacer()
-                                Button() {
-                                    print("[ExploreView] See all: \(item.key)")
-                                    self.seeAllKey = self.seeAllKey == item.key ? nil : item.key
-                                } label: {
-                                    Image(systemName: self.seeAllKey == item.key ? "rotate.left.fill" : "rotate.right")
-                                        .font(.subheadline)
-                                        .animation(.easeInOut)
-                                        //.resizable()
-                                }
+//                                Button() {
+//                                    print("[ExploreView] See all: \(item.key)")
+//                                    self.seeAllKey = self.seeAllKey == item.key ? nil : item.key
+//                                } label: {
+//                                    Image(systemName: self.seeAllKey == item.key ? "rotate.left.fill" : "rotate.right")
+//                                        .font(.subheadline)
+//                                        .animation(.easeInOut)
+//                                        //.resizable()
+//                                }
                             }
                             .padding(.top, idx == 0 ? 185 : nil)
                             
@@ -202,29 +202,32 @@ public struct ExploreView: JoliView {
                                 ZStack(){
                                     VStack(){
                                         GeometryReader() { proxy in
-                                            let quotation = """
-                                            class View {
-                                                
-                                                public func gradientForeground(colors: [Color]) -> some View {
-                                                    self.overlay(AngularGradient(gradient: Gradient(colors: colors),
-                                                                                 center: UnitPoint(x: 0.5, y: 1),
-                                                                                 angle: Angle(degrees: 0.00)))
-                                                        .mask(self)
-                                                }
-                                                
-                                            }
-                                            """
                                             
-                                            let cus = SourceCodeTextEditor.Customization(
-                                                didChangeText: {_ in },
-                                                insertionPointColor: { Sourceful.Color.white },
-                                                lexerForSource: { _ in SwiftLexer() },
-                                                textViewDidBeginEditing: { _ in },
-                                                theme: { DefaultSourceCodeTheme() }
-                                            )
                                             
-                                            SourceCodeTextEditor(text: .constant(quotation), cusotmization: cus)
-                                                .frame(width: proxy.size.width, height: proxy.size.height)
+                                            
+//                                            let quotation = """
+//                                            class View {
+//
+//                                                public func gradientForeground(colors: [Color]) -> some View {
+//                                                    self.overlay(AngularGradient(gradient: Gradient(colors: colors),
+//                                                                                 center: UnitPoint(x: 0.5, y: 1),
+//                                                                                 angle: Angle(degrees: 0.00)))
+//                                                        .mask(self)
+//                                                }
+//
+//                                            }
+//                                            """
+                                            
+//                                            let cus = SourceCodeTextEditor.Customization(
+//                                                didChangeText: {_ in },
+//                                                insertionPointColor: { Sourceful.Color.white },
+//                                                lexerForSource: { _ in SwiftLexer() },
+//                                                textViewDidBeginEditing: { _ in },
+//                                                theme: { DefaultSourceCodeTheme() }
+//                                            )
+                                            
+//                                            SourceCodeTextEditor(text: .constant(quotation), cusotmization: cus)
+//                                                .frame(width: proxy.size.width, height: proxy.size.height)
                                         }
                                     }
                                     .background(Colors.lightGray)
