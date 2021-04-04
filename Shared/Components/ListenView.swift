@@ -91,10 +91,24 @@ public extension Search.Engine {
 
 struct ListenView: JoliView {
     
+    
+    class Model: ObservableObject {
+        
+        @Published var triggeredSwipeRefresh = false {
+            didSet {
+                if oldValue == false && triggeredSwipeRefresh == true {
+                    print("[ListenView] trigger refresh")
+                    self.lastResfreshedAt = Date()
+                }
+            }
+        }
+        
+        @Published var lastResfreshedAt: Date? = nil
+        
+    }
+    
     @EnvironmentObject var appCoordinator: AppCoordinator
-    
-    let geoProxy: GeometryProxy
-    
+        
     @State var tracks: [Playable] = []
     
     @Binding var tabbarExpaned: Bool
@@ -114,8 +128,7 @@ struct ListenView: JoliView {
     @State var votes: [QueuedTrackVote] = []
     let websocket: Socket
     
-    init(geoProxy: GeometryProxy, tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket) {
-        self.geoProxy = geoProxy
+    init(tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket) {
         self._tabbarExpaned = tabbarExpaned
         self._preview = preview
         self._filterText = filterText
@@ -319,6 +332,7 @@ struct ListenView: JoliView {
     @StateObject var model = SearchStore()
     @State var playPubCancel: AnyCancellable? = nil
     @State var searchResultCancel: AnyCancellable? = nil
+    @Environment(\.safeAreaInsets) var safeAreaInsets
     
     @State var strip: (playing: Playable?, next: Playable?, runnerup: Playable?) = (nil, nil, nil)
     
@@ -412,21 +426,6 @@ struct ListenView: JoliView {
         .background(Color.systemBackground)
     }
     
-    class Model: ObservableObject {
-        
-        @Published var triggeredSwipeRefresh = false {
-            didSet {
-                if oldValue == false && triggeredSwipeRefresh == true {
-                    print("[ListenView] trigger refresh")
-                    self.lastResfreshedAt = Date()
-                }
-            }
-        }
-        
-        @Published var lastResfreshedAt: Date? = nil
-        
-    }
-    
     @StateObject var refreshModel = Model()
     
     var contentView: some View {
@@ -440,7 +439,7 @@ struct ListenView: JoliView {
                     Group() {
                         self.searchResultView
                             .padding([.horizontal, .bottom])
-                            .padding(.top, geoProxy.safeAreaInsets.top + 80)
+                            .padding(.top, safeAreaInsets.top + 80)
                         Divider()
                     }
                     .background(Color.systemBackground)
@@ -451,9 +450,8 @@ struct ListenView: JoliView {
                     if let playroom = playroom {
                         ZStack(){
                             TrackList(tracks: self.$tracksFiltered, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
-                                //.padding(.top, geoProxy.safeAreaInsets.top)
-                                //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
-                                .padding(.top, isEmptySearchResult ? geoProxy.safeAreaInsets.top + 100 : nil)
+                                //.padding(.top, roomControlViewBounds == nil ? safeAreaInsets.top : roomControlViewBounds?.height)
+                                .padding(.top, isEmptySearchResult ? safeAreaInsets.top + 100 : nil)
                                 .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
                                 .background(Color.systemBackground)
                                 .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
@@ -617,6 +615,7 @@ struct ListenView: JoliView {
     }
     
     @Environment(\.colorScheme) var colorScheme
+    @State var keyboardHeight: CGFloat = 0
     
     var body: some View {
         
@@ -640,7 +639,7 @@ struct ListenView: JoliView {
                 Divider()
                 ListenTabbarView(isExpanded: $tabbarExpaned, searchText: self.$filterText, preview: self.$preview,
                                  playroom: self.$playroom)
-                    .padding(.bottom, geoProxy.safeAreaInsets.bottom)
+                    .padding(.bottom, max(safeAreaInsets.bottom, keyboardHeight))
                     .frame(width: screenWidth)
                     .onFrameChange() { rect in
                         DispatchQueue.main.async {
@@ -652,6 +651,7 @@ struct ListenView: JoliView {
                 //.anchorPreference(key: MyAnchorPreferenceKey.self, value: .bounds) { [MyAnchorPreferenceData(bounds: $0)] }
             }
             .frame(width: screenWidth)
+            .onReceive(appCoordinator.$keyboardHeight, assign: \.keyboardHeight, target: self)
             .onChange(of: votes) { votes in
                 
                 guard let playroom = playroom else {
@@ -693,7 +693,7 @@ struct ListenView: JoliView {
                     //Spacer()
                 }
                 .animation(.easeIn)
-                .frame(width: screenWidth, height: geoProxy.safeAreaInsets.top)
+                .frame(width: screenWidth, height: safeAreaInsets.top)
                 .background(Color.systemBackground.opacity(0.89))
                 .onFrameChange() { rect in
                     DispatchQueue.main.async {

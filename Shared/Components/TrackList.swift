@@ -299,7 +299,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                             .padding(.horizontal, 2)
                             .background(Color.systemGray.opacity(0.85))
                             .font(.footnote)
-                            .foregroundColor(Color.primary)
+                            .foregroundColor(Color.fixedWhite)
                             .cornerRadius(3)
                             .padding(.trailing, Sizing.small / 3)
                     }

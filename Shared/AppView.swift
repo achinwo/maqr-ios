@@ -109,7 +109,6 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
         
     }
     
-    
     var playbackRefreshRate: TimeInterval = 0.15
     
     static var defaultIdleTime: Double {
@@ -213,7 +212,7 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                 ScrollViewReader() { (proxy: ScrollViewProxy) in
                     ScrollView(.horizontal, showsIndicators: false){
                         HStack(alignment: .top, spacing: .zero){
-                            ExploreView(geoProxy: geoProxy, playroom: self.$playroom, selectedViewId: self.$selectedViewId, websocket: self.websocket)
+                            ExploreView(playroom: self.$playroom, selectedViewId: self.$selectedViewId, websocket: self.websocket)
                                 .frame(width: screenWidth)
                                 .frame(minHeight: screenHeight - geoProxy.safeAreaInsets.top - geoProxy.safeAreaInsets.bottom)
                                 .onChange(of: self.scrollPosition) { value in
@@ -245,7 +244,7 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                                         }
                                 )
                             
-                            ListenView(geoProxy: geoProxy, tabbarExpaned: self.$isExpanded,
+                            ListenView(tabbarExpaned: self.$isExpanded,
                                        preview: self.$preview, filterText: self.$filterText, animation: animation,
                                        playroom: self.$playroom, currentUser: self.$currentUser, websocket: self.websocket)
                                 .frame(width: screenWidth)

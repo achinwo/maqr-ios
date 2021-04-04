@@ -61,7 +61,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             }
             logger.debug("Volume: \(volume)")
             
-            let computedVolume = Int(volume * 100)
+            //let computedVolume = Int(volume * 100)
             
 //            self.appState.api.fetchSpotifyDevices(on: DispatchQueue.main)
 //                .then() { devices in

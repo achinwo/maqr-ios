@@ -21,6 +21,7 @@ internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "global
 @main
 struct JoliClip: AppClip {
     
+    @State var safeAreaInsets: EdgeInsets = EdgeInsets()
     @State var activeSessionToken: String?
     @State var auths: [Auth] = []
     
@@ -40,6 +41,7 @@ struct JoliClip: AppClip {
     var coordinator: AppCoordinator
     
     var websocket: Socket
+    @State var window: UIWindow?
     
     @Environment(\.scenePhase) var scenePhase
     @AppStorage(key: .authToken, store: .groupContainer) var authToken: String = .empty

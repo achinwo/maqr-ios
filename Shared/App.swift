@@ -113,6 +113,13 @@ struct JoliApp: AppClip {
     @AppStorage("pendingLocalPlayUri") var pendingLocalPlayUri: String = .empty
     @AppStorage("pendingLocalPlayPosition") var pendingLocalPlayPosition: Int = -1
     
+    @Environment(\.scenePhase) var scenePhase
+    @State var isSheetPresented: Bool = false
+    @State var modalView: AppPreview? = nil
+    @State var window: UIWindow?
+    @State var appleSignInDelegates: SignInWithAppleDelegates? = nil
+    @State var safeAreaInsets: EdgeInsets = EdgeInsets()
+    
     let apnTokenPublisher: NotificationCenter.Publisher = NotificationCenter.default.publisher(for: Notifications.apnToken)
     
     static var wssUrlRequest: URLRequest {
@@ -280,12 +287,6 @@ struct JoliApp: AppClip {
             }
     }
     
-    @Environment(\.scenePhase) var scenePhase
-    @State var isSheetPresented: Bool = false
-    @State var modalView: AppPreview? = nil
-    @Environment(\.window) var window: UIWindow?
-    @State var appleSignInDelegates: SignInWithAppleDelegates? = nil
-    
     
     private func checkAppleSignedIn() {
         let provider = ASAuthorizationAppleIDProvider()
@@ -313,30 +314,6 @@ struct JoliApp: AppClip {
     var contentView: some View {
 
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify)
-//            .onReceive(appDelegate.$shortcutItemToProcess) { _ in
-//                //print(appDelegate.shortcutItemType)
-//                //Do something here
-//                logger.debug("[Joli] shortcutItem change: \(String(describing: appDelegate.shortcutItemToProcess))")
-//            }
-//            .overlay(
-//                GeometryReader() { proxy in
-//                    VStack(){
-//                        Spacer()
-//                        HStack(){
-//                            Spacer()
-//                            SignInWithApple()
-//                                .onTapGesture(perform: showAppleLogin)
-//                                .padding()
-//                                .frame(width: 280, height: 80)
-//                            Spacer()
-//                        }
-//                        .padding()
-//                        .background(Color.white)
-//                    }
-//                    .padding(.bottom, proxy.safeAreaInsets.bottom)
-//                }
-//                .ignoresSafeArea(.all, edges: .bottom)
-//            )
             .sheet(isPresented: $isSheetPresented){
                 print("[App] sheet dismissed")
                 self.modalView = nil
@@ -569,7 +546,7 @@ extension JoliApp {
                     let alertController = UIAlertController(title: "Quick Action", message: message, preferredStyle: .alert)
                     alertController.addAction(UIAlertAction(title: "Close", style: .default, handler: nil))
                     
-                    UIApplication.shared.keyWindow?.rootViewController?.present(alertController, animated: true, completion: nil)
+                    window?.rootViewController?.present(alertController, animated: true, completion: nil)
                     
                     // Reset the shortcut item so it's never processed twice.
                     shortcutItemToProcess = nil

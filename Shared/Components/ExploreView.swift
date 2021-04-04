@@ -50,7 +50,6 @@ public struct ExploreView: JoliView {
         return [spotifyEngine, joliEngine]
     }
     
-    let geoProxy: GeometryProxy
     @StateObject var model = SearchStore()
     
     var searchAreas: Set<Search.Category> {
@@ -84,6 +83,7 @@ public struct ExploreView: JoliView {
     @State var searchResultCancel: AnyCancellable? = nil
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
+    @Environment(\.safeAreaInsets) var safeAreaInsets: EdgeInsets
     
     @State var searchbarRect: CGRect? = nil
     @Binding var playroom: Playroom?
@@ -91,8 +91,7 @@ public struct ExploreView: JoliView {
     
     let websocket: Socket
     
-    public init(geoProxy: GeometryProxy, playroom: Binding<Playroom?>, selectedViewId: Binding<ViewIdentifier>, websocket: Socket) {
-        self.geoProxy = geoProxy
+    public init(playroom: Binding<Playroom?>, selectedViewId: Binding<ViewIdentifier>, websocket: Socket) {
         self._playroom = playroom
         self._selectedViewId = selectedViewId
         self.websocket = websocket
@@ -176,7 +175,6 @@ public struct ExploreView: JoliView {
         
         return ZStack(alignment: .top) {
             
-                //let top = (searchbarRect?.maxY ?? geoProxy.safeAreaInsets.top) //- geoProxy.safeAreaInsets.top
                 let edges = EdgeInsets(top: 180, leading: 0, bottom: 0, trailing: 0)
                 if !searchResults.isEmpty {
                     //SearchResultView(searchResults, edgeInsets: edges)
@@ -254,7 +252,7 @@ public struct ExploreView: JoliView {
                     .listStyle(GroupedListStyle())
                     //.padding(.top, edges.top)
                     .animation(.easeInOut)
-                    .padding(.bottom, geoProxy.safeAreaInsets.bottom > screenHeight / 4 ? geoProxy.safeAreaInsets.bottom : 0)
+                    .padding(.bottom, safeAreaInsets.bottom > screenHeight / 4 ? safeAreaInsets.bottom : 0)
                 } else {
                     VStack(alignment: .center, spacing: .zero){
                         self.suggestionsView.padding()//.foregroundColor(.white)
@@ -262,13 +260,13 @@ public struct ExploreView: JoliView {
                     .animation(.spring())
                     .padding(.top, edges.top)
                     .frame(width: screenWidth)
-                    .padding(.bottom, geoProxy.safeAreaInsets.bottom)
+                    .padding(.bottom, safeAreaInsets.bottom)
                 }
             
             VStack() {
                 searchBar
                     .accentColor(.primary)
-                    .padding(.top, geoProxy.safeAreaInsets.top)
+                    .padding(.top, safeAreaInsets.top)
                     //.anchorPreference(key: BoundsPreferenceKey.self, value: .bounds) { $0 }
                     .background(
                         GeometryReader { geometry in

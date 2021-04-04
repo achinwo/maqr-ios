@@ -344,7 +344,44 @@ class ShareActivity: UIActivity {
     }
 }
 
+private struct SafeAreaInsetsKey: EnvironmentKey {
 
+    static var defaultValue: EdgeInsets {
+        guard let window = defaultWindow else {
+            return EdgeInsets()
+        }
+        
+        return window.safeAreaInsets.insets
+    }
+    
+    static var defaultWindow: UIWindow? {
+        guard let scene = UIApplication.shared.connectedScenes.first,
+              let windowSceneDelegate = scene.delegate as? UIWindowSceneDelegate,
+              let window = windowSceneDelegate.window else {
+            return nil
+        }
+        return window
+    }
+}
+
+public extension EnvironmentValues {
+    
+    var safeAreaInsets: EdgeInsets {
+        get {
+            self[SafeAreaInsetsKey.self]
+        }
+        set {
+            self[SafeAreaInsetsKey.self] = newValue
+        }
+    }
+}
+
+private extension UIEdgeInsets {
+    
+    var insets: EdgeInsets {
+        EdgeInsets(top: top, leading: left, bottom: bottom, trailing: right)
+    }
+}
 
 public protocol AppClip: App {
     associatedtype Content: View
@@ -357,6 +394,10 @@ public protocol AppClip: App {
     var appleSignInDelegates: SignInWithAppleDelegates? { get nonmutating set }
     var serverVersion: Version? { get nonmutating set }
     var apnTokenPublisher: NotificationCenter.Publisher { get }
+    
+    var websocket: Socket { get }
+    var window: UIWindow? { get nonmutating set }
+    var safeAreaInsets: EdgeInsets { get nonmutating set }
     
     var keychain: Keychain { get }
     var auths: [Auth] { get nonmutating set }
@@ -467,6 +508,16 @@ public extension AppClip {
         #endif
     }
     
+    private func updateEdgeInsets() {
+        guard let windowEdgeInsets = window?.safeAreaInsets else {
+            print("[\(Self.self)] no window inserts: \(String(describing: window))")
+            return
+        }
+        
+        logger.debug("[\(Self.self)] updating edge insets: \(windowEdgeInsets.insets.bottom)")
+        self.safeAreaInsets = windowEdgeInsets.insets
+    }
+    
     var body: some Scene {
         WindowGroup {
             ZStack(){
@@ -485,7 +536,15 @@ public extension AppClip {
                 self.onNotificationRecieved(data)
             }
             .modifier(AppCoordinator.Modifier(coordinator))
+            .environment(\.safeAreaInsets, safeAreaInsets)
+            .onReceive(coordinator.$keyboardHeight) { _ in
+                self.updateEdgeInsets()
+            }
             .onAppear() {
+                
+                self.window = SafeAreaInsetsKey.defaultWindow
+                self.updateEdgeInsets()
+                
                 JoliApi.resolveServer(self.coordinator.api.baseUrl.http)
                     .timeout(3.0)
                     .then(on: .main) { version in
