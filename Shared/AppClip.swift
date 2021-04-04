@@ -514,8 +514,10 @@ public extension AppClip {
             return
         }
         
-        logger.debug("[\(Self.self)] updating edge insets: \(windowEdgeInsets.insets.bottom)")
-        self.safeAreaInsets = windowEdgeInsets.insets
+        DispatchQueue.main.async {
+            logger.debug("[\(Self.self)] updating edge insets: \(windowEdgeInsets.insets.bottom) - keyboard \(coordinator.keyboardHeight)")
+            self.safeAreaInsets = windowEdgeInsets.insets
+        }
     }
     
     var body: some Scene {

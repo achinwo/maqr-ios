@@ -207,160 +207,157 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
     
     public var contentView: some View {
         
-        return GeometryReader() { geoProxy in
-            ZStack(){
-                ScrollViewReader() { (proxy: ScrollViewProxy) in
-                    ScrollView(.horizontal, showsIndicators: false){
-                        HStack(alignment: .top, spacing: .zero){
-                            ExploreView(playroom: self.$playroom, selectedViewId: self.$selectedViewId, websocket: self.websocket)
-                                .frame(width: screenWidth)
-                                .frame(minHeight: screenHeight - geoProxy.safeAreaInsets.top - geoProxy.safeAreaInsets.bottom)
-                                .onChange(of: self.scrollPosition) { value in
-                                    
-                                    if [.leadingEdge, .trailingEdge].contains(value) {
-                                        print("Scroll position: \(value), safeArea: \(geoProxy.safeAreaInsets.top)")
-                                    }
-                                    
-                                    switch value {
-                                        case .leadingEdge:
-                                            self.selectedViewId = .explore
-                                        case .trailingEdge:
-                                            self.selectedViewId = .listen
-                                        default:
-                                            break
-                                    }
+        GeometryReader(){ geoProxy in
+            
+            ScrollViewReader() { (proxy: ScrollViewProxy) in
+                ScrollView(.horizontal, showsIndicators: false){
+                    HStack(alignment: .top, spacing: .zero){
+                        ExploreView(playroom: self.$playroom, selectedViewId: self.$selectedViewId, websocket: self.websocket)
+                            .frame(width: screenWidth)
+                            .frame(maxHeight: screenHeight)
+                            .onChange(of: self.scrollPosition) { value in
+                                
+                                switch value {
+                                case .leadingEdge:
+                                    self.selectedViewId = .explore
+                                case .trailingEdge:
+                                    self.selectedViewId = .listen
+                                default:
+                                    break
                                 }
-                                .background(Color.systemBackground)
-                                .id(ViewIdentifier.explore)
-                                .simultaneousGesture(
-                                    TapGesture()
-                                        .onEnded() { value in
-                                            
-                                            guard appCoordinator.keyboardHeight > 0 else {
-                                                return
-                                            }
-                                            
-                                            appCoordinator.dismissKeyboard()
+                            }
+                            .background(Color.systemBackground)
+                            .id(ViewIdentifier.explore)
+                            .simultaneousGesture(
+                                TapGesture()
+                                    .onEnded() { value in
+                                        
+                                        guard appCoordinator.keyboardHeight > 0 else {
+                                            return
                                         }
-                                )
-                            
-                            ListenView(tabbarExpaned: self.$isExpanded,
-                                       preview: self.$preview, filterText: self.$filterText, animation: animation,
-                                       playroom: self.$playroom, currentUser: self.$currentUser, websocket: self.websocket)
-                                .frame(width: screenWidth)
-                                .background(Color.systemBackground)
-                                .id(ViewIdentifier.listen)
-                        }
-                        .onFrameChange(){ frame in
-                            
-                            DispatchQueue.main.async {
-                                switch (frame.origin.x, frame.origin.y) {
-                                    case (0, _):
-                                        self.scrollPosition = .leadingEdge
-                                    case (self.screenWidth * -1 , _):
-                                        self.scrollPosition = .trailingEdge
-                                    default:
-                                        self.scrollPosition = .point(frame.origin)
-                                }
-                                
-                                let trailingThreshold = ((self.screenWidth + 100) * -1)
-                                
-                                guard frame.origin.x > 100 || frame.origin.x < trailingThreshold else {
-                                    //print("Overscroll menues disabled! \(frame.origin.x)")
-                                    return
-                                }
-                                
-                                if frame.origin.x > 100 {
-                                    print("Leading menu enabled \(frame.origin)")
-                                } else if frame.origin.x < trailingThreshold {
-                                    print("Trailing menu enabled \(frame.origin)")
-                                }
-                            }
-                        }
+                                        
+                                        appCoordinator.dismissKeyboard()
+                                    }
+                            )
+                        
+                        ListenView(tabbarExpaned: self.$isExpanded,
+                                   preview: self.$preview, filterText: self.$filterText, animation: animation,
+                                   playroom: self.$playroom, currentUser: self.$currentUser, websocket: self.websocket)
+                            .frame(width: screenWidth)
+                            .frame(maxHeight: screenHeight)
+                            .background(Color.systemBackground)
+                            .id(ViewIdentifier.listen)
                     }
-                    .background(
-                        GeometryReader() { gProx in
-                            HStack(){
-                                VStack(){
-//                                    Image(systemName: "star.circle.fill")
-//                                                .font(.system(size: 100))
-//                                                .offset(x: 0, y: draggingValue.height)
-                                }
-                                .frame(width: 100, height: gProx.size.height)
-                                .background(Color.yellow)
-                                .fixedSize()
-                                
-                                if let localPlayback = localPlaybackController {
-                                    Spacer()
-                                        .onReceive(localPlayback.playbackStatePublisher) { (localPlaybackState: PlaybackState?) -> Void in
-                                            logger.debug("[\(Self.self)] got playback: \(String(describing: localPlaybackState))")
-                                        }
-                                } else {
-                                    Spacer()
-                                }
-                                
-                                VStack(){
-                                    
-                                }
-                                .frame(width: 100, height: gProx.size.height)
-                                .background(Color.blue)
-                                .fixedSize()
-                            }
-                            .frame(width: gProx.size.width, height: gProx.size.height)
-                        }
-                    )
-                    .simultaneousGesture(
-                        DragGesture()
-                            .onChanged { gesture in
-                                self.offset = gesture.translation
-                                //print("Dragging: \(self.offset)")
+                    .frame(width: screenWidth * 2, height: screenHeight)
+                    .onFrameChange(){ frame in
+                        
+                        DispatchQueue.main.async {
+                            switch (frame.origin.x, frame.origin.y) {
+                            case (0, _):
+                                self.scrollPosition = .leadingEdge
+                            case (self.screenWidth * -1 , _):
+                                self.scrollPosition = .trailingEdge
+                            default:
+                                self.scrollPosition = .point(frame.origin)
                             }
                             
-                            .onEnded { _ in
-                                
-                                defer {
-                                    self.offset = .zero
-                                }
-                                
-                                guard appCoordinator.keyboardHeight > 0 && self.offset.height < appCoordinator.keyboardHeight else {
-                                    return
-                                }
-                                
-                                appCoordinator.dismissKeyboard()
+                            let trailingThreshold = ((self.screenWidth + 100) * -1)
+                            
+                            guard frame.origin.x > 100 || frame.origin.x < trailingThreshold else {
+                                //print("Overscroll menues disabled! \(frame.origin.x)")
+                                return
                             }
-                    )
-                    .onChange(of: self.selectedViewId) { value in
-                        withAnimation(){
-                            // Tree House as Clubhouse
-                            // Personal Inventory Management Tool as Objects
-                            print("[AppView2] scrolling to: \(value)")
-                            proxy.scrollTo(value)
-                        }
-                    }
-                    .onChange(of: playroom) { room in
-                        guard playroom != nil else {
-                            return
-                        }
-                        
-                        self.filteredTracks = []
-                    }
-                    .onAppear() {
-                        
-                        guard self.selectedViewId != .notset else {
-                            self.selectedViewId = .listen
-                            return
-                        }
-                        
-                        withAnimation(){
-                            proxy.scrollTo(self.selectedViewId)
+                            
+                            if frame.origin.x > 100 {
+                                print("Leading menu enabled \(frame.origin)")
+                            } else if frame.origin.x < trailingThreshold {
+                                print("Trailing menu enabled \(frame.origin)")
+                            }
                         }
                     }
                 }
+                .frame(width: screenWidth, height: screenHeight)
+                .background(
+                    GeometryReader() { gProx in
+                        HStack(){
+                            VStack(){
+                                //                                    Image(systemName: "star.circle.fill")
+                                //                                                .font(.system(size: 100))
+                                //                                                .offset(x: 0, y: draggingValue.height)
+                            }
+                            .frame(width: 100, height: gProx.size.height)
+                            .background(Color.yellow)
+                            .fixedSize()
+                            
+                            if let localPlayback = localPlaybackController {
+                                Spacer()
+                                    .onReceive(localPlayback.playbackStatePublisher) { (localPlaybackState: PlaybackState?) -> Void in
+                                        logger.debug("[\(Self.self)] got playback: \(String(describing: localPlaybackState))")
+                                    }
+                            } else {
+                                Spacer()
+                            }
+                            
+                            VStack(){
+                                
+                            }
+                            .frame(width: 100, height: gProx.size.height)
+                            .background(Color.blue)
+                            .fixedSize()
+                        }
+                        .frame(width: gProx.size.width, height: gProx.size.height)
+                    }
+                )
+                .simultaneousGesture(
+                    DragGesture()
+                        .onChanged { gesture in
+                            self.offset = gesture.translation
+                            //print("Dragging: \(self.offset)")
+                        }
+                        
+                        .onEnded { _ in
+                            
+                            defer {
+                                self.offset = .zero
+                            }
+                            
+                            guard appCoordinator.keyboardHeight > 0 && self.offset.height < appCoordinator.keyboardHeight else {
+                                return
+                            }
+                            
+                            appCoordinator.dismissKeyboard()
+                        }
+                )
+                .onChange(of: self.selectedViewId) { value in
+                    withAnimation(){
+                        // Tree House as Clubhouse
+                        // Personal Inventory Management Tool as Objects
+                        print("[AppView2] scrolling to: \(value)")
+                        proxy.scrollTo(value)
+                    }
+                }
+                .onChange(of: playroom) { room in
+                    guard playroom != nil else {
+                        return
+                    }
+                    
+                    self.filteredTracks = []
+                }
+                .onAppear() {
+                    
+                    guard self.selectedViewId != .notset else {
+                        self.selectedViewId = .listen
+                        return
+                    }
+                    
+                    withAnimation(){
+                        proxy.scrollTo(self.selectedViewId)
+                    }
+                }
             }
-            .ignoresSafeArea(.all, edges: [.top, .bottom])
             .frame(width: geoProxy.size.width, height: geoProxy.size.height)
         }
-        .frame(minWidth: screenWidth)
+        .ignoresSafeArea(.all, edges: [.top, .bottom])
         .onReceive(appCoordinator.$activeSessionToken) { sessionId in
             self.assertWebsocketConnected()
         }
@@ -383,24 +380,24 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
         }
         .onReceive(appCoordinator.appViewScrollPosition) { scrollPosition in
             switch scrollPosition {
-                case .leadingEdge:
-                    self.selectedViewId = .explore
-                case .trailingEdge:
-                    self.selectedViewId = .listen
-                default:
-                    break
+            case .leadingEdge:
+                self.selectedViewId = .explore
+            case .trailingEdge:
+                self.selectedViewId = .listen
+            default:
+                break
             }
         }
         .onReceive(appCoordinator.$currentLocation, assign: \.currentLocation, target: self)
         .onChange(of: currentLocation) { location in
             switch location {
-                case .invited(let inviteId):
-                    self.fetchPlayroomByInviteId(inviteId)
-                case .error:
-                    //self.errorMessage = Self.GENERIC_ERROR_MESSAGE
-                    print("[\(Self.self)] error handling lacation: \(location)")
-                default:
-                    break
+            case .invited(let inviteId):
+                self.fetchPlayroomByInviteId(inviteId)
+            case .error:
+                //self.errorMessage = Self.GENERIC_ERROR_MESSAGE
+                print("[\(Self.self)] error handling lacation: \(location)")
+            default:
+                break
             }
         }
         .onReceive(appCoordinator.$votesPublisher) { votePublisher in

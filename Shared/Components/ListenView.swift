@@ -689,17 +689,15 @@ struct ListenView: JoliView {
             .zIndex(100)
             
             VStack(spacing: .zero) {
-                HStack(spacing: .zero){
-                    //Spacer()
-                }
-                .animation(.easeIn)
-                .frame(width: screenWidth, height: safeAreaInsets.top)
-                .background(Color.systemBackground.opacity(0.89))
-                .onFrameChange() { rect in
-                    DispatchQueue.main.async {
-                        self.navbarViewBounds = rect
+                AppVisorView()
+                    .animation(.easeIn)
+                    .frame(width: screenWidth, height: safeAreaInsets.top)
+                    .background(Color.systemBackground.opacity(0.89))
+                    .onFrameChange() { rect in
+                        DispatchQueue.main.async {
+                            self.navbarViewBounds = rect
+                        }
                     }
-                }
                 
                 Group(){
                     if playroom != nil {
@@ -813,6 +811,18 @@ public struct TrackAddonView: JoliView {
         EmptyView()
     }
     
+}
+
+public struct AppVisorView: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    @Environment(\.safeAreaInsets) var safeAreaInsets: EdgeInsets
+    
+    public var contentView: some View {
+        HStack(spacing: .zero){
+            //Spacer()
+        }
+    }
 }
 
 public extension Character {

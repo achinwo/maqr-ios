@@ -57,7 +57,7 @@ struct JoliClip: AppClip {
     
     var contentView: some View {
         ContentView(playroom: self.$playroom, currentUser: self.$currentUser, websocket: websocket)
-            .frame(maxWidth: UIScreen.main.bounds.width, maxHeight: UIScreen.main.bounds.height)
+            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
             .overlay(
                 GeometryReader() { proxy in
                     VStack(){

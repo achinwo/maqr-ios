@@ -89,6 +89,7 @@ public struct PlayroomCreateView: JoliView {
                                         }
                                         .eraseToAnyView()
                                     }
+                                    .id(track.uri)
                                 } else {
                                     HStack(alignment: .center){
                                         

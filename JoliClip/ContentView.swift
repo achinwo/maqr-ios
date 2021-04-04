@@ -54,40 +54,40 @@ struct ContentView: JoliContentView {
     }
     
     var contentView: some View {
-        
-        return NavigationView(){
-            GeometryReader() { geoProxy in
-                ScrollViewReader() { scrollProxy in
-                    ScrollView(.vertical, showsIndicators: true) {
-                        VStack(){
-                            if loadingView {
-                                ProgressView("Loading Playroom").padding()
-                            } else if let error = errorMessage {
-                                Text(error).font(Font.title.weight(.light)).padding()
-                                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
-                            } else if let playroom = playroom {
-                                tracksView(playroom, geoProxy)
-                            } else {
-                                Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
-                                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+        return GeometryReader() { geoProxy in
+                NavigationView(){
+                    ScrollViewReader() { scrollProxy in
+                        ScrollView(.vertical, showsIndicators: true) {
+                            VStack(){
+                                if loadingView {
+                                    ProgressView("Loading Playroom").padding()
+                                } else if let error = errorMessage {
+                                    Text(error).font(Font.title.weight(.light)).padding()
+                                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+                                } else if let playroom = playroom {
+                                    tracksView(playroom, geoProxy)
+                                } else {
+                                    Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
+                                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+                                }
                             }
+                            //            #if APPCLIP
+                            //            Button("Show Recommended App") {
+                            //                self.showRecommended.toggle()
+                            //            }
+                            //            .appStoreOverlay(isPresented: $showRecommended) {
+                            //                SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
+                            //            }
+                            //            #endif
                         }
-                        //            #if APPCLIP
-                        //            Button("Show Recommended App") {
-                        //                self.showRecommended.toggle()
-                        //            }
-                        //            .appStoreOverlay(isPresented: $showRecommended) {
-                        //                SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
-                        //            }
-                        //            #endif
+                        .frame(maxWidth: screenWidth)
+                        .onAppear() {
+                            self.scrollProxy = scrollProxy
+                        }
                     }
-                    .frame(maxWidth: screenWidth)
-                    .onAppear() {
-                        self.scrollProxy = scrollProxy
-                    }
-                }
+                .navigationTitle(playroom?.name ?? Strings.appSymbol.stringValue)
             }
-            .navigationTitle(playroom?.name ?? Strings.appSymbol.stringValue)
+            .frame(width: geoProxy.size.width, height: geoProxy.size.height)
             //.ignoresSafeArea()
         }
         .onReceive(appCoordinator.$currentLocation, assign: \.currentLocation, target: self)
