@@ -23,6 +23,7 @@ public struct DevicesView: JoliView {
     }
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
+    @Environment(\.playbackControllerMetadata) public var playbackControllerMetadata: PlaybackControllerMetadata?
     
     var volumeImageName: String {
         var volumeImage: String
@@ -60,7 +61,8 @@ public struct DevicesView: JoliView {
 //                    .tag(roomTab.rawValue)
 //            }
 //        }
-
+        
+        
         let view = VStack(){
             
             if self.auths.count > 1 {
@@ -200,6 +202,35 @@ public struct DevicesView: JoliView {
                 }.padding()
             }
             
+            if let playbackControllerMetadata = playbackControllerMetadata, playbackControllerMetadata.isInstalled, playbackControllerMetadata.connectionState != .connected {
+                Button(){
+                    
+                    guard appCoordinator.localPlaybackConnectRequest == nil else { return }
+                    print("\(tag) connecting to \(playbackControllerMetadata.name)")
+                    
+                    self.localPlaybackConnectRequest = appCoordinator.requestLocalPlaybackConnect()
+                                                            .sink(){ completion in
+                                                                self.localPlaybackConnectRequest = nil
+                                                            } receiveValue: { value in
+                                                                self.localPlaybackConnectRequest = nil
+                                                            }
+                } label: {
+                    Label() {
+                        HStack(){
+                            Text(appCoordinator.localPlaybackConnectRequest != nil ? "Connecting..." : "Connect to app")
+                            
+                            if appCoordinator.localPlaybackConnectRequest != nil {
+                                ProgressView()
+                            }
+                        }
+                        .padding([.vertical, .trailing])
+                        .foregroundColor(playbackControllerMetadata.brandColor)
+                    } icon: {
+                        Image(uiImage: #imageLiteral(resourceName: "Spotify_Icon_RGB_Green")).resizable().frame(width: logoImageSize, height: logoImageSize, alignment: .center)
+                    }
+                }
+                .disabled(appCoordinator.localPlaybackConnectRequest != nil)
+            }
             
         }
         .onChange(of: self.volume) { volume in
@@ -243,11 +274,19 @@ public struct DevicesView: JoliView {
         }
         .onAppear() {
             appCoordinator.refreshDevices()
+            print("[\(Self.self)] playbackControllerMetadata: \(String(describing: playbackControllerMetadata))")
         }
         
         //.frame(width: .infinity, height: self.screenHeight / 3)
+        
+        
+        
         return view
     }
+    
+    @ScaledMetric(relativeTo: .title) var logoImageSize: CGFloat = 24
+    @State var localPlaybackConnectRequest: AnyCancellable? = nil
+    
 }
 
 public struct DevicesSampleView: View {

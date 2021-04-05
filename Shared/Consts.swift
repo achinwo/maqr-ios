@@ -53,6 +53,7 @@ public enum Images: String {
     case joliIcon = "joli_icon"
     case appclipBarcodeClearExample = "appclip_barcode_clear_example"
     case stockPhotoPartyPeople = "party-people"
+    case spotifyLogo = "Spotify_Icon_RGB_Green.png"
     
     var image: Image {
         return Image(self.rawValue)

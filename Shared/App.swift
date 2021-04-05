@@ -160,7 +160,6 @@ struct JoliApp: AppClip {
         }
         
         self.spotify.playStateCallback = self.onLocalSpotifyPlayStateChanged
-        self.spotify.authCallback = self.onLocalSpotifyAuth
         
         self.authPublishCancel = self.websocket.deserialize(AuthToken.self)
             .autoconnect()
@@ -340,6 +339,23 @@ struct JoliApp: AppClip {
                 self.authorizeSpotify()
                 callback(nil)
             }
+            .onReceive(spotify.authPublisher) { authRecord in
+                logger.info("[\(#function)] local spotify auth: \(String(describing: authRecord))")
+                authRecord?.save()
+                    .then(){ auth in
+                        self.onLocalSpotifyAuth(auth, nil)
+                    }
+                    .catch() { error in
+                        self.onLocalSpotifyAuth(nil, error)
+                    }
+                
+            }
+            .onReceive(coordinator.$localPlaybackConnectRequest) { promise in
+                logger.info("[\(#function)] localPlaybackConnectRequest: \(String(describing: promise))")
+                
+                guard promise != nil else { return }
+                spotify.requestSpotifyAccess()
+            }
             .onReceive(coordinator.$spotifyAuthRequestedAt) { requestedAt in
                 
                 guard requestedAt != nil else {
@@ -504,7 +520,7 @@ extension JoliApp {
                   label == "session-token" else {
                 continue
             }
-            print("[\(Self.self)] keychain \(items.count): \(auth.user.displayName)")
+            
             auths.append(auth)
         }
         

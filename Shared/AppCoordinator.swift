@@ -153,6 +153,34 @@ public final class AppCoordinator: ObservableObject {
             }
     }
     
+    private var localPlaybackConnect: (deferred: Deferred<Future<ConnectionState, Error>>, createdAt: Date)? = nil
+    
+    @Published var localPlaybackConnectRequest: Future<ConnectionState, Error>.Promise? = nil {
+        didSet {
+            guard localPlaybackConnectRequest == nil else { return }
+            localPlaybackConnect = nil
+        }
+    }
+    
+    @discardableResult
+    public func requestLocalPlaybackConnect() -> Deferred<Future<ConnectionState, Error>> {
+        
+        let makeRequest = { () -> Future<ConnectionState, Error> in
+            return Future<ConnectionState, Error>() { promise in
+                self.localPlaybackConnectRequest = promise
+            }
+        }
+        
+        guard let deferred = localPlaybackConnect else {
+            let def = Deferred(createPublisher: makeRequest)
+            localPlaybackConnect = (deferred: def, createdAt: Date())
+            return def
+        }
+        
+        return deferred.deferred
+    }
+    
+    
     @Published var refreshingDevices = false
     
     public init(_ playStatePublisher: PlayState.Publisher? = nil, _ votesPublisher: QueuedTrackVote.Publisher? = nil, namespace: Namespace.ID? = nil){

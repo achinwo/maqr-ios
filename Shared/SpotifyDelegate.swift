@@ -94,6 +94,13 @@ public struct SpotifyPlaybackState: PlaybackState, CustomStringConvertible, Cust
 
 public class SpotifyDelegate: NSObject, PlaybackController {
     
+    public func checkInstalled() -> AnyPublisher<Bool, Error> {
+        return Future<Bool, Error>(){ promise in
+            promise(.success(self.isSpotifyAppInstalled))
+        }
+        .eraseToAnyPublisher()
+    }
+    
     public func play(_ track: Playable, positionMs: Int?, contextUri: String?, device: Spotify.Device?) -> Future<Any, Error> {
         return Future() { promise in
             
@@ -101,13 +108,45 @@ public class SpotifyDelegate: NSObject, PlaybackController {
     }
     
     public var combineIdentifier: String {
-        return "PlaybackController/Spotify"
+        return "playback-controller/\(id)"
     }
     
-    @Published public var connectionState: ConnectionState = .stopped
-    @Published public var playbackState: PlaybackState? = nil
+    @Published public var metadata: PlaybackControllerMetadata = PlaybackControllerMetadata(id: "spotify",
+                                                                                            name: "Spotify",
+                                                                                            logoImage: .spotifyLogo,
+                                                                                            brandColor: .green,
+                                                                                            isInstalled: false,
+                                                                                            connectionState: .stopped)
+    @Published public var connectionState: ConnectionState = .stopped {
+        didSet {
+            var item = self.metadata
+            item.connectionState = connectionState
+            item.isInstalled = isSpotifyAppInstalled
+            
+            DispatchQueue.main.async {
+                self.metadata = item
+            }
+        }
+    }
     
+    @Published public var playbackState: PlaybackState? = nil
+    @Published public var auth: AuthTokenRecord? = nil
+    
+    public var metadataPublisher: Published<PlaybackControllerMetadata>.Publisher { $metadata }
     public var playbackStatePublisher: Published<PlaybackState?>.Publisher { $playbackState }
+    public var connectionStatePublisher: Published<ConnectionState>.Publisher { $connectionState }
+    public var authPublisher: Published<AuthTokenRecord?>.Publisher { $auth }
+    
+    
+    public override init() {
+        super.init()
+        
+        DispatchQueue.main.async {
+            var meta = self.metadata
+            meta.isInstalled = self.isSpotifyAppInstalled
+            self.metadata = meta
+        }
+    }
     
     public func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
         self.subscribe(subscriber)
@@ -247,14 +286,17 @@ extension SpotifyDelegate: SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate
             
             logger.info("[PlayerState] \(String(describing: result))")
         })
+        self.connectionState = .connected
     }
     
     public func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
         logger.debug("Spotify: disconnected \(String(describing: error))")
+        self.connectionState = .stopped
     }
     
     public func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
         logger.debug("Spotify: failed: \(String(describing: error))")
+        self.connectionState = .stopped
     }
     
     public func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
@@ -268,7 +310,7 @@ extension SpotifyDelegate: SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate
         
         remoteConnect(token: session.accessToken)
         
-        let builder = Builder<AuthToken>.init(properties: [
+        self.auth = Builder<AuthToken>.init(properties: [
             .accessToken: session.accessToken as AnyObject,
             .refreshToken: session.refreshToken as AnyObject,
             .scope: session.scope as AnyObject,
@@ -276,14 +318,6 @@ extension SpotifyDelegate: SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate
             .tokenType: "Bearer" as AnyObject,
         ])
         
-        builder.save()
-            .then(){ auth in
-                logger.info("[\(#function)] AUth: \(auth)")
-                self.authCallback?(auth, nil)
-            }
-            .catch() { error in
-                self.authCallback?(nil, error)
-            }
     }
     
 }

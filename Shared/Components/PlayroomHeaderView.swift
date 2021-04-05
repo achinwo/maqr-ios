@@ -133,6 +133,7 @@ public struct PlayroomHeaderView: JoliView {
     }
     
     @State var connectionState: ConnectionState = .stopped
+    @ScaledMetric(relativeTo: .title) var closeIconSize: CGFloat = 24
     
     private func makeTitle(_ playroom: Playroom) -> some View {
         let totalCountMillisecs: Int = tracks.map() { $0.duration }.reduce(0, +)
@@ -153,9 +154,10 @@ public struct PlayroomHeaderView: JoliView {
             } label: {
                 Image(systemName: "arrow.down.right.and.arrow.up.left")
                     .resizable()
-                    .frame(width: 18, height: 18)
+                    .frame(width: closeIconSize, height: closeIconSize)
                     .font(Font.subheadline.weight(.thin))
                     .foregroundColor(Color.secondary)
+                    .padding()
             }
             
             VStack(alignment: .trailing){

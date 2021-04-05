@@ -265,6 +265,10 @@ public protocol JoliView: View {
 
 public extension JoliView {
     
+    var tag: String {
+        return "[\(Self.self)]"
+    }
+    
     var body: some View {
         self.contentView
             .onReceive(appCoordinator.connectionStateSubject) { state in

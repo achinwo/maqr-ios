@@ -18,6 +18,29 @@ public enum ScrollPosition: Equatable {
     case point(CGPoint)
 }
 
+public enum PlaybackControllerMetadataKey: EnvironmentKey {
+
+    public static var defaultValue: PlaybackControllerMetadata? {
+        return nil
+    }
+
+}
+
+public extension EnvironmentValues {
+    
+    var playbackControllerMetadata: PlaybackControllerMetadata? {
+        get {
+            self[PlaybackControllerMetadataKey.self]
+        }
+        
+        set {
+            self[PlaybackControllerMetadataKey.self] = newValue
+        }
+    }
+    
+}
+
+
 public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
@@ -45,12 +68,13 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
     @Binding var currentUser: User?
     let websocket: Socket
     
-    var localPlaybackController: PlaybackControllerType? = nil
+    var localPlaybackController: PlaybackControllerType!
     
     public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket) {
         self._playroom = playroom
         self._currentUser = currentUser
         self.websocket = websocket
+        self.localPlaybackController = nil
     }
     
     public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
@@ -191,6 +215,8 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
     @State var websocketCancel: AnyCancellable? = nil
     @State var currentLocation: AppLocation = .home
     
+    @State var playbackControllerMetadata: PlaybackControllerMetadata? = nil
+    
     func assertWebsocketConnected() {
         //print("[AppView#assertWebsocketConnected] attempting...")
         self.websocket.write(topic: "/status", body: [:]) { error in
@@ -246,6 +272,19 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                             .frame(width: screenWidth)
                             .frame(maxHeight: screenHeight)
                             .background(Color.systemBackground)
+                            .environment(\.playbackControllerMetadata, playbackControllerMetadata)
+                            .onReceive(localPlaybackController.metadataPublisher) { meta in
+                                logger.debug("[\(Self.self)] got playbackmeta: \(String(describing: meta))")
+                                self.playbackControllerMetadata = meta
+                                
+                                guard let promise = appCoordinator.localPlaybackConnectRequest else { return }
+                                
+                                promise(.success(meta.connectionState))
+                                appCoordinator.localPlaybackConnectRequest = nil
+                            }
+                            .onReceive(localPlaybackController.playbackStatePublisher) { (localPlaybackState: PlaybackState?) -> Void in
+                                logger.debug("[\(Self.self)] got playback: \(String(describing: localPlaybackState))")
+                            }
                             .id(ViewIdentifier.listen)
                     }
                     .frame(width: screenWidth * 2, height: screenHeight)
@@ -289,14 +328,7 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                             .background(Color.yellow)
                             .fixedSize()
                             
-                            if let localPlayback = localPlaybackController {
-                                Spacer()
-                                    .onReceive(localPlayback.playbackStatePublisher) { (localPlaybackState: PlaybackState?) -> Void in
-                                        logger.debug("[\(Self.self)] got playback: \(String(describing: localPlaybackState))")
-                                    }
-                            } else {
-                                Spacer()
-                            }
+                            Spacer()
                             
                             VStack(){
                                 
