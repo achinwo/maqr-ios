@@ -391,6 +391,15 @@ public final class AppCoordinator: ObservableObject {
         impactHeavy.impactOccurred()
     }
     
+    public var isSimulatorOrTestFlight: Bool {
+        guard let path = Bundle.main.appStoreReceiptURL?.path else {
+            return false
+        }
+        
+        let result = path.contains("CoreSimulator") || path.contains("sandboxReceipt")
+        return result
+    }
+    
     func onConnectionStateChange(_ state: ConnectionState) {
         logger.debug("[\(Self.self)] conection state changed: \(state)")
         self.connectionStateSubject.send((state, Date()))

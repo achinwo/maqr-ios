@@ -58,25 +58,25 @@ struct JoliClip: AppClip {
     var contentView: some View {
         ContentView(playroom: self.$playroom, currentUser: self.$currentUser, websocket: websocket)
             .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-            .overlay(
-                GeometryReader() { proxy in
-                    VStack(){
-                        Spacer()
-                        HStack(){
-                            Spacer()
-                            SignInWithApple()
-                                .onTapGesture(perform: self.presentSignInWithApple)
-                                .padding()
-                                .frame(width: 280, height: 80)
-                            Spacer()
-                        }
-                        .padding()
-                        .background(Color.white.opacity(0.7))
-                    }
-                    .padding(.bottom, proxy.safeAreaInsets.bottom)
-                }
-                .ignoresSafeArea(.all, edges: .bottom)
-            )
+//            .overlay(
+//                GeometryReader() { proxy in
+//                    VStack(){
+//                        Spacer()
+//                        HStack(){
+//                            Spacer()
+//                            SignInWithApple()
+//                                .onTapGesture(perform: self.presentSignInWithApple)
+//                                .padding()
+//                                .frame(width: 280, height: 80)
+//                            Spacer()
+//                        }
+//                        .padding()
+//                        .background(Color.white.opacity(0.7))
+//                    }
+//                    .padding(.bottom, proxy.safeAreaInsets.bottom)
+//                }
+//                .ignoresSafeArea(.all, edges: .bottom)
+//            )
             .onAppear() {
                 self.coordinator.serverLogDestination = ServerDestination(url: api.baseUrlHttp, urlSession: api.urlSession)
             }

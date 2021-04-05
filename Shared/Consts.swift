@@ -41,6 +41,8 @@ public enum Strings {
     #else
     public static let appName = "Joli"
     #endif
+    
+    public static let appId = "1491605469"
 }
 
 public enum Notifications {

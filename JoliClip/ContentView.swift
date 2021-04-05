@@ -65,24 +65,32 @@ struct ContentView: JoliContentView {
                                     Text(error).font(Font.title.weight(.light)).padding()
                                     refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
                                 } else if let playroom = playroom {
+//                                    #if APPCLIP
+//                                    Button("Show Recommended App") {
+//                                        self.showRecommended.toggle()
+//                                    }
+//                                    .appStoreOverlay(isPresented: $showRecommended) {
+//                                        SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
+//                                    }
+//                                    #endif
                                     tracksView(playroom, geoProxy)
                                 } else {
                                     Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
                                     refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
                                 }
                             }
-                            //            #if APPCLIP
-                            //            Button("Show Recommended App") {
-                            //                self.showRecommended.toggle()
-                            //            }
-                            //            .appStoreOverlay(isPresented: $showRecommended) {
-                            //                SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
-                            //            }
-                            //            #endif
+                            
                         }
                         .frame(maxWidth: screenWidth)
+                        .appStoreOverlay(isPresented: $showRecommended) {
+                            SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
+                        }
                         .onAppear() {
                             self.scrollProxy = scrollProxy
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                self.showRecommended.toggle()
+                            }
                         }
                     }
                 .navigationTitle(playroom?.name ?? Strings.appSymbol.stringValue)

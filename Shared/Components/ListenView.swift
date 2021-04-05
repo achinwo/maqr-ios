@@ -13,6 +13,7 @@ import Promises
 import Combine
 import UIImageColors
 //import Sourceful
+import StoreKit
 
 struct ShakeEffect: GeometryEffect {
     
@@ -619,7 +620,7 @@ struct ListenView: JoliView {
     
     var body: some View {
         
-        return ZStack(){
+        return ZStack(alignment: .top){
             self.contentView
                 .frame(width: screenWidth, height: screenHeight)
                 .simultaneousGesture(
@@ -791,10 +792,73 @@ struct ListenView: JoliView {
                 
                 self.needsRefreshSubject.send("view appeared")
             }
+            .appStoreOverlay(isPresented: $showRecommended) {
+                SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottomRaised)
+            }
+            
+            //if appCoordinator.is
+            if appCoordinator.isSimulatorOrTestFlight && !self.seenOpenBetaAnnouncement {
+                self.announcementBannerView
+            }
+            
         }
     }
     
+    public var announcementBannerView: some View {
+        VStack(alignment: .leading){
+            Text("\(Strings.appSymbol.stringValue)oli is in Open Beta 🎉")
+                .lineLimit(1)
+                .padding(.horizontal)
+                .font(.title)
+                .foregroundColor(.white)
+            Text("Get the offical app from the App Store")
+                .lineLimit(3)
+                .padding(.horizontal)
+                .font(.subheadline)
+                .padding(.bottom)
+                .foregroundColor(.white)
+            
+            HStack(){
+                Spacer()
+                Button("Dismiss") {
+                    self.seenOpenBetaAnnouncement.toggle()
+                }
+                .foregroundColor(Color.secondaryLabel)
+                .padding(.horizontal)
+                //.font(Font.headline.weight(.light))
+                
+                Button("Get it") {
+                    withImpact(.light) {
+                        self.showRecommended.toggle()
+                    }
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        self.seenOpenBetaAnnouncement.toggle()
+                    }
+                }
+                .padding(.horizontal)
+                //.background(Color.gray.opacity(0.5))
+                .overlay(
+                         RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.white, lineWidth: 1)
+                )
+                .foregroundColor(.white)
+                .font(Font.title2)
+                .padding(.horizontal)
+            }
+            .padding(.bottom)
+        }
+        .frame(width: screenWidth)
+        .padding(.top, safeAreaInsets.top)
+        .frame(maxHeight: seenOpenBetaAnnouncement ? 0 : screenHeight * 0.2, alignment: .center)
+        .opacity(seenOpenBetaAnnouncement ? 0 : 1)
+        .animation(.easeInOut)
+        .background(Color.blue.opacity(0.98))
+    }
+    
     @State var playStateCancel: AnyCancellable? = nil
+    @State var showRecommended: Bool = false
+    @AppStorage("announcements/released-open-beta") var seenOpenBetaAnnouncement = false
 
 }
 
