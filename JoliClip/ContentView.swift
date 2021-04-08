@@ -9,10 +9,137 @@
 import SwiftUI
 import JoliPlayground
 import JoliCore
+
+#if canImport(StoreKit)
 import StoreKit
+#endif
+
 import Promises
 import UIImageColors
 import Combine
+
+public struct PlayroomView: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    @Binding public var playroom: Playroom
+    @Binding var votes: [QueuedTrackVote]
+    @Binding var strip: PlayroomHeaderView.TrackStrip
+    @Binding var tracks: [Playable]
+    
+    public var contentView: some View {
+        
+        let binding = Binding<Playroom?>(){
+            return self.playroom
+        } set: { value in
+            guard let value = value else { return }
+            
+            self.playroom = value
+        }
+        
+        return ZStack() {
+            TrackList(tracks: self.$tracks, votes: self.$votes, playroom: binding, addonView: self.addonView)
+            
+            VStack(){
+//                PlayroomHeaderView(
+//                    playroom: binding,
+//                    strip: .constant((playing: nil, next: nil, runnerUp: nil)),
+//                    preview: .constant(nil),
+//                    tracks: $tracks,
+//                    scrollProxy: .constant(nil)
+//                )
+                Spacer()
+            }
+        }
+    }
+    
+    func addonView(track: Playable, playStates: [PlayState], colors: UIImageColors?) -> some View {
+        var votesByTrack: [Int: [QueuedTrackVote]] = [:]
+        
+        for vote in votes {
+            
+            guard var existing = votesByTrack[vote.queuedTrackId] else {
+                votesByTrack[vote.queuedTrackId] = []
+                continue
+            }
+            
+            existing.append(vote)
+            votesByTrack[vote.queuedTrackId] = existing
+        }
+        
+        return Group() {
+            if let track = track as? QueuedTrack,
+               let playlistUri = playroom.playlistUri,
+               let playing = self.strip.playing as? QueuedTrack,
+               playing.id == track.id,
+               playing.isPlayable, track.isPlayable {
+                
+                Button() {
+                    let state = playStates.first() { $0.email == playroom.createdByUser.email } ?? playStates.first
+                    appCoordinator.play(track, positionMs: state?.progressMs, contextUri: playlistUri, device: appCoordinator.activeDeviceSubject.value)
+                        .then() { state in
+                            print("[ListenView] rejoining \(track.title) at \(String(describing: state?.progressMs)) - \(String(describing: state))")
+                        }
+                } label: {
+                    Text("Rejoin").padding()
+                }
+                .buttonStyle(BlackWhiteButtonStyle(inverted: true))
+                .font(.headline)
+                .padding(.trailing, Sizing.medium)
+                
+            } else if let track = track as? QueuedTrack {
+                
+                let scaleX: CGFloat = 1 //self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
+                let scaleY: CGFloat = 1//self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
+                
+                let heart: Binding<Hearts?> = Binding() { () -> Hearts? in
+                    
+                    guard let count: Int = votesByTrack[track.id]?.count else {
+                        return Hearts(score: HeartLevel.empty.rawValue)
+                    }
+                    
+                    return Hearts(score: CGFloat(count) * HeartLevel.quarter.rawValue)
+                    
+                } set: { (heart, trasacton) in
+                    
+                }
+                
+                JoyMeterView(heart, textStyle: UIFont.TextStyle.title2, backgroundColor: Color.systemRed.opacity(0.5))
+                    .padding()
+                    .padding(.trailing, Sizing.medium)
+                    .foregroundColor(colors?.secondaryColor ?? Color.primary)
+                    .scaleEffect(x: scaleX, y: scaleY, anchor: .center)
+                    .onReceive(appCoordinator.voteCastSubject) { vote in
+                        //self.voteCasted = vote
+                    }
+                    .onTapGesture {
+                        guard self.appCoordinator.voteRequestedSubject.value == nil else {
+                            return
+                        }
+                        
+                        self.appCoordinator.voteTrack(track)
+                            .then() { vote in
+                                guard !self.votes.contains(vote) else { return }
+                                self.votes.append(vote)
+                            }
+                            .catch() { voteError in
+                                
+                                guard let error = voteError as? AppCoordinator.ActionError else {
+                                    print("[ListenView] unrecognised error: \(voteError)")
+                                    return
+                                }
+                                
+                                switch error {
+                                    case .insufficientHeartPoints:
+                                        self.appCoordinator.insufficientPointsAttempt += 1
+                                }
+                            }
+                    }
+            }
+        }
+    }
+    
+}
+
 
 struct ContentView: JoliContentView {
     
@@ -34,6 +161,18 @@ struct ContentView: JoliContentView {
     @State var preview: AppPreview? = nil
     @State var tabbarExpaned = false
     
+    @State var currentLocation: AppLocation = .home
+    
+    @State var strip: PlayroomHeaderView.TrackStrip = (nil, nil, nil)
+    @State var requestingVoteTrackId: Int? = nil
+    @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
+    @State var voteCasted: QueuedTrackVote? = nil
+    @State var votes: [QueuedTrackVote] = []
+    
+    @State var tracks: [Playable] = []
+    
+    @State var tracksFiltered: [Playable] = []
+    
     public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket){
         self._playroom = playroom
         self._currentUser = currentUser
@@ -54,11 +193,11 @@ struct ContentView: JoliContentView {
     }
     
     var contentView: some View {
-        return GeometryReader() { geoProxy in
-                NavigationView(){
+        return NavigationView() {
+                
                     ScrollViewReader() { scrollProxy in
                         ScrollView(.vertical, showsIndicators: true) {
-                            VStack(){
+                            VStack(alignment: .center){
                                 if loadingView {
                                     ProgressView("Loading Playroom").padding()
                                 } else if let error = errorMessage {
@@ -73,31 +212,72 @@ struct ContentView: JoliContentView {
 //                                        SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
 //                                    }
 //                                    #endif
-                                    tracksView(playroom, geoProxy)
+                                    PlayroomView(playroom: .constant(playroom), votes: self.$votes, strip: self.$strip, tracks: self.$tracks)
+                                        .background(Color.systemBackground)
+                                        .id(playroom.name)
+                                    
+                                    Spacer()
+                                        .onReceive(playroom.$queue) { tracks in
+                                            var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
+                                            var allVotes: [QueuedTrackVote] = []
+                                            
+                                            for track in tracks.filter({ $0.isPlayable }) {
+                                                var roomTracks = tracksByMusicrooms[track.roomId] ?? []
+                                                
+                                                guard !roomTracks.contains(track) else {
+                                                    continue
+                                                }
+                                                
+                                                roomTracks.append(track)
+                                                tracksByMusicrooms[track.roomId] = roomTracks
+                                                
+                                                guard let votes = track.votes, track.roomId == playroom.musicroom.id else {
+                                                    continue
+                                                }
+                                                
+                                                allVotes.append(contentsOf: votes)
+                                            }
+                                            
+                                            self.votes = allVotes
+                                            self.tracks = tracksByMusicrooms[playroom.musicroom.id] ?? []
+                                            self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
+                                            
+                                            self.strip = (
+                                                playing: tracks.first,
+                                                next: tracks.count > 1 ? tracks[1] : nil,
+                                                runnerup: tracks.count > 2 ? tracks[2] : nil
+                                            )
+                                        }
+                                    
+                                    #if canImport(StoreKit)
+                                        Spacer()
+                                        .appStoreOverlay(isPresented: $showRecommended) {
+                                            SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottom)
+                                        }
+                                    #endif
                                 } else {
                                     Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
                                     refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
                                 }
                             }
+                            .frame(width: screenWidth)
+                            
                             
                         }
-                        .frame(maxWidth: screenWidth)
-                        .appStoreOverlay(isPresented: $showRecommended) {
-                            SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
-                        }
+                        .frame(width: screenWidth, height: screenHeight, alignment: .center)
                         .onAppear() {
                             self.scrollProxy = scrollProxy
                             
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
                                 self.showRecommended.toggle()
                             }
                         }
                     }
-                .navigationTitle(playroom?.name ?? Strings.appSymbol.stringValue)
-            }
-            .frame(width: geoProxy.size.width, height: geoProxy.size.height)
+              //  .navigationTitle(playroom?.name ?? Strings.appSymbol.stringValue)
+            //}
             //.ignoresSafeArea()
         }
+        .frame(width: screenWidth, height: screenHeight)
         .onReceive(appCoordinator.$currentLocation, assign: \.currentLocation, target: self)
         .onChange(of: currentLocation) { location in
             switch location {
@@ -111,8 +291,6 @@ struct ContentView: JoliContentView {
             }
         }
     }
-    
-    @State var currentLocation: AppLocation = .home
     
     static var GENERIC_ERROR_MESSAGE: String {
         return "An error occured while loading your Playroom invitation, please try again later."
@@ -147,16 +325,6 @@ struct ContentView: JoliContentView {
         
     }
     
-    @State var strip: (playing: Playable?, next: Playable?, runnerup: Playable?) = (nil, nil, nil)
-    @State var requestingVoteTrackId: Int? = nil
-    @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
-    @State var voteCasted: QueuedTrackVote? = nil
-    @State var votes: [QueuedTrackVote] = []
-    
-    @State var tracks: [Playable] = []
-    
-    @State var tracksFiltered: [Playable] = []
-    
     private func filterTracks(_ tracks: [Playable], _ q: String) -> [Playable] {
         
         let query = q.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -174,145 +342,6 @@ struct ContentView: JoliContentView {
             }
             
             return false
-        }
-    }
-    
-    func tracksView(_ playroom: Playroom, _ geoProxy: GeometryProxy) -> some View {
-        return TrackList(tracks: self.$tracksFiltered, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
-            //.padding(.top, geoProxy.safeAreaInsets.top)
-            //.padding(.top, roomControlViewBounds == nil ? geoProxy.safeAreaInsets.top : roomControlViewBounds?.height)
-            //.padding(.top, 100)
-            //.padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
-            .background(Color.systemBackground)
-            .onReceive(playroom.$queue) { tracks in
-                var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
-                var allVotes: [QueuedTrackVote] = []
-                
-                for track in tracks.filter({ $0.isPlayable }) {
-                    var roomTracks = tracksByMusicrooms[track.roomId] ?? []
-                    
-                    guard !roomTracks.contains(track) else {
-                        continue
-                    }
-                    
-                    roomTracks.append(track)
-                    tracksByMusicrooms[track.roomId] = roomTracks
-                    
-                    guard let votes = track.votes, track.roomId == playroom.musicroom.id else {
-                        continue
-                    }
-                    
-                    allVotes.append(contentsOf: votes)
-                }
-                
-                self.votes = allVotes
-                self.tracks = tracksByMusicrooms[playroom.musicroom.id] ?? []
-                self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
-                
-                self.strip = (
-                    playing: tracks.first,
-                    next: tracks.count > 1 ? tracks[1] : nil,
-                    runnerup: tracks.count > 2 ? tracks[2] : nil
-                )
-            }
-            .onChange(of: self.votes) { votes in
-                var mapping: [Int: [QueuedTrackVote]] = [:]
-                
-                for vote in votes {
-                    
-                    guard var existing = mapping[vote.queuedTrackId] else {
-                        mapping[vote.queuedTrackId] = []
-                        continue
-                    }
-                    
-                    existing.append(vote)
-                    mapping[vote.queuedTrackId] = existing
-                }
-                
-                self.votesByTrack = mapping
-            }
-            .onReceive(appCoordinator.voteRequestedSubject) { requested in
-                self.requestingVoteTrackId = requested
-            }
-    }
-    
-    func addonView(track: Playable, playStates: [PlayState], colors: UIImageColors?) -> some View {
-        
-        
-        return Group() {
-            if let track = track as? QueuedTrack,
-               let room = playroom,
-               let playlistUri = room.playlistUri,
-               let playing = self.strip.playing as? QueuedTrack,
-               playing.id == track.id,
-               playing.isPlayable, track.isPlayable {
-                
-                Button() {
-                    let state = playStates.first() { $0.email == room.createdByUser.email } ?? playStates.first
-                    appCoordinator.play(track, positionMs: state?.progressMs, contextUri: playlistUri, device: appCoordinator.activeDeviceSubject.value)
-                        .then() { state in
-                            print("[ListenView] rejoining \(track.title) at \(String(describing: state?.progressMs)) - \(String(describing: state))")
-                        }
-                } label: {
-                    Text("Rejoin").padding()
-                }
-                .buttonStyle(BlackWhiteButtonStyle(inverted: true))
-                .font(.headline)
-                .padding(.trailing, Sizing.medium)
-                
-            } else if let track = track as? QueuedTrack {
-                
-                let scaleX: CGFloat = self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
-                let scaleY: CGFloat = self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
-                
-                let heart: Binding<Hearts?> = Binding() { () -> Hearts? in
-                    
-                    guard playroom != nil else {
-                        return nil
-                    }
-                    
-                    guard let count: Int = self.votesByTrack[track.id]?.count else {
-                        return Hearts(score: HeartLevel.empty.rawValue)
-                    }
-                    
-                    return Hearts(score: CGFloat(count) * HeartLevel.quarter.rawValue)
-                    
-                } set: { (heart, trasacton) in
-                    
-                }
-                
-                JoyMeterView(heart, textStyle: UIFont.TextStyle.title2, backgroundColor: Color.systemRed.opacity(0.5))
-                    .padding()
-                    .padding(.trailing, Sizing.medium)
-                    .foregroundColor(colors?.secondaryColor ?? Color.primary)
-                    .scaleEffect(x: scaleX, y: scaleY, anchor: .center)
-                    .onReceive(appCoordinator.voteCastSubject) { vote in
-                        self.voteCasted = vote
-                    }
-                    .onTapGesture {
-                        guard self.appCoordinator.voteRequestedSubject.value == nil else {
-                            return
-                        }
-                        
-                        self.appCoordinator.voteTrack(track)
-                            .then() { vote in
-                                guard !self.votes.contains(vote) else { return }
-                                self.votes.append(vote)
-                            }
-                            .catch() { voteError in
-                                
-                                guard let error = voteError as? AppCoordinator.ActionError else {
-                                    print("[ListenView] unrecognised error: \(voteError)")
-                                    return
-                                }
-                                
-                                switch error {
-                                    case .insufficientHeartPoints:
-                                        self.appCoordinator.insufficientPointsAttempt += 1
-                                }
-                            }
-                    }
-            }
         }
     }
 }

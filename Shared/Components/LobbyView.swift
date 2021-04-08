@@ -75,6 +75,7 @@ public struct LobbyView: JoliView {
         }
     }
     
+    @Namespace var localNamespace
     
     public var contentView: some View {
         VStack(alignment: .center){
@@ -137,6 +138,7 @@ public struct LobbyView: JoliView {
                                 .onTapGesture {
                                     self.onPlayroomSelected?(room)
                                 }
+                                .matchedGeometryEffect(id: "playroom/\(room.id.description)", in: appCoordinator.namespace ?? localNamespace)
                                 //.background(Color.yellow)
                                 .id(room.id)
                         }

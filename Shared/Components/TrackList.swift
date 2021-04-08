@@ -412,17 +412,15 @@ public struct TrackList<AddonView: View>: JoliView {
     @State var subscriptionCounts: [String: Hearts] = [:]
     @Binding var tracks: [Playable]
     @Binding var votes: [QueuedTrackVote]
-    @Binding var preview: AppPreview?
     @Binding var playroom: Playroom?
     
     @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
     let addonViewFunc: (Playable, [PlayState], UIImageColors?) -> AddonView
     
-    public init(tracks: Binding<[Playable]>, votes: Binding<[QueuedTrackVote]>? = .constant([]), preview: Binding<AppPreview?> = .constant(nil),
+    public init(tracks: Binding<[Playable]>, votes: Binding<[QueuedTrackVote]>? = .constant([]),
                 playroom: Binding<Playroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil, @ViewBuilder addonView: @escaping (Playable, [PlayState], UIImageColors?) -> AddonView){
         self.onVoteTapped = onVoteTapped
         self._tracks = tracks
-        self._preview = preview
         self._playroom = playroom
         self._votes = votes ?? .constant([])
         self.addonViewFunc = addonView

@@ -13,7 +13,10 @@ import Promises
 import Combine
 import UIImageColors
 //import Sourceful
+
+#if canImport(StoreKit)
 import StoreKit
+#endif
 
 struct ShakeEffect: GeometryEffect {
     
@@ -120,6 +123,10 @@ struct ListenView: JoliView {
     @State var navbarViewBounds: CGRect? = nil
     @State var roomControlViewBounds: CGRect? = nil
     @State var pullToRefreshCancel: AnyCancellable? = nil
+    
+    @State var playStateCancel: AnyCancellable? = nil
+    @State var showRecommended: Bool = false
+    @AppStorage("announcements/released-open-beta") var seenOpenBetaAnnouncement = false
     
     var animation: Namespace.ID
     @Binding var playroom: Playroom?
@@ -450,12 +457,12 @@ struct ListenView: JoliView {
                     
                     if let playroom = playroom {
                         ZStack(){
-                            TrackList(tracks: self.$tracksFiltered, votes: self.$votes, preview: $preview, playroom: self.$playroom, addonView: self.addonView)
+                            TrackList(tracks: self.$tracksFiltered, votes: self.$votes, playroom: self.$playroom, addonView: self.addonView)
                                 //.padding(.top, roomControlViewBounds == nil ? safeAreaInsets.top : roomControlViewBounds?.height)
                                 .padding(.top, isEmptySearchResult ? safeAreaInsets.top + 100 : nil)
                                 .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
                                 .background(Color.systemBackground)
-                                .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
+                                .matchedGeometryEffect(id: "playroom/\(playroom.musicroom.id.description)", in: animation)//, properties: .frame, isSource: true)
                                 .onReceive(playroom.$queue) { tracks in
                                     var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
                                     var allVotes: [QueuedTrackVote] = []
@@ -743,7 +750,16 @@ struct ListenView: JoliView {
                         self.roomControlViewBounds = rect
                     }
                 }
+                
+                
+                #if canImport(StoreKit)
                 Divider().opacity(self.playroom == nil ? 0 : 1).animation(.easeInOut)
+                    .appStoreOverlay(isPresented: $showRecommended) {
+                        SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottomRaised)
+                    }
+                #else
+                Divider().opacity(self.playroom == nil ? 0 : 1).animation(.easeInOut)
+                #endif
                 
                 AppPreviewView(preview: self.$preview, currentUser: self.$currentUser, animation: animation)
                     .frame(maxWidth: screenWidth)
@@ -792,20 +808,24 @@ struct ListenView: JoliView {
                 
                 self.needsRefreshSubject.send("view appeared")
             }
-            .appStoreOverlay(isPresented: $showRecommended) {
-                SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottomRaised)
-            }
             
             //if appCoordinator.is
-            if appCoordinator.isSimulatorOrTestFlight && !self.seenOpenBetaAnnouncement {
+            if self.showAnnouncements && appCoordinator.isSimulatorOrTestFlight && !self.seenOpenBetaAnnouncement {
                 self.announcementBannerView
             }
             
         }
+        .onAppear(){
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4){
+                self.showAnnouncements = true
+            }
+        }
     }
     
+    @State var showAnnouncements: Bool = false
+    
     public var announcementBannerView: some View {
-        VStack(alignment: .leading){
+        VStack(alignment: .leading, spacing: .zero){
             Text("\(Strings.appSymbol.stringValue)oli is in Open Beta 🎉")
                 .lineLimit(1)
                 .padding(.horizontal)
@@ -817,7 +837,7 @@ struct ListenView: JoliView {
                 .font(.subheadline)
                 .padding(.bottom)
                 .foregroundColor(.white)
-            
+            Spacer()
             HStack(){
                 Spacer()
                 Button("Dismiss") {
@@ -847,6 +867,8 @@ struct ListenView: JoliView {
                 .padding(.horizontal)
             }
             .padding(.bottom)
+            Spacer()
+            Divider()
         }
         .frame(width: screenWidth)
         .padding(.top, safeAreaInsets.top)
@@ -855,10 +877,6 @@ struct ListenView: JoliView {
         .animation(.easeInOut)
         .background(Color.blue.opacity(0.98))
     }
-    
-    @State var playStateCancel: AnyCancellable? = nil
-    @State var showRecommended: Bool = false
-    @AppStorage("announcements/released-open-beta") var seenOpenBetaAnnouncement = false
 
 }
 
