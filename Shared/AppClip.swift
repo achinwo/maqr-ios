@@ -302,15 +302,15 @@ public extension JoliView {
 public protocol JoliContentView: JoliView {
     
     associatedtype PlaybackControllerType = Never
+    var localPlaybackController: PlaybackControllerType { get }
     
-    init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket)
 }
 
 extension JoliContentView where PlaybackControllerType: PlaybackController {
-
-    init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType) {
-        self.init(playroom: playroom, currentUser: currentUser, websocket: websocket)
-    }
+//
+//    init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType) {
+//        self.init(playroom: playroom, currentUser: currentUser, websocket: websocket)
+//    }
     
 }
 

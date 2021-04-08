@@ -16,6 +16,8 @@ import Promises
 
 public class Playroom: ObservableObject, Room, Equatable {
     
+    public typealias TrackStrip = (playing: Playable?, next: Playable?, runnerup: Playable?)
+    
     public static func == (lhs: Playroom, rhs: Playroom) -> Bool {
         return lhs.musicroom == rhs.musicroom
     }
@@ -33,17 +35,15 @@ public class Playroom: ObservableObject, Room, Equatable {
     @Published public var name: String
     
     @Published public var membership: [PlayroomMembership] = []
+    @Published public var votes: [QueuedTrackVote] = []
     
     @Published public var queue: [QueuedTrack] = []
     @Published public var loadingRoomTracks: Bool = false
     
+    @Published public var strip: TrackStrip = (nil, nil, nil)
+    
     var userStatus: [String: PlayroomMembership.ActivityStatus] = [:]
     let api: JoliApi
-    
-    var entitlementCancel: AnyCancellable? = nil
-    var playStateCancel: AnyCancellable? = nil
-    var connectionStateCancel: AnyCancellable? = nil
-    var queuedTrackCancel: AnyCancellable? = nil
     
     private var cancellationSet: Set<AnyCancellable> = []
     
@@ -53,6 +53,36 @@ public class Playroom: ObservableObject, Room, Equatable {
         return self.fetchQueuedTracks()
             .then() { tracks in
                 self.queue = tracks
+                
+                var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
+                var allVotes: [QueuedTrackVote] = []
+                
+                for track in tracks.filter({ $0.isPlayable }) {
+                    var roomTracks = tracksByMusicrooms[track.roomId] ?? []
+                    
+                    guard !roomTracks.contains(track) else {
+                        continue
+                    }
+                    
+                    roomTracks.append(track)
+                    tracksByMusicrooms[track.roomId] = roomTracks
+                    
+                    guard let votes = track.votes, track.roomId == self.musicroom.id else {
+                        continue
+                    }
+                    
+                    allVotes.append(contentsOf: votes)
+                }
+                
+                self.votes = allVotes
+                //self.tracks = tracksByMusicrooms[musicroom.id] ?? []
+                //self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
+                
+                self.strip = (
+                    playing: tracks.first,
+                    next: tracks.count > 1 ? tracks[1] : nil,
+                    runnerup: tracks.count > 2 ? tracks[2] : nil
+                )
             }
             .always {
                 self.loadingRoomTracks = false
@@ -121,7 +151,7 @@ public class Playroom: ObservableObject, Room, Equatable {
             .deserialize(Entitlement.self)
             .autoconnect()
             .sink() { completion in
-                self.entitlementCancel?.cancel()
+                //self.entitlementCancel?.cancel()
             } receiveValue: { value in
                 //print("[Playroom#Entitlement] \(value)")
                 guard !self.entitlements.contains(value) else {
@@ -138,7 +168,7 @@ public class Playroom: ObservableObject, Room, Equatable {
             .deserialize(QueuedTrack.self)
             .autoconnect()
             .sink() { completion in
-                self.queuedTrackCancel?.cancel()
+                //self.queuedTrackCancel?.cancel()
             } receiveValue: { value in
                 
                 guard value.roomId == musicroom.id else { return }
@@ -148,10 +178,23 @@ public class Playroom: ObservableObject, Room, Equatable {
             .store(in: &cancellationSet)
         
         socket
+            .deserialize(QueuedTrackVote.self)
+            .autoconnect()
+            .sink() { completion in
+                //self.queuedTrackCancel?.cancel()
+            } receiveValue: { value in
+                
+                guard self.queue.map({ $0.id }).contains(value.queuedTrackId) else { return }
+                
+                self.votes.append(value)
+            }
+            .store(in: &cancellationSet)
+        
+        socket
             .deserialize(PlayState.self)
             .autoconnect()
             .sink() { completion in
-                self.playStateCancel?.cancel()
+                //self.playStateCancel?.cancel()
             } receiveValue: { value in
                 //print("[Playroom#PlayState] \(value)")
                 guard self.membership.contains(where: { $0.emailAddress.email == value.email } ) else {
@@ -181,7 +224,7 @@ public class Playroom: ObservableObject, Room, Equatable {
         for sub in self.cancellationSet {
             sub.cancel()
         }
-        self.cancellationSet = []
+        self.cancellationSet.removeAll()
     }
     
 }

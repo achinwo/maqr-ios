@@ -21,10 +21,14 @@ import Combine
 public struct PlayroomView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
+    @Environment(\.safeAreaInsets) var safeAreaInsets
+    
     @Binding public var playroom: Playroom
-    @Binding var votes: [QueuedTrackVote]
-    @Binding var strip: PlayroomHeaderView.TrackStrip
-    @Binding var tracks: [Playable]
+    
+    @State private var votes: [QueuedTrackVote] = []
+    @State private var strip: PlayroomHeaderView.TrackStrip = (nil, nil, nil)
+    @State private var tracks: [Playable] = []
+    @State private var scrollProxy: ScrollViewProxy? = nil
     
     public var contentView: some View {
         
@@ -35,21 +39,43 @@ public struct PlayroomView: JoliView {
             
             self.playroom = value
         }
+                
+        let header: PlayroomHeaderView = PlayroomHeaderView(
+            playroom: binding,
+            strip: $strip,
+            preview: .constant(nil),
+            tracks: $tracks,
+            scrollProxy: $scrollProxy
+        )
         
-        return ZStack() {
-            TrackList(tracks: self.$tracks, votes: self.$votes, playroom: binding, addonView: self.addonView)
+        return ZStack(alignment: .top) {
             
-            VStack(){
-//                PlayroomHeaderView(
-//                    playroom: binding,
-//                    strip: .constant((playing: nil, next: nil, runnerUp: nil)),
-//                    preview: .constant(nil),
-//                    tracks: $tracks,
-//                    scrollProxy: .constant(nil)
-//                )
+            ScrollViewReader(){ scrollProxy in
+                ScrollView(){
+                    TrackList(tracks: self.$tracks, votes: self.$votes, playroom: binding, addonView: self.addonView)
+                        .padding(.top, safeAreaInsets.top)
+                        .frame(width: screenWidth)
+                }
+                .onAppear(){
+                    self.scrollProxy = scrollProxy
+                }
+            }
+            
+            VStack(spacing: .zero){
+                header
+                    .padding(.horizontal, Sizing.small * 0.6)
+                    .padding([.horizontal, .bottom], Sizing.small * 0.5)
+                    .padding(.top, safeAreaInsets.top)
+                    .background(Color.systemBackground.opacity(0.9))
                 Spacer()
             }
+            .frame(width: screenWidth)
         }
+        .onReceive(playroom.$queue){ tracks in
+            self.tracks = tracks
+        }
+        .onReceive(playroom.$votes, assign: \.votes, target: self)
+        .onReceive(playroom.$strip, assign: \.strip, target: self)
     }
     
     func addonView(track: Playable, playStates: [PlayState], colors: UIImageColors?) -> some View {
@@ -129,8 +155,8 @@ public struct PlayroomView: JoliView {
                                 }
                                 
                                 switch error {
-                                    case .insufficientHeartPoints:
-                                        self.appCoordinator.insufficientPointsAttempt += 1
+                                case .insufficientHeartPoints:
+                                    self.appCoordinator.insufficientPointsAttempt += 1
                                 }
                             }
                     }
@@ -199,102 +225,55 @@ public struct ContentView<PlaybackControllerType: PlaybackController>: JoliConte
         }
     }
     
-    public var contentView: some View {
-        return NavigationView() {
+    var contentView: some View {
+        //        NavigationView() {
+        //
+        //                    ScrollViewReader() { scrollProxy in
+        //                        ScrollView(.vertical, showsIndicators: true) {
+        
+        
+        return VStack(alignment: .center, spacing: .zero){
+            if loadingView {
+                ProgressView("Loading Playroom").padding()
+            } else if let error = errorMessage {
+                Text(error).font(Font.title.weight(.light)).padding()
+                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+            } else if let playroom = playroom {
+                PlayroomView(playroom: .constant(playroom))
+                    .background(Color.systemBackground)
+                    .frame(width: screenWidth)
+                    .id(playroom.name)
                 
-                    ScrollViewReader() { scrollProxy in
-                        ScrollView(.vertical, showsIndicators: true) {
-                            VStack(alignment: .center){
-                                if loadingView {
-                                    ProgressView("Loading Playroom").padding()
-                                } else if let error = errorMessage {
-                                    Text(error).font(Font.title.weight(.light)).padding()
-                                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
-                                } else if let playroom = playroom {
-//                                    #if APPCLIP
-//                                    Button("Show Recommended App") {
-//                                        self.showRecommended.toggle()
-//                                    }
-//                                    .appStoreOverlay(isPresented: $showRecommended) {
-//                                        SKOverlay.AppConfiguration(appIdentifier: "1491605469", position: .bottom)
-//                                    }
-//                                    #endif
-                                    PlayroomView(playroom: .constant(playroom), votes: self.$votes, strip: self.$strip, tracks: self.$tracks)
-                                        .background(Color.systemBackground)
-                                        .id(playroom.name)
-                                    
-                                    Spacer()
-                                        .onReceive(playroom.$queue) { tracks in
-                                            var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
-                                            var allVotes: [QueuedTrackVote] = []
-                                            
-                                            for track in tracks.filter({ $0.isPlayable }) {
-                                                var roomTracks = tracksByMusicrooms[track.roomId] ?? []
-                                                
-                                                guard !roomTracks.contains(track) else {
-                                                    continue
-                                                }
-                                                
-                                                roomTracks.append(track)
-                                                tracksByMusicrooms[track.roomId] = roomTracks
-                                                
-                                                guard let votes = track.votes, track.roomId == playroom.musicroom.id else {
-                                                    continue
-                                                }
-                                                
-                                                allVotes.append(contentsOf: votes)
-                                            }
-                                            
-                                            self.votes = allVotes
-                                            self.tracks = tracksByMusicrooms[playroom.musicroom.id] ?? []
-                                            self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
-                                            
-                                            self.strip = (
-                                                playing: tracks.first,
-                                                next: tracks.count > 1 ? tracks[1] : nil,
-                                                runnerup: tracks.count > 2 ? tracks[2] : nil
-                                            )
-                                        }
-                                    
-                                    #if canImport(StoreKit)
-                                        Spacer()
-                                        .appStoreOverlay(isPresented: $showRecommended) {
-                                            SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottom)
-                                        }
-                                    #endif
-                                } else {
-                                    Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
-                                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
-                                }
-                            }
-                            .frame(width: screenWidth)
-                            
-                            
-                        }
-                        .frame(width: screenWidth, height: screenHeight, alignment: .center)
-                        .onAppear() {
-                            self.scrollProxy = scrollProxy
-                            
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
-                                self.showRecommended.toggle()
-                            }
-                        }
+                #if canImport(StoreKit)
+                Spacer()
+                    .appStoreOverlay(isPresented: $showRecommended) {
+                        SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottom)
                     }
-              //  .navigationTitle(playroom?.name ?? Strings.appSymbol.stringValue)
-            //}
-            //.ignoresSafeArea()
+                #endif
+            } else {
+                Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
+                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+            }
         }
-        .frame(width: screenWidth, height: screenHeight)
+        .edgesIgnoringSafeArea([.top, .bottom])
+        .frame(width: screenWidth, height: screenHeight, alignment: .center)
+        .onAppear() {
+            //self.scrollProxy = scrollProxy
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
+                self.showRecommended.toggle()
+            }
+        }
         .onReceive(appCoordinator.$currentLocation, assign: \.currentLocation, target: self)
         .onChange(of: currentLocation) { location in
             switch location {
-                case .invited(let inviteId):
-                    self.playroomId = inviteId
-                    self.fetchPlayroomByInviteId(inviteId)
-                case .error:
-                    self.errorMessage = Self.GENERIC_ERROR_MESSAGE
-                default:
-                    break
+            case .invited(let inviteId):
+                self.playroomId = inviteId
+                self.fetchPlayroomByInviteId(inviteId)
+            case .error:
+                self.errorMessage = Self.GENERIC_ERROR_MESSAGE
+            default:
+                break
             }
         }
     }

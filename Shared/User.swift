@@ -106,7 +106,7 @@ public protocol UserVerified: UserIdentifiable, Identifiable {
 }
 
 //@dynamicMemberLookup
-public struct PlayroomMembership: UserIdentifiable, Identifiable, Equatable {
+public struct PlayroomMembership: UserIdentifiable, Identifiable, Equatable, Hashable {
     
     public var id: String {
         return "membership:\(playroom.id)/\(user.id)"
@@ -117,9 +117,9 @@ public struct PlayroomMembership: UserIdentifiable, Identifiable, Equatable {
         case accepted
     }
     
-    public enum ActivityStatus {
-        case online
-        case offline
+    public enum ActivityStatus: Int {
+        case online = 1
+        case offline = 0
     }
     
     public var inviteStatus: InviteStatus

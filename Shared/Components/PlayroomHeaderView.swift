@@ -5,15 +5,57 @@
 //  Created by Anthony Chinwo on 30/12/2020.
 //  Copyright © 2020 Anthony Chinwo. All rights reserved.
 //
-
+import Combine
+import Foundation
 import JoliCore
 import SwiftUI
+
+extension Array {
+
+    func mapToSet<T: Hashable>(_ transform: (Element) -> T) -> Set<T> {
+        var result = Set<T>()
+        for item in self {
+            result.insert(transform(item))
+        }
+        return result
+    }
+
+}
+
+struct StackedUserAvatarView: View {
+    @Binding var users: [PlayroomMembership]
+    
+    var uniqueUsers: Set<PlayroomMembership> {
+        Set(self.users)
+    }
+    
+    var body: some View {
+        let distinctUsers = uniqueUsers
+        let sortedUsers = Array(distinctUsers).sorted() { $0.activityStatus.rawValue > $1.activityStatus.rawValue }
+        return HStack(alignment: .bottom){
+            HStack(spacing: -25) {
+                ForEach(Array(sortedUsers.prefix(4).reversed().enumerated()), id: \.element.emailAddress.email) { item in
+                    UserAvatarView(user: item.element, width: 44)
+                        .frame(width: 44, height: 44)
+                        //.offset(x: CGFloat(-10 * item.offset))
+                        //.padding(.trailing, CGFloat(item.offset) * 20)
+                        .id(item.element.emailAddress.email)
+                }
+            }
+            Text(distinctUsers.count > 4 ? "+\(distinctUsers.count - 3)" : "")
+                .foregroundColor(.secondaryLabel)
+                .font(Font.subheadline.weight(.thin))
+        }
+        
+        //.background(Color.yellow)
+    }
+}
 
 public struct PlayroomHeaderView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    public typealias TrackStrip = (playing: Playable?, next: Playable?, runnerup: Playable?)
+    public typealias TrackStrip = Playroom.TrackStrip
     
     @Binding var playroom: Playroom?
     @Binding var strip: TrackStrip
@@ -23,6 +65,15 @@ public struct PlayroomHeaderView: JoliView {
     
     @State var playbackProgress: Int? = nil
     @State var tappedUri: String? = nil
+    
+    public init(playroom: Binding<Playroom?>, strip: Binding<TrackStrip>, preview: Binding<AppPreview?>,
+                tracks: Binding<[Playable]>, scrollProxy: Binding<ScrollViewProxy?>){
+        self._playroom = playroom
+        self._strip = strip
+        self._preview = preview
+        self._tracks = tracks
+        self._scrollProxy = scrollProxy
+    }
     
     let tappedSubject: AutoResetSubject<String?, Never, DispatchQueue> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))
     
@@ -35,7 +86,7 @@ public struct PlayroomHeaderView: JoliView {
         return [Color.green, Color.blue, Color.purple]
     }
     
-    public var contentView: some View {
+    public var stripView: some View {
         HStack(alignment: .bottom){
             
             if let playing = strip.playing {
@@ -121,21 +172,60 @@ public struct PlayroomHeaderView: JoliView {
                 .id(runnerup.thumbnailUrl)
             }
             
-            Spacer()
+    }
+    }
+    
+    public var contentView: some View {
+        VStack(alignment: .leading, spacing: .zero){
+            HStack(){
+                if let playroom = playroom {
+                    Text(playroom.name)
+                        .font(Font.title2)
+                        .foregroundColor(self.connectionState == .connected ? Color.blue : Color.secondary)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .onReceive(playroom.$membership) { members in
+                            self.membership = members
+                        }
+                }
+                
+                Spacer()
+                Button(){
+                    withImpact(.soft) {
+                        self.playroom = nil
+                    }
+                } label: {
+                    Image(systemName: "arrow.down.right.and.arrow.up.left")
+                        //.resizable()
+                        //.frame(width: closeIconSize, height: closeIconSize)
+                        .font(Font.title3.weight(.thin))
+                        .foregroundColor(Color.secondary)
+                }
+                .padding()
+            }
             
-            if let playroom = playroom {
-                makeTitle(playroom)
+            HStack(alignment: .bottom){
+                self.stripView
+                Spacer()
+                
+                VStack(alignment: .trailing){
+                    StackedUserAvatarView(users: $membership)
+                    makeDurationLabel()
+                }
             }
         }
         .onReceive(self.tappedSubject) { uri in
             self.tappedUri = uri
         }
+        .onReceive(self.appCoordinator.connectionStateSubject) { conn in
+            self.connectionState = conn.state
+        }
     }
     
+    @State var membership: [PlayroomMembership] = []
     @State var connectionState: ConnectionState = .stopped
-    @ScaledMetric(relativeTo: .title) var closeIconSize: CGFloat = 24
+    @ScaledMetric(relativeTo: .subheadline) var closeIconSize: CGFloat = 24
     
-    private func makeTitle(_ playroom: Playroom) -> some View {
+    private func makeDurationLabel() -> some View {
         let totalCountMillisecs: Int = tracks.map() { $0.duration }.reduce(0, +)
         
         let formatter = DateComponentsFormatter()
@@ -146,67 +236,37 @@ public struct PlayroomHeaderView: JoliView {
         
         let tracksAndDurationLabel = "\(tracks.count) songs, \(formattedString)"
         
-        return VStack(alignment: .trailing) {
-            Button(){
-                withImpact(.soft) {
-                    self.playroom = nil
-                }
-            } label: {
-                Image(systemName: "arrow.down.right.and.arrow.up.left")
-                    .resizable()
-                    .frame(width: closeIconSize, height: closeIconSize)
-                    .font(Font.subheadline.weight(.thin))
-                    .foregroundColor(Color.secondary)
-                    .padding()
-            }
-            
-            VStack(alignment: .trailing){
-                HStack(alignment: .center){
-                    Text("in")
-                        .font(Font.subheadline)
-                        .foregroundColor(Color.gray)
-                    Text(playroom.name)
-                        .font(Font.headline)
-                        .foregroundColor(self.connectionState == .connected ? Color.blue : Color.secondary)
-                        .frame(maxWidth: screenWidth / 1.8)
-                        .fixedSize(horizontal: true, vertical: false)
-                }
-                
-                Text(tracksAndDurationLabel)
+        return Text(tracksAndDurationLabel)
                     .font(Font.footnote.weight(.light))
                     .foregroundColor(Color.secondary)
-            }
-            .onReceive(self.appCoordinator.connectionStateSubject) { conn in
-                self.connectionState = conn.state
-            }
-            .onTapGesture() {
-                self.preview = .view() {
-                    VStack() {
-                        Text(playroom.name).font(.largeTitle)
-                        Divider()
-                        HStack() {
-                            Text("Description").font(.headline)
-                            Spacer()
-                        }
-                        Text(playroom.details).lineLimit(nil).font(.body)
-                        
-                        Spacer()
-                        Button() {
-                            self.appCoordinator.synchronizePlayroom(playroom.musicroom)
-                            
-                        } label: {
-                            Text("Synchronize Playlist")
-                        }
-                        .padding()
-                        Spacer()
-                    }
-                    .padding(.top, Sizing.large)
-                    .padding()
-                    .background(Color.clear)
-                    .eraseToAnyView()
+            
+                .onTapGesture() {
+    //                self.preview = .view() {
+    //                    VStack() {
+    //                        Text(playroom.name).font(.largeTitle)
+    //                        Divider()
+    //                        HStack() {
+    //                            Text("Description").font(.headline)
+    //                            Spacer()
+    //                        }
+    //                        Text(playroom.details).lineLimit(nil).font(.body)
+    //
+    //                        Spacer()
+    //                        Button() {
+    //                            self.appCoordinator.synchronizePlayroom(playroom.musicroom)
+    //
+    //                        } label: {
+    //                            Text("Synchronize Playlist")
+    //                        }
+    //                        .padding()
+    //                        Spacer()
+    //                    }
+    //                    .padding(.top, Sizing.large)
+    //                    .padding()
+    //                    .background(Color.clear)
+    //                    .eraseToAnyView()
+    //                }
                 }
-            }
-        }
     }
     
 }
