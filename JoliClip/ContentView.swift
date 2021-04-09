@@ -141,10 +141,10 @@ public struct PlayroomView: JoliView {
 }
 
 
-struct ContentView: JoliContentView {
+public struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {
     
     @State var showRecommended = false
-    @EnvironmentObject var appCoordinator: AppCoordinator
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @Binding var playroom: Playroom?
     @Binding var currentUser: User?
@@ -172,11 +172,18 @@ struct ContentView: JoliContentView {
     @State var tracks: [Playable] = []
     
     @State var tracksFiltered: [Playable] = []
+    public var localPlaybackController: PlaybackControllerType!
     
-    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket){
+    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket) {
         self._playroom = playroom
         self._currentUser = currentUser
         self.websocket = websocket
+        self.localPlaybackController = nil
+    }
+    
+    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
+        self.init(playroom: playroom, currentUser: currentUser, websocket: websocket)
+        self.localPlaybackController = localPlaybackController
     }
     
     var refreskButton: some View {
@@ -192,7 +199,7 @@ struct ContentView: JoliContentView {
         }
     }
     
-    var contentView: some View {
+    public var contentView: some View {
         return NavigationView() {
                 
                     ScrollViewReader() { scrollProxy in

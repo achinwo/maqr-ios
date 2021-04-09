@@ -30,6 +30,16 @@
 		923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
 		923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		923C2B0624CC752E009E2380 /* JoliPlayground.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		923D0D8D26205DFF008BB6EA /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
+		923D0D9526205E0A008BB6EA /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
+		923D0D9D26205E25008BB6EA /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
+		923D0DB226205EC0008BB6EA /* SpotifyDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */; };
+		923D0DB326205EC0008BB6EA /* SpotifyDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */; };
+		923D0DC126205FA8008BB6EA /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
+		923D0DC226205FA8008BB6EA /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
+		923D0DC326205FA8008BB6EA /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
+		923D0DC426205FA8008BB6EA /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
+		923D0DCB26206154008BB6EA /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
 		9251F1C525CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		9251F1C625CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		9252603C261B376F00316AE1 /* SpotifyConnectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */; };
@@ -72,7 +82,6 @@
 		928F75F524F7B13400CF708B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F75F324F7B13400CF708B /* SearchView.swift */; };
 		929FFE1C24FAF096000BDCF0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929FFE1B24FAF096000BDCF0 /* User.swift */; };
 		929FFE1D24FAF096000BDCF0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929FFE1B24FAF096000BDCF0 /* User.swift */; };
-		92A2EDDE24CE0A4B00D6640A /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
 		92A32D6724C799B8007C960E /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D6624C799B8007C960E /* Tests_iOS.swift */; };
 		92A32D7224C799B8007C960E /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D7124C799B8007C960E /* Tests_macOS.swift */; };
 		92A32D8824C79A13007C960E /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
@@ -121,7 +130,6 @@
 		92EC6270252CBE3A0092E497 /* PromisesTestHelpers in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC626F252CBE3A0092E497 /* PromisesTestHelpers */; };
 		92EDE394261120D000688802 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD624C79C07007C960E /* AppView.swift */; };
 		92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE3CD2619394000688802 /* SFSafeSymbols */; };
-		92EDE3F526193A4900688802 /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
 		92EDE41026193AD500688802 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE40F26193AD500688802 /* Kingfisher */; };
 		92EDE41226193AE000688802 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE41126193AE000688802 /* PartialSheet */; };
 		92EDE43A26193DFA00688802 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE43926193DFA00688802 /* KeychainAccess */; };
@@ -225,6 +233,7 @@
 		9222BE1724CD8A5800F19973 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		923BD58D25E16D63003863AB /* SignInWithApple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApple.swift; sourceTree = "<group>"; };
+		923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publishers+Playback.swift"; sourceTree = "<group>"; };
 		9251F1C425CE190200906D9D /* RefreshableScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableScrollView.swift; sourceTree = "<group>"; };
 		9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyConnectButton.swift; sourceTree = "<group>"; };
 		92595B4C253A1AD200609558 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
@@ -324,7 +333,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9274A81424CDB41500B45EDF /* JoliPlayground.framework in Frameworks */,
-				92EDE3F526193A4900688802 /* SpotifyiOS.framework in Frameworks */,
+				923D0D8D26205DFF008BB6EA /* SpotifyiOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -347,8 +356,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */,
+				923D0D9526205E0A008BB6EA /* SpotifyiOS.framework in Frameworks */,
 				923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */,
-				92A2EDDE24CE0A4B00D6640A /* SpotifyiOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -357,6 +366,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				92EC626C252CBE3A0092E497 /* FBLPromises in Frameworks */,
+				923D0D9D26205E25008BB6EA /* SpotifyiOS.framework in Frameworks */,
 				92EC6264252CBE220092E497 /* Promises in Frameworks */,
 				9270C229252CAA3B0030E6AD /* JoliApi in Frameworks */,
 				92EC6270252CBE3A0092E497 /* PromisesTestHelpers in Frameworks */,
@@ -457,6 +467,7 @@
 				929FFE1B24FAF096000BDCF0 /* User.swift */,
 				920958AA25601EE10014626D /* Logging.swift */,
 				923BD58D25E16D63003863AB /* SignInWithApple.swift */,
+				923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -992,6 +1003,7 @@
 				920958AB25601EE10014626D /* Logging.swift in Sources */,
 				92D31DB325EAFF9100522E28 /* LogOnView.swift in Sources */,
 				9203B32924CB07F800F465CC /* Styles.swift in Sources */,
+				923D0DC126205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
 				926E2E24260F40E9007F62E0 /* PlayroomCreateView.swift in Sources */,
 				9203B32A24CB07FD00F465CC /* Consts.swift in Sources */,
 				927AE0C12554AC020027493D /* LobbyView.swift in Sources */,
@@ -1022,7 +1034,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				9274A7E924CDB29200B45EDF /* ContentView.swift in Sources */,
+				923D0DCB26206154008BB6EA /* Consts.swift in Sources */,
 				9274A7E724CDB29200B45EDF /* JoliClip.swift in Sources */,
+				923D0DB226205EC0008BB6EA /* SpotifyDelegate.swift in Sources */,
+				923D0DC226205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1077,6 +1092,7 @@
 				9251F1C625CE190200906D9D /* RefreshableScrollView.swift in Sources */,
 				929FFE1D24FAF096000BDCF0 /* User.swift in Sources */,
 				9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */,
+				923D0DC326205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
 				92A32E0824C79C07007C960E /* ProfileView.swift in Sources */,
 				923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */,
 				928A392124E9E1A600A029A1 /* SpotifyDelegate.swift in Sources */,
@@ -1093,10 +1109,12 @@
 			files = (
 				92A32E2D24C7BB53007C960E /* Consts.swift in Sources */,
 				92A32DB824C79B59007C960E /* UserSettings.swift in Sources */,
+				923D0DB326205EC0008BB6EA /* SpotifyDelegate.swift in Sources */,
 				920958B325601F030014626D /* Logging.swift in Sources */,
 				9270C353252CB4AD0030E6AD /* App.swift in Sources */,
 				92A32E3224CA22FA007C960E /* Publishers.swift in Sources */,
 				92A32D8824C79A13007C960E /* Styles.swift in Sources */,
+				923D0DC426205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1198,6 +1216,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_INCLUDE_PATHS = "@executable_path/Frameworks/**";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1233,6 +1252,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_INCLUDE_PATHS = "@executable_path/Frameworks/**";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1272,6 +1292,7 @@
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Joli-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1304,6 +1325,7 @@
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Joli-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

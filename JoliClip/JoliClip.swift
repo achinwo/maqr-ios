@@ -12,11 +12,11 @@ import JoliCore
 import CancellationToken
 import Combine
 import JoliApi
-import os
+//import os
 import Version
 import KeychainAccess
 
-internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "global.invite.room")
+//internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "global.invite.room")
 
 @main
 struct JoliClip: AppClip {
@@ -54,9 +54,10 @@ struct JoliClip: AppClip {
     
     @State var playroom: Playroom? = nil
     @State var currentUser: User? = nil
+    let spotify = SpotifyDelegate()
     
     var contentView: some View {
-        ContentView(playroom: self.$playroom, currentUser: self.$currentUser, websocket: websocket)
+        ContentView(playroom: self.$playroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify)
             .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
 //            .overlay(
 //                GeometryReader() { proxy in
