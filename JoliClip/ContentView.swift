@@ -167,10 +167,10 @@ public struct PlayroomView: JoliView {
 }
 
 
-public struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {
+struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {
     
     @State var showRecommended = false
-    @EnvironmentObject public var appCoordinator: AppCoordinator
+    @EnvironmentObject var appCoordinator: AppCoordinator
     
     @Binding var playroom: Playroom?
     @Binding var currentUser: User?
@@ -198,17 +198,12 @@ public struct ContentView<PlaybackControllerType: PlaybackController>: JoliConte
     @State var tracks: [Playable] = []
     
     @State var tracksFiltered: [Playable] = []
-    public var localPlaybackController: PlaybackControllerType!
+    public var localPlaybackController: PlaybackControllerType
     
-    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket) {
+    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
         self._playroom = playroom
         self._currentUser = currentUser
         self.websocket = websocket
-        self.localPlaybackController = nil
-    }
-    
-    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
-        self.init(playroom: playroom, currentUser: currentUser, websocket: websocket)
         self.localPlaybackController = localPlaybackController
     }
     

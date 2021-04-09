@@ -301,19 +301,9 @@ public extension JoliView {
 
 public protocol JoliContentView: JoliView {
     
-    associatedtype PlaybackControllerType = Never
+    associatedtype PlaybackControllerType
     var localPlaybackController: PlaybackControllerType { get }
-    
 }
-
-extension JoliContentView where PlaybackControllerType: PlaybackController {
-//
-//    init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType) {
-//        self.init(playroom: playroom, currentUser: currentUser, websocket: websocket)
-//    }
-    
-}
-
 
 public enum ViewIdentifier: String, Identifiable {
     case explore = "views.explore"
