@@ -264,6 +264,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                         getter(track, Array(self.playStatebyUsername.values), nil)
                     }
                 }
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
                 .background(
                     self.liveProgressView(proxy: proxy)
                 )
@@ -273,6 +274,7 @@ public struct TrackView2<AddonView: View>: JoliView {
         .scaleEffect(x: self.requestingPlay ? 0.98 : 1, y: self.requestingPlay ? 0.98 : 1, anchor: .center)
         .animation(.interactiveSpring())
         .background(colors?.backgroundColor ?? Color.clear)
+        .frame(minHeight: 64, maxHeight: 72)
         .onTapGesture {
             menuEnabled.toggle()
             print("[Menu] enabled: \(menuEnabled)")

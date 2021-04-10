@@ -556,7 +556,7 @@ struct ListenView: JoliView {
                             //.padding(.horizontal)
                             .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
                             .id(playroom.themeGenreNames)//.background(Color.pink)
-                        
+                        Spacer()
                     } else {
                         self.lobbyView
                             //.frame(minHeight: 68.0 * CGFloat(recentTracks.count + liveTracks.count) + CGFloat(screenHeight) + CGFloat(68.0 * CGFloat(playrooms.count) / 2.0))
