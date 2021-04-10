@@ -39,6 +39,7 @@ public class Playroom: ObservableObject, Room, Equatable {
     
     @Published public var queue: [QueuedTrack] = []
     @Published public var loadingRoomTracks: Bool = false
+    @Published public var recommendations: [Playable] = []
     
     @Published public var strip: TrackStrip = (nil, nil, nil)
     
@@ -46,6 +47,45 @@ public class Playroom: ObservableObject, Room, Equatable {
     let api: JoliApi
     
     private var cancellationSet: Set<AnyCancellable> = []
+    
+    
+    @discardableResult
+    public func fetchSpotifyRecommendations(limit: Int = 6) -> Promise<Spotify.Recommendation> {
+        var path = URLComponents(string: "/api/spotify/recommendations")!
+        let trackIds = queue.prefix(5).map({ $0.uri.replacingOccurrences(of: "spotify:track:", with: "") })
+        let artistIds = themeArtistIds?.split(separator: ",").map({ String($0).replacingOccurrences(of: "spotify:artist:", with: "") }) ?? []
+        
+        path.queryItems = [
+            URLQueryItem(name: "limit", value: limit.description),//
+            URLQueryItem(name: "min_energy", value: "0.4"),
+        ]
+        
+        var alloc = 5
+        if !genres.isEmpty {
+            let gSeeds = trackIds.isEmpty && artistIds.isEmpty ? alloc : 3
+            path.queryItems?.append(URLQueryItem(name: "seed_genres", value: genres.prefix(gSeeds).joined(separator: ",")))
+            alloc = alloc - gSeeds
+        }
+        
+        if !trackIds.isEmpty {
+            let tSeeds = artistIds.isEmpty ? alloc : 1
+            path.queryItems?.append(URLQueryItem(name: "seed_tracks", value: trackIds.prefix(tSeeds).joined(separator: ",")))
+            alloc = alloc - tSeeds
+        } else {
+            let uri = self.themeTrackUri.replacingOccurrences(of: "spotify:track:", with: "")
+            path.queryItems?.append(URLQueryItem(name: "seed_tracks", value: uri))
+            alloc = alloc - 1
+        }
+        
+        if !artistIds.isEmpty {
+            let q = URLQueryItem(name: "seed_artists", value: artistIds.prefix(alloc).joined(separator: ","))
+            path.queryItems?.append(q)
+        }
+        
+        logger.debug("[fetchSpotifyRecommendations] getting suggestion: \(path)")
+        return HttpMethod.Fetch.get(url: path, dataType: Spotify.Recommendation.self,
+                                    baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+    }
     
     @discardableResult
     public func updateQueuedTracks() -> Promise<[QueuedTrack]> {

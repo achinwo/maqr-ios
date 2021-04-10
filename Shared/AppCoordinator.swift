@@ -372,7 +372,7 @@ public final class AppCoordinator: ObservableObject {
             return
         }
         
-        let someText: String = "Hi, lets listen to songs together in \(room.name), link \(url.absoluteString)"
+        let someText: String = "Hi, lets listen to songs together in \"\(room.name)\" \(url.absoluteString)"
         
         self.share(text: someText, url: url, completionHandler: completionHandler)
     }
@@ -380,7 +380,7 @@ public final class AppCoordinator: ObservableObject {
     public func share(text: String, url: URL, completionHandler: ((Bool) -> Void)? = nil){
         isSharePresented.toggle()
         
-        let sharedObjects: [AnyObject] = [text as AnyObject, url as AnyObject]
+        let sharedObjects: [AnyObject] = [text as AnyObject]//, url as AnyObject]
         
         let av = UIActivityViewController(activityItems: sharedObjects, applicationActivities: [ShareActivity()])
         UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true) {

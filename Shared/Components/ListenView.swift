@@ -435,6 +435,8 @@ struct ListenView: JoliView {
     }
     
     @StateObject var refreshModel = Model()
+    @State var trackRecommendations: [Playable] = []
+    @State var queueRequested: (uri: String, playroom: Musicroom)? = nil
     
     var contentView: some View {
         ScrollViewReader() { scrollProxy in
@@ -442,7 +444,7 @@ struct ListenView: JoliView {
             
             RefreshableScrollView(refreshing: self.$refreshModel.triggeredSwipeRefresh, showsIndicators: true) {
                 
-                VStack(alignment: .center){
+                VStack(alignment: .center, spacing: .zero){
                     
                     Group() {
                         self.searchResultView
@@ -458,10 +460,14 @@ struct ListenView: JoliView {
                     if let playroom = playroom {
                         ZStack(){
                             TrackList(tracks: self.$tracksFiltered, votes: self.$votes, playroom: self.$playroom, addonView: self.addonView)
+                                //.frame(width: screenWidth)
                                 //.padding(.top, roomControlViewBounds == nil ? safeAreaInsets.top : roomControlViewBounds?.height)
                                 .padding(.top, isEmptySearchResult ? safeAreaInsets.top + 100 : nil)
-                                .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
                                 .background(Color.systemBackground)
+                                .onReceive(playroom.$recommendations, assign: \.trackRecommendations, target: self)
+                                .onReceive(self.appCoordinator.queueRequestedSubject) { val in
+                                    self.queueRequested = val
+                                }
                                 .matchedGeometryEffect(id: "playroom/\(playroom.musicroom.id.description)", in: animation)//, properties: .frame, isSource: true)
                                 .onReceive(playroom.$queue) { tracks in
                                     var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
@@ -520,11 +526,37 @@ struct ListenView: JoliView {
                                         }
                                     }
                                 }
-                            
-                            if self.loadingPlayrooms {
-                                Text("Loading Tracks...")
-                            }
                         }
+                        
+                        HStack(alignment: .top){
+                            Text("Suggestions")
+                            Spacer()
+                        }
+                        .font(Font.largeTitle.weight(.thin))
+                        .padding([.top, .horizontal])
+                        .foregroundColor(.secondary)
+                        
+                        Divider().padding(.vertical)
+                        
+                        TrackList(tracks: $trackRecommendations) { (track, states, color) in
+                            Image(systemName: "plus")
+                                .font(queueRequested?.uri == track.uri ?  Font.title2.weight(.semibold) : Font.title2.weight(.thin))
+                                .foregroundColor(.secondary)
+                                .padding()
+                                .disabled(queueRequested != nil)
+                                .onTapGesture {
+                                    print("[Search.ResultView] queue \(track.title)")
+                                    self.appCoordinator.queueTrack(track, playroom: playroom.musicroom)
+                                    playroom.recommendations = trackRecommendations.filter({ $0.uri != track.uri })
+                                }
+                                .scaleEffect(x: queueRequested?.uri == track.uri ? 0.8 : 1,
+                                             y: queueRequested?.uri == track.uri ? 0.8 : 1)
+                            }
+                            //.frame(maxWidth: screenWidth)
+                            //.padding(.horizontal)
+                            .padding(.bottom, peopleViewBounds == nil ? .zero : peopleViewBounds?.height)
+                            .id(playroom.themeGenreNames)//.background(Color.pink)
+                        
                     } else {
                         self.lobbyView
                             //.frame(minHeight: 68.0 * CGFloat(recentTracks.count + liveTracks.count) + CGFloat(screenHeight) + CGFloat(68.0 * CGFloat(playrooms.count) / 2.0))
@@ -533,6 +565,7 @@ struct ListenView: JoliView {
                             .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     }
                 }
+                .frame(width: screenWidth)
                 .onReceive(self.refreshModel.$lastResfreshedAt) { date in
                     guard date != nil else { return }
                     
@@ -569,11 +602,21 @@ struct ListenView: JoliView {
             self.tracksFiltered = self.filterTracks(self.tracks, txt)
         }
         .onChange(of: self.playroom) { value in
-            guard value == nil else {
+            
+            guard let room = value else {
+                self.needsRefreshSubject.send("room changed")
                 return
             }
             
-            self.needsRefreshSubject.send("room changed")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2){
+                
+                room.fetchSpotifyRecommendations()
+                    .then(){ tracks in
+                        room.recommendations = tracks.tracks
+                        //print("[ListenView] got track recommm: \(tracks)")
+                    }
+                    .catch(self.appCoordinator.globalErrorHandler())
+            }
         }
     }
     

@@ -228,6 +228,10 @@ public protocol Room {
     
     var musicroom: Musicroom { get }
     
+    var themeAlbumIds: String?  { get }
+    var themeArtistIds: String? { get }
+    var themeGenreNames: String? { get }
+    
     var uuid: String? { get }
     var createdByUser: User { get }
     var deletedAt: Date? { get }
@@ -250,9 +254,29 @@ public protocol Room {
     var updatedAt: Date { get }
     var updatedById: Int { get }
     var updatedByUser: User? { get }
+    
+    var genres: [String] { get }
 }
 
 public extension Room {
+    
+    var genres: [String] {
+        guard let genreNames = themeGenreNames else { return [] }
+        
+        return Array(genreNames.split(separator: ",").map() {String($0)}) //?? []
+    }
+    
+    var themeAlbumIds: String?  {
+        musicroom.themeAlbumIds
+    }
+    
+    var themeArtistIds: String? {
+        musicroom.themeArtistIds
+    }
+    
+    var themeGenreNames: String? {
+        musicroom.themeGenreNames
+    }
     
     var uuid: String? {
         return musicroom.uuid

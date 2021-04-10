@@ -8,19 +8,37 @@
 
 import SwiftUI
 import JoliCore
+import Promises
 
-struct TrackSuggestionsListView<P: Playable>: JoliView {
+extension Room {
+    
+    
+}
+
+struct TrackSuggestionsListView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    @Binding var playables: [P]
+    @State var tracks: [Playable] = []
+    @State var artists: [Artist] = []
     
-    var className: String {
-        return "\(P.self)"
-    }
+    @Binding var genres: [String]
+    
+    @State var isLoading: Bool = false
+    
     
     var contentView: some View {
-        Text("Hello, World!")
+        
+        return Group(){
+            if self.isLoading {
+                ProgressView("Getting recommendations...")
+            } else {
+                TrackList(tracks: self.$tracks) { (track, states, color) in
+                    Image(systemName: "plus")
+                        .font(.title)
+                }
+            }
+        }
     }
 }
 
