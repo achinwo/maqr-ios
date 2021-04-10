@@ -228,6 +228,7 @@ public protocol Room {
     
     var musicroom: Musicroom { get }
     
+    var uuid: String? { get }
     var createdByUser: User { get }
     var deletedAt: Date? { get }
     var deletedById: Int? { get }
@@ -252,6 +253,10 @@ public protocol Room {
 }
 
 public extension Room {
+    
+    var uuid: String? {
+        return musicroom.uuid
+    }
     
     var createdByUser: User {
         return musicroom.createdByUser

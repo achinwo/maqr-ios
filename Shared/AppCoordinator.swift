@@ -363,12 +363,16 @@ public final class AppCoordinator: ObservableObject {
     }
     
     public func share(room: Room, completionHandler: ((Bool) -> Void)? = nil){
-        let someText: String = "Hi, lets listen to songs together in \(room.name)"
+        let currentUser: Auth? = activeAuth
+        let entitlement: Entitlement? = room.entitlements.first() { $0.createdById == currentUser?.user.id }
+        let uuid = entitlement?.uuid ?? room.uuid ?? ""
         
-        guard let url = URL(string: "/i/GIqYQm", relativeTo: self.api.baseUrlHttp) else {
+        guard let url = URL(string: uuid.isEmpty ? "" : "/i/\(uuid)", relativeTo: self.api.baseUrlHttp) else {
             completionHandler?(false)
             return
         }
+        
+        let someText: String = "Hi, lets listen to songs together in \(room.name), link \(url.absoluteString)"
         
         self.share(text: someText, url: url, completionHandler: completionHandler)
     }
@@ -376,7 +380,7 @@ public final class AppCoordinator: ObservableObject {
     public func share(text: String, url: URL, completionHandler: ((Bool) -> Void)? = nil){
         isSharePresented.toggle()
         
-        let sharedObjects: [AnyObject] = [url as AnyObject, text as AnyObject]
+        let sharedObjects: [AnyObject] = [text as AnyObject, url as AnyObject]
         
         let av = UIActivityViewController(activityItems: sharedObjects, applicationActivities: [ShareActivity()])
         UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true) {
