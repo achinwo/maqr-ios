@@ -12,35 +12,6 @@ import JoliCore
 import Combine
 import Promises
 
-public enum ScrollPosition: Equatable {
-    case leadingEdge
-    case trailingEdge
-    case point(CGPoint)
-}
-
-public enum PlaybackControllerMetadataKey: EnvironmentKey {
-
-    public static var defaultValue: PlaybackControllerMetadata? {
-        return nil
-    }
-
-}
-
-public extension EnvironmentValues {
-    
-    var playbackControllerMetadata: PlaybackControllerMetadata? {
-        get {
-            self[PlaybackControllerMetadataKey.self]
-        }
-        
-        set {
-            self[PlaybackControllerMetadataKey.self] = newValue
-        }
-    }
-    
-}
-
-
 public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator

@@ -19,6 +19,29 @@ import UIImageColors
 public typealias Color = SwiftUI.Color
 public typealias View = SwiftUI.View
 
+
+public enum PlaybackControllerMetadataKey: EnvironmentKey {
+    
+    public static var defaultValue: PlaybackControllerMetadata? {
+        return nil
+    }
+    
+}
+
+public extension EnvironmentValues {
+    
+    var playbackControllerMetadata: PlaybackControllerMetadata? {
+        get {
+            self[PlaybackControllerMetadataKey.self]
+        }
+        
+        set {
+            self[PlaybackControllerMetadataKey.self] = newValue
+        }
+    }
+    
+}
+
 public extension UIImageColors {
     
     var primaryColor: Color {

@@ -287,7 +287,7 @@ public final class AppCoordinator: ObservableObject {
             .always {
                 self.voteRequestedSubject.send(nil)
             }
-            
+        
     }
     
     @Published var localPlayRequested: (track: Playable, positionMs: Int?, contextUri: String?)? = nil

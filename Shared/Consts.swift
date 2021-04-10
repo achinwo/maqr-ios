@@ -23,6 +23,14 @@ import os
 //
 internal let logger = Logger(subsystem: "com.jolimc.Joli", category: "global.client")
 
+
+public enum ScrollPosition: Equatable {
+    case leadingEdge
+    case trailingEdge
+    case point(CGPoint)
+}
+
+
 public enum Strings {
     
     static let URL_SCHEME = "joli"
