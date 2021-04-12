@@ -22,24 +22,28 @@ extension Array {
 
 }
 
-struct StackedUserAvatarView: View {
-    @Binding var users: [PlayroomMembership]
+struct StackedArtistAvatarView: View {
+    @Binding var artists: [Artist]
     
-    var uniqueUsers: Set<PlayroomMembership> {
-        Set(self.users)
+    var uniqueArtists: Set<Artist> {
+        Set(self.artists)
     }
     
     var body: some View {
-        let distinctUsers = uniqueUsers
-        let sortedUsers = Array(distinctUsers).sorted() { $0.activityStatus.rawValue > $1.activityStatus.rawValue }
+        let distinctUsers = uniqueArtists
+        let sortedUsers = Array(distinctUsers)
+        
         return HStack(alignment: .bottom){
             HStack(spacing: -25) {
-                ForEach(Array(sortedUsers.prefix(4).reversed().enumerated()), id: \.element.emailAddress.email) { item in
-                    UserAvatarView(user: item.element, width: 44)
-                        .frame(width: 44, height: 44)
-                        //.offset(x: CGFloat(-10 * item.offset))
-                        //.padding(.trailing, CGFloat(item.offset) * 20)
-                        .id(item.element.emailAddress.email)
+                ForEach(sortedUsers.prefix(4)) { item in
+                    NetworkImage(string: item.imageSmall) {
+                        Image(systemName: "person")
+                            .resizable()
+                            .renderingMode(.original)
+                    }
+                    .frame(width: 44, height: 44)
+                    .clipShape(Circle())
+                    .id(item.id)
                 }
             }
             Text(distinctUsers.count > 4 ? "+\(distinctUsers.count - 3)" : "")
@@ -186,6 +190,34 @@ public struct PlayroomHeaderView: JoliView {
                         .onReceive(playroom.$membership) { members in
                             self.membership = members
                         }
+                        .onReceive(playroom.$artists, assign: \.artists, target: self)
+                        .onTapGesture() {
+                            self.preview = .view() {
+                                VStack() {
+                                    Text(playroom.name).font(.largeTitle)
+                                    Divider()
+                                    HStack() {
+                                        Text("Description").font(.headline)
+                                        Spacer()
+                                    }
+                                    Text(playroom.details).lineLimit(nil).font(.body)
+            
+                                    Spacer()
+                                    Button() {
+                                        self.appCoordinator.synchronizePlayroom(playroom.musicroom)
+            
+                                    } label: {
+                                        Text("Synchronize Playlist")
+                                    }
+                                    .padding()
+                                    Spacer()
+                                }
+                                .padding(.top, Sizing.large)
+                                .padding()
+                                .background(Color.clear)
+                                .eraseToAnyView()
+                            }
+                        }
                 }
                 
                 Spacer()
@@ -208,7 +240,7 @@ public struct PlayroomHeaderView: JoliView {
                 Spacer()
                 
                 VStack(alignment: .trailing){
-                    StackedUserAvatarView(users: $membership)
+                    StackedArtistAvatarView(artists: $artists)
                     makeDurationLabel()
                 }
             }
@@ -222,6 +254,7 @@ public struct PlayroomHeaderView: JoliView {
     }
     
     @State var membership: [PlayroomMembership] = []
+    @State var artists: [Artist] = []
     @State var connectionState: ConnectionState = .stopped
     @ScaledMetric(relativeTo: .subheadline) var closeIconSize: CGFloat = 24
     
@@ -240,33 +273,7 @@ public struct PlayroomHeaderView: JoliView {
                     .font(Font.footnote.weight(.light))
                     .foregroundColor(Color.secondary)
             
-                .onTapGesture() {
-    //                self.preview = .view() {
-    //                    VStack() {
-    //                        Text(playroom.name).font(.largeTitle)
-    //                        Divider()
-    //                        HStack() {
-    //                            Text("Description").font(.headline)
-    //                            Spacer()
-    //                        }
-    //                        Text(playroom.details).lineLimit(nil).font(.body)
-    //
-    //                        Spacer()
-    //                        Button() {
-    //                            self.appCoordinator.synchronizePlayroom(playroom.musicroom)
-    //
-    //                        } label: {
-    //                            Text("Synchronize Playlist")
-    //                        }
-    //                        .padding()
-    //                        Spacer()
-    //                    }
-    //                    .padding(.top, Sizing.large)
-    //                    .padding()
-    //                    .background(Color.clear)
-    //                    .eraseToAnyView()
-    //                }
-                }
+                
     }
     
 }

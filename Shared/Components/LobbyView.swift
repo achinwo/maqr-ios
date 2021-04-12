@@ -11,11 +11,47 @@ import JoliCore
 import JoliApi
 import Promises
 
+extension PlayState: Playable {
+    
+    public var explicit: Bool {
+        track!.explicit
+    }
+    
+    public var title: String {
+        track!.title
+    }
+    
+    public var thumbnailUrl: String {
+        track!.thumbnailUrl
+    }
+    
+    public var albumCoverUrl: String {
+        track!.albumCoverUrl
+    }
+    
+    public var artistName: String {
+        track!.artistName
+    }
+    
+    public var uri: String {
+        track!.uri
+    }
+    
+    public var duration: Int {
+        track!.duration
+    }
+    
+    public var isPlayable: Bool {
+        return track != nil
+    }
+    
+}
+
 public struct LobbyView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @Binding var recentTracks: [Playable]
-    @Binding var liveTracks: [Spotify.Track]
+    @Binding var liveTracks: [Playable]
     @Binding var playrooms: [Musicroom]
     @Binding var filterText: String
     @Binding var isLoading: Bool
@@ -57,7 +93,8 @@ public struct LobbyView: JoliView {
         
         return Section(header: header) {
             ForEach(tracks, id: \.uri) { (track: Playable) in
-                TrackView2(track: .constant(track), useDynamicColors: false) { (track, playStates, colors) in
+                let playlistUri = (track as? PlayState)?.roomId != nil ? (track as? PlayState)?.playlistUri : nil
+                TrackView2(track: .constant(track), contextUri: .constant(playlistUri), useDynamicColors: false) { (track, playStates, colors) in
                         VStack() {
 //                                        Button() {
 //                                            //appCoordinator.

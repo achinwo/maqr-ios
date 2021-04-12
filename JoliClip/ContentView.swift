@@ -293,6 +293,14 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                 let play = Playroom(musicroom: musicroom, socket: websocket, api: api)
                 self.playroom = play
                 play.updateQueuedTracks()
+                    .then(){ _ in
+                        play.fetchSpotifyTopArtists()
+                            .then(){ artists in
+                                let filtered = artists.filter() { $0.imageMedium != nil }
+                                play.artists = filtered
+                            }
+                            .catch(self.appCoordinator.globalErrorHandler())
+                    }
                 
                 return entitlement
             }

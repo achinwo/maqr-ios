@@ -146,7 +146,7 @@ struct ListenView: JoliView {
         self.websocket = websocket
     }
     
-    @State var liveTracks: [Spotify.Track] = []
+    @State var liveTracks: [Playable] = []
     @State var recentTracks: [Playable] = []
     @State var playrooms: [Musicroom] = []
     
@@ -179,35 +179,44 @@ struct ListenView: JoliView {
         
         self.loadingLiveTracks = true
         PlayState.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
-            .then() { states -> Promise<SpotiftyTracksResponse?> in
+            .then() { states -> [PlayState] in
                 //print("[PlayStates] states: \(states)")
-                let tracks: Set<Track> = Set(states.compactMap() { $0.track })
-                self.recentTracks = tracks.sorted() { $0.name > $1.name }
+                let playstates = states.compactMap() { state -> PlayState? in
+                        guard state.isPlayable else { return nil }
+                        return state
+                    }
                 
-                let trackUris = states
+                let tracks: [PlayState] = Array(Set(playstates))
+                
+                self.recentTracks = tracks
+                
+                let liveTracks = tracks
                     .sorted(by: { $0.updatedAt > $1.updatedAt })
-                    .compactMap() { state -> String? in
+                    .compactMap() { state -> PlayState? in
                         guard state.playingState == .playing, let isLocal = state.trackUri?.starts(with: "spotify:local:"), !isLocal else {
                             return nil
                         }
                         
-                        return state.trackUri?.replacingOccurrences(of: "spotify:track:", with: "", options: .literal, range: nil)
+                        return state//.trackUri?.replacingOccurrences(of: "spotify:track:", with: "", options: .literal, range: nil)
                     }
                 
-                guard var comp = URLComponents(string: "/api/spotify/tracks"), !trackUris.isEmpty else {
-                    return Promise(nil)
-                }
+                self.liveTracks = liveTracks
                 
-                comp.queryItems = [
-                    URLQueryItem(name: "ids", value: Set(trackUris).joined(separator: ","))
-                ]
-                
-                return HttpMethod.Fetch.get(url: comp, dataType: SpotiftyTracksResponse.self, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
-                    .then(on: .main) { resp -> SpotiftyTracksResponse in
-                        self.liveTracks = resp.tracks.sorted() { $0.name > $1.name }
-                        return resp
-                    }
-                    .catch(appCoordinator.globalErrorHandler())
+                return liveTracks
+//                guard var comp = URLComponents(string: "/api/spotify/tracks"), !trackUris.isEmpty else {
+//                    return Promise(nil)
+//                }
+//
+//                comp.queryItems = [
+//                    URLQueryItem(name: "ids", value: Set(trackUris).joined(separator: ","))
+//                ]
+//
+//                return HttpMethod.Fetch.get(url: comp, dataType: SpotiftyTracksResponse.self, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+//                    .then(on: .main) { resp -> SpotiftyTracksResponse in
+//                        self.liveTracks = resp.tracks.sorted() { $0.name > $1.name }
+//                        return resp
+//                    }
+//                    .catch(appCoordinator.globalErrorHandler())
             }
             .catch(appCoordinator.globalErrorHandler())
             .always() {
@@ -459,7 +468,7 @@ struct ListenView: JoliView {
                     
                     if let playroom = playroom {
                         ZStack(){
-                            TrackList(tracks: self.$tracksFiltered, votes: self.$votes, playroom: self.$playroom, addonView: self.addonView)
+                            TrackList(tracks: self.$tracksFiltered, contextUri: .constant(playroom.playlistUri), votes: self.$votes, playroom: self.$playroom, addonView: self.addonView)
                                 //.frame(width: screenWidth)
                                 //.padding(.top, roomControlViewBounds == nil ? safeAreaInsets.top : roomControlViewBounds?.height)
                                 .padding(.top, isEmptySearchResult ? safeAreaInsets.top + 100 : nil)
@@ -499,6 +508,17 @@ struct ListenView: JoliView {
                                         next: tracks.count > 1 ? tracks[1] : nil,
                                         runnerup: tracks.count > 2 ? tracks[2] : nil
                                     )
+                                    
+                                    DispatchQueue.main.async {
+                                        playroom.fetchSpotifyTopArtists()
+                                            .then(){ artists in
+                                                let filtered = artists.filter() { $0.imageMedium != nil }
+                                                playroom.artists = filtered
+                                                print("[ListenView] got track artists: \(filtered)")
+                                            }
+                                            .catch(self.appCoordinator.globalErrorHandler())
+                                    }
+                                    
                                 }
                                 .onChange(of: self.votes) { votes in
                                     var mapping: [Int: [QueuedTrackVote]] = [:]
@@ -526,6 +546,7 @@ struct ListenView: JoliView {
                                         }
                                     }
                                 }
+                                .id(playroom.playlistUri)
                         }
                         
                         HStack(alignment: .top){

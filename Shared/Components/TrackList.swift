@@ -32,6 +32,7 @@ public struct TrackView2<AddonView: View>: JoliView {
     public typealias AddonViewGetter = (Playable, [PlayState], UIImageColors?) -> AddonView
     
     @Binding var track: Playable
+    @Binding var contextUri: String?
     
     @State var colors: UIImageColors? = nil
 //    var colors: UIImageColors? {
@@ -87,11 +88,12 @@ public struct TrackView2<AddonView: View>: JoliView {
                 }
         }
     
-    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false) {
+    public init(track: Binding<Playable>, contextUri: Binding<String?> = .constant(nil), hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false) {
         self._hearts = hearts
         self._track = track
         self.useDynamicColors = useDynamicColors
         self.addonViewGetter = nil
+        self._contextUri = contextUri
     }
     
     public var controlsView: some View {
@@ -122,7 +124,7 @@ public struct TrackView2<AddonView: View>: JoliView {
         self.requestingPlay = true
         let progress: Int? = fromBegining ? nil : self.playStatebyUsername.first?.value.progressMs
         
-        appCoordinator.play(track, positionMs: progress, device: activeDevice)
+        appCoordinator.play(track, positionMs: progress, contextUri: contextUri, device: activeDevice)
             .then(){ playState in
                 
                 guard var playState = playState else {
@@ -289,7 +291,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                     .foregroundColor(colors?.primaryColor ?? Color.primary)
                     .animation(.easeInOut)
                     .font(Font.headline.weight(.light))
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .onTapGesture() {
                         self.play(false)
                     }
@@ -307,6 +309,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                     }
                         //.overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red, lineWidth: 1.2))
                     Text(track.artistName)
+                        .lineLimit(1)
                         .foregroundColor(colors?.secondaryColor ?? Color.primary)
                         .animation(.easeInOut)
                         .font(Font.subheadline.weight(.semibold))
@@ -326,6 +329,16 @@ public struct TrackView2<AddonView: View>: JoliView {
                     self.play(false)
                 }
                 Spacer()
+                
+                if contextUri != nil, track as? QueuedTrack == nil {
+                    HStack(alignment: .center){
+                        Image(systemName: "music.note.house")
+                            .foregroundColor(.systemGreen)
+                            .font(.footnote)
+                        Spacer()
+                    }
+                    .padding(.bottom, 2)
+                }
             }
             //.background(Colors.lightGray.opacity(0.001))
     }
@@ -397,9 +410,10 @@ public extension PlayState {
 
 extension TrackView2 where AddonView: View {
     
-    public init(track: Binding<Playable>, hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, @ViewBuilder content: @escaping AddonViewGetter){
+    public init(track: Binding<Playable>, contextUri: Binding<String?> = .constant(nil), hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, @ViewBuilder content: @escaping AddonViewGetter){
         self._hearts = hearts
         self._track = track
+        self._contextUri = contextUri
         self.useDynamicColors = useDynamicColors
         self.addonViewGetter = content
     }
@@ -415,16 +429,18 @@ public struct TrackList<AddonView: View>: JoliView {
     @Binding var tracks: [Playable]
     @Binding var votes: [QueuedTrackVote]
     @Binding var playroom: Playroom?
+    @Binding var contextUri: String?
     
     @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
     let addonViewFunc: (Playable, [PlayState], UIImageColors?) -> AddonView
     
-    public init(tracks: Binding<[Playable]>, votes: Binding<[QueuedTrackVote]>? = .constant([]),
+    public init(tracks: Binding<[Playable]>, contextUri: Binding<String?> = .constant(nil), votes: Binding<[QueuedTrackVote]>? = .constant([]),
                 playroom: Binding<Playroom?> = .constant(nil), onVoteTapped: ((QueuedTrack) -> Void)? = nil, @ViewBuilder addonView: @escaping (Playable, [PlayState], UIImageColors?) -> AddonView){
         self.onVoteTapped = onVoteTapped
         self._tracks = tracks
         self._playroom = playroom
         self._votes = votes ?? .constant([])
+        self._contextUri = contextUri
         self.addonViewFunc = addonView
     }
     
@@ -459,7 +475,7 @@ public struct TrackList<AddonView: View>: JoliView {
                     
                     let track = item.element
                     
-                    TrackView2(track: .constant(track), hearts: self.heartLevelBinding(track), useDynamicColors: playroom?.themeTrackUri == track.uri) { (trackObj, states, colors) -> AddonView in
+                    TrackView2(track: .constant(track), contextUri: self.$contextUri, hearts: self.heartLevelBinding(track), useDynamicColors: playroom?.themeTrackUri == track.uri) { (trackObj, states, colors) -> AddonView in
                         return addonViewFunc(trackObj, states, colors)
                     }
                     .id(track.uri)

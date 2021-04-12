@@ -32,6 +32,8 @@ public class Playroom: ObservableObject, Room, Equatable {
         }
     }
     
+    @Published public var artists: [Artist] = []
+    
     @Published public var name: String
     
     @Published public var membership: [PlayroomMembership] = []
@@ -48,6 +50,45 @@ public class Playroom: ObservableObject, Room, Equatable {
     
     private var cancellationSet: Set<AnyCancellable> = []
     
+    @discardableResult
+    public func fetchSpotifyTopArtists(limit: Int = 6) -> Promise<[Artist]> {
+        
+        var path = URLComponents(string: "/api/db/\(Artist.self)")!
+        var prom1: Promise<[Artist]>
+        
+        if let uris = themeArtistIds, !uris.isEmpty {
+            
+            path.queryItems = [
+                URLQueryItem(name: "uris", value: uris)
+            ]
+            
+            logger.debug("[fetchSpotifyRecommendations] getting suggestion: \(path)")
+            
+            prom1 = HttpMethod.Fetch.get(url: path, dataType: [Artist].self,
+                                         baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+        } else {
+            prom1 = .init([])
+        }
+        
+        var prom2: Promise<[Artist]>
+        
+        if !queue.isEmpty {
+            let names = queue.prefix(limit).map() { $0.artistName }
+            path.queryItems = [
+                URLQueryItem(name: "names", value: names.joined(separator: ",")),
+            ]
+            
+            prom2 = HttpMethod.Fetch.get(url: path, dataType: [Artist].self,
+                                         baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+        } else {
+            prom2 = .init([])
+        }
+        
+        return Promises.all(prom1, prom2)
+            .then() { (artists1, artists2) -> [Artist] in
+                return Array(Set(artists1 + artists2))
+            }
+    }
     
     @discardableResult
     public func fetchSpotifyRecommendations(limit: Int = 6) -> Promise<Spotify.Recommendation> {
