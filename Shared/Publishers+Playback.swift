@@ -26,6 +26,8 @@ public struct PlaybackControllerMetadata: Equatable, Identifiable, CustomStringC
 
 public protocol PlaybackController: ConnectablePublisher, CustomCombineIdentifierConvertible, Identifiable, ObservableObject where Output == JoliCore.ConnectionState, Failure == Error {
     
+    typealias PlayRequest = (track: Playable, positionMs: Int?, contentOffset: ContentOffset?, completionHandler: (() -> Void)?)
+    
     var id: String { get }
     var name: String { get }
     var logoImage: Images { get }
@@ -34,6 +36,7 @@ public protocol PlaybackController: ConnectablePublisher, CustomCombineIdentifie
     
     var authPublisher: Published<AuthTokenRecord?>.Publisher { get }
     
+    var pendingPlayRequest: PlayRequest? { get }
     var metadata: PlaybackControllerMetadata { get }
     var metadataPublisher: Published<PlaybackControllerMetadata>.Publisher { get }
     
@@ -43,10 +46,12 @@ public protocol PlaybackController: ConnectablePublisher, CustomCombineIdentifie
     var playbackState: PlaybackState? { get set }
     var playbackStatePublisher: Published<PlaybackState?>.Publisher { get }
     func play(_ track: Playable, positionMs: Int?, contextUri: String?, device: Spotify.Device?) -> Future<Any, Failure>
+    func play(_ track: Playable, positionMs: Int?, contentOffset: ContentOffset?, completionHandler: (() -> Void)?)
+    
+    func authorize(token: String?) -> Void
 }
 
 extension PlaybackController {
-    
     
     public var id: String {
         metadata.id

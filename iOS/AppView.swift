@@ -133,10 +133,12 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
     }
     
     func onConnectionStateChanged(_ socket: Socket, _ connected: Bool){
-        print("[App#onConnectionStateChanged] connected: \(connected)")
+        //print("[\(tag)#onConnectionStateChanged] connected: \(connected)")
         
         guard connected else {
-            scheduleSocketReconnect()
+            DispatchQueue.main.async() {
+                socket.connect()
+            }
             return
         }
         
@@ -240,7 +242,6 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                             .background(Color.systemBackground)
                             .environment(\.playbackControllerMetadata, playbackControllerMetadata)
                             .onReceive(localPlaybackController.metadataPublisher) { meta in
-                                logger.debug("[\(Self.self)] got playbackmeta: \(String(describing: meta))")
                                 self.playbackControllerMetadata = meta
                                 
                                 guard let promise = appCoordinator.localPlaybackConnectRequest else { return }
@@ -412,6 +413,51 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                 logger.debug("[AppView] recieved vote: \(value)")
                 appCoordinator.voteCastSubject.send(value)
             }
+        }
+        .onReceive(appCoordinator.$localPlayRequested) { localRequest in
+            
+            guard let localRequest = localRequest else {
+                return
+            }
+            
+            localPlaybackController.play(localRequest.track,
+                                         positionMs: localRequest.positionMs,
+                                         contentOffset: localRequest.contentOffset) {
+                logger.info("[\(Self.self)] local playback completed")
+            }
+        }
+        .onReceive(appCoordinator.$spotifyAuthCallback) { callback in
+            
+            guard let callback = callback else {
+                return
+            }
+            
+            self.localPlaybackController.authorize(token: appCoordinator.authorizedSpotify?.accessToken)
+            callback(nil)
+        }
+        .onReceive(localPlaybackController.playbackStatePublisher) { playbackState in
+//            logger.info("[AppView#onLocalPlayStateChanged] localPlayState: \(playbackState.track.name) - \(pendingLocalPlayUri) - \(pendingLocalPlayPosition)")
+//            appCoordinator.playRequestedSubject.send(localPlayState.track.uri)
+//            appCoordinator.playRequestedSubject.send(nil)
+            
+//            let clearPending = {
+//                self.pendingLocalPlayUri = .empty
+//                self.pendingLocalPlayPosition = -1
+//                logger.info("[AppView#onLocalPlayStateChanged] cleared pending")
+//            }
+            
+//            guard !pendingLocalPlayUri.isEmpty, pendingLocalPlayUri == localPlayState.track.uri, pendingLocalPlayPosition >= 0 else {
+//                //clearPending()
+//                return
+//            }
+//
+//            print("[App#onLocalSpotifyPlayStateChanged] seek to \(pendingLocalPlayPosition)...")
+//
+//            self.spotifyRemote?.playerAPI?.seek(toPosition: pendingLocalPlayPosition) { (res, error) in
+//                print("[App#onLocalSpotifyPlayStateChanged] seek to \(pendingLocalPlayPosition): \(String(describing: res)) - \(String(describing: error))")
+//            }
+            
+            //clearPending()
         }
     }
     

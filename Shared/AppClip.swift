@@ -36,6 +36,12 @@ public struct ShortCodeGenerator {
     }
 }
 
+
+public enum SpotifyError: Error {
+    case unathorized
+}
+
+
 public enum ImageExtension: String, CaseIterable {
     case jpeg = "jpg"
     case png = "png"
@@ -305,6 +311,12 @@ public protocol JoliContentView: JoliView {
     var localPlaybackController: PlaybackControllerType { get }
 }
 
+extension JoliContentView {
+    
+    
+    
+}
+
 public enum ViewIdentifier: String, Identifiable {
     case explore = "views.explore"
     case listen = "views.listen"
@@ -409,6 +421,8 @@ public protocol AppClip: App {
     
     func onInternalError(_ error: Error) -> Void
     func onNotificationRecieved(_ message: Data) -> Void
+    
+    func authenticate(_ credentials: JoliApi.AuthCredentials) -> Void
 }
 
 public extension AppClip {
@@ -427,6 +441,64 @@ public extension AppClip {
         #else
         return false
         #endif
+    }
+    // MARK: - authenticate
+    func authenticate(_ credentials: JoliApi.AuthCredentials){
+        
+        if case let .sessionToken(token) = credentials, token.isEmpty {
+            logger.error("[\(Self.self)#authentication] call aborted, empty token")
+            return
+        }
+        
+        coordinator.api.authenticate(credentials)
+            .then() { auth in
+                
+                guard let auth = auth else {
+                    return
+                }
+                
+                //logger.debug("[App#authentication] creds: \(String(describing: credentials)), auth: \(String(describing: auth))")
+                
+                var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
+                newAuths.append(auth)
+                
+                self.auths = newAuths
+                
+                self.activeSessionToken = auth.session.token
+                
+                storeToKeychain(newAuths)
+                self.coordinator.api.auth = auth
+            }
+            .catch() { error in
+                logger.error("[App#authentication] creds: \(String(describing: credentials)), error: \(String(describing: error))")
+                
+                guard case let .sessionToken(token) = credentials, let error = error as? SpotifyError, error != SpotifyError.unathorized else {
+                    
+                    return
+                }
+                
+                let auths = self.auths.filter() { $0.session.token != token}.sorted(by: { $0.user.name < $1.user.name })
+                storeToKeychain(auths)
+            }
+            .always {
+                
+                defer {
+                    websocket.connect()
+                }
+                
+                guard let token = activeSessionToken, !self.websocket.isConnected else { return }
+                
+                var req = Self.wssUrlRequest
+                req.addValue(token, forHTTPHeaderField: "X-SESSION-ID")
+                websocket.request = req
+            }
+    }
+    
+    static var wssUrlRequest: URLRequest {
+        let url = JoliApi.Environment.current.baseUrl.ws
+        var request = URLRequest(url: url.appendingPathComponent("/ws"), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 5)
+        request.allHTTPHeaderFields = Self.defaultHeaders
+        return request
     }
     
     private func isSimulatorOrTestFlight() -> Bool {
@@ -592,6 +664,46 @@ public extension AppClip {
                 logger.info("Token Saved: \(device)")
             }
             .catch(self.coordinator.globalErrorHandler())
+    }
+    
+    func storeToKeychain(_ auths: [Auth]) {
+        let jsonEncoder = Musicroom.jsonEncoder()
+        
+        for auth in auths {
+            
+            guard let authData = try? jsonEncoder.encode(auth) else {
+                continue
+            }
+            
+            try? keychain.remove(auth.user.email)
+            
+            do {
+                try keychain.label("session-token").set(authData, key: auth.user.email)
+            } catch {
+                self.coordinator.globalErrorHandler()(error)
+            }
+        }
+    }
+    
+    static func resolveAuths(_ keychain: Keychain) -> [Auth] {
+        var auths: [Auth] = []
+        let jsonDecoder = Musicroom.jsonDecoder()
+        let items = keychain.allKeys()
+        
+        for item in items {
+            
+            guard let attributes = try? keychain.get(item, handler: { $0 }),
+                  let label = attributes.label,
+                  let data = attributes.data,
+                  let auth = try? jsonDecoder.decode(Auth.self, from: data),
+                  label == "session-token" else {
+                continue
+            }
+            
+            auths.append(auth)
+        }
+        
+        return auths.sorted() { ($0.user.displayName.name ?? "") > ($1.user.displayName.name ?? "") }
     }
     
 }

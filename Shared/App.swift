@@ -42,33 +42,6 @@ struct JoliApp: AppClip {
     
     @Namespace var namespace
     
-    @State var auth: Auth? = nil {
-        didSet {
-            
-            logger.info("[App#auth] auth field: \(String(describing: auth))")
-            
-            self.devices = []
-            //self.currentPlayroom = nil
-            self.activeDeviceId = .empty
-            
-            var newReq = Self.wssUrlRequest
-            newReq.addValue(auth?.session.token ?? "", forHTTPHeaderField: "X-SESSION-ID")
-            self.websocket.request = newReq
-            
-            self.coordinator.activeSessionToken = auth?.session.token
-            self.currentUser = auth?.user
-            self.activeSessionToken = auth?.session.token
-            
-            guard let user = auth?.user else {
-                self.coordinator.userHeartsSubject.send(nil)
-                return
-            }
-            
-            let points = CGFloat(user.heartPoints ?? 375)
-            self.coordinator.userHeartsSubject.send(Hearts(score: points <= HeartLevel.empty.rawValue ? HeartLevel.quarter.rawValue : points))
-        }
-    }
-    
     @AppStorage("active-session-id") var activeSessionId: String = .empty
     
     @State var activeSessionToken: String? {
@@ -81,6 +54,31 @@ struct JoliApp: AppClip {
             
             activeSessionId = activeSessionToken
             logger.info("[App#activeSessionToken] setting activeSessionToken: \(activeSessionId)")
+        }
+        
+        didSet {
+            logger.info("[App#activeSessionToken] auth field: \(String(describing: activeSessionToken))")
+            
+            self.devices = []
+            //self.currentPlayroom = nil
+            self.activeDeviceId = .empty
+            
+            let auth = self.auths.first() { $0.session.token == activeSessionToken }
+            
+            var newReq = Self.wssUrlRequest
+            newReq.addValue(activeSessionToken ?? "", forHTTPHeaderField: "X-SESSION-ID")
+            self.websocket.request = newReq
+            
+            self.coordinator.activeSessionToken = activeSessionToken
+            self.currentUser = auth?.user
+            
+            guard let user = auth?.user else {
+                self.coordinator.userHeartsSubject.send(nil)
+                return
+            }
+            
+            let points = CGFloat(user.heartPoints ?? 375)
+            self.coordinator.userHeartsSubject.send(Hearts(score: points <= HeartLevel.empty.rawValue ? HeartLevel.quarter.rawValue : points))
         }
     }
     
@@ -123,12 +121,6 @@ struct JoliApp: AppClip {
     
     let apnTokenPublisher: NotificationCenter.Publisher = NotificationCenter.default.publisher(for: Notifications.apnToken)
     
-    static var wssUrlRequest: URLRequest {
-        let url = JoliApi.Environment.current.baseUrl.ws
-        var request = URLRequest(url: url.appendingPathComponent("/ws"), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 5)
-        request.allHTTPHeaderFields = Self.defaultHeaders
-        return request
-    }
     
     init() {
         logger.debug("[\(Self.self)] initializing...")
@@ -160,8 +152,6 @@ struct JoliApp: AppClip {
             coordinator.onConnectionStateChange(connected ? .connected : .stopped)
         }
         
-        self.spotify.playStateCallback = self.onLocalSpotifyPlayStateChanged
-        
         self.authPublishCancel = self.websocket.deserialize(AuthToken.self)
             .autoconnect()
             .sink() { completion in
@@ -182,31 +172,6 @@ struct JoliApp: AppClip {
                                         line: errorInfo.line)
     }
     
-    func onLocalSpotifyPlayStateChanged(localPlayState: SPTAppRemotePlayerState) {
-        logger.info("[AppView#onLocalPlayStateChanged] localPlayState: \(localPlayState.track.name) - \(pendingLocalPlayUri) - \(pendingLocalPlayPosition)")
-        coordinator.playRequestedSubject.send(localPlayState.track.uri)
-        coordinator.playRequestedSubject.send(nil)
-        
-        let clearPending = {
-            self.pendingLocalPlayUri = .empty
-            self.pendingLocalPlayPosition = -1
-            logger.info("[AppView#onLocalPlayStateChanged] cleared pending")
-        }
-        
-        guard !pendingLocalPlayUri.isEmpty, pendingLocalPlayUri == localPlayState.track.uri, pendingLocalPlayPosition >= 0 else {
-            clearPending()
-            return
-        }
-        
-        print("[App#onLocalSpotifyPlayStateChanged] seek to \(pendingLocalPlayPosition)...")
-        
-        self.spotifyRemote?.playerAPI?.seek(toPosition: pendingLocalPlayPosition) { (res, error) in
-            print("[App#onLocalSpotifyPlayStateChanged] seek to \(pendingLocalPlayPosition): \(String(describing: res)) - \(String(describing: error))")
-        }
-        
-        clearPending()
-    }
-    
     func onLocalSpotifyAuth(_ auth: AuthToken?, _ error: Error?){
         logger.info("[AppView#onLocalSpotifyAuth] auth: \(String(describing: auth)), error: \(String(describing: error))")
         coordinator.authorizedSpotify = auth
@@ -221,72 +186,6 @@ struct JoliApp: AppClip {
     var spotifyRemote: SPTAppRemote? {
         return self.spotify.appRemote
     }
-    
-    func authorizeSpotify(uri: String? = nil){
-        
-        guard let spotifyRemote = self.spotifyRemote, !spotifyRemote.isConnected else {
-            logger.debug("[authorizeSpotify] spotify remote is not initialized")
-            self.spotify.remoteConnect()
-            return
-        }
-        
-        //spotifyRemote.imageAPI
-        let mgr = self.spotify.requestSpotifyAccess(trackUri: uri)
-        
-        logger.debug("[authorizeSpotify] spotify authresult: \(mgr)")
-    }
-    
-    // MARK: - authenticate
-    func authenticate(_ credentials: JoliApi.AuthCredentials){
-        
-        if case let .sessionToken(token) = credentials, token.isEmpty {
-            logger.error("[App#authentication] call aborted, empty token")
-            return
-        }
-        
-        api.authenticate(credentials)
-            .then() { auth in
-                
-                guard let auth = auth else {
-                    return
-                }
-                
-                //logger.debug("[App#authentication] creds: \(String(describing: credentials)), auth: \(String(describing: auth))")
-                
-                var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
-                newAuths.append(auth)
-                
-                self.activeSessionToken = auth.session.token
-                
-                storeToKeychain(newAuths)
-                
-                api.auth = auth
-                self.auth = auth
-                
-                self.auths = newAuths
-            }
-            .catch() { error in
-                logger.error("[App#authentication] creds: \(String(describing: credentials)), error: \(String(describing: error))")
-                
-                guard case let .sessionToken(token) = credentials, let error = error as? SpotifyError, error != SpotifyError.unathorized else { return }
-                
-                let auths = self.auths.filter() { $0.session.token != token}.sorted(by: { $0.user.name < $1.user.name })
-                storeToKeychain(auths)
-            }
-            .always {
-                
-                defer {
-                    websocket.connect()
-                }
-                
-                guard let token = self.auth?.session.token, !self.websocket.isConnected else { return }
-                
-                var req = Self.wssUrlRequest
-                req.addValue(token, forHTTPHeaderField: "X-SESSION-ID")
-                websocket.request = req
-            }
-    }
-    
     
     private func checkAppleSignedIn() {
         let provider = ASAuthorizationAppleIDProvider()
@@ -311,6 +210,10 @@ struct JoliApp: AppClip {
         }
     }
     
+    var auth: Auth? {
+        return auths.first() { $0.session.token == activeSessionToken }
+    }
+    
     var contentView: some View {
 
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify)
@@ -331,15 +234,6 @@ struct JoliApp: AppClip {
                 isSheetPresented = modalView != nil
             }
             .onReceive(coordinator.internalErrorSubject, perform: self.onInternalError)
-            .onReceive(coordinator.$spotifyAuthCallback) { callback in
-                
-                guard let callback = callback else {
-                    return
-                }
-                
-                self.authorizeSpotify()
-                callback(nil)
-            }
             .onReceive(spotify.authPublisher) { authRecord in
                 logger.info("[\(#function)] local spotify auth: \(String(describing: authRecord))")
                 authRecord?.save()
@@ -364,74 +258,6 @@ struct JoliApp: AppClip {
                 }
                 
                 self.spotify.requestSpotifyAccess()
-            }
-            .onReceive(coordinator.$localPlayRequested) { localRequest in
-                logger.debug("[App#$localPlayRequested] FIRST - local play: \(String(describing: localRequest))")
-                
-                guard let localRequest = localRequest, let spotifyRemote = self.spotifyRemote else {
-                    return
-                }
-                
-                guard spotifyRemote.isConnected else {
-                    
-                    self.pendingLocalPlayUri = localRequest.track.uri
-                    self.pendingLocalPlayPosition = localRequest.positionMs ?? -1
-                    
-                    print("[App#$localPlayRequested] set pending: \(self.pendingLocalPlayUri) - \(self.pendingLocalPlayPosition)")
-                    
-                    authorizeSpotify(uri: localRequest.track.uri)
-                    return
-                }
-                
-                let callback: SPTAppRemoteCallback = { (res, error) in
-                    
-                    guard let positionMs = localRequest.positionMs else {
-                        return
-                    }
-                    
-                    spotifyRemote.playerAPI?.seek(toPosition: positionMs) { (res, error) in
-                        print("[App#$localPlayRequested] seek to \(positionMs): \(String(describing: res)) - \(String(describing: error))")
-                    }
-                }
-                
-                print("[App#$localPlayRequested] local play: \(localRequest)")
-                if let contextUri = localRequest.contentOffset?.uri {
-                        
-                    let playPlaylistLocal = { (item: SPTAppRemoteContentItem, position: Int) in
-                        spotifyRemote.playerAPI?.play(item, skipToTrackIndex: position, callback: callback)
-                    }
-                    
-                    spotifyRemote.contentAPI?.fetchContentItem(forURI: contextUri) { item, error in
-                        print("[App#$localPlayRequested] local play playlsit: \(String(describing: (item as? SPTAppRemoteContentItem)?.children)) --- \(String(describing: error))")
-                        
-                        guard let sptItem = item as? SPTAppRemoteContentItem else {
-                            return
-                        }
-                        
-                        guard let position = localRequest.contentOffset?.position else {
-                            
-                            spotifyRemote.contentAPI?.fetchChildren(of: sptItem) { children, error in
-                                
-                                guard let contentItems = children as? [SPTAppRemoteContentItem] else {
-                                    return
-                                }
-                                ///spotifyRemote.contentAPI
-                                print("[App] fetchChildren: \(contentItems.map({$0.subtitle})) --- \(String(describing: error))")
-                                
-                                let idx = contentItems.firstIndex() { itm in
-                                    return itm.uri == localRequest.track.uri
-                                }
-                                
-                                playPlaylistLocal(sptItem, idx ?? 0)
-                            }
-                            return
-                        }
-                        
-                        playPlaylistLocal(sptItem, position)
-                    }
-                } else {
-                    spotifyRemote.playerAPI?.play(localRequest.track.uri, asRadio: true, callback: callback)
-                }
             }
             .onReceive(coordinator.globalModalSubject) { view in
                 self.modalView = view
@@ -458,10 +284,7 @@ struct JoliApp: AppClip {
                 }
                 
                 self.activeSessionToken = token
-                let auth = auths.first() { $0.session.token == token }
-                
-                api.auth = auth
-                self.auth = auth
+                api.auth = self.auth
                 
                 DispatchQueue.main.async {
                     self.fetchSpotifyAuthToken()
@@ -514,43 +337,7 @@ struct JoliApp: AppClip {
 
 extension JoliApp {
         
-    func storeToKeychain(_ auths: [Auth]) {
-        
-        for auth in auths {
-            
-            guard let authData = try? JoliApp.jsonEncoder.encode(auth) else {
-                continue
-            }
-            
-            try? keychain.remove(auth.user.email)
-            
-            do {
-                try keychain.label("session-token").set(authData, key: auth.user.email)
-            } catch {
-                self.coordinator.globalErrorHandler()(error)
-            }
-        }
-    }
     
-    static func resolveAuths(_ keychain: Keychain) -> [Auth] {
-        var auths: [Auth] = []
-        
-        let items = keychain.allKeys()
-        for item in items {
-            
-            guard let attributes = try? keychain.get(item, handler: { $0 }),
-                  let label = attributes.label,
-                  let data = attributes.data,
-                  let auth = try? jsonDecoder.decode(Auth.self, from: data),
-                  label == "session-token" else {
-                continue
-            }
-            
-            auths.append(auth)
-        }
-        
-        return auths.sorted() { ($0.user.displayName.name ?? "") > ($1.user.displayName.name ?? "") }
-    }
     
 }
 

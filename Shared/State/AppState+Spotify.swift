@@ -127,8 +127,3 @@ extension AppState {
     }
     
 }
-
-
-enum SpotifyError: Error {
-    case unathorized
-}

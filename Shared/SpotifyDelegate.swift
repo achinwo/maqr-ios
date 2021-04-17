@@ -94,6 +94,80 @@ public struct SpotifyPlaybackState: PlaybackState, CustomStringConvertible, Cust
 
 public class SpotifyDelegate: NSObject, PlaybackController {
     
+    public var pendingPlayRequest: PlayRequest? = nil
+    
+    public func play(_ track: Playable, positionMs: Int?, contentOffset: ContentOffset? = nil, completionHandler: (() -> Void)? = nil) {
+        
+        let onComplete = {
+            self.pendingPlayRequest = nil
+            completionHandler?()
+        }
+        
+        guard appRemote.isConnected else {
+            
+            self.pendingPlayRequest = (track, positionMs, contentOffset, onComplete)
+            
+            Swift.print("[App#$localPlayRequested] set pending: \(String(describing: self.pendingPlayRequest?.track.title)) - \(String(describing: self.pendingPlayRequest?.positionMs)) - \(String(describing: self.pendingPlayRequest?.contentOffset))")
+//
+            let mgr = self.requestSpotifyAccess(trackUri: track.uri)
+            
+            logger.debug("[authorizeSpotify] spotify authresult: \(String(describing: mgr))")
+            return
+        }
+        
+        let callback: SPTAppRemoteCallback = { (res, error) in
+            
+            guard let positionMs = positionMs else {
+                completionHandler?()
+                return
+            }
+            
+            self.appRemote.playerAPI?.seek(toPosition: positionMs) { (res, error) in
+                Swift.print("[\(Self.self)#$localPlayRequested] seek to \(positionMs): \(String(describing: res)) - \(String(describing: error))")
+                onComplete()
+            }
+        }
+        
+        Swift.print("[\(Self.self)#$localPlayRequested] local play: \(track.title)")
+        if let contextUri = contentOffset?.uri {
+                
+            let playPlaylistLocal = { (item: SPTAppRemoteContentItem, position: Int) in
+                self.appRemote.playerAPI?.play(item, skipToTrackIndex: position, callback: callback)
+            }
+            
+            self.appRemote.contentAPI?.fetchContentItem(forURI: contextUri) { item, error in
+                Swift.print("[\(Self.self)#$localPlayRequested] local play playlsit: \(String(describing: (item as? SPTAppRemoteContentItem)?.children)) --- \(String(describing: error))")
+                
+                guard let sptItem = item as? SPTAppRemoteContentItem else {
+                    return
+                }
+                
+                guard let position = contentOffset?.position else {
+                    
+                    self.appRemote.contentAPI?.fetchChildren(of: sptItem) { children, error in
+                        
+                        guard let contentItems = children as? [SPTAppRemoteContentItem] else {
+                            return
+                        }
+                        ///spotifyRemote.contentAPI
+                        Swift.print("[\(Self.self)] fetchChildren: \(contentItems.map({$0.subtitle})) --- \(String(describing: error))")
+                        
+                        let idx = contentItems.firstIndex() { itm in
+                            return itm.uri == track.uri
+                        }
+                        
+                        playPlaylistLocal(sptItem, idx ?? 0)
+                    }
+                    return
+                }
+                
+                playPlaylistLocal(sptItem, position)
+            }
+        } else {
+            self.appRemote.playerAPI?.play(track.uri, asRadio: true, callback: callback)
+        }
+    }
+    
     public func checkInstalled() -> AnyPublisher<Bool, Error> {
         return Future<Bool, Error>(){ promise in
             promise(.success(self.isSpotifyAppInstalled))
@@ -170,10 +244,6 @@ public class SpotifyDelegate: NSObject, PlaybackController {
     
     let SpotifyClientID = "e3966e30011d4895997ce89c797de5a5"
     let SpotifyRedirectURL = URL(string: "joli://spotify-callback/")!
-    //URL(string: "spotify-ios-quick-start://spotify-login-callback")!
-    
-    var authCallback: ((AuthToken?, Error?) -> Void)? = nil
-    var playStateCallback: ((SPTAppRemotePlayerState) -> Void)? = nil
     
     lazy var configuration = SPTConfiguration(clientID: SpotifyClientID, redirectURL: SpotifyRedirectURL)
     
@@ -228,9 +298,21 @@ public class SpotifyDelegate: NSObject, PlaybackController {
         return spotifySessionManager.isSpotifyAppInstalled
     }()
     
+    public func authorize(token: String? = nil) -> Void {
+        requestSpotifyAccess(token: token)
+    }
+    
+    #warning("fix spt reconnect callback")
     @discardableResult
-    func requestSpotifyAccess(trackUri: String? = nil, alwaysShowAuthorizationDialog: Bool = false) -> SPTSessionManager {
+    func requestSpotifyAccess(trackUri: String? = nil, token: String? = nil, alwaysShowAuthorizationDialog: Bool = false) -> SPTSessionManager? {
         //"app-remote-control streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-birthdate user-read-email user-read-private"
+        
+        guard !appRemote.isConnected else {
+            logger.debug("[authorizeSpotify] spotify remote is not initialized")
+            remoteConnect(token: token)
+            return nil
+        }
+        
         let requestedScopes: SPTScope = [
             .appRemoteControl,
             .streaming,
@@ -273,20 +355,13 @@ extension SpotifyDelegate: SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate
     }
     
     public func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
-        logger.debug("Spotify connected!")
-        //let playURI = "spotify:track:20I6sIOMTCkB6w7ryavxtO"
-        //self.appRemote.authorizeAndPlayURI(playURI)
         
         self.appRemote.playerAPI?.delegate = self
-        self.appRemote.playerAPI?.subscribe(toPlayerState: { (result, error) in
-            if let error = error {
-                logger.debug("Spotify: playstae subsrcibe error: \(String(describing: error))")
-                return
-            }
-            
-            logger.info("[PlayerState] \(String(describing: result))")
-        })
         self.connectionState = .connected
+        
+        guard let pending = pendingPlayRequest else { return }
+        
+        self.play(pending.track, positionMs: pending.positionMs, contentOffset: pending.contentOffset, completionHandler: pending.completionHandler)
     }
     
     public func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
@@ -300,9 +375,21 @@ extension SpotifyDelegate: SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate
     }
     
     public func playerStateDidChange(_ playerState: SPTAppRemotePlayerState) {
-        logger.debug("Track name: \(playerState.track.name) - \(playerState.contextTitle), \(String(describing: playerState))")
-        self.playStateCallback?(playerState)
         self.playbackState = SpotifyPlaybackState(playerState)
+        
+        guard let pendingPlayRequest = pendingPlayRequest,
+              let positionMs = pendingPlayRequest.positionMs,
+              pendingPlayRequest.track.uri == playerState.track.uri,
+              positionMs >= 0 else {
+            self.pendingPlayRequest?.completionHandler?()
+            return
+        }
+        
+        //print("[App#onLocalSpotifyPlayStateChanged] seek to \(pendingLocalPlayPosition)...")
+        
+        appRemote.playerAPI?.seek(toPosition: positionMs) { (res, error) in
+            Swift.print("[\(Self.self)#onLocalSpotifyPlayStateChanged] seek to \(positionMs): \(String(describing: res)) - \(String(describing: error))")
+        }
     }
     
     public func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
