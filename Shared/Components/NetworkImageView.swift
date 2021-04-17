@@ -9,6 +9,17 @@
 import SwiftUI
 import Kingfisher
 
+public struct QrCodeImageView: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    let targetUrl: URL
+    
+    public var contentView: some View {
+        NetworkImage(imageURL: targetUrl, placeholderImage: UIImage(systemName: "qrcode")!)
+    }
+}
+
+
 public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator

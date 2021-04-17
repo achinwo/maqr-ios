@@ -228,6 +228,12 @@ public protocol Room {
     
     var musicroom: Musicroom { get }
     
+    var inviteUrl: URL? { get }
+    var baseUrl: URL? { get }
+    
+    func inviteUrl<U: UserIdentifiable & Identifiable>(for: U) -> URL? where U.ID == Int
+    func inviteUrl<U: UserIdentifiable & Identifiable>(for: U?, fallback: URL?) -> URL? where U.ID == Int
+    
     var themeAlbumIds: String?  { get }
     var themeArtistIds: String? { get }
     var themeGenreNames: String? { get }
@@ -259,6 +265,37 @@ public protocol Room {
 }
 
 public extension Room {
+    
+    var baseUrl: URL? {
+        return nil
+    }
+    
+    var inviteUrl: URL? {
+        guard let uuid = uuid, let url = URL(string: uuid, relativeTo: baseUrl) else {
+            return nil
+        }
+        return url
+    }
+    
+    func inviteUrl<U: UserIdentifiable & Identifiable>(for user: U) -> URL? where U.ID == Int {
+        
+        let entitlement: Entitlement? = entitlements.first() { $0.createdById == user.id }
+        
+        guard let uuid = entitlement?.uuid ?? uuid, let url = URL(string: "/i/\(uuid)", relativeTo: baseUrl) else {
+            return nil
+        }
+        
+        return url
+    }
+    
+    func inviteUrl<U: UserIdentifiable & Identifiable>(for user: U?, fallback: URL?) -> URL? where U.ID == Int {
+        
+        guard let user = user else {
+            return fallback
+        }
+        
+        return inviteUrl(for: user)
+    }
     
     var genres: [String] {
         guard let genreNames = themeGenreNames else { return [] }

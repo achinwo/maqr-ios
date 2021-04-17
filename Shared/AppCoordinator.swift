@@ -369,11 +369,8 @@ public final class AppCoordinator: ObservableObject {
     }
     
     public func share(room: Room, completionHandler: ((Bool) -> Void)? = nil){
-        let currentUser: Auth? = activeAuth
-        let entitlement: Entitlement? = room.entitlements.first() { $0.createdById == currentUser?.user.id }
-        let uuid = entitlement?.uuid ?? room.uuid ?? ""
         
-        guard let url = URL(string: uuid.isEmpty ? "" : "/i/\(uuid)", relativeTo: self.api.baseUrlHttp) else {
+        guard let url = room.inviteUrl(for: activeAuth?.user, fallback: room.inviteUrl) else {
             completionHandler?(false)
             return
         }

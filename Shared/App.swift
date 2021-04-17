@@ -183,10 +183,6 @@ struct JoliApp: AppClip {
         self.authenticate(.spotifyRefreshToken(auth.refreshToken))
     }
     
-    var spotifyRemote: SPTAppRemote? {
-        return self.spotify.appRemote
-    }
-    
     private func checkAppleSignedIn() {
         let provider = ASAuthorizationAppleIDProvider()
         provider.getCredentialState(forUserID: "currentUserIdentifier") { state, error in

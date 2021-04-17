@@ -199,9 +199,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 //        getDeliveredNotifications(completionHandler:) provides you with an array of UNNotification objects in the completion handler. This array will contain all the notifications delivered for your app which are still visible in the user's Notification Centre.
 //        removeDeliveredNotifications(withIdentifiers:) removes all delivered notifications with identifiers
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-            self.registerForPushNotifications()
-        }
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+//            self.registerForPushNotifications()
+//        }
         
         if let shortcutItem = launchOptions?[UIApplication.LaunchOptionsKey.shortcutItem] as? UIApplicationShortcutItem {
             shortcutItemToProcess = shortcutItem

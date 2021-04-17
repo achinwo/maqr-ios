@@ -50,6 +50,10 @@ public class Playroom: ObservableObject, Room, Equatable {
     
     private var cancellationSet: Set<AnyCancellable> = []
     
+    public var baseUrl: URL? {
+        return api.baseUrlHttp
+    }
+    
     @discardableResult
     public func fetchSpotifyTopArtists(limit: Int = 6) -> Promise<[Artist]> {
         

@@ -186,7 +186,14 @@ struct ListenView: JoliView {
                         return state
                     }
                 
-                let tracks: [PlayState] = Array(Set(playstates))
+                let tracks: [PlayState] = playstates.reduce([]) { (result, state) -> [PlayState] in
+                    
+                    guard result.first(where: { $0.uri == state.uri }) == nil else {
+                        return result
+                    }
+                    
+                    return result + [state]
+                }
                 
                 self.recentTracks = tracks
                 

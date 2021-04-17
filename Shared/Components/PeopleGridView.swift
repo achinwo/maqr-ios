@@ -33,10 +33,55 @@ public struct PersonGenericImage: View {
     }
 }
 
+enum CodeType: Int {
+    case appClip = 1
+    case qr = 2
+    
+    var label: String {
+        switch self {
+        case .appClip:
+            return "App Clip"
+        case .qr:
+            return "QR"
+        }
+    }
+}
+
 public struct InvitePeopleView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var playroom: Room?
+    @State private var selection: CodeType = .appClip
+    @State var retries: Int = .zero
+    
+    @State var appclipLoadError: Error? = nil {
+        didSet {
+            guard retries == .zero, appclipLoadError != nil else {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.selection = .qr
+            }
+        }
+    }
+    
+    let appclipGenIndex: Int
+    
+    init(playroom: Room?){
+        self._playroom = State(initialValue: playroom)
+        self.appclipGenIndex = Array(0..<18).randomElement() ?? 13
+    }
+    
+    private func resolveQrCodeUrl(_ url: URL, width: Int = 120, height: Int = 120) -> URL? {
+        let urlQuery = "chs=\(width)x\(height)&cht=qr&chl=\(url.absoluteString)&chof=.png"
+        guard
+            let serviceUrl = URL(string: "https://image-charts.com/chart?\(urlQuery)&choe=UTF-8") else {
+            return nil
+        }
+        
+        return serviceUrl
+    }
     
     public var contentView: some View {
         let view = VStack(alignment: .center){
@@ -66,24 +111,72 @@ public struct InvitePeopleView: JoliView {
             }
             Divider()
             // Include
-            
-            Link(destination: Urls.appclips) {
-                VStack(){
-                    Images.appclipBarcodeClearExample.image
-                        .resizable()
-                        .aspectRatio(contentMode: ContentMode.fit)
-                        .padding()
-                        //.padding(.top, Sizing.medium)
-                        .frame(idealWidth: screenWidth / 2, idealHeight: screenWidth / 2)
-                    Label("Scan AppClip barcode to join in", systemImage: "viewfinder.circle")
-                        .font(Font.footnote.weight(.light))
-                        .foregroundColor(.secondary)
-                }
-                //.padding(.top, Sizing.medium)
+            if let url = playroom?.inviteUrl(for: appCoordinator.activeAuth?.user, fallback: playroom?.inviteUrl),
+               let qrUrl = resolveQrCodeUrl(url) {
                 
+                HStack(){
+                    Spacer()
+                    Picker("Scan Code Type", selection: self.$selection) {
+                        Image(systemName: "applelogo").tag(CodeType.appClip)
+                        Image(systemName: "qrcode").tag(CodeType.qr)
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    Spacer()
+                }
+                .padding()
+                
+                Group(){
+                    if selection == .appClip {
+                        Link(destination: Urls.appclips) {
+                            NetworkImage(string: "\(url.absoluteString).png?index=\(appclipGenIndex)&logo=none") { image, error in
+                                //print("[\(Self.self)#appclipcode] error loading \(url.absoluteString): \(String(describing: error))")
+                                defer {
+                                    self.retries += 1
+                                }
+                                
+                                guard error == nil else {
+                                    self.appclipLoadError = error
+                                    return
+                                }
+                                
+                                self.appclipLoadError = nil
+                                
+                            } content: {
+                                Images.appclipBarcodeClearExample.image
+                                    .resizable()
+                                    .aspectRatio(contentMode: ContentMode.fit)
+                                    .overlay(
+                                        BlurView(.prominent)
+                                                .clipShape(Circle())
+                                                .opacity(0.8)
+                                    )
+                            }
+                            .frame(maxWidth: screenWidth / 2, maxHeight: screenWidth / 2)
+                        }
+                        .frame(idealWidth: screenWidth / 2, idealHeight: screenWidth / 2)
+                    } else if selection == .qr {
+                        QrCodeImageView(targetUrl: qrUrl)
+                            .clipShape(
+                                RoundedRectangle(cornerRadius: 12)
+                            )
+                            .frame(maxWidth: screenWidth / 2, maxHeight: screenWidth / 2)
+                    }
+                    
+                    if self.appclipLoadError != nil, selection == .appClip {
+                        Label("Unable to generate App Clip code at this time", systemImage: "xmark.octagon.fill")
+                            .lineLimit(3)
+                            .foregroundColor(.systemRed)
+                            .padding()
+                    } else {
+                        Label("Scan \(selection.label) code to join in", systemImage: selection == .qr ? "qrcode.viewfinder" : "viewfinder.circle")
+                            .font(Font.footnote.weight(.light))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding()
+                
+                Divider().padding()
             }
-            
-            Divider().padding()
             
             PersonGenericImage()
                 .frame(width: screenWidth / 3, height: screenWidth / 3, alignment: .center)
