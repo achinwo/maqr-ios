@@ -33,6 +33,7 @@ public struct TrackView2<AddonView: View>: JoliView {
     
     @Binding var track: Playable
     @Binding var contextUri: String?
+    @Binding var playroom: Playroom?
     
     @State var colors: UIImageColors? = nil
 //    var colors: UIImageColors? {
@@ -88,7 +89,8 @@ public struct TrackView2<AddonView: View>: JoliView {
                 }
         }
     
-    public init(track: Binding<Playable>, contextUri: Binding<String?> = .constant(nil), hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false) {
+    public init(track: Binding<Playable>, playroom: Binding<Playroom?> = .constant(nil), contextUri: Binding<String?> = .constant(nil), hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false) {
+        self._playroom = playroom
         self._hearts = hearts
         self._track = track
         self.useDynamicColors = useDynamicColors
@@ -124,25 +126,40 @@ public struct TrackView2<AddonView: View>: JoliView {
         self.requestingPlay = true
         let progress: Int? = fromBegining ? nil : self.playStatebyUsername.first?.value.progressMs
         
-        appCoordinator.play(track, positionMs: progress, contextUri: contextUri, device: activeDevice)
-            .then(){ playState in
-                
-                guard var playState = playState else {
-                    return
+        let playFunc = { (offset: ContentOffset?) in
+            appCoordinator.play(track, positionMs: progress, contentOffset: offset, device: activeDevice)
+                .then(){ playState in
+                    
+                    guard var playState = playState else {
+                        return
+                    }
+                    
+                    playState.progressMs = progress
+                    playState.durationMs = self.playStatebyUsername[playState.userName]?.durationMs
+                    
+                    self.playStatebyUsername[playState.userName] = playState
                 }
-                
-                playState.progressMs = progress
-                playState.durationMs = self.playStatebyUsername[playState.userName]?.durationMs
-                
-                self.playStatebyUsername[playState.userName] = playState
-            }
-            .catch() { error in
-                print("[PlayTrack] error: \(error)")
-                invalidPlayAttempts += 1
-            }
-            .always {
-                self.requestingPlay = false
-            }
+                .catch() { error in
+                    print("[PlayTrack] error: \(error)")
+                    invalidPlayAttempts += 1
+                }
+                .always {
+                    self.requestingPlay = false
+                }
+        }
+        
+        guard let playroom = playroom, let track = track as? QueuedTrack, let playlistUri = playroom.playlistUri else {
+            print("PLAYING WITHOUT: \(self.playroom?.name)")
+            let _ = playFunc(nil)
+            return
+        }
+        
+        if let position = playroom.queue.firstIndex(where: { $0.id == track.id }) {
+            let _ = playFunc(.both(playlistUri, position))
+        } else if let contextUri = contextUri {
+            let _ = playFunc(.uri(contextUri))
+        }
+        
     }
     
     public var contentView: some View {
@@ -410,7 +427,8 @@ public extension PlayState {
 
 extension TrackView2 where AddonView: View {
     
-    public init(track: Binding<Playable>, contextUri: Binding<String?> = .constant(nil), hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, @ViewBuilder content: @escaping AddonViewGetter){
+    public init(track: Binding<Playable>, playroom: Binding<Playroom?> = .constant(nil), contextUri: Binding<String?> = .constant(nil), hearts: Binding<Hearts?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, @ViewBuilder content: @escaping AddonViewGetter){
+        self._playroom = playroom
         self._hearts = hearts
         self._track = track
         self._contextUri = contextUri
@@ -475,7 +493,11 @@ public struct TrackList<AddonView: View>: JoliView {
                     
                     let track = item.element
                     
-                    TrackView2(track: .constant(track), contextUri: self.$contextUri, hearts: self.heartLevelBinding(track), useDynamicColors: playroom?.themeTrackUri == track.uri) { (trackObj, states, colors) -> AddonView in
+                    TrackView2(track: .constant(track),
+                               playroom: self.$playroom,
+                               contextUri: self.$contextUri,
+                               hearts: self.heartLevelBinding(track),
+                               useDynamicColors: playroom?.themeTrackUri == track.uri) { (trackObj, states, colors) -> AddonView in
                         return addonViewFunc(trackObj, states, colors)
                     }
                     .id(track.uri)

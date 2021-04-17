@@ -277,7 +277,16 @@ struct ListenView: JoliView {
                 
                 Button() {
                     let state = playStates.first() { $0.email == room.createdByUser.email } ?? playStates.first
-                    appCoordinator.play(track, positionMs: state?.progressMs, contextUri: playlistUri, device: appCoordinator.activeDeviceSubject.value)
+                    
+                    var offset: ContentOffset? = nil
+                    
+                    if let position = room.queue.firstIndex(where: { $0.id == track.id }) {
+                        offset = .both(playlistUri, position)
+                    } else  {
+                        offset = .uri(playlistUri)
+                    }
+                    
+                    appCoordinator.play(track, positionMs: state?.progressMs, contentOffset: offset, device: appCoordinator.activeDeviceSubject.value)
                         .then() { state in
                             print("[ListenView] rejoining \(track.title) at \(String(describing: state?.progressMs)) - \(String(describing: state))")
                         }
@@ -514,7 +523,7 @@ struct ListenView: JoliView {
                                             .then(){ artists in
                                                 let filtered = artists.filter() { $0.imageMedium != nil }
                                                 playroom.artists = filtered
-                                                print("[ListenView] got track artists: \(filtered)")
+                                                //print("[ListenView] got track artists: \(filtered)")
                                             }
                                             .catch(self.appCoordinator.globalErrorHandler())
                                     }

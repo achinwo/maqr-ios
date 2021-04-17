@@ -101,7 +101,16 @@ public struct PlayroomView: JoliView {
                 
                 Button() {
                     let state = playStates.first() { $0.email == playroom.createdByUser.email } ?? playStates.first
-                    appCoordinator.play(track, positionMs: state?.progressMs, contextUri: playlistUri, device: appCoordinator.activeDeviceSubject.value)
+                    
+                    var offset: ContentOffset? = nil
+                    
+                    if let position = playroom.queue.firstIndex(where: { $0.id == track.id }) {
+                        offset = .both(playlistUri, position)
+                    } else  {
+                        offset = .uri(playlistUri)
+                    }
+                    
+                    appCoordinator.play(track, positionMs: state?.progressMs, contentOffset: offset, device: appCoordinator.activeDeviceSubject.value)
                         .then() { state in
                             print("[ListenView] rejoining \(track.title) at \(String(describing: state?.progressMs)) - \(String(describing: state))")
                         }

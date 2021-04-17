@@ -290,10 +290,10 @@ public final class AppCoordinator: ObservableObject {
         
     }
     
-    @Published var localPlayRequested: (track: Playable, positionMs: Int?, contextUri: String?)? = nil
+    @Published var localPlayRequested: (track: Playable, positionMs: Int?, contentOffset: ContentOffset?)? = nil
     @Published var connectionStateSubject: CurrentValueSubject<(state: ConnectionState, changedAt: Date?), Never> = CurrentValueSubject((.stopped, nil))
     
-    public func play(_ track: Playable, positionMs: Int? = nil, contextUri: String? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
+    public func play(_ track: Playable, positionMs: Int? = nil, contentOffset: ContentOffset? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
         self.playRequestedSubject.send(track.uri)
         
         let on = DispatchQueue.global(qos: .userInitiated)
@@ -301,15 +301,21 @@ public final class AppCoordinator: ObservableObject {
         let performPlay = { (device: Spotify.Device?) -> Promise<PlayState?>  in
             
             guard let device = device, ![.smartphone, .tablet].contains(device.type) else {
-                self.localPlayRequested = (track, positionMs, contextUri)
-                return Promise(nil)
+                self.localPlayRequested = (track, positionMs, contentOffset)
+                return Promise() { resolve, reject in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        resolve(nil)
+                    }
+                }
             }
             
             self.localPlayRequested = nil
             
             var promise: Promise<PlayState>
             
-            if let contextUri = contextUri {
+            if case let .uri(contextUri) = contentOffset {
+                promise = Track.playContent(contextUri, deviceId: device.id, positionMs: positionMs, offset: .uri(track.uri), baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession, on: on)
+            } else if case let .both(contextUri, _) = contentOffset {
                 promise = Track.playContent(contextUri, deviceId: device.id, positionMs: positionMs, offset: .uri(track.uri), baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession, on: on)
             } else {
                 promise = track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: on)

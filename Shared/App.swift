@@ -384,7 +384,6 @@ struct JoliApp: AppClip {
                 }
                 
                 let callback: SPTAppRemoteCallback = { (res, error) in
-                    print("[App#$localPlayRequested] play: \(String(describing: res)) - \(String(describing: error))")
                     
                     guard let positionMs = localRequest.positionMs else {
                         return
@@ -395,16 +394,41 @@ struct JoliApp: AppClip {
                     }
                 }
                 
-                
                 print("[App#$localPlayRequested] local play: \(localRequest)")
-                if let contextUri = localRequest.contextUri {
-                    spotifyRemote.contentAPI?.fetchContentItem(forURI: contextUri) { item, error in
-                        print("[App#$localPlayRequested] local play playlsit: \(String(describing: item)) --- \(String(describing: error))")
+                if let contextUri = localRequest.contentOffset?.uri {
                         
-                        spotifyRemote.playerAPI?.play(item as! SPTAppRemoteContentItem, skipToTrackIndex: 4, callback: callback)
+                    let playPlaylistLocal = { (item: SPTAppRemoteContentItem, position: Int) in
+                        spotifyRemote.playerAPI?.play(item, skipToTrackIndex: position, callback: callback)
                     }
-                    //playerApi.play(<#T##contentItem: SPTAppRemoteContentItem##SPTAppRemoteContentItem#>, skipToTrackIndex: <#T##Int#>, callback: <#T##SPTAppRemoteCallback?##SPTAppRemoteCallback?##(Any?, Error?) -> Void#>)
-                    //playerApi.play(<#T##contentItem: SPTAppRemoteContentItem##SPTAppRemoteContentItem#>, callback: callback)
+                    
+                    spotifyRemote.contentAPI?.fetchContentItem(forURI: contextUri) { item, error in
+                        print("[App#$localPlayRequested] local play playlsit: \(String(describing: (item as? SPTAppRemoteContentItem)?.children)) --- \(String(describing: error))")
+                        
+                        guard let sptItem = item as? SPTAppRemoteContentItem else {
+                            return
+                        }
+                        
+                        guard let position = localRequest.contentOffset?.position else {
+                            
+                            spotifyRemote.contentAPI?.fetchChildren(of: sptItem) { children, error in
+                                
+                                guard let contentItems = children as? [SPTAppRemoteContentItem] else {
+                                    return
+                                }
+                                ///spotifyRemote.contentAPI
+                                print("[App] fetchChildren: \(contentItems.map({$0.subtitle})) --- \(String(describing: error))")
+                                
+                                let idx = contentItems.firstIndex() { itm in
+                                    return itm.uri == localRequest.track.uri
+                                }
+                                
+                                playPlaylistLocal(sptItem, idx ?? 0)
+                            }
+                            return
+                        }
+                        
+                        playPlaylistLocal(sptItem, position)
+                    }
                 } else {
                     spotifyRemote.playerAPI?.play(localRequest.track.uri, asRadio: true, callback: callback)
                 }
