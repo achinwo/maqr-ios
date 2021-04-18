@@ -187,6 +187,12 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
     
     func assertWebsocketConnected() {
         //print("[AppView#assertWebsocketConnected] attempting...")
+        
+        guard self.websocket.isConnected else {
+            self.websocket.connect()
+            return
+        }
+        
         self.websocket.write(topic: "/status", body: [:]) { error in
             
             guard let error = error else {

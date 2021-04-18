@@ -1276,7 +1276,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = JoliClip/JoliClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1296,7 +1296,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1314,7 +1314,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = JoliClip/JoliClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1329,7 +1329,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1440,7 +1440,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1454,7 +1454,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli;
 				PRODUCT_NAME = Joli;
@@ -1477,7 +1477,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1490,7 +1490,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli;
 				PRODUCT_NAME = Joli;

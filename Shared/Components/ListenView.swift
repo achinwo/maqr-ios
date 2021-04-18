@@ -275,36 +275,39 @@ struct ListenView: JoliView {
         
         
         return Group() {
-            if let track = track as? QueuedTrack,
-               let room = playroom,
-               let playlistUri = room.playlistUri,
-               let playing = self.strip.playing as? QueuedTrack,
-               playing.id == track.id,
-               playing.isPlayable, track.isPlayable {
-                
-                Button() {
-                    let state = playStates.first() { $0.email == room.createdByUser.email } ?? playStates.first
-                    
-                    var offset: ContentOffset? = nil
-                    
-                    if let position = room.queue.firstIndex(where: { $0.id == track.id }) {
-                        offset = .both(playlistUri, position)
-                    } else  {
-                        offset = .uri(playlistUri)
-                    }
-                    
-                    appCoordinator.play(track, positionMs: state?.progressMs, contentOffset: offset, device: appCoordinator.activeDeviceSubject.value)
-                        .then() { state in
-                            print("[ListenView] rejoining \(track.title) at \(String(describing: state?.progressMs)) - \(String(describing: state))")
-                        }
-                } label: {
-                    Text("Rejoin").padding()
-                }
-                .font(.headline)
-                .padding(.trailing, Sizing.medium)
-                .buttonStyle(BlackWhiteButtonStyle(inverted: true))
-                
-            } else if let track = track as? QueuedTrack {
+//            if let track = track as? QueuedTrack,
+//               let room = playroom,
+//               let playlistUri = room.playlistUri,
+//               let playing = self.strip.playing as? QueuedTrack,
+//               playing.id == track.id,
+//               playing.isPlayable, track.isPlayable {
+//
+//                Button() {
+//                    let state = playStates.first() { $0.email == room.createdByUser.email } ?? playStates.first
+//
+//                    var offset: ContentOffset? = nil
+//
+//                    if let position = room.queue.firstIndex(where: { $0.id == track.id }) {
+//                        offset = .both(playlistUri, position)
+//                    } else  {
+//                        offset = .uri(playlistUri)
+//                    }
+//
+//                    appCoordinator.play(track, positionMs: state?.progressMs, contentOffset: offset, device: appCoordinator.activeDeviceSubject.value)
+//                        .then() { state in
+//                            print("[ListenView] rejoining \(track.title) at \(String(describing: state?.progressMs)) - \(String(describing: state))")
+//                        }
+//                } label: {
+//                    Text("Rejoin").padding()
+//                }
+//                .font(.headline)
+//                .padding(.trailing, Sizing.medium)
+//                .buttonStyle(BlackWhiteButtonStyle(inverted: true))
+//
+//            } else
+            
+            let isPlaying = playStates.first() { $0.isPlayable ? $0.uri == track.uri : false }?.playingState == .playing
+            if let track = track as? QueuedTrack, !isPlaying {
                 
                 let scaleX: CGFloat = self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
                 let scaleY: CGFloat = self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
@@ -694,7 +697,23 @@ struct ListenView: JoliView {
             Section(header: header) {
                 VStack(alignment: .leading, spacing: .zero){
                     ForEach(self.searchResult?.tracks ?? [], id: \.uri) { track in
-                        TrackView2<Never>(track: .constant(track))
+                        TrackView2(track: .constant(track)){ (track, states, color) in
+                                Group(){
+                                    if let playroom = playroom, !playroom.queue.map({$0.uri}).contains(track.uri) {
+                                        Image(systemName: "plus")
+                                            .font(queueRequested?.uri == track.uri ?  Font.title2.weight(.semibold) : Font.title2.weight(.thin))
+                                            .foregroundColor(.secondary)
+                                            .padding()
+                                            .disabled(queueRequested != nil)
+                                            .onTapGesture {
+                                                print("[Search.ResultView] queue \(track.title)")
+                                                self.appCoordinator.queueTrack(track, playroom: playroom.musicroom)
+                                            }
+                                            .scaleEffect(x: queueRequested?.uri == track.uri ? 0.8 : 1,
+                                                         y: queueRequested?.uri == track.uri ? 0.8 : 1)
+                                    }
+                                }
+                            }
                             .id(track.uri)
                     }
                 }
