@@ -19,6 +19,7 @@ import AuthenticationServices
 import Version
 import KeychainAccess
 import os
+import MessageUI
 
 //eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imhhd2FAZ21haWwubmV0IiwiY3JlYXRlZEF0IjoiMjAyMC0xMS0xMlQxOTowMTozMC4xNzVaIiwiZXhwaXJlc0luIjoxNDQwMDAwfQ.DVEEwDmG0pW9EBQwcdJGJvpqLfrhNJmbyRlq30Aar0o
 #if DEBUG
@@ -210,24 +211,35 @@ struct JoliApp: AppClip {
         return auths.first() { $0.session.token == activeSessionToken }
     }
     
+    @State var result: Result<MFMailComposeResult, Error>? = nil
+    @State var mailOptions: MailView.Options? = nil
+    
     var contentView: some View {
 
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify)
             .sheet(isPresented: $isSheetPresented){
-                print("[App] sheet dismissed")
                 self.modalView = nil
+                self.mailOptions = nil
             } content: {
-                GeometryReader() { proxy in
-                    AppPreviewView(preview: self.$modalView, currentUser: self.$currentUser, animation: namespace)
-                        .frame(width: proxy.size.width, height: proxy.size.height + proxy.safeAreaInsets.bottom)
-                        .animation(.spring())
-                        .edgesIgnoringSafeArea([.bottom])
+                
+                if let opts = self.mailOptions {
+                    MailView(result: $result, subject: opts.subject, recipients: opts.recipients, body: opts.body)
+                } else {
+                    GeometryReader() { proxy in
+                        AppPreviewView(preview: self.$modalView, currentUser: self.$currentUser, animation: namespace)
+                            .frame(width: proxy.size.width, height: proxy.size.height + proxy.safeAreaInsets.bottom)
+                            .animation(.spring())
+                            .edgesIgnoringSafeArea([.bottom])
                         //.background(Color.yellow)
+                    }
+                    .environmentObject(coordinator)
                 }
-                .environmentObject(coordinator)
             }
             .onChange(of: self.modalView) { modal in
-                isSheetPresented = modalView != nil
+                isSheetPresented = self.modalView != nil
+            }
+            .onChange(of: self.mailOptions) { opts in
+                isSheetPresented = self.mailOptions != nil
             }
             .onReceive(coordinator.internalErrorSubject, perform: self.onInternalError)
             .onReceive(spotify.authPublisher) { authRecord in
@@ -257,6 +269,28 @@ struct JoliApp: AppClip {
             }
             .onReceive(coordinator.globalModalSubject) { view in
                 self.modalView = view
+            }
+            .onReceive(coordinator.$mailOptions) { opts in
+                
+                guard let opts = opts else {
+                    self.mailOptions = nil
+                    return
+                }
+                
+                guard MFMailComposeViewController.canSendMail() else {
+                    
+                    if let encoded = opts.subject.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
+                        let validUrl = URL(string: "mailto:\(Strings.appSupportEmail)?subject=\(encoded)") {
+                        UIApplication.shared.open(validUrl)
+                    } else {
+                        coordinator.serverLogDestination?.send(.error, msg: "[\(Self.self)] unable to send mail: subject=\(opts.subject)",
+                                                               thread: Thread.current.debugDescription, file: #file, function: #function, line: #line)
+                    }
+                    
+                    return
+                }
+                
+                self.mailOptions = opts
             }
             .onReceive(coordinator.activeDeviceSubject) { (device: Spotify.Device?) in
                 

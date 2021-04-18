@@ -33,6 +33,8 @@ public enum ScrollPosition: Equatable {
 
 public enum Strings {
     
+    static let appSupportEmail = "joli.notifications@gmail.com"
+    
     static let URL_SCHEME = "joli"
     static let SPOTIFY_URL_BASEPATH = "spotify-callback"
     

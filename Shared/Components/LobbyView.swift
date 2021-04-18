@@ -10,6 +10,82 @@ import SwiftUI
 import JoliCore
 import JoliApi
 import Promises
+import UIKit
+import MessageUI
+import AVFoundation
+
+public struct MailView: UIViewControllerRepresentable {
+    
+    public struct Options: Equatable {
+        public let subject: String
+        public let recipients: [String]
+        public var body: String? = nil
+    }
+    
+    @Environment(\.presentationMode) var presentation
+    @Binding var result: Result<MFMailComposeResult, Error>?
+    
+    var subject: String? = nil
+    var recipients = [String]()
+    var body: String? = nil
+    
+    static var canSendMail: Bool {
+        MFMailComposeViewController.canSendMail()
+    }
+    
+    public class Coordinator: NSObject, MFMailComposeViewControllerDelegate {
+        
+        @Binding var presentation: PresentationMode
+        @Binding var result: Result<MFMailComposeResult, Error>?
+        
+        init(presentation: Binding<PresentationMode>, result: Binding<Result<MFMailComposeResult, Error>?>){
+            _presentation = presentation
+            _result = result
+        }
+        
+        public func mailComposeController(_: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?){
+            defer {
+                $presentation.wrappedValue.dismiss()
+            }
+            
+            guard error == nil else {
+                self.result = .failure(error!)
+                return
+            }
+            
+            self.result = .success(result)
+            
+            if result == .sent {
+                AudioServicesPlayAlertSound(SystemSoundID(1001))
+            }
+        }
+        
+    }
+    
+    public func makeCoordinator() -> Coordinator {
+        return Coordinator(presentation: presentation,
+                           result: $result)
+    }
+    
+    public func makeUIViewController(context: UIViewControllerRepresentableContext<MailView>) -> MFMailComposeViewController {
+        let vc = MFMailComposeViewController()
+        vc.setToRecipients(recipients)
+        vc.mailComposeDelegate = context.coordinator
+        
+        if let subject = subject {
+            vc.setSubject(subject)
+        }
+        
+        if let body = body {
+            vc.setMessageBody(body, isHTML: true)
+        }
+        
+        return vc
+    }
+    
+    public func updateUIViewController(_: MFMailComposeViewController,
+                                context _: UIViewControllerRepresentableContext<MailView>) {}
+}
 
 extension PlayState: Playable {
     
@@ -56,6 +132,7 @@ public struct LobbyView: JoliView {
     @Binding var filterText: String
     @Binding var isLoading: Bool
     @Binding var preview: AppPreview?
+    
     let onPlayroomSelected: ((Musicroom) -> Void)?
     
     @SceneStorage("refreshTokenSpotify") var refreshTokenSpotify: String = .empty
@@ -225,6 +302,30 @@ public struct LobbyView: JoliView {
                 }
                 .padding(.top)
                 
+                HStack(alignment: .center){
+                    VStack(alignment: .leading) {
+                        Text("Feedback")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        Text("General enquires, report issues or just let us know what you think")
+                            .font(.footnote)
+                            .foregroundColor(Color.secondary)
+                    }
+                    .frame(maxWidth: screenWidth / 2)
+                    
+                    Spacer()
+                    
+                    Button(){
+                        let subject = "Joli iOS App Feedback - \(AppCoordinator.version)"
+                        self.appCoordinator.mailOptions = .init(subject: subject, recipients: [Strings.appSupportEmail])
+                    } label: {
+                        Text("Submit").foregroundColor(.systemIndigo)
+                    }
+                    .padding()
+                }
+                .padding(.top)
+                
                 VStack(alignment: .leading){
                     HStack(){
                         Text("Spotify Accounts")
@@ -271,7 +372,8 @@ public struct LobbyView: JoliView {
             }
             .id("settings")
             
-        }.padding()
+        }
+        .padding()
         .onReceive(appCoordinator.authSubject) { auth in
             self.refreshTokenSpotify = auth?.user.refreshTokenSpotify ?? .empty
         }

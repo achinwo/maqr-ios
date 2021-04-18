@@ -13,6 +13,7 @@ import JoliCore
 import PartialSheet
 import SwiftUI
 import Promises
+import Version
 
 // MARK: - AppCoordinator
 public final class AppCoordinator: ObservableObject {
@@ -180,8 +181,18 @@ public final class AppCoordinator: ObservableObject {
         return deferred.deferred
     }
     
-    
+    @Published var mailOptions: MailView.Options? = nil
     @Published var refreshingDevices = false
+    
+    static var version: Version {
+        
+        guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+              let version = Version("\(appVersion).\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0")") else {
+            return Version.init(1, 0, 0)
+        }
+        
+        return version
+    }
     
     public init(_ playStatePublisher: PlayState.Publisher? = nil, _ votesPublisher: QueuedTrackVote.Publisher? = nil, namespace: Namespace.ID? = nil){
         self.namespace = namespace
