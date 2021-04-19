@@ -477,7 +477,7 @@ struct ListenView: JoliView {
                     Group() {
                         self.searchResultView
                             .padding([.horizontal, .bottom])
-                            .padding(.top, safeAreaInsets.top + 80)
+                            .padding(.top, safeAreaInsets.top + 100)
                         Divider()
                     }
                     .background(Color.systemBackground)
@@ -490,7 +490,7 @@ struct ListenView: JoliView {
                             TrackList(tracks: self.$tracksFiltered, contextUri: .constant(playroom.playlistUri), votes: self.$votes, playroom: self.$playroom, addonView: self.addonView)
                                 //.frame(width: screenWidth)
                                 //.padding(.top, roomControlViewBounds == nil ? safeAreaInsets.top : roomControlViewBounds?.height)
-                                .padding(.top, isEmptySearchResult ? safeAreaInsets.top + 100 : nil)
+                                .padding(.top, isEmptySearchResult ? safeAreaInsets.top + 128 : nil)
                                 .background(Color.systemBackground)
                                 .onReceive(playroom.$recommendations, assign: \.trackRecommendations, target: self)
                                 .onReceive(self.appCoordinator.queueRequestedSubject) { val in
@@ -600,7 +600,7 @@ struct ListenView: JoliView {
                     } else {
                         self.lobbyView
                             //.frame(minHeight: 68.0 * CGFloat(recentTracks.count + liveTracks.count) + CGFloat(screenHeight) + CGFloat(68.0 * CGFloat(playrooms.count) / 2.0))
-                            .padding(.top, isEmptySearchResult ? Sizing.xxLarge * 2 : nil)
+                            .padding(.top, isEmptySearchResult ? Sizing.xxLarge * 2.5 : nil)
                             .background(Color.systemBackground)
                             .matchedGeometryEffect(id: "group1", in: animation, properties: .frame, isSource: true)
                     }

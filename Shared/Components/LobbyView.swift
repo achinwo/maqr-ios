@@ -328,7 +328,7 @@ public struct LobbyView: JoliView {
                 
                 VStack(alignment: .leading){
                     HStack(){
-                        Text("Spotify Accounts")
+                        Text("Active Sessions")
                             .font(.headline)
                             .foregroundColor(.primary)
                         Spacer()
@@ -336,7 +336,7 @@ public struct LobbyView: JoliView {
                             self.appCoordinator.spotifyAuthRequestedAt = Date()
                         } label: {
                             Image(systemName: "plus")
-                                .font(Font.title2.weight(.thin))
+                                .font(Font.title2)
                                 .foregroundColor(.secondary)
                                 .padding()
                         }
@@ -356,14 +356,33 @@ public struct LobbyView: JoliView {
                                 Text(auth.user.ranking.description.lowercased()).font(.footnote).foregroundColor(Color.systemGray)
                             }
                             Spacer()
-                            Image(systemName: "minus")
-                                .font(Font.largeTitle.weight(.thin))
-                                .foregroundColor(.gray)
-                                .padding()
+                            
+                            VStack(alignment: .center){
+                                if signingOut == auth {
+                                    ProgressView()
+                                } else {
+                                    Button(){
+                                        self.signingOut = auth
+                                        
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                            self.appCoordinator.signoutSubject.send(auth)
+                                            self.signingOut = nil
+                                            
+                                            self.auths = self.auths.filter({ $0.session.token != auth.session.token })
+                                        }
+                                    } label: {
+                                        Text("Sign Out")
+                                    }
+                                }
+                            }
+                            .foregroundColor(.gray)
+                            .padding()
                         }
                         .padding([.top, .horizontal])
+                        .id(auth.session.token)
                     }
                 }
+                .padding(.bottom, 120)
                 .padding(.top)
                 .onReceive(self.appCoordinator.authsSubject) { auths in
                     self.auths = auths
@@ -391,6 +410,8 @@ public struct LobbyView: JoliView {
             }
         }
     }
+    
+    @State var signingOut: Auth? = nil
     
 }
 

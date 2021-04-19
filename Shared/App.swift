@@ -214,6 +214,20 @@ struct JoliApp: AppClip {
     @State var result: Result<MFMailComposeResult, Error>? = nil
     @State var mailOptions: MailView.Options? = nil
     
+    func signOut(_ auth: Auth) -> Void {
+        let newAuths = self.auths.filter() { $0.session.token != auth.session.token}
+        self.auths = newAuths
+        
+        self.activeSessionToken = nil
+        try? keychain.remove(auth.user.email)
+        
+        storeToKeychain(newAuths)
+        
+        self.coordinator.serverLogDestination?.send(.info, msg: "signedout: \(auth)", thread: Thread.current.description, file: #file, function: #function, line: #line)
+        
+        logger.info("signedout: \(auth.user.name)")
+    }
+    
     var contentView: some View {
 
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify)
@@ -242,6 +256,7 @@ struct JoliApp: AppClip {
                 isSheetPresented = self.mailOptions != nil
             }
             .onReceive(coordinator.internalErrorSubject, perform: self.onInternalError)
+            .onReceive(coordinator.signoutSubject, perform: signOut)
             .onReceive(spotify.authPublisher) { authRecord in
                 logger.info("[\(#function)] local spotify auth: \(String(describing: authRecord))")
                 authRecord?.save()

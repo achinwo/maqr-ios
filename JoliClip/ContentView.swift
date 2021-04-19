@@ -53,7 +53,7 @@ public struct PlayroomView: JoliView {
             ScrollViewReader(){ scrollProxy in
                 ScrollView(){
                     TrackList(tracks: self.$tracks, votes: self.$votes, playroom: binding, addonView: self.addonView)
-                        .padding(.top, safeAreaInsets.top)
+                        .padding(.top, safeAreaInsets.top + Sizing.xxxLarge * 2)
                         .frame(width: screenWidth)
                 }
                 .onAppear(){
@@ -185,7 +185,6 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     @Binding var currentUser: User?
     
     @State var errorMessage: String? = nil
-    @State var playroomId: String? = nil
     @State var scrollProxy: ScrollViewProxy? = nil
     
     let websocket: Socket
@@ -264,20 +263,24 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         .onAppear() {
             //self.scrollProxy = scrollProxy
             
+            if appCoordinator.currentLocation == .home {
+                self.fetchPlayroomByInviteId("mnsv9A")
+            }
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
                 self.showRecommended.toggle()
             }
         }
         .onReceive(appCoordinator.$currentLocation, assign: \.currentLocation, target: self)
         .onChange(of: currentLocation) { location in
+            print("LOACTION Changed: \(location)")
             switch location {
-            case .invited(let inviteId):
-                self.playroomId = inviteId
-                self.fetchPlayroomByInviteId(inviteId)
-            case .error:
-                self.errorMessage = Self.GENERIC_ERROR_MESSAGE
-            default:
-                break
+                case .invited(let inviteId):
+                    self.fetchPlayroomByInviteId(inviteId)
+                //case .error:
+                 //   self.errorMessage = Self.GENERIC_ERROR_MESSAGE
+                default:
+                    self.fetchPlayroomByInviteId("mnsv9A") // Joli Live
             }
         }
     }
@@ -288,6 +291,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     @discardableResult
     func fetchPlayroomByInviteId(_ inviteId: String) -> Promise<Entitlement> {
+        
         
         let url = "/i/\(inviteId)"
         self.loadingView = true

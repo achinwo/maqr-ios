@@ -30,6 +30,8 @@ public final class AppCoordinator: ObservableObject {
     @Published public var keyboardHeight: CGFloat = 0
     @Published public var insufficientPointsAttempt = 0
     
+    public let signoutSubject = PassthroughSubject<Auth, Never>()
+    
     @Published public var playStatePublisher: PlayState.Publisher? = nil
     @Published public var votesPublisher: QueuedTrackVote.Publisher? = nil {
         
