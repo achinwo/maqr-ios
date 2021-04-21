@@ -17,7 +17,42 @@ import Promises
 import Version
 import KeychainAccess
 
+#if canImport(StoreKit)
+import StoreKit
+#endif
+
 //internal let logger = Logger(subsystem: "com.jolimc.JoliClip", category: "global.invite.room")
+
+
+struct LoadingView<Content>: View where Content: View {
+
+    @Binding var isShowing: Bool
+    var content: () -> Content
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .center) {
+
+                self.content()
+                    .disabled(self.isShowing)
+                    .blur(radius: self.isShowing ? 3 : 0)
+
+                VStack {
+                    Text("Loading...")
+                    ProgressView().font(.largeTitle)
+                }
+                .frame(width: geometry.size.width / 2,
+                       height: geometry.size.height / 5)
+                .background(Color.secondary.colorInvert())
+                .foregroundColor(Color.primary)
+                .cornerRadius(20)
+                .opacity(self.isShowing ? 1 : 0)
+
+            }
+        }
+    }
+
+}
 
 @main
 struct JoliClip: AppClip {
@@ -53,12 +88,27 @@ struct JoliClip: AppClip {
         }
     }
     
+    @State var alertInfo: Alert? = nil
     @State var playroom: Playroom? = nil
     @State var currentUser: User? = nil
-    let spotify = SpotifyDelegate()
+    let spotify: SpotifyDelegate
+    
+    @State var showRecommended = false
     
     var contentView: some View {
         ContentView(playroom: self.$playroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify)
+            .background(
+                Group(){
+                    #if canImport(StoreKit)
+                    Spacer()
+                        .appStoreOverlay(isPresented: $showRecommended) {
+                            SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottom)
+                        }
+                    #else
+                    Spacer()
+                    #endif
+                }
+            )
             .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
 //            .overlay(
 //                GeometryReader() { proxy in
@@ -79,22 +129,202 @@ struct JoliClip: AppClip {
 //                }
 //                .ignoresSafeArea(.all, edges: .bottom)
 //            )
+            .sheet(isPresented: self.$isPresentingSheet){
+                print("[\(Self.self)] webview dismissed")
+            } content: {
+                NavigationView(){
+                    
+                    
+                    LoadingView(isShowing: .constant(webViewStateModel.loading)) {
+                        WebView(request: spotifyAuthUrl,
+                                webViewStateModel: self.webViewStateModel,
+                                onNavigationAction: self.onWebViewNavigation(_:))
+                    }
+                    .navigationTitle(webViewStateModel.pageTitle)
+                }
+                .edgesIgnoringSafeArea(.all)
+            }
+//            .onReceive(coordinator.$authorizedSpotify) { auth in
+//                guard let auth = auth else { return }
+//
+//                self.spotify.accessToken = auth.accessToken
+//                self.spotify.requestSpotifyAccess(trackUri: nil, token: auth.accessToken, alwaysShowAuthorizationDialog: false)
+//            }
+            .onReceive(coordinator.$activeSessionToken) { token in // MARK: - $activeSessionToken
+                
+                guard let token = token else {
+                    return
+                }
+                
+                print("[\(Self.self)] received new session token: \(token)")
+                
+                guard token != activeSessionToken else {
+                    print("[\(Self.self)] token unchanged: \(token)")
+                    return
+                }
+                
+                self.activeSessionToken = token
+                api.auth = self.auth
+                
+                DispatchQueue.main.async {
+                    self.fetchSpotifyAuthToken()
+                        .then() { authToken in
+                            self.coordinator.authorizedSpotify = authToken
+                        }
+                        .catch(self.coordinator.globalErrorHandler())
+                }
+            }
+            .onReceive(coordinator.$localPlayRequested) { localRequest in
+                
+                guard let localRequest = localRequest else {
+                    return
+                }
+                
+//                guard spotify.appRemote.isConnected else {
+//
+//                }
+                
+                spotify.play(localRequest.track,
+                                             positionMs: localRequest.positionMs,
+                                             contentOffset: localRequest.contentOffset) {
+                    logger.info("[\(Self.self)] local playback completed")
+                }
+            }
+            .alert(isPresented: self.$isActionSheetPresented) {
+                guard let alert = self.alertInfo else {
+                    return Alert(title: Text("Oops - Something is quite right"),
+                                 message: Text("An internal error was detected. Restart the application if issue persists"),
+                                 dismissButton: .default(Text("Dismiss")))
+                }
+                
+                return alert
+            }
+            .onReceive(coordinator.globalAlertSubject) { alertInfo in
+                self.alertInfo = alertInfo
+                self.isActionSheetPresented = true
+            }
+            //.onReceive(spotify., perform: <#T##(Publisher.Output) -> Void#>)
             .onAppear() {
+                let auths = Self.resolveAuths(keychain)
+                self.coordinator.authsSubject.send(auths)
+                self.auths = auths
+                
+                let activeSession = self.activeSessionToken ?? auths.first?.session.token
+                coordinator.activeSessionToken = activeSession
+                
+                
+                print("[AppClip] session: \(activeSession)")
+                
                 self.coordinator.serverLogDestination = ServerDestination(url: api.baseUrlHttp, urlSession: api.urlSession)
+                
+                self.spotify.authorizationHandler = {
+                    self.spotifyAuthHandler()
+                }
+                
+                guard let session = activeSession else {
+                    return
+                }
+                
+                authenticate(.sessionToken(session))
             }
     }
     
+    @State var isActionSheetPresented = false
+    
+    var auth: Auth? {
+        return auths.first() { $0.session.token == activeSessionToken }
+    }
+    
+    public func fetchSpotifyAuthToken() -> Promise<AuthToken> {
+        
+        guard self.auth != nil else {
+            return Promise<AuthToken>(SpotifyError.unathorized)
+        }
+        
+        return HttpMethod.Fetch.post(url: "/api/spotify/auth", dataType: AuthToken.self,
+                                     baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+    }
+    
+    func onWebViewNavigation(_ navigationAction: WebView.NavigationAction) -> Void {
+        switch navigationAction {
+        case .decidePolicy(let action, let completionHandler):
+            
+            let redirect = api.baseUrlHttp.appendingPathComponent("spotify_callback/").absoluteString
+            
+            guard let url = action.request.url,
+                  let redirectUrl = self.resolveSpotifyRedirectUrl(url, redirect: redirect, allowSchemes: ["https"]),
+                  let urlComp = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: false)
+            else {
+                completionHandler(.allow)
+                return
+            }
+            
+            self.spotifyWebAuthorize(urlComp)
+                .then() { auth in
+                    //logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
+                    self.onLocalSpotifyAuth(auth, nil)
+                }
+                .catch() { error in
+                    logger.error("[SceneDelegate] spotify auth error: \(String(describing: error))")
+                    self.onLocalSpotifyAuth(nil, error)
+                }
+            
+            self.isPresentingSheet = false
+            completionHandler(.cancel)
+        case .didRecieveAuthChallange(let challenge, let completionHandler):
+            #if DEBUG
+            let cred = URLCredential(trust: challenge.protectionSpace.serverTrust!)
+            completionHandler(.useCredential, cred)
+            #else
+            completionHandler(.performDefaultHandling, nil)
+            #endif
+            
+        default:
+            break
+        }
+    }
+    
+    @StateObject var webViewStateModel: WebViewStateModel = WebViewStateModel()
     var api: JoliApi
+    @State var isPresentingSheet = false
+    
+    func spotifyAuthHandler() -> Void {
+        
+        guard activeSessionToken == nil else {
+            let message = """
+            Unable to connect with your local \(spotify.name).
+            This could be an issue with this App Clip, try installing the full experience?
+            """
+            coordinator.withAlert("Something went wrong", message: message, label:  "Get \(Strings.appSymbol)oli") {
+                showRecommended.toggle()
+            }
+            return
+        }
+        
+        self.isPresentingSheet = true
+        print("[\(Self.self)] authorizing Spotify: \(self.isPresentingSheet)")
+    }
+    
+    var spotifyAuthUrl: URLRequest {
+        let components = URLComponents(string: "/spotify_login")!
+        let url = components.url(relativeTo: self.coordinator.api.baseUrlHttp)!
+        
+        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
+        
+        request.allHTTPHeaderFields = Self.defaultHeaders
+        return request
+    }
     
     init() {
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
-        let url = JoliApi.Environment.current.baseUrl.ws //URL(string: "https://192.168.1.173:8080/ws")!
-        
-        print("[URL] \(JoliApi.Environment.current.baseUrl)")
+        let baseUrls = JoliApi.Environment.current.baseUrl
+         
+        self.spotify = SpotifyDelegate(authCallbackUrl: baseUrls.http.appendingPathComponent("spotify_callback/"),
+                                       authRefreshUrl: baseUrls.http.appendingPathComponent("spotify_refresh/"))
         
         api = JoliApi(baseUrl: JoliApi.Environment.current.baseUrl, headers: Self.defaultHeaders)
         
-        self.websocket = Socket(url: url.appendingPathComponent("/ws")) { (socket, connected) in
+        self.websocket = Socket(url: baseUrls.ws.appendingPathComponent("/ws")) { (socket, connected) in
             
             guard connected else { return }
             
@@ -123,6 +353,8 @@ struct JoliClip: AppClip {
         
         self.coordinator = AppCoordinator(pub, votesPubs)
         self.coordinator.api = api
+        
+        print("[\(Self.self)] session token: \(activeSessionToken)")
     }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void {
@@ -167,31 +399,43 @@ struct JoliClip: AppClip {
                 //self.spotifyWebAuthorized = !auth.isExpired
                 return Promise(auth)
             }
+            .catch(coordinator.globalErrorHandler())
             .always() {
                 //self.spotifyAuthorizationInProgress = false
             }
     }
     
-    func resolveSpotifyRedirectUrl(_ url: URL) -> URL? {
+    func resolveSpotifyRedirectUrl(_ url: URL, redirect: String? = nil, allowSchemes: [String] = []) -> URL? {
+        
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         
         guard let scheme = components?.scheme,
-              let basePath = components?.host,
+              let basePath = components?.host == api.baseUrlHttp.host ? components?.path : components?.host,
               let codeQuery = components?.queryItems?.first(where: { $0.name == "code" }),
-              [Strings.URL_SCHEME, "spotify-ios-quick-start"].contains(scheme),
-              [Strings.SPOTIFY_URL_BASEPATH, "spotify-login-callback"].contains(basePath) else {
+              ([Strings.URL_SCHEME, "spotify-ios-quick-start"] + allowSchemes).contains(scheme),
+              [Strings.SPOTIFY_URL_BASEPATH, "spotify-login-callback", "/spotify_callback/"].contains(basePath) else {
             return nil
         }
         
         var redirectUrl = URLComponents(string: "/spotify_callback")
+        let redirectString: String
+        
+        if let redirect = redirect {
+            redirectString = redirect
+        } else {
+            redirectString = scheme == Strings.URL_SCHEME ?
+                "joli://\(Strings.SPOTIFY_URL_BASEPATH)"
+                : "https://localhost:8080/spotify_callback/"
+        }
+        
+        
         redirectUrl?.queryItems = [codeQuery,
-                                   URLQueryItem(name: "redirect",
-                                                value: (scheme == Strings.URL_SCHEME ?
-                                                            "joli://\(Strings.SPOTIFY_URL_BASEPATH)"
-                                                            : "https://localhost:8080/spotify_callback/"
-                                                        //: "spotify-ios-quick-start://spotify-login-callback/"
-                                                )),
+                                   URLQueryItem(name: "redirect", value: redirectString),
                                    URLQueryItem(name: "platform", value: "ios")]
+        
+        #if APPCLIP
+        redirectUrl?.queryItems?.append(URLQueryItem(name: "sku", value: "appclip"))
+        #endif
         
         return redirectUrl?.url(relativeTo: api.baseUrl.rawValue.http)
     }

@@ -145,7 +145,7 @@ class AppState: ObservableObject {
         return version
     }
     
-    var spotifyDelegate: SpotifyDelegate = SpotifyDelegate()
+    var spotifyDelegate: SpotifyDelegate! = nil //SpotifyDelegate(authCallbackUrl: <#URL#>, authRefreshUrl: <#URL#>)
     
     var spotifyRemote: SPTAppRemote? {
         return spotifyDelegate.appRemote

@@ -26,6 +26,7 @@ public struct PlaybackControllerMetadata: Equatable, Identifiable, CustomStringC
 
 public protocol PlaybackController: ConnectablePublisher, CustomCombineIdentifierConvertible, Identifiable, ObservableObject where Output == JoliCore.ConnectionState, Failure == Error {
     
+    
     typealias PlayRequest = (track: Playable, positionMs: Int?, contentOffset: ContentOffset?, completionHandler: (() -> Void)?)
     
     var id: String { get }

@@ -163,6 +163,29 @@ extension Array where Element == DispatchWorkItem {
     
 }
 
+
+public extension PlayState {
+    
+    static var allColors: [Color] {
+        return [
+            .systemRed,
+            .systemYellow,
+            .systemBlue,
+            .systemPink,
+            .systemGreen,
+            .systemOrange,
+            .systemPurple,
+        ]
+    }
+    
+    var color: Color {
+        let colors = Self.allColors
+        let color = colors[(userName.count + userName.lowercased().count(of: "g")) % colors.count ]
+        return color
+    }
+}
+
+
 public extension Search.Engine {
     
     typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[ExploreView.SearchResult], Never>

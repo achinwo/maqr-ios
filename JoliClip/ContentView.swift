@@ -10,9 +10,9 @@ import SwiftUI
 import JoliPlayground
 import JoliCore
 
-#if canImport(StoreKit)
-import StoreKit
-#endif
+//#if canImport(StoreKit)
+//import StoreKit
+//#endif
 
 import Promises
 import UIImageColors
@@ -247,12 +247,12 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     .frame(width: screenWidth)
                     .id(playroom.name)
                 
-                #if canImport(StoreKit)
-                Spacer()
-                    .appStoreOverlay(isPresented: $showRecommended) {
-                        SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottom)
-                    }
-                #endif
+//                #if canImport(StoreKit)
+//                Spacer()
+//                    .appStoreOverlay(isPresented: $showRecommended) {
+//                        SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottom)
+//                    }
+//                #endif
             } else {
                 Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
                 refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
@@ -260,18 +260,6 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         }
         .edgesIgnoringSafeArea([.top, .bottom])
         .frame(width: screenWidth, height: screenHeight, alignment: .center)
-        .onReceive(appCoordinator.$localPlayRequested) { localRequest in
-            
-            guard let localRequest = localRequest else {
-                return
-            }
-            
-            localPlaybackController.play(localRequest.track,
-                                         positionMs: localRequest.positionMs,
-                                         contentOffset: localRequest.contentOffset) {
-                logger.info("[\(Self.self)] local playback completed")
-            }
-        }
         .onAppear() {
             //self.scrollProxy = scrollProxy
             

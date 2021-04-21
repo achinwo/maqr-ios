@@ -457,7 +457,7 @@ public extension AppClip {
                     return
                 }
                 
-                //logger.debug("[App#authentication] creds: \(String(describing: credentials)), auth: \(String(describing: auth))")
+                //
                 
                 var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
                 newAuths.append(auth)
@@ -468,6 +468,8 @@ public extension AppClip {
                 
                 storeToKeychain(newAuths)
                 self.coordinator.api.auth = auth
+                
+                //logger.debug("[App#authentication] activeSessionToken: \(String(describing: self.activeSessionToken))")
             }
             .catch() { error in
                 logger.error("[App#authentication] creds: \(String(describing: credentials)), error: \(String(describing: error))")

@@ -41,6 +41,8 @@
 		923D0DCB26206154008BB6EA /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
 		923D0E20262074C9008BB6EA /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
 		923D0E3926207656008BB6EA /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929FFE1B24FAF096000BDCF0 /* User.swift */; };
+		9246B820263090C6004D2ADF /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
+		9246B821263090C6004D2ADF /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
 		9251F1C525CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		9251F1C625CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		9252603C261B376F00316AE1 /* SpotifyConnectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */; };
@@ -239,6 +241,7 @@
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		923BD58D25E16D63003863AB /* SignInWithApple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApple.swift; sourceTree = "<group>"; };
 		923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publishers+Playback.swift"; sourceTree = "<group>"; };
+		9246B81F263090C6004D2ADF /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		9251F1C425CE190200906D9D /* RefreshableScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableScrollView.swift; sourceTree = "<group>"; };
 		9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyConnectButton.swift; sourceTree = "<group>"; };
 		9257430626304BA400B518EA /* SkipVoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkipVoteView.swift; sourceTree = "<group>"; };
@@ -461,7 +464,6 @@
 				927E0E3424E9AD5300C8257D /* Extensions */,
 				92A32D8D24C79B3D007C960E /* Resources */,
 				92A32DAF24C79B59007C960E /* State */,
-				92A32DCB24C79C06007C960E /* App.swift */,
 				927E0E3524E9ADC000C8257D /* AppClip.swift */,
 				92595B4C253A1AD200609558 /* AppCoordinator.swift */,
 				92A32E2B24C7BB53007C960E /* Consts.swift */,
@@ -481,6 +483,7 @@
 			children = (
 				92A32DC624C79C06007C960E /* Joli.entitlements */,
 				92F379F02363534F005FE2AB /* Info.plist */,
+				92A32DCB24C79C06007C960E /* App.swift */,
 				92A32DC924C79C06007C960E /* ServiceAlert.swift */,
 				92A32DD624C79C07007C960E /* AppView.swift */,
 				92A32DCE24C79C06007C960E /* AppDelegate.swift */,
@@ -592,6 +595,7 @@
 				9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */,
 				925B40342621B6A6009BD781 /* TrackSuggestionsListView.swift */,
 				9257430626304BA400B518EA /* SkipVoteView.swift */,
+				9246B81F263090C6004D2ADF /* WebView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1007,6 +1011,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9252603C261B376F00316AE1 /* SpotifyConnectButton.swift in Sources */,
+				9246B820263090C6004D2ADF /* WebView.swift in Sources */,
 				923D0E20262074C9008BB6EA /* ExploreView.swift in Sources */,
 				92A7120D24D85EC500AD6729 /* NetworkImageView.swift in Sources */,
 				92BD11D124CB0BD800AAB7DE /* TrackList.swift in Sources */,
@@ -1099,6 +1104,7 @@
 				92A32DDE24C79C07007C960E /* PeopleGridView.swift in Sources */,
 				92A32DDC24C79C07007C960E /* ImagePicker.swift in Sources */,
 				92A32E3124CA22FA007C960E /* Publishers.swift in Sources */,
+				9246B821263090C6004D2ADF /* WebView.swift in Sources */,
 				92A32D8924C79A13007C960E /* Styles.swift in Sources */,
 				927E0E3B24E9AFFF00C8257D /* Preview.swift in Sources */,
 				9251F1C625CE190200906D9D /* RefreshableScrollView.swift in Sources */,
@@ -1282,7 +1288,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = JoliClip/JoliClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1306,6 +1312,7 @@
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG APPCLIP";
 				SWIFT_OBJC_BRIDGING_HEADER = "Joli-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1320,7 +1327,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = JoliClip/JoliClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1339,6 +1346,7 @@
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APPCLIP;
 				SWIFT_OBJC_BRIDGING_HEADER = "Joli-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1446,7 +1454,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1483,7 +1491,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (

@@ -108,10 +108,16 @@ public class SpotifyDelegate: NSObject, PlaybackController {
             self.pendingPlayRequest = (track, positionMs, contentOffset, onComplete)
             
             Swift.print("[App#$localPlayRequested] set pending: \(String(describing: self.pendingPlayRequest?.track.title)) - \(String(describing: self.pendingPlayRequest?.positionMs)) - \(String(describing: self.pendingPlayRequest?.contentOffset))")
-//
-            let mgr = self.requestSpotifyAccess(trackUri: track.uri)
             
+            
+            #if APPCLIP
+            self.authorizationHandler?()
+            #else
+            let mgr = self.requestSpotifyAccess(trackUri: track.uri)
             logger.debug("[authorizeSpotify] spotify authresult: \(String(describing: mgr))")
+            #endif
+            
+            
             return
         }
         
@@ -212,7 +218,10 @@ public class SpotifyDelegate: NSObject, PlaybackController {
     public var authPublisher: Published<AuthTokenRecord?>.Publisher { $auth }
     
     
-    public override init() {
+    public init(authCallbackUrl: URL, authRefreshUrl: URL) {
+        self.authCallbackUrl = authCallbackUrl
+        self.authRefreshUrl = authRefreshUrl
+        
         super.init()
         
         DispatchQueue.main.async {
@@ -221,6 +230,9 @@ public class SpotifyDelegate: NSObject, PlaybackController {
             self.metadata = meta
         }
     }
+    
+    public typealias Failure = Error
+    public typealias Output = JoliCore.ConnectionState
     
     public func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
         self.subscribe(subscriber)
@@ -247,10 +259,13 @@ public class SpotifyDelegate: NSObject, PlaybackController {
     
     lazy var configuration = SPTConfiguration(clientID: SpotifyClientID, redirectURL: SpotifyRedirectURL)
     
+    let authCallbackUrl: URL
+    let authRefreshUrl: URL
+    
     lazy var appRemote: SPTAppRemote = {
         
-        self.configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!
-        self.configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
+        self.configuration.tokenSwapURL = authCallbackUrl
+        self.configuration.tokenRefreshURL = authRefreshUrl
         
         let appRemote = SPTAppRemote(configuration: self.configuration, logLevel: .debug)
         appRemote.connectionParameters.accessToken = self.accessToken
@@ -268,10 +283,20 @@ public class SpotifyDelegate: NSObject, PlaybackController {
     }
     
     public func remoteConnect(token: String? = nil){
+        self.remoteConnect(token: token) { error in
+            self.pendingConnectCallback = nil
+        }
+    }
+    
+    private var pendingConnectCallback: ((Error?) -> Void)? = nil
+    
+    private func remoteConnect(token: String? = nil, callback: @escaping (Error?) -> Void){
         
         guard !self.appRemote.isConnected else {
-            return
+            return callback(nil)
         }
+        
+        self.pendingConnectCallback = callback
         
         let token = token ?? accessToken
         self.appRemote.connectionParameters.accessToken = token
@@ -285,9 +310,8 @@ public class SpotifyDelegate: NSObject, PlaybackController {
             redirectURL: SpotifyRedirectURL //URL(string: "joli://spotify-callback/")!
         )
         
-        configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!
-        //https://localhost:8080/spotify_callback/
-        configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
+        configuration.tokenSwapURL = authCallbackUrl
+        configuration.tokenRefreshURL = authRefreshUrl
         
         configuration.playURI = nil
         
@@ -298,8 +322,14 @@ public class SpotifyDelegate: NSObject, PlaybackController {
         return spotifySessionManager.isSpotifyAppInstalled
     }()
     
+    var authorizationHandler: (() -> Void)? = nil
+    
     public func authorize(token: String? = nil) -> Void {
+        #if APPCLIP
+        self.authorizationHandler?()
+        #else
         requestSpotifyAccess(token: token)
+        #endif
     }
     
     #warning("fix spt reconnect callback")
@@ -309,7 +339,16 @@ public class SpotifyDelegate: NSObject, PlaybackController {
         
         guard !appRemote.isConnected else {
             logger.debug("[authorizeSpotify] spotify remote is not initialized")
-            remoteConnect(token: token)
+            remoteConnect(token: token) { error in
+                guard self.appRemote.isConnected, error == nil else {
+                    self.pendingConnectCallback?(error)
+                    return
+                }
+                
+                self.requestSpotifyAccess(trackUri: trackUri,
+                                          token: token,
+                                          alwaysShowAuthorizationDialog: alwaysShowAuthorizationDialog)
+            }
             return nil
         }
         
@@ -333,9 +372,9 @@ public class SpotifyDelegate: NSObject, PlaybackController {
             redirectURL: SpotifyRedirectURL //URL(string: "joli://spotify-callback/")!
         )
         
-        configuration.tokenSwapURL = URL(string: "https://192.168.1.173:8080/spotify_callback/")!
+        configuration.tokenSwapURL = authCallbackUrl
         //https://localhost:8080/spotify_callback/
-        configuration.tokenRefreshURL = URL(string: "https://192.168.1.173:8080/api/spotify/refresh")!
+        configuration.tokenRefreshURL = authRefreshUrl
         
         configuration.playURI = trackUri
         let mgr = SPTSessionManager(configuration: configuration, delegate: self)

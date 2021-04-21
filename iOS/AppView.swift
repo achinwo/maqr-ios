@@ -424,11 +424,21 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                 return
             }
             
-            localPlaybackController.play(localRequest.track,
-                                         positionMs: localRequest.positionMs,
-                                         contentOffset: localRequest.contentOffset) {
-                logger.info("[\(Self.self)] local playback completed")
+            let action = {
+                localPlaybackController.play(localRequest.track,
+                                             positionMs: localRequest.positionMs,
+                                             contentOffset: localRequest.contentOffset) {
+                    logger.info("[\(Self.self)] local playback completed")
+                }
             }
+            
+            guard localPlaybackController.connectionState.isConnected else {
+                let message = "\(Strings.appName) will attempt to connect with \(localPlaybackController.name)"
+                appCoordinator.withAlert("Requesting Local Playback", message: message, label: "Connect", action: action)
+                return
+            }
+            
+            action()
         }
         .onReceive(appCoordinator.$spotifyAuthCallback) { callback in
             

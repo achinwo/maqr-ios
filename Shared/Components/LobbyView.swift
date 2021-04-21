@@ -87,42 +87,6 @@ public struct MailView: UIViewControllerRepresentable {
                                 context _: UIViewControllerRepresentableContext<MailView>) {}
 }
 
-extension PlayState: Playable {
-    
-    public var explicit: Bool {
-        track!.explicit
-    }
-    
-    public var title: String {
-        track!.title
-    }
-    
-    public var thumbnailUrl: String {
-        track!.thumbnailUrl
-    }
-    
-    public var albumCoverUrl: String {
-        track!.albumCoverUrl
-    }
-    
-    public var artistName: String {
-        track!.artistName
-    }
-    
-    public var uri: String {
-        track!.uri
-    }
-    
-    public var duration: Int {
-        track!.duration
-    }
-    
-    public var isPlayable: Bool {
-        return track != nil
-    }
-    
-}
-
 public struct LobbyView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -362,14 +326,20 @@ public struct LobbyView: JoliView {
                                     ProgressView()
                                 } else {
                                     Button(){
-                                        self.signingOut = auth
-                                        
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                            self.appCoordinator.signoutSubject.send(auth)
-                                            self.signingOut = nil
-                                            
-                                            self.auths = self.auths.filter({ $0.session.token != auth.session.token })
+                                        let action = {
+                                            self.signingOut = auth
+
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                                self.appCoordinator.signoutSubject.send(auth)
+                                                self.signingOut = nil
+
+                                                self.auths = self.auths.filter({ $0.session.token != auth.session.token })
+                                            }
                                         }
+                                        appCoordinator.withAlert(Strings.reallyLogoutTitle,
+                                                              message: Strings.reallyLogoutMessage,
+                                                              label: "Sign Out",
+                                                              action: action)
                                     } label: {
                                         Text("Sign Out")
                                     }

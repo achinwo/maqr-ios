@@ -199,7 +199,7 @@ public struct TrackView2<AddonView: View>: JoliView {
         
         return HStack(alignment: .center) {
             
-            NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
+            NetworkImage(imageURL: URL(string: track.albumCoverUrl)!,
                          placeholderImage: UIImage(systemName: "timelapse")!) { (loadedImage, _) in
                 
                 guard let loadedImage = loadedImage, useDynamicColors else {
@@ -421,27 +421,6 @@ public extension String {
         return reduce(0) {
             $1 == needle ? $0 + 1 : $0
         }
-    }
-}
-
-public extension PlayState {
-    
-    static var allColors: [Color] {
-        return [
-            .systemRed,
-            .systemYellow,
-            .systemBlue,
-            .systemPink,
-            .systemGreen,
-            .systemOrange,
-            .systemPurple,
-        ]
-    }
-    
-    var color: Color {
-        let colors = Self.allColors
-        let color = colors[(userName.count + userName.lowercased().count(of: "g")) % colors.count ]
-        return color
     }
 }
 

@@ -37,7 +37,9 @@ let TOKEN: String? = nil //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imh
 struct JoliApp: AppClip {
     
     let keychain: Keychain = Keychain(service: "live.joli.session-token")
+    
     @State var serverVersion: Version? = nil
+    @State var alertInfo: Alert? = nil
     
     @AppStorage("spotify.devices.active") var activeDeviceId: String = .empty
     
@@ -97,7 +99,7 @@ struct JoliApp: AppClip {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    let spotify = SpotifyDelegate()
+    let spotify: SpotifyDelegate
     var websocket: Socket
     var cancellables: Set<AnyCancellable> = []
     
@@ -131,10 +133,15 @@ struct JoliApp: AppClip {
         
         let coordinator = AppCoordinator()
         self.coordinator = coordinator
+        
+        let baseUrls = JoliApi.Environment.current.baseUrl
          
+        self.spotify = SpotifyDelegate(authCallbackUrl: baseUrls.http.appendingPathComponent("spotify_callback/"),
+                                       authRefreshUrl: baseUrls.http.appendingPathComponent("spotify_refresh/"))
+        
         var request = Self.wssUrlRequest
         self.websocket = Socket(request: request)
-        self.api = JoliApi(baseUrl: JoliApi.Environment.current.baseUrl, headers: request.allHTTPHeaderFields ?? [:])
+        self.api = JoliApi(baseUrl: baseUrls, headers: request.allHTTPHeaderFields ?? [:])
         
         self._auths = State(initialValue: Self.resolveAuths(keychain))
         self._activeSessionToken = State(initialValue: self.activeSessionId.isEmpty ? nil : self.activeSessionId)
@@ -213,6 +220,7 @@ struct JoliApp: AppClip {
     
     @State var result: Result<MFMailComposeResult, Error>? = nil
     @State var mailOptions: MailView.Options? = nil
+    @State var isActionSheetPresented: Bool = false
     
     func signOut(_ auth: Auth) -> Void {
         let newAuths = self.auths.filter() { $0.session.token != auth.session.token}
@@ -249,6 +257,15 @@ struct JoliApp: AppClip {
                     .environmentObject(coordinator)
                 }
             }
+            .alert(isPresented: self.$isActionSheetPresented) {
+                guard let alert = self.alertInfo else {
+                    return Alert(title: Text("Oops - Something is quite right"),
+                                 message: Text("An internal error was detected. Restart the application if issue persists"),
+                                 dismissButton: .default(Text("Dismiss")))
+                }
+                
+                return alert
+            }
             .onChange(of: self.modalView) { modal in
                 isSheetPresented = self.modalView != nil
             }
@@ -256,7 +273,7 @@ struct JoliApp: AppClip {
                 isSheetPresented = self.mailOptions != nil
             }
             .onReceive(coordinator.internalErrorSubject, perform: self.onInternalError)
-            .onReceive(coordinator.signoutSubject, perform: signOut)
+            .onReceive(coordinator.signoutSubject, perform: self.signOut)
             .onReceive(spotify.authPublisher) { authRecord in
                 logger.info("[\(#function)] local spotify auth: \(String(describing: authRecord))")
                 authRecord?.save()
@@ -284,6 +301,10 @@ struct JoliApp: AppClip {
             }
             .onReceive(coordinator.globalModalSubject) { view in
                 self.modalView = view
+            }
+            .onReceive(coordinator.globalAlertSubject) { alertInfo in
+                self.alertInfo = alertInfo
+                self.isActionSheetPresented = true
             }
             .onReceive(coordinator.$mailOptions) { opts in
                 

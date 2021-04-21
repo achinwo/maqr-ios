@@ -68,8 +68,11 @@ public final class AppCoordinator: ObservableObject {
     public let playRequestedSubject = CurrentValueSubject<String?, Never>(nil)
     public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
     public let queueRequestedSubject = CurrentValueSubject<(uri: String, room: Musicroom)?, Never>(nil)
-    public let globalModalSubject = CurrentValueSubject<AppPreview?, Never>(nil)
+    
+    public let globalModalSubject = PassthroughSubject<AppPreview?, Never>()
     public let globalPreviewSubject = PassthroughSubject<AppPreview?, Never>()
+    
+    public let globalAlertSubject = PassthroughSubject<Alert, Never>()
     
     public let authSubject = PassthroughSubject<Auth?, Never>()
     
@@ -109,6 +112,22 @@ public final class AppCoordinator: ObservableObject {
         return { (error: Error) -> Void in
             self.internalErrorSubject.send((error, file, function, line))
         }
+    }
+    
+    public func withAlert(_ title: String, message: String? = nil, label: String, action: @escaping () -> Void) {
+        
+        var messageTxt: Text? = nil
+        
+        if let msg = message {
+            messageTxt = Text(msg)
+        }
+        
+        let alert = Alert(title: Text(title),
+                          message: messageTxt,
+                          primaryButton: .default(Text(label), action: action),
+                          secondaryButton: .cancel())
+        
+        self.globalAlertSubject.send(alert)
     }
     
     public func authorizeSpotify(){
