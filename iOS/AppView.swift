@@ -370,9 +370,7 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
             self.onConnectionStateChanged(websocket, info.state == ConnectionState.connected)
         }
         .onReceive(appCoordinator.voteRequestedSubject) { voting in
-            print("[App#voteRequestedSubject] voting: \(String(describing: voting))")
             guard voting != nil else {
-                print("[App#voteRequestedSubject] voting, aborting...")
                 return
             }
             

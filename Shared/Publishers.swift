@@ -13,6 +13,42 @@ import CancellationToken
 import Combine
 import Starscream
 import Promises
+import CommonCrypto
+
+extension Data {
+    
+    public func sha256() -> String{
+        return hexStringFromData(input: digest(input: self as NSData))
+    }
+    
+    private func digest(input : NSData) -> NSData {
+        let digestLength = Int(CC_SHA256_DIGEST_LENGTH)
+        var hash = [UInt8](repeating: 0, count: digestLength)
+        CC_SHA256(input.bytes, UInt32(input.length), &hash)
+        return NSData(bytes: hash, length: digestLength)
+    }
+    
+    private  func hexStringFromData(input: NSData) -> String {
+        var bytes = [UInt8](repeating: 0, count: input.length)
+        input.getBytes(&bytes, length: input.length)
+        
+        var hexString = ""
+        for byte in bytes {
+            hexString += String(format:"%02x", UInt8(byte))
+        }
+        
+        return hexString
+    }
+}
+
+public extension String {
+    var sha256: String {
+        if let stringData = self.data(using: String.Encoding.utf8) {
+            return stringData.sha256()
+        }
+        return ""
+    }
+}
 
 public class Playroom: ObservableObject, Room, Equatable {
     
@@ -133,10 +169,11 @@ public class Playroom: ObservableObject, Room, Equatable {
     }
     
     @discardableResult
-    public func updateQueuedTracks() -> Promise<[QueuedTrack]> {
+    public func updateQueuedTracks(additions: [QueuedTrack] = []) -> Promise<[QueuedTrack]> {
         self.loadingRoomTracks = true
         return self.fetchQueuedTracks()
             .then() { tracks in
+                print("Fetched changed: \(tracks.map({ $0.uri }).debugDescription.sha256) - \(tracks.count)")
                 self.queue = tracks
                 
                 var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
@@ -145,7 +182,7 @@ public class Playroom: ObservableObject, Room, Equatable {
                 for track in tracks.filter({ $0.isPlayable }) {
                     var roomTracks = tracksByMusicrooms[track.roomId] ?? []
                     
-                    guard !roomTracks.contains(track) else {
+                    guard !roomTracks.map({ $0.uri }).contains(track.uri) else {
                         continue
                     }
                     
@@ -160,8 +197,6 @@ public class Playroom: ObservableObject, Room, Equatable {
                 }
                 
                 self.votes = allVotes
-                //self.tracks = tracksByMusicrooms[musicroom.id] ?? []
-                //self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
                 
                 self.strip = (
                     playing: tracks.first,
@@ -215,11 +250,21 @@ public class Playroom: ObservableObject, Room, Equatable {
             }
     }
     
+    let queueUpdateRequest = PassthroughSubject<String, Never>()
+    
     public init(musicroom: Musicroom, socket: Socket, api: JoliApi){
         self.musicroom = musicroom
         self.entitlements = musicroom.entitlements
         self.name = musicroom.name
         self.api = api
+        
+        queueUpdateRequest
+            .debounce(for: 2.16, scheduler: DispatchQueue.global(qos: .background))
+            .sink() { _ in
+                self.updateQueuedTracks()
+            }
+            .store(in: &cancellationSet)
+        
         
         socket.$isConnected
             .sink() { value in
@@ -258,7 +303,7 @@ public class Playroom: ObservableObject, Room, Equatable {
                 
                 guard value.roomId == musicroom.id else { return }
                 
-                self.updateQueuedTracks()
+                self.queueUpdateRequest.send("New queued track added")
             }
             .store(in: &cancellationSet)
         
@@ -272,6 +317,8 @@ public class Playroom: ObservableObject, Room, Equatable {
                 guard self.queue.map({ $0.id }).contains(value.queuedTrackId) else { return }
                 
                 self.votes.append(value)
+                
+                self.queueUpdateRequest.send("New vote")
             }
             .store(in: &cancellationSet)
         

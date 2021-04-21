@@ -361,7 +361,24 @@ public struct TrackView2<AddonView: View>: JoliView {
     }
     
     public func liveProgressView(proxy: GeometryProxy) -> some View {
-        ZStack(alignment: .leading){
+        
+        let resolveColor = { (playState: PlayState) -> Color in
+            guard self.appCoordinator.activeAuth != nil else {
+                return .secondary
+            }
+            
+            guard let playroom = playroom,
+                  let playlistUri = playroom.playlistUri,
+                  let playStatePlaylistUri = playState.playlistUri,
+                  let queued = track as? QueuedTrack,
+                  queued.isPlayable, playState.track?.uri == queued.uri else {
+                return playState.color
+            }
+            
+            return playlistUri == playStatePlaylistUri ? playState.color : .secondary
+        }
+        
+        return ZStack(alignment: .leading){
             
             let containerWidth = CGFloat(proxy.size.width)
             
@@ -373,8 +390,11 @@ public struct TrackView2<AddonView: View>: JoliView {
                     
                     HStack(alignment: .bottom){
                         
+                        
                         RoundedRectangle(cornerSize: CGSize(width: 2, height: 3))
-                            .fill((self.appCoordinator.activeAuth == nil ? .secondary : item.value.color).opacity(0.48))
+                            .fill(resolveColor(item.value)
+                                    .opacity(self.appCoordinator.activeAuth?.user.id == item.value.createdById ? 70 :  0.48)
+                            )
                             .frame(width: 3, height: proxy.size.height)
                             .offset(x: offset.truncatingRemainder(dividingBy: proxy.size.width), y: 0)
                             .id(item.key)
@@ -489,9 +509,10 @@ public struct TrackList<AddonView: View>: JoliView {
     
     public var contentView: some View {
         return VStack(alignment: .center, spacing: 0) {
-                ForEach(Array(tracks.enumerated()), id: \.element.uri) { item in
+            
+                ForEach(tracks, id: \.uri) { track in
                     
-                    let track = item.element
+                    //let track = item.element
                     
                     TrackView2(track: .constant(track),
                                playroom: self.$playroom,

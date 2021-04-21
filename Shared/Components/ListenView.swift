@@ -307,6 +307,7 @@ struct ListenView: JoliView {
 //            } else
             
             let isPlaying = playStates.first() { $0.isPlayable ? $0.uri == track.uri : false }?.playingState == .playing
+            
             if let track = track as? QueuedTrack, !isPlaying {
                 
                 let scaleX: CGFloat = self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
@@ -496,37 +497,15 @@ struct ListenView: JoliView {
                                 .onReceive(self.appCoordinator.queueRequestedSubject) { val in
                                     self.queueRequested = val
                                 }
+                                .onReceive(playroom.$votes, assign: \.votes, target: self)
+                                .onReceive(playroom.$strip, assign: \.strip, target: self)
                                 .matchedGeometryEffect(id: "playroom/\(playroom.musicroom.id.description)", in: animation)//, properties: .frame, isSource: true)
                                 .onReceive(playroom.$queue) { tracks in
-                                    var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
-                                    var allVotes: [QueuedTrackVote] = []
                                     
-                                    for track in tracks.filter({ $0.isPlayable }) {
-                                        var roomTracks = tracksByMusicrooms[track.roomId] ?? []
-                                        
-                                        guard !roomTracks.contains(track) else {
-                                            continue
-                                        }
-                                        
-                                        roomTracks.append(track)
-                                        tracksByMusicrooms[track.roomId] = roomTracks
-                                        
-                                        guard let votes = track.votes, track.roomId == playroom.musicroom.id else {
-                                            continue
-                                        }
-                                        
-                                        allVotes.append(contentsOf: votes)
-                                    }
                                     
-                                    self.votes = allVotes
-                                    self.tracks = tracksByMusicrooms[playroom.musicroom.id] ?? []
+                                    print("Queue changed: \(tracks.map({ $0.uri }).debugDescription.sha256) - \(tracks.count)")
+                                    self.tracks = tracks
                                     self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
-                                    
-                                    self.strip = (
-                                        playing: tracks.first,
-                                        next: tracks.count > 1 ? tracks[1] : nil,
-                                        runnerup: tracks.count > 2 ? tracks[2] : nil
-                                    )
                                     
                                     DispatchQueue.main.async {
                                         playroom.fetchSpotifyTopArtists()
