@@ -13,6 +13,7 @@ import CancellationToken
 import Combine
 import JoliApi
 //import os
+import Promises
 import Version
 import KeychainAccess
 
@@ -141,6 +142,86 @@ struct JoliClip: AppClip {
             @unknown default:
             // Fallback for future cases
                 print("Unknown scene phase: \(phase)")
+        }
+    }
+    
+    func onLocalSpotifyAuth(_ auth: AuthToken?, _ error: Error?){
+        logger.info("[AppView#onLocalSpotifyAuth] auth: \(String(describing: auth)), error: \(String(describing: error))")
+        coordinator.authorizedSpotify = auth
+        
+        guard let auth = auth else {
+            return
+        }
+        
+        self.authenticate(.spotifyRefreshToken(auth.refreshToken))
+    }
+    
+    func spotifyWebAuthorize(_ urlPath: URLComponents) -> Promise<AuthToken> {
+        //spotifyAuthorizationInProgress = true
+        
+        return HttpMethod.Fetch.get(url: urlPath,
+                                    dataType: AuthToken.self,
+                                    baseUrl: api.baseUrl.rawValue.http,
+                                    urlSession: api.urlSession)
+            .then(){ auth -> Promise<AuthToken> in
+                //self.spotifyWebAuthorized = !auth.isExpired
+                return Promise(auth)
+            }
+            .always() {
+                //self.spotifyAuthorizationInProgress = false
+            }
+    }
+    
+    func resolveSpotifyRedirectUrl(_ url: URL) -> URL? {
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        
+        guard let scheme = components?.scheme,
+              let basePath = components?.host,
+              let codeQuery = components?.queryItems?.first(where: { $0.name == "code" }),
+              [Strings.URL_SCHEME, "spotify-ios-quick-start"].contains(scheme),
+              [Strings.SPOTIFY_URL_BASEPATH, "spotify-login-callback"].contains(basePath) else {
+            return nil
+        }
+        
+        var redirectUrl = URLComponents(string: "/spotify_callback")
+        redirectUrl?.queryItems = [codeQuery,
+                                   URLQueryItem(name: "redirect",
+                                                value: (scheme == Strings.URL_SCHEME ?
+                                                            "joli://\(Strings.SPOTIFY_URL_BASEPATH)"
+                                                            : "https://localhost:8080/spotify_callback/"
+                                                        //: "spotify-ios-quick-start://spotify-login-callback/"
+                                                )),
+                                   URLQueryItem(name: "platform", value: "ios")]
+        
+        return redirectUrl?.url(relativeTo: api.baseUrl.rawValue.http)
+    }
+    
+    func onOpenUrl(url: URL){
+        logger.info("[SceneDelegate] url: \(url)")
+        
+        if let redirectUrl = resolveSpotifyRedirectUrl(url), let urlComp = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: false) {
+            spotifyWebAuthorize(urlComp)
+                .then() { auth in
+                    //logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
+                    self.onLocalSpotifyAuth(auth, nil)
+                }
+                .catch() { error in
+                    logger.error("[SceneDelegate] spotify auth error: \(String(describing: error))")
+                    self.onLocalSpotifyAuth(nil, error)
+                }
+            return
+        }
+        
+        let parameters = self.spotify.appRemote.authorizationParameters(from: url)
+        logger.info("[\(#function)] spotify auth params: \(String(describing: parameters))")
+        
+        if let access_token = parameters?[SPTAppRemoteAccessTokenKey] {
+            self.spotify.appRemote.connectionParameters.accessToken = access_token
+            self.spotify.accessToken = access_token
+        } else if let error_description = parameters?[SPTAppRemoteErrorDescriptionKey] {
+            logger.debug("Spotify error: \(error_description)")
+        } else {
+            self.coordinator.currentLocation = AppLocation(url) ?? self.coordinator.currentLocation
         }
     }
     

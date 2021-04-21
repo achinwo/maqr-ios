@@ -260,6 +260,18 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         }
         .edgesIgnoringSafeArea([.top, .bottom])
         .frame(width: screenWidth, height: screenHeight, alignment: .center)
+        .onReceive(appCoordinator.$localPlayRequested) { localRequest in
+            
+            guard let localRequest = localRequest else {
+                return
+            }
+            
+            localPlaybackController.play(localRequest.track,
+                                         positionMs: localRequest.positionMs,
+                                         contentOffset: localRequest.contentOffset) {
+                logger.info("[\(Self.self)] local playback completed")
+            }
+        }
         .onAppear() {
             //self.scrollProxy = scrollProxy
             

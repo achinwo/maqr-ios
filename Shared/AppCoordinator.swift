@@ -303,8 +303,8 @@ public final class AppCoordinator: ObservableObject {
         
     }
     
-    @Published var localPlayRequested: (track: Playable, positionMs: Int?, contentOffset: ContentOffset?)? = nil
-    @Published var connectionStateSubject: CurrentValueSubject<(state: ConnectionState, changedAt: Date?), Never> = CurrentValueSubject((.stopped, nil))
+    @Published public var localPlayRequested: (track: Playable, positionMs: Int?, contentOffset: ContentOffset?)? = nil
+    @Published public var connectionStateSubject: CurrentValueSubject<(state: ConnectionState, changedAt: Date?), Never> = CurrentValueSubject((.stopped, nil))
     
     public func play(_ track: Playable, positionMs: Int? = nil, contentOffset: ContentOffset? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
         self.playRequestedSubject.send(track.uri)
@@ -343,15 +343,20 @@ public final class AppCoordinator: ObservableObject {
         }
         
         guard let device = device else {
-            return api.fetchSpotifyDevices(on: on)
-                .catch(self.globalErrorHandler())
-                .then() { (devices) -> Promise<PlayState?> in
-                    logger.debug("Devices: \(devices)")
-                    return performPlay(devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }))
-                }
-                .always {
-                    self.playRequestedSubject.send(nil)
-                }
+            
+            if self.authorizedSpotify != nil {
+                return api.fetchSpotifyDevices(on: on)
+                    .catch(self.globalErrorHandler())
+                    .then() { (devices) -> Promise<PlayState?> in
+                        logger.debug("Devices: \(devices)")
+                        return performPlay(devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }))
+                    }
+                    .always {
+                        self.playRequestedSubject.send(nil)
+                    }
+            } else {
+                return performPlay(nil)
+            }
         }
         
         return performPlay(device)
