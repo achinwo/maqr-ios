@@ -75,6 +75,8 @@ public class Playroom: ObservableObject, Room, Equatable {
     @Published public var membership: [PlayroomMembership] = []
     @Published public var votes: [QueuedTrackVote] = []
     
+    @Published public var votesByQueuedTrackId: [Int: Int] = [:]
+    
     @Published public var queue: [QueuedTrack] = []
     @Published public var loadingRoomTracks: Bool = false
     @Published public var recommendations: [Playable] = []
@@ -178,6 +180,7 @@ public class Playroom: ObservableObject, Room, Equatable {
                 
                 var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
                 var allVotes: [QueuedTrackVote] = []
+                var votesById: [Int: Int] = [:]
                 
                 for track in tracks.filter({ $0.isPlayable }) {
                     var roomTracks = tracksByMusicrooms[track.roomId] ?? []
@@ -188,6 +191,7 @@ public class Playroom: ObservableObject, Room, Equatable {
                     
                     roomTracks.append(track)
                     tracksByMusicrooms[track.roomId] = roomTracks
+                    votesById[track.id] = track.voteCount ?? 0
                     
                     guard let votes = track.votes, track.roomId == self.musicroom.id else {
                         continue
@@ -196,6 +200,7 @@ public class Playroom: ObservableObject, Room, Equatable {
                     allVotes.append(contentsOf: votes)
                 }
                 
+                self.votesByQueuedTrackId = votesById
                 self.votes = allVotes
                 
                 self.strip = (

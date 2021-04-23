@@ -141,12 +141,13 @@ public struct PlayroomHeaderView: JoliView {
     @State var tappedUri: String? = nil
     
     public init(playroom: Binding<Playroom?>, strip: Binding<TrackStrip>, preview: Binding<AppPreview?>,
-                tracks: Binding<[Playable]>, scrollProxy: Binding<ScrollViewProxy?>){
+                tracks: Binding<[Playable]>, scrollProxy: Binding<ScrollViewProxy?>, isCloseable: Binding<Bool> = .constant(true)){
         self._playroom = playroom
         self._strip = strip
         self._preview = preview
         self._tracks = tracks
         self._scrollProxy = scrollProxy
+        self._closeable = isCloseable
     }
     
     let tappedSubject: AutoResetSubject<String?, Never, DispatchQueue> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))
@@ -168,7 +169,7 @@ public struct PlayroomHeaderView: JoliView {
                 let containerWidth = CGFloat(56.0)
                 
                 VStack(alignment: .leading, spacing: .zero){
-                    NetworkImage(string: playing.thumbnailUrl) {
+                    NetworkImage(string: playing.albumCoverUrl) {
                         Rectangle().stroke(Color.gray)
                     }
                     .frame(width: containerWidth, height: 56)
@@ -254,6 +255,7 @@ public struct PlayroomHeaderView: JoliView {
             HStack(){
                 if let playroom = playroom {
                     Text(playroom.name)
+                        .padding(.vertical)
                         .font(Font.title2)
                         .foregroundColor(self.connectionState == .connected ? Color.blue : Color.secondary)
                         .fixedSize(horizontal: true, vertical: false)
@@ -291,18 +293,22 @@ public struct PlayroomHeaderView: JoliView {
                 }
                 
                 Spacer()
-                Button(){
-                    withImpact(.soft) {
-                        self.playroom = nil
+                
+                if self.closeable {
+                    Button(){
+                        withImpact(.soft) {
+                            self.playroom = nil
+                        }
+                    } label: {
+                        Image(systemName: "arrow.down.right.and.arrow.up.left")
+                            //.resizable()
+                            //.frame(width: closeIconSize, height: closeIconSize)
+                            .font(Font.title3.weight(.thin))
+                            .foregroundColor(Color.secondary)
                     }
-                } label: {
-                    Image(systemName: "arrow.down.right.and.arrow.up.left")
-                        //.resizable()
-                        //.frame(width: closeIconSize, height: closeIconSize)
-                        .font(Font.title3.weight(.thin))
-                        .foregroundColor(Color.secondary)
+                    .padding()
                 }
-                .padding()
+                
             }
             
             HStack(alignment: .bottom){
@@ -322,6 +328,8 @@ public struct PlayroomHeaderView: JoliView {
             self.connectionState = conn.state
         }
     }
+    
+    @Binding var closeable: Bool
     
     @State var membership: [PlayroomMembership] = []
     @State var artists: [Artist] = []

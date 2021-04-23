@@ -469,6 +469,12 @@ public extension AppClip {
                 storeToKeychain(newAuths)
                 self.coordinator.api.auth = auth
                 
+                self.coordinator.authsSubject.send(newAuths)
+                self.coordinator.activeSessionToken = self.activeSessionToken
+                
+                let points = CGFloat(auth.user.heartPoints ?? 375)
+                self.coordinator.userHeartsSubject.send(Hearts(score: points <= HeartLevel.empty.rawValue ? HeartLevel.quarter.rawValue : points))
+                
                 //logger.debug("[App#authentication] activeSessionToken: \(String(describing: self.activeSessionToken))")
             }
             .catch() { error in
@@ -714,6 +720,26 @@ public extension UserDefaults {
     
     static var groupContainer: UserDefaults {
         return UserDefaults(suiteName: "group.app.jolimc.Joli") ?? .init()
+    }
+    
+}
+
+
+public struct ShakeEffect: GeometryEffect {
+    
+    public var position: CGFloat
+    
+    public var animatableData: CGFloat {
+        get { position }
+        set { position = newValue }
+    }
+    
+    public init(shakes: Int) {
+        position = CGFloat(shakes)
+    }
+    
+    public func effectValue(size: CGSize) -> ProjectionTransform {
+        return ProjectionTransform(CGAffineTransform(translationX: -30 * sin(position * 2 * .pi), y: 0))
     }
     
 }

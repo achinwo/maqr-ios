@@ -18,24 +18,6 @@ import UIImageColors
 import StoreKit
 #endif
 
-struct ShakeEffect: GeometryEffect {
-    
-    var position: CGFloat
-    var animatableData: CGFloat {
-        get { position }
-        set { position = newValue }
-    }
-    
-    init(shakes: Int) {
-        position = CGFloat(shakes)
-    }
-    
-    func effectValue(size: CGSize) -> ProjectionTransform {
-        return ProjectionTransform(CGAffineTransform(translationX: -30 * sin(position * 2 * .pi), y: 0))
-    }
-    
-}
-
 struct ScaleEffect: GeometryEffect {
     
     var scaleX: CGFloat
@@ -133,7 +115,7 @@ struct ListenView: JoliView {
     @Binding var currentUser: User?
     @State var scrollProxy: ScrollViewProxy? = nil
     
-    @State var votes: [QueuedTrackVote] = []
+    @State var votesByQueuedTrackId: [Int: Int] = [:]
     let websocket: Socket
     
     init(tabbarExpaned: Binding<Bool>, preview: Binding<AppPreview?>, filterText: Binding<String>, animation: Namespace.ID, playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket) {
@@ -233,7 +215,6 @@ struct ListenView: JoliView {
     }
     
     
-    @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
     @State var tripLine: CGFloat = 0
     @State var loadingFinishedAt: Date? = nil
     @GestureState private var dragOffset = CGSize.zero
@@ -319,7 +300,7 @@ struct ListenView: JoliView {
                         return nil
                     }
                     
-                    guard let count: Int = self.votesByTrack[track.id]?.count else {
+                    guard let count: Int = self.votesByQueuedTrackId[track.id] else {
                         return Hearts(score: HeartLevel.empty.rawValue)
                     }
                     
@@ -344,8 +325,12 @@ struct ListenView: JoliView {
                         
                         self.appCoordinator.voteTrack(track)
                             .then() { vote in
-                                guard !self.votes.contains(vote) else { return }
-                                self.votes.append(vote)
+                                guard let currentCount = self.votesByQueuedTrackId[track.id] else { return }
+                                
+                                var votes = self.votesByQueuedTrackId
+                                votes[track.id] = currentCount + 1
+                                
+                                self.votesByQueuedTrackId = votes
                             }
                             .catch() { voteError in
                                 
@@ -413,7 +398,7 @@ struct ListenView: JoliView {
         ZStack(){
             LobbyView(recentTracks: self.$recentTracks, liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks, preview: self.$preview) { room in
                 self.tracks = []
-                self.votes = []
+                self.votesByQueuedTrackId = [:]
                 self.playroom = Playroom(musicroom: room, socket: self.websocket, api: api)
                 
                 guard let auth = appCoordinator.activeAuth, !room.entitlements.contains(where: { $0.userId == auth.user.id }) else {
@@ -488,7 +473,7 @@ struct ListenView: JoliView {
                     
                     if let playroom = playroom {
                         ZStack(){
-                            TrackList(tracks: self.$tracksFiltered, contextUri: .constant(playroom.playlistUri), votes: self.$votes, playroom: self.$playroom, addonView: self.addonView)
+                            TrackList(tracks: self.$tracksFiltered, contextUri: .constant(playroom.playlistUri), playroom: self.$playroom, addonView: self.addonView)
                                 //.frame(width: screenWidth)
                                 //.padding(.top, roomControlViewBounds == nil ? safeAreaInsets.top : roomControlViewBounds?.height)
                                 .padding(.top, isEmptySearchResult ? safeAreaInsets.top + 128 : nil)
@@ -497,7 +482,7 @@ struct ListenView: JoliView {
                                 .onReceive(self.appCoordinator.queueRequestedSubject) { val in
                                     self.queueRequested = val
                                 }
-                                .onReceive(playroom.$votes, assign: \.votes, target: self)
+                                .onReceive(playroom.$votesByQueuedTrackId, assign: \.votesByQueuedTrackId, target: self)
                                 .onReceive(playroom.$strip, assign: \.strip, target: self)
                                 .matchedGeometryEffect(id: "playroom/\(playroom.musicroom.id.description)", in: animation)//, properties: .frame, isSource: true)
                                 .onReceive(playroom.$queue) { tracks in
@@ -517,22 +502,6 @@ struct ListenView: JoliView {
                                             .catch(self.appCoordinator.globalErrorHandler())
                                     }
                                     
-                                }
-                                .onChange(of: self.votes) { votes in
-                                    var mapping: [Int: [QueuedTrackVote]] = [:]
-                                    
-                                    for vote in votes {
-                                        
-                                        guard var existing = mapping[vote.queuedTrackId] else {
-                                            mapping[vote.queuedTrackId] = []
-                                            continue
-                                        }
-                                        
-                                        existing.append(vote)
-                                        mapping[vote.queuedTrackId] = existing
-                                    }
-                                    
-                                    self.votesByTrack = mapping
                                 }
                                 .onAppear(){
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -598,17 +567,17 @@ struct ListenView: JoliView {
             }
             
         }
-        .onReceive(appCoordinator.voteCastSubject) { vote in
-            
-            guard let vote = vote,
-                  !self.votes.contains(vote),
-                  let queuedTracks = tracks as? [QueuedTrack],
-                  queuedTracks.contains(where: { $0.id == vote.queuedTrackId }) else {
-                return
-            }
-            
-            self.votes.append(vote)
-        }
+//        .onReceive(appCoordinator.voteCastSubject) { vote in
+//
+//            guard let vote = vote,
+//                  !self.votes.contains(vote),
+//                  let queuedTracks = tracks as? [QueuedTrack],
+//                  queuedTracks.contains(where: { $0.id == vote.queuedTrackId }) else {
+//                return
+//            }
+//
+//            self.votes.append(vote)
+//        }
         .onReceive(appCoordinator.globalPreviewSubject) { view in
             self.preview = view
         }
@@ -738,22 +707,22 @@ struct ListenView: JoliView {
             }
             .frame(width: screenWidth)
             .onReceive(appCoordinator.$keyboardHeight, assign: \.keyboardHeight, target: self)
-            .onChange(of: votes) { votes in
-                
-                guard let playroom = playroom else {
-                    self.strip = (nil, nil, nil)
-                    return
-                }
-                
-                playroom.fetchQueuedTracks(limit: 3)
-                    .then() { tracks in
-                        self.strip = (
-                            playing: tracks.first,
-                            next: tracks.count > 1 ? tracks[1] : nil,
-                            runnerup: tracks.count > 2 ? tracks[2] : nil
-                        )
-                    }
-            }
+//            .onChange(of: votes) { votes in
+//
+//                guard let playroom = playroom else {
+//                    self.strip = (nil, nil, nil)
+//                    return
+//                }
+//
+//                playroom.fetchQueuedTracks(limit: 3)
+//                    .then() { tracks in
+//                        self.strip = (
+//                            playing: tracks.first,
+//                            next: tracks.count > 1 ? tracks[1] : nil,
+//                            runnerup: tracks.count > 2 ? tracks[2] : nil
+//                        )
+//                    }
+//            }
             .onChange(of: playroom) { room in
                 
                 guard let room = room else {

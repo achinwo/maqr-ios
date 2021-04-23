@@ -24,11 +24,15 @@ public struct PlayroomView: JoliView {
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
     @Binding public var playroom: Playroom
+    @Binding public var showRecommended: Bool
+    @State public var authcallback: () -> Void
     
-    @State private var votes: [QueuedTrackVote] = []
+    @State private var votesByQueuedTrackId: [Int: Int] = [:]
     @State private var strip: PlayroomHeaderView.TrackStrip = (nil, nil, nil)
     @State private var tracks: [Playable] = []
     @State private var scrollProxy: ScrollViewProxy? = nil
+    
+    @State private var pendingAction: (() -> Void)? = nil
     
     public var contentView: some View {
         
@@ -45,19 +49,65 @@ public struct PlayroomView: JoliView {
             strip: $strip,
             preview: .constant(nil),
             tracks: $tracks,
-            scrollProxy: $scrollProxy
+            scrollProxy: $scrollProxy,
+            isCloseable: .constant(false)
         )
+        
+        let installMessage = "Install the full experience for the ability to create your own playrooms and more"
         
         return ZStack(alignment: .top) {
             
             ScrollViewReader(){ scrollProxy in
                 ScrollView(){
-                    TrackList(tracks: self.$tracks, votes: self.$votes, playroom: binding, addonView: self.addonView)
-                        .padding(.top, safeAreaInsets.top + Sizing.xxxLarge * 2)
-                        .frame(width: screenWidth)
+                    VStack(){
+                        
+                        if !showRecommended {
+                            HStack(){
+                                Text(installMessage)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondaryLabel)
+                                    .lineLimit(5)
+                                Spacer()
+                                Button(){
+                                    self.showRecommended.toggle()
+                                } label: {
+                                    Text("Get ") + Text("\(Strings.appSymbol.stringValue)oli").fontWeight(.semibold)
+                                }
+                            }
+                            .padding()
+                        }
+                        
+                        TrackList(tracks: self.$tracks, playroom: binding, addonView: self.addonView)
+                            .padding(.top, safeAreaInsets.top + Sizing.xxxLarge * 2)
+                            .frame(width: screenWidth)
+                            .id("tracks-list")
+                        
+                        if !showRecommended {
+                            Divider().padding(.vertical)
+                            
+                            HStack(){
+                                Text(installMessage)
+                                    .lineLimit(5)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondaryLabel)
+                                Spacer()
+                                Button(){
+                                    self.showRecommended.toggle()
+                                } label: {
+                                    Text("Get ") + Text("\(Strings.appSymbol.stringValue)oli").fontWeight(.semibold)
+                                }
+                            }
+                            .padding()
+                            .padding(.bottom, safeAreaInsets.bottom)
+                        }
+                    }
+                    .padding(.top, safeAreaInsets.top + Sizing.xxxLarge * 2)
+                    .padding(.bottom, safeAreaInsets.bottom)
                 }
+                .onReceive(playroom.$votesByQueuedTrackId, assign: \.votesByQueuedTrackId, target: self)
                 .onAppear(){
                     self.scrollProxy = scrollProxy
+                    scrollProxy.scrollTo("tracks-list", anchor: .top)
                 }
             }
             
@@ -74,61 +124,33 @@ public struct PlayroomView: JoliView {
         .onReceive(playroom.$queue){ tracks in
             self.tracks = tracks
         }
-        .onReceive(playroom.$votes, assign: \.votes, target: self)
+        .onReceive(appCoordinator.$activeSessionToken) { token in
+            guard let pending = self.pendingAction, token != nil else { return }
+            pending()
+        }
+        .onReceive(appCoordinator.voteRequestedSubject) { requested in
+            self.requestingVoteTrackId = requested
+        }
+        .onReceive(appCoordinator.voteCastSubject) { vote in
+            self.voteCasted = vote
+        }
         .onReceive(playroom.$strip, assign: \.strip, target: self)
     }
     
+    @State var requestingVoteTrackId: Int? = nil
+    @State var voteCasted: QueuedTrackVote? = nil
+    
     func addonView(track: Playable, playStates: [PlayState], colors: UIImageColors?) -> some View {
-        var votesByTrack: [Int: [QueuedTrackVote]] = [:]
-        
-        for vote in votes {
-            
-            guard var existing = votesByTrack[vote.queuedTrackId] else {
-                votesByTrack[vote.queuedTrackId] = []
-                continue
-            }
-            
-            existing.append(vote)
-            votesByTrack[vote.queuedTrackId] = existing
-        }
         
         return Group() {
-            if let track = track as? QueuedTrack,
-               let playlistUri = playroom.playlistUri,
-               let playing = self.strip.playing as? QueuedTrack,
-               playing.id == track.id,
-               playing.isPlayable, track.isPlayable {
+            if let track = track as? QueuedTrack {
                 
-                Button() {
-                    let state = playStates.first() { $0.email == playroom.createdByUser.email } ?? playStates.first
-                    
-                    var offset: ContentOffset? = nil
-                    
-                    if let position = playroom.queue.firstIndex(where: { $0.id == track.id }) {
-                        offset = .both(playlistUri, position)
-                    } else  {
-                        offset = .uri(playlistUri)
-                    }
-                    
-                    appCoordinator.play(track, positionMs: state?.progressMs, contentOffset: offset, device: appCoordinator.activeDeviceSubject.value)
-                        .then() { state in
-                            print("[ListenView] rejoining \(track.title) at \(String(describing: state?.progressMs)) - \(String(describing: state))")
-                        }
-                } label: {
-                    Text("Rejoin").padding()
-                }
-                .buttonStyle(BlackWhiteButtonStyle(inverted: true))
-                .font(.headline)
-                .padding(.trailing, Sizing.medium)
-                
-            } else if let track = track as? QueuedTrack {
-                
-                let scaleX: CGFloat = 1 //self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
-                let scaleY: CGFloat = 1//self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
+                let scaleX: CGFloat = self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
+                let scaleY: CGFloat = self.requestingVoteTrackId == track.id || self.voteCasted?.queuedTrackId == track.id ? 1.32 : 1
                 
                 let heart: Binding<Hearts?> = Binding() { () -> Hearts? in
                     
-                    guard let count: Int = votesByTrack[track.id]?.count else {
+                    guard let count: Int = self.votesByQueuedTrackId[track.id] else {
                         return Hearts(score: HeartLevel.empty.rawValue)
                     }
                     
@@ -142,32 +164,54 @@ public struct PlayroomView: JoliView {
                     .padding()
                     .padding(.trailing, Sizing.medium)
                     .foregroundColor(colors?.secondaryColor ?? Color.primary)
+                    .modifier(ShakeEffect(shakes: self.appCoordinator.insufficientPointsAttempt * 2))
                     .scaleEffect(x: scaleX, y: scaleY, anchor: .center)
                     .onReceive(appCoordinator.voteCastSubject) { vote in
-                        //self.voteCasted = vote
+                        self.voteCasted = vote
                     }
                     .onTapGesture {
                         guard self.appCoordinator.voteRequestedSubject.value == nil else {
                             return
                         }
                         
-                        self.appCoordinator.voteTrack(track)
-                            .then() { vote in
-                                guard !self.votes.contains(vote) else { return }
-                                self.votes.append(vote)
-                            }
-                            .catch() { voteError in
-                                
-                                guard let error = voteError as? AppCoordinator.ActionError else {
-                                    print("[ListenView] unrecognised error: \(voteError)")
-                                    return
+                        let performVote = { () -> Void in
+                            
+                            self.appCoordinator.voteTrack(track)
+                                .then() { vote in
+                                    guard let currentCount = self.votesByQueuedTrackId[track.id] else { return }
+                                    
+                                    var votes = self.votesByQueuedTrackId
+                                    votes[track.id] = currentCount + 1
+                                    
+                                    self.votesByQueuedTrackId = votes
                                 }
-                                
-                                switch error {
-                                case .insufficientHeartPoints:
-                                    self.appCoordinator.insufficientPointsAttempt += 1
+                                .catch() { voteError in
+                                    
+                                    guard let error = voteError as? AppCoordinator.ActionError else {
+                                        print("[ListenView] unrecognised error: \(voteError)")
+                                        return
+                                    }
+                                    
+                                    switch error {
+                                        case .insufficientHeartPoints:
+                                            self.appCoordinator.insufficientPointsAttempt += 1
+                                    }
                                 }
+                        }
+                        
+                        guard appCoordinator.authorizedSpotify != nil else {
+                            let message = "Voting requires a verified identity, sign in with Spotify?"
+                            appCoordinator.withAlert("Sign-In Required", message: message, label: "Sign In") {
+                                self.pendingAction = {
+                                    performVote()
+                                    self.pendingAction = nil
+                                }
+                                authcallback()
                             }
+                            return
+                        }
+                        
+                        performVote()
                     }
             }
         }
@@ -178,7 +222,6 @@ public struct PlayroomView: JoliView {
 
 struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {
     
-    @State var showRecommended = false
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     @Binding var playroom: Playroom?
@@ -202,17 +245,19 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
     @State var voteCasted: QueuedTrackVote? = nil
     @State var votes: [QueuedTrackVote] = []
+    @Binding var showRecommended: Bool
     
     @State var tracks: [Playable] = []
     
     @State var tracksFiltered: [Playable] = []
     public var localPlaybackController: PlaybackControllerType
     
-    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
+    public init(playroom: Binding<Playroom?>, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType, showRecommended: Binding<Bool>){
         self._playroom = playroom
         self._currentUser = currentUser
         self.websocket = websocket
         self.localPlaybackController = localPlaybackController
+        self._showRecommended = showRecommended
     }
     
     var refreskButton: some View {
@@ -242,17 +287,12 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                 Text(error).font(Font.title.weight(.light)).padding()
                 refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
             } else if let playroom = playroom {
-                PlayroomView(playroom: .constant(playroom))
+                PlayroomView(playroom: .constant(playroom), showRecommended: $showRecommended) {
+                        localPlaybackController.authorize(token: nil)
+                    }
                     .background(Color.systemBackground)
                     .frame(width: screenWidth)
                     .id(playroom.name)
-                
-//                #if canImport(StoreKit)
-//                Spacer()
-//                    .appStoreOverlay(isPresented: $showRecommended) {
-//                        SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottom)
-//                    }
-//                #endif
             } else {
                 Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
                 refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
@@ -265,10 +305,6 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             
             if appCoordinator.currentLocation == .home {
                 self.fetchPlayroomByInviteId("mnsv9A")
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
-                self.showRecommended.toggle()
             }
         }
         .onReceive(appCoordinator.$currentLocation, assign: \.currentLocation, target: self)

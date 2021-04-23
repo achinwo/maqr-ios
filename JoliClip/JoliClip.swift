@@ -96,7 +96,7 @@ struct JoliClip: AppClip {
     @State var showRecommended = false
     
     var contentView: some View {
-        ContentView(playroom: self.$playroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify)
+        ContentView(playroom: self.$playroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify, showRecommended: $showRecommended)
             .background(
                 Group(){
                     #if canImport(StoreKit)
@@ -203,7 +203,6 @@ struct JoliClip: AppClip {
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true
             }
-            //.onReceive(spotify., perform: <#T##(Publisher.Output) -> Void#>)
             .onAppear() {
                 let auths = Self.resolveAuths(keychain)
                 self.coordinator.authsSubject.send(auths)
@@ -211,9 +210,6 @@ struct JoliClip: AppClip {
                 
                 let activeSession = self.activeSessionToken ?? auths.first?.session.token
                 coordinator.activeSessionToken = activeSession
-                
-                
-                print("[AppClip] session: \(activeSession)")
                 
                 self.coordinator.serverLogDestination = ServerDestination(url: api.baseUrlHttp, urlSession: api.urlSession)
                 
@@ -353,8 +349,6 @@ struct JoliClip: AppClip {
         
         self.coordinator = AppCoordinator(pub, votesPubs)
         self.coordinator.api = api
-        
-        print("[\(Self.self)] session token: \(activeSessionToken)")
     }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void {
@@ -367,6 +361,7 @@ struct JoliClip: AppClip {
         switch phase {
             case .active:
                 print("App became active")
+                websocket.connect()
             case .inactive:
                 print("App became inactive")
             case .background:
