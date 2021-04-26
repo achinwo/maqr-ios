@@ -227,6 +227,9 @@ struct JoliClip: AppClip {
                 self.isActionSheetPresented = true
             }
             .onAppear() {
+                
+                self.websocket.connect()
+                
                 let auths = Self.resolveAuths(keychain)
                 self.coordinator.authsSubject.send(auths)
                 self.auths = auths
@@ -336,6 +339,8 @@ struct JoliClip: AppClip {
     
     init() {
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
+        
+        var request = Self.wssUrlRequest
         let baseUrls = JoliApi.Environment.current.baseUrl
          
         self.spotify = SpotifyDelegate(authCallbackUrl: baseUrls.http.appendingPathComponent("spotify_callback/"),
@@ -343,35 +348,24 @@ struct JoliClip: AppClip {
         
         api = JoliApi(baseUrl: JoliApi.Environment.current.baseUrl, headers: Self.defaultHeaders)
         
-        self.websocket = Socket(url: baseUrls.ws.appendingPathComponent("/ws")) { (socket, connected) in
-            
-            guard connected else { return }
-            
-            socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
-                print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
-            }
+        let coordinator = AppCoordinator()
+        self.coordinator = coordinator
+        self.coordinator.api = api
+        
+        self.websocket = Socket(request: request)
+        
+        self.websocket.onConnect = { (socket, connected) in
+            coordinator.onConnectionStateChange(connected ? .connected : .stopped)
         }
         
-        let pub: PlayState.Publisher = self.websocket
-            .deserialize(PlayState.self)
-            .autoconnect()
-            .multicast() {
-                return PassthroughSubject<PlayState, SocketError>()
-            }
-            .autoconnect()
-            .eraseToAnyPublisher()
+        let sessionId = self.activeSessionId.isEmpty ? nil : self.activeSessionId
         
-        let votesPubs: QueuedTrackVote.Publisher = self.websocket
-            .deserialize(QueuedTrackVote.self)
-            .autoconnect()
-            .multicast() {
-                return PassthroughSubject<QueuedTrackVote, SocketError>()
-            }
-            .autoconnect()
-            .eraseToAnyPublisher()
+        self._activeSessionToken = State(initialValue: sessionId)
         
-        self.coordinator = AppCoordinator(pub, votesPubs)
-        self.coordinator.api = api
+        if let token = self.activeSessionToken {
+            request.addValue(token, forHTTPHeaderField: "X-SESSION-ID")
+        }
+        
     }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void {

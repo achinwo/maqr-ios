@@ -139,7 +139,7 @@ public final class AppCoordinator: ObservableObject {
         }
     }
     
-    var activeAuth: Auth? {
+    public var activeAuth: Auth? {
         return self.authsSubject.value.first() { $0.session.token == activeSessionToken }
     }
     
@@ -445,7 +445,7 @@ public final class AppCoordinator: ObservableObject {
         return result
     }
     
-    func onConnectionStateChange(_ state: ConnectionState) {
+    public func onConnectionStateChange(_ state: ConnectionState) {
         logger.debug("[\(Self.self)] conection state changed: \(state)")
         self.connectionStateSubject.send((state, Date()))
     }

@@ -195,7 +195,7 @@ public struct PlayroomView: JoliView {
                                 }
                         }
                         
-                        guard appCoordinator.authorizedSpotify != nil else {
+                        guard appCoordinator.activeAuth != nil else {
                             let message = "Voting requires a verified identity, sign in with Spotify?"
                             appCoordinator.withAlert("Sign-In Required", message: message, label: "Sign In") {
                                 self.pendingAction = {
@@ -217,6 +217,8 @@ public struct PlayroomView: JoliView {
 
 
 struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {
+    
+    @State var websocketCancel: AnyCancellable? = nil
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
@@ -291,18 +293,11 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     .id(playroom.name)
             } else {
                 Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
-                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4) i/0mzKhO
             }
         }
         .edgesIgnoringSafeArea([.top, .bottom])
         .frame(width: screenWidth, height: screenHeight, alignment: .center)
-        .onAppear() {
-            //self.scrollProxy = scrollProxy
-            
-            if appCoordinator.currentLocation == .home {
-                self.fetchPlayroomByInviteId("mnsv9A")
-            }
-        }
         .onReceive(appCoordinator.$currentLocation, assign: \.currentLocation, target: self)
         .onChange(of: currentLocation) { location in
             print("LOACTION Changed: \(location)")
@@ -310,9 +305,31 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                 case .invited(let inviteId):
                     self.fetchPlayroomByInviteId(inviteId)
                 //case .error:
-                 //   self.errorMessage = Self.GENERIC_ERROR_MESSAGE
+                //   self.errorMessage = Self.GENERIC_ERROR_MESSAGE
                 default:
                     self.fetchPlayroomByInviteId("mnsv9A") // Joli Live
+            }
+        }
+        .onReceive(appCoordinator.connectionStateSubject) { info in
+            self.onConnectionStateChanged(websocket, info.state == ConnectionState.connected)
+        }
+        .onReceive(appCoordinator.voteRequestedSubject) { voting in
+            guard voting != nil else {
+                return
+            }
+            
+            self.assertWebsocketConnected()
+        }
+        .onReceive(appCoordinator.playRequestedSubject) { playing in
+            guard playing != nil else { return }
+            
+            self.assertWebsocketConnected()
+        }
+        .onAppear() {
+            //self.scrollProxy = scrollProxy
+            print("Current LOACTION: \(appCoordinator.currentLocation)")
+            if [.home, .unset].contains(appCoordinator.currentLocation) {
+                self.fetchPlayroomByInviteId("mnsv9A")
             }
         }
     }

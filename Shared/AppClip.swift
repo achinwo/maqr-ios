@@ -318,11 +318,119 @@ public protocol JoliContentView: JoliView {
     
     associatedtype PlaybackControllerType
     var localPlaybackController: PlaybackControllerType { get }
+    var websocket: Socket { get }
+    var websocketCancel: AnyCancellable? { get nonmutating set }
 }
 
 extension JoliContentView {
     
+    static var defaultIdleTime: Double {
+        return Strings.appName == "Joli" ? 4 : 6
+    }
     
+    private var playbackRefreshRate: TimeInterval {
+        return 0.15
+    }
+    
+    private var callback: Publishers.Smooth<PlayState.Publisher, String>.StateGetter {
+        
+        return { (state, now) in
+            
+            let uid = state.trackUri == nil ? nil : state.trackUri! + state.id.description
+            
+            guard let duration = state.durationMs, state.playingState == .playing else {
+                return (id: uid, value: state.progressMs, duration: nil, idleTimeout: Self.defaultIdleTime)
+            }
+            
+            return (id: uid, value: state.progressMs, duration: TimeInterval(duration), idleTimeout: Self.defaultIdleTime)
+        }
+        
+    }
+    
+    private func updatePublishers() {
+        print("[\(tag)] updating publishers")
+        
+        let publisher: PlayState.Publisher = self.websocket.publish(PlayState.self, interval: self.playbackRefreshRate, path: \.progressMs, resolver: callback)
+        
+        let votesPubs: QueuedTrackVote.Publisher = self.websocket
+            .deserialize(QueuedTrackVote.self)
+            .autoconnect()
+            .multicast() {
+                return PassthroughSubject<QueuedTrackVote, SocketError>()
+            }
+            .autoconnect()
+            .eraseToAnyPublisher()
+        
+        self.appCoordinator.playStatePublisher = publisher
+        self.appCoordinator.votesPublisher = votesPubs
+    }
+    
+    public func assertWebsocketConnected() {
+        //print("[AppView#assertWebsocketConnected] attempting...")
+        
+        guard self.websocket.isConnected else {
+            self.websocket.connect()
+            return
+        }
+        
+        self.websocket.write(topic: "/status", body: [:]) { error in
+            
+            guard let error = error else {
+                logger.info("[assertWebsocketConnected] asserting websocket connected successful")
+                return
+            }
+            
+            logger.error("[assertWebsocketConnected] asserting websocket connected: \(String(describing: error))")
+            appCoordinator.globalErrorHandler()(error)
+        }
+    }
+    
+    public func onConnectionStateChanged(_ socket: Socket, _ connected: Bool){
+        print("[\(tag)#onConnectionStateChanged] connected: \(connected)")
+        
+        guard connected else {
+            DispatchQueue.main.async() {
+                socket.connect()
+            }
+            return
+        }
+        
+        socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
+            print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
+            
+            
+            DispatchQueue.main.async {
+//                self.reconnectingTasks.cancelAll()
+//                self.reconnectingTasks.removeAll()
+                self.updatePublishers()
+            }
+        }
+        
+        socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_CHANGED"]) { error in
+            
+            guard error == nil else {
+                print("[App] updated subscriptions (error): PLAYER_STATE_CHANGED - \(String(describing: error))")
+                return
+            }
+            
+            self.websocketCancel = self.websocket
+                .sink() { completion in
+                    websocketCancel?.cancel()
+                    websocketCancel = nil
+                } receiveValue: { message in
+                    
+                    guard case let .text(_, _, _, subjectValue) = message, let subject = subjectValue, subject == "PLAYER_STATE_CHANGED" else {
+                        return
+                    }
+                    
+                    self.appCoordinator.playStateChangeSubject.send(Date())
+                }
+        }
+        
+        socket.write(topic: "/subscribe", body: ["subject": "database_updates"]) { error in
+            print("[App] updated subscriptions: database_updates - \(String(describing: error))")
+        }
+    }
     
 }
 

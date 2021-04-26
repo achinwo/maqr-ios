@@ -360,7 +360,6 @@ public struct PlayroomHeaderView: JoliView {
         .onAppear(){
             self.playroom?.fetchThemeTracks()
                 .then() { tracks in
-                    print("FETECHED THEMES: \(tracks)")
                     self.playroom?.themeTracks = tracks
                 }
                 .catch(appCoordinator.globalErrorHandler())

@@ -315,6 +315,13 @@ struct JoliApp: AppClip {
             .onChange(of: self.modalView) { modal in
                 isSheetPresented = self.modalView != nil
             }
+            .onChange(of: self.currentPlayroom) { room in
+                guard room == nil else {
+                    return
+                }
+                
+                self.currentLocation = currentLocation == .unset ? activeLocationFromAppclip : .home
+            }
             .onChange(of: self.mailOptions) { opts in
                 isSheetPresented = self.mailOptions != nil
             }
