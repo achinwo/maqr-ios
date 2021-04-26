@@ -180,6 +180,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     case invited(String) // joli.live/r/abc
     case playroom(String)
     
+    case unset
     case home
     case upgrade
     case error
@@ -195,8 +196,10 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
             self = .playroom(roomId)
         } else if rawValue == AppLocation.upgrade.rawValue {
             self = .upgrade
-        } else if rawValue.isEmpty || rawValue == AppLocation.default {
+        } else if rawValue == AppLocation.default {
             self = .home
+        } else if rawValue.isEmpty {
+            self = .unset
         } else {
             return nil
         }
@@ -211,6 +214,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                 return "/i/\(inviteId)"
             case .playroom(let roomId):
                 return "/r/\(roomId)"
+            case .unset:
+                return .empty
             default:
                 return AppLocation.default
         }
@@ -223,6 +228,10 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     )
     
     public var description: String {
+        guard self != .unset else {
+            return "\(Self.self)(<unset>)"
+        }
+        
         return "\(Self.self)(\(rawValue))"
     }
     

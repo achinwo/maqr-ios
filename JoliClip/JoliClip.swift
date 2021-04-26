@@ -58,7 +58,30 @@ struct LoadingView<Content>: View where Content: View {
 struct JoliClip: AppClip {
     
     @State var safeAreaInsets: EdgeInsets = EdgeInsets()
-    @State var activeSessionToken: String?
+    
+    @AppStorage(key: AppStorageKey.location, store: UserDefaults.groupContainer)
+    var activeLocation: AppLocation = .home
+    
+    @AppStorage(key: AppStorageKey.authToken, store: UserDefaults.groupContainer)
+    var activeSessionId: String = .empty
+    
+    @State var activeSessionToken: String? {
+        willSet {
+            guard let activeSessionToken = newValue else {
+                logger.info("[App#activeSessionToken] activeSessionToken is empty!")
+                activeSessionId = .empty
+                return
+            }
+            
+            activeSessionId = activeSessionToken
+            logger.info("[App#activeSessionToken] setting activeSessionToken: \(activeSessionId)")
+        }
+        
+        didSet {
+            logger.info("[App#activeSessionToken] auth field: \(String(describing: activeSessionToken))")
+        }
+    }
+    
     @State var auths: [Auth] = []
     
     let keychain: Keychain = Keychain(service: "live.joli.session-token")
@@ -80,7 +103,6 @@ struct JoliClip: AppClip {
     @State var window: UIWindow?
     
     @Environment(\.scenePhase) var scenePhase
-    @AppStorage(key: .authToken, store: .groupContainer) var authToken: String = .empty
     
     @AppStorage(key: .location, store: .groupContainer) var currentLocation: AppLocation = .home {
         didSet {
@@ -150,6 +172,7 @@ struct JoliClip: AppClip {
 //                self.spotify.accessToken = auth.accessToken
 //                self.spotify.requestSpotifyAccess(trackUri: nil, token: auth.accessToken, alwaysShowAuthorizationDialog: false)
 //            }
+            .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
             .onReceive(coordinator.$activeSessionToken) { token in // MARK: - $activeSessionToken
                 
                 guard let token = token else {

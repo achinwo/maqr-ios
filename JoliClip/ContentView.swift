@@ -61,45 +61,41 @@ public struct PlayroomView: JoliView {
                 ScrollView(){
                     VStack(){
                         
-                        if !showRecommended {
-                            HStack(){
-                                Text(installMessage)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondaryLabel)
-                                    .lineLimit(5)
-                                Spacer()
-                                Button(){
-                                    self.showRecommended.toggle()
-                                } label: {
-                                    Text("Get ") + Text("\(Strings.appSymbol.stringValue)oli").fontWeight(.semibold)
-                                }
+                        HStack(){
+                            Text(installMessage)
+                                .font(.subheadline)
+                                .foregroundColor(.secondaryLabel)
+                                .lineLimit(5)
+                            Spacer()
+                            Button(){
+                                self.showRecommended.toggle()
+                            } label: {
+                                Text("Get ") + Text("\(Strings.appSymbol.stringValue)oli").fontWeight(.semibold)
                             }
-                            .padding()
                         }
+                        .padding()
                         
                         TrackList(tracks: self.$tracks, playroom: binding, addonView: self.addonView)
                             .padding(.top, safeAreaInsets.top + Sizing.xxxLarge * 2)
                             .frame(width: screenWidth)
                             .id("tracks-list")
                         
-                        if !showRecommended {
-                            Divider().padding(.vertical)
-                            
-                            HStack(){
-                                Text(installMessage)
-                                    .lineLimit(5)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondaryLabel)
-                                Spacer()
-                                Button(){
-                                    self.showRecommended.toggle()
-                                } label: {
-                                    Text("Get ") + Text("\(Strings.appSymbol.stringValue)oli").fontWeight(.semibold)
-                                }
+                        Divider().padding(.vertical)
+                        
+                        HStack(){
+                            Text(installMessage)
+                                .lineLimit(5)
+                                .font(.subheadline)
+                                .foregroundColor(.secondaryLabel)
+                            Spacer()
+                            Button(){
+                                self.showRecommended.toggle()
+                            } label: {
+                                Text("Get ") + Text("\(Strings.appSymbol.stringValue)oli").fontWeight(.semibold)
                             }
-                            .padding()
-                            .padding(.bottom, safeAreaInsets.bottom)
                         }
+                        .padding()
+                        .padding(.bottom, safeAreaInsets.bottom)
                     }
                     .padding(.top, safeAreaInsets.top + Sizing.xxxLarge * 2)
                     .padding(.bottom, safeAreaInsets.bottom)

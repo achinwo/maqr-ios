@@ -18,7 +18,8 @@ import Version
 // MARK: - AppCoordinator
 public final class AppCoordinator: ObservableObject {
     
-    @Published public var currentLocation: AppLocation = .home
+    @Published public var currentLocation: AppLocation = .unset
+    
     public var sheet: PartialSheetManager = PartialSheetManager()
     public var api: JoliApi!
     public var serverLogDestination: ServerDestination? = nil
@@ -363,7 +364,7 @@ public final class AppCoordinator: ObservableObject {
         
         guard let device = device else {
             
-            if self.authorizedSpotify != nil {
+            if self.activeAuth != nil {
                 return api.fetchSpotifyDevices(on: on)
                     .catch(self.globalErrorHandler())
                     .then() { (devices) -> Promise<PlayState?> in

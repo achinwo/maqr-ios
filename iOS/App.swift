@@ -45,6 +45,19 @@ struct JoliApp: AppClip {
     
     @Namespace var namespace
     
+    @AppStorage(key: AppStorageKey.authToken, store: UserDefaults.groupContainer)
+    var activeSessionIdFromAppclip: String = .empty
+    
+    @AppStorage(key: AppStorageKey.location, store: UserDefaults.groupContainer)
+    var activeLocationFromAppclip: AppLocation = .unset
+    
+    @AppStorage(key: AppStorageKey.location, store: .standard)
+    var currentLocation: AppLocation = .unset {
+        didSet {
+            print("[\(Self.self)] Setting current location: \(currentLocation)")
+        }
+    }
+    
     @AppStorage("active-session-id") var activeSessionId: String = .empty
     
     @State var activeSessionToken: String? {
@@ -112,9 +125,6 @@ struct JoliApp: AppClip {
     
     @State var authPublishCancel: AnyCancellable? = nil
     
-    @AppStorage("pendingLocalPlayUri") var pendingLocalPlayUri: String = .empty
-    @AppStorage("pendingLocalPlayPosition") var pendingLocalPlayPosition: Int = -1
-    
     @Environment(\.scenePhase) var scenePhase
     @State var isSheetPresented: Bool = false
     @State var modalView: AppPreview? = nil
@@ -126,7 +136,6 @@ struct JoliApp: AppClip {
     
     
     init() {
-        logger.debug("[\(Self.self)] initializing...")
         
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
         UITableView.appearance().separatorStyle = .none
@@ -139,12 +148,27 @@ struct JoliApp: AppClip {
         self.spotify = SpotifyDelegate(authCallbackUrl: baseUrls.http.appendingPathComponent("spotify_callback/"),
                                        authRefreshUrl: baseUrls.http.appendingPathComponent("spotify_refresh/"))
         
+        
         var request = Self.wssUrlRequest
         self.websocket = Socket(request: request)
+        
         self.api = JoliApi(baseUrl: baseUrls, headers: request.allHTTPHeaderFields ?? [:])
         
+        let appclipsSessionId = self.activeSessionIdFromAppclip.isEmpty ? nil : self.activeSessionIdFromAppclip
+        let location = self.activeLocationFromAppclip
+        let currentLocation = self.currentLocation
+        
+        logger.debug("[\(Self.self)] initializing: appclipsSessionId=\(String(describing: appclipsSessionId)), appclipsLocation=\(location), currentLocation=\(currentLocation)")
+        
+        if self.currentLocation == .unset, location != .unset {
+            self._currentLocation = AppStorage(wrappedValue: location, key: AppStorageKey.location, store: .standard)
+        }
+        
         self._auths = State(initialValue: Self.resolveAuths(keychain))
-        self._activeSessionToken = State(initialValue: self.activeSessionId.isEmpty ? nil : self.activeSessionId)
+        
+        let sessionId = self.activeSessionId.isEmpty ? nil : self.activeSessionId
+        
+        self._activeSessionToken = State(initialValue: sessionId ?? appclipsSessionId)
         
         api.urlSessionConfiguration = api.urlSessionConfiguration.withAuthHeader(self.activeSessionToken)
         
@@ -236,9 +260,31 @@ struct JoliApp: AppClip {
         logger.info("signedout: \(auth.user.name)")
     }
     
+    public func pushLocationTo(_ room: Room) {
+        guard let url = room.inviteUrl(for: currentUser, fallback: room.inviteUrl),
+              let location = AppLocation.init(url),
+              location != currentLocation
+              else {
+            return
+        }
+        
+        self.currentLocation = location
+    }
+    
     var contentView: some View {
 
         AppView2(playroom: self.$currentPlayroom, currentUser: self.$currentUser, websocket: websocket, localPlaybackController: spotify)
+            .background(
+                Group(){
+                    if let playroom = currentPlayroom {
+                        Spacer()
+                            .onReceive(playroom.$entitlements){ entitlements in
+                                pushLocationTo(playroom)
+                            }
+                    }
+                }
+                .opacity(.zero)
+            )
             .sheet(isPresented: $isSheetPresented){
                 self.modalView = nil
                 self.mailOptions = nil
@@ -372,9 +418,11 @@ struct JoliApp: AppClip {
                     coordinator.refreshDevices()
                 }
             }
+            //.onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
             .onAppear() {
-                logger.debug("[Joli] setting coordinator animation namespace to \(String(describing: namespace)) - activeSessionToken: \(String(describing: activeSessionToken))")
+                self.currentLocation = currentLocation != .unset ? currentLocation : .home
                 
+                self.coordinator.currentLocation = currentLocation
                 self.coordinator.namespace = namespace
                 self.coordinator.initialActiveDeviceId = activeDeviceId == .empty ? nil : activeDeviceId
                 
