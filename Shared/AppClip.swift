@@ -599,6 +599,8 @@ public extension AppClip {
                 
                 guard case let .sessionToken(token) = credentials, let error = error as? SpotifyError, error != SpotifyError.unathorized else {
                     
+                    let message = "If the issue persists, try closing and re-launching the app"
+                    coordinator.withAlert("Unable to complete Sign In", message: message)
                     return
                 }
                 

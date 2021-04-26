@@ -257,6 +257,10 @@ struct JoliApp: AppClip {
         
         self.coordinator.serverLogDestination?.send(.info, msg: "signedout: \(auth)", thread: Thread.current.description, file: #file, function: #function, line: #line)
         
+        if auth.session.token == activeSessionIdFromAppclip {
+            self.activeSessionIdFromAppclip = .empty
+        }
+        
         logger.info("signedout: \(auth.user.name)")
     }
     

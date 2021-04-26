@@ -339,6 +339,7 @@ public struct LobbyView: JoliView {
                                         appCoordinator.withAlert(Strings.reallyLogoutTitle,
                                                               message: Strings.reallyLogoutMessage,
                                                               label: "Sign Out",
+                                                              destructive: true,
                                                               action: action)
                                     } label: {
                                         Text("Sign Out")

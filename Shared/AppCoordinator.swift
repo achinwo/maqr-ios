@@ -115,7 +115,8 @@ public final class AppCoordinator: ObservableObject {
         }
     }
     
-    public func withAlert(_ title: String, message: String? = nil, label: String, action: @escaping () -> Void) {
+    public func withAlert(_ title: String, message: String? = nil, dismissLabel: String? = nil,
+                          dismissAction: (() -> Void)? = nil, label: String? = nil, destructive: Bool = false, action: @escaping () -> Void = {}) {
         
         var messageTxt: Text? = nil
         
@@ -123,12 +124,37 @@ public final class AppCoordinator: ObservableObject {
             messageTxt = Text(msg)
         }
         
-        let alert = Alert(title: Text(title),
-                          message: messageTxt,
-                          primaryButton: .default(Text(label), action: action),
-                          secondaryButton: .cancel())
+        let cancelButton: Alert.Button
+        let onDismiss = { () -> Void in
+            dismissAction?()
+            logger.info("[\(Self.self)#\(#function)] dismissed alert: \"\(title)\"")
+        }
+        
+        if let dismissLabel = dismissLabel {
+            cancelButton = .cancel(Text(dismissLabel), action: onDismiss)
+        } else {
+            cancelButton = .cancel(onDismiss)
+        }
+        
+        guard let label = label else {
+            self.globalAlertSubject.send(Alert(title: Text(title),
+                                                 message: messageTxt,
+                                                 dismissButton: cancelButton))
+            return
+        }
+        
+        let primaryButton: Alert.Button = destructive ? .destructive(Text(label), action: action) : .default(Text(label), action: action)
+        
+        let alert: Alert = Alert(title: Text(title),
+                                 message: messageTxt,
+                                 primaryButton: primaryButton,
+                                 secondaryButton: cancelButton)
         
         self.globalAlertSubject.send(alert)
+    }
+    
+    public func withAlert(_ title: String, message: String? = nil, dismissLabel: String, action: @escaping () -> Void) {
+        self.withAlert(title, message: message, dismissLabel: dismissLabel, dismissAction: action, label: nil)
     }
     
     public func authorizeSpotify(){
