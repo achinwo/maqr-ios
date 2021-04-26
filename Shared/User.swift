@@ -262,9 +262,15 @@ public protocol Room {
     var updatedByUser: User? { get }
     
     var genres: [String] { get }
+    
+    var themeTracks: [Track] { get }
 }
 
 public extension Room {
+    
+    var themeTracks: [Track] {
+        return []
+    }
     
     var baseUrl: URL? {
         return nil

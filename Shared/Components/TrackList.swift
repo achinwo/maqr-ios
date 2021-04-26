@@ -96,6 +96,14 @@ public struct TrackView2<AddonView: View>: JoliView {
         self._contextUri = contextUri
     }
     
+//    public init(uri: Binding<String>, playroom: Binding<Playroom?> = .constant(nil), contextUri: Binding<String?> = .constant(nil), colors: UIImageColors? = nil, useDynamicColors: Bool = false, @ViewBuilder content: @escaping AddonViewGetter){
+//        self._playroom = playroom
+//        self._track = track
+//        self._contextUri = contextUri
+//        self.useDynamicColors = useDynamicColors
+//        self.addonViewGetter = content
+//    }
+    
     public var controlsView: some View {
         HStack(){
             Image(systemName: "plus").padding(Sizing.small)
@@ -147,7 +155,6 @@ public struct TrackView2<AddonView: View>: JoliView {
         }
         
         guard let playroom = playroom, let track = track as? QueuedTrack, let playlistUri = playroom.playlistUri else {
-            print("PLAYING WITHOUT: \(self.playroom?.name)")
             let _ = playFunc(nil)
             return
         }

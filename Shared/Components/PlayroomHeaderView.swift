@@ -250,6 +250,9 @@ public struct PlayroomHeaderView: JoliView {
     }
     }
     
+    @State var themeTracks: [Track] = []
+    @Namespace var localNamespace
+    
     public var contentView: some View {
         VStack(alignment: .leading, spacing: .zero){
             HStack(){
@@ -259,25 +262,52 @@ public struct PlayroomHeaderView: JoliView {
                         .font(Font.title2)
                         .foregroundColor(self.connectionState == .connected ? Color.blue : Color.secondary)
                         .fixedSize(horizontal: true, vertical: false)
+                        .matchedGeometryEffect(id: "playroom/\(playroom.musicroom.id)/name",
+                                               in: appCoordinator.namespace ?? localNamespace)
                         .onReceive(playroom.$membership) { members in
                             self.membership = members
                         }
                         .onReceive(playroom.$artists, assign: \.artists, target: self)
+                        .onReceive(playroom.$themeTracks, assign: \.themeTracks, target: self)
                         .onTapGesture() {
                             self.preview = .view() {
                                 VStack() {
-                                    Text(playroom.name).font(.largeTitle)
+                                    Text(playroom.name)
+                                        .font(.largeTitle)
+                                        .matchedGeometryEffect(id: "playroom/\(playroom.musicroom.id)/name",
+                                                               in: appCoordinator.namespace ?? localNamespace)
+                                    
                                     Divider()
-                                    HStack() {
-                                        Text("Description").font(.headline)
-                                        Spacer()
+                                    
+                                    VStack(alignment: .leading) {
+                                        if let track = themeTracks.first {
+                                            let themeSongHeader = Text("Theme Song")
+                                                .foregroundColor(.secondary)
+                                                .font(Font.title.weight(.thin))
+                                            
+                                            Section(header: themeSongHeader){
+                                                TrackView2<Never>(track: .constant(track), playroom: $playroom, useDynamicColors: false)
+                                                    .id("playroom/\(playroom.name)/theme/\(track.uri)")
+                                            }
+                                            
+                                            .padding()
+                                        }
+                                        
+                                        let descriptionHeader = Text("Discription")
+                                            .foregroundColor(.secondary)
+                                            .font(Font.title.weight(.thin))
+                                        
+                                        Section(header: descriptionHeader){
+                                            Text(playroom.details)
+                                                .lineLimit(10)
+                                                .font(.subheadline)
+                                        }
+                                        .padding()
                                     }
-                                    Text(playroom.details).lineLimit(nil).font(.body)
-            
+                                    
                                     Spacer()
                                     Button() {
                                         self.appCoordinator.synchronizePlayroom(playroom.musicroom)
-            
                                     } label: {
                                         Text("Synchronize Playlist")
                                     }
@@ -326,6 +356,14 @@ public struct PlayroomHeaderView: JoliView {
         }
         .onReceive(self.appCoordinator.connectionStateSubject) { conn in
             self.connectionState = conn.state
+        }
+        .onAppear(){
+            self.playroom?.fetchThemeTracks()
+                .then() { tracks in
+                    print("FETECHED THEMES: \(tracks)")
+                    self.playroom?.themeTracks = tracks
+                }
+                .catch(appCoordinator.globalErrorHandler())
         }
     }
     

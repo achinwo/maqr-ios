@@ -487,8 +487,6 @@ struct ListenView: JoliView {
                                 .matchedGeometryEffect(id: "playroom/\(playroom.musicroom.id.description)", in: animation)//, properties: .frame, isSource: true)
                                 .onReceive(playroom.$queue) { tracks in
                                     
-                                    
-                                    print("Queue changed: \(tracks.map({ $0.uri }).debugDescription.sha256) - \(tracks.count)")
                                     self.tracks = tracks
                                     self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
                                     
@@ -592,6 +590,7 @@ struct ListenView: JoliView {
         .onChange(of: self.playroom) { value in
             
             guard let room = value else {
+                self.preview = nil // close preview
                 self.needsRefreshSubject.send("room changed")
                 return
             }

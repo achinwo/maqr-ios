@@ -50,6 +50,22 @@ public extension String {
     }
 }
 
+extension Track {
+    
+    public static func fetchByUris(_ uris: [String], baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[Track]> {
+        
+        let props: Track.PropertiesDict = [.uri: uris as AnyObject]
+        print("URIS: \(uris)")
+        
+        guard !uris.isEmpty else {
+            return Promise([])
+        }
+
+        return Track.all(where: props, limit: uris.count,
+                         baseUrl: baseUrl, urlSession: urlSession, on: on)
+    }
+}
+
 public class Playroom: ObservableObject, Room, Equatable {
     
     public typealias TrackStrip = (playing: Playable?, next: Playable?, runnerup: Playable?)
@@ -61,6 +77,8 @@ public class Playroom: ObservableObject, Room, Equatable {
     @Published public var playingState: PlayingState? = nil
     
     @Published public var musicroom: Musicroom
+    
+    @Published public var themeTracks: [Track] = []
     
     @Published public var entitlements: [Entitlement] {
         didSet {
@@ -170,17 +188,24 @@ public class Playroom: ObservableObject, Room, Equatable {
                                     baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
     
+    public func fetchThemeTracks() -> Promise<[Track]> {
+        let themeTrackUris: [String] = [self.themeTrackUri2, self.themeTrackUri].compactMap({ $0 })
+        
+        return Track.fetchByUris(themeTrackUris, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+    }
+    
     @discardableResult
     public func updateQueuedTracks(additions: [QueuedTrack] = []) -> Promise<[QueuedTrack]> {
         self.loadingRoomTracks = true
         return self.fetchQueuedTracks()
             .then() { tracks in
-                print("Fetched changed: \(tracks.map({ $0.uri }).debugDescription.sha256) - \(tracks.count)")
                 self.queue = tracks
                 
                 var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
                 var allVotes: [QueuedTrackVote] = []
                 var votesById: [Int: Int] = [:]
+                
+                let themeTrackUris = [self.themeTrackUri2, self.themeTrackUri].compactMap({ $0 })
                 
                 for track in tracks.filter({ $0.isPlayable }) {
                     var roomTracks = tracksByMusicrooms[track.roomId] ?? []
@@ -192,6 +217,13 @@ public class Playroom: ObservableObject, Room, Equatable {
                     roomTracks.append(track)
                     tracksByMusicrooms[track.roomId] = roomTracks
                     votesById[track.id] = track.voteCount ?? 0
+                    
+                    if let trackObj = track.track,
+                       themeTrackUris.contains(track.uri),
+                       !self.themeTracks.map({ $0.uri }).contains(track.uri) {
+                        
+                        self.themeTracks.append(trackObj)
+                    }
                     
                     guard let votes = track.votes, track.roomId == self.musicroom.id else {
                         continue
