@@ -14,6 +14,7 @@ import PartialSheet
 import SwiftUI
 import Promises
 import Version
+import AlertToast
 
 // MARK: - AppCoordinator
 public final class AppCoordinator: ObservableObject {
@@ -32,6 +33,7 @@ public final class AppCoordinator: ObservableObject {
     @Published public var insufficientPointsAttempt = 0
     
     public let signoutSubject = PassthroughSubject<Auth, Never>()
+    public let globalToastInfo = PassthroughSubject<(alert: AlertToast, onDismiss: (Bool) -> Void), Never>()
     
     @Published public var playStatePublisher: PlayState.Publisher? = nil
     @Published public var votesPublisher: QueuedTrackVote.Publisher? = nil {
@@ -430,6 +432,18 @@ public final class AppCoordinator: ObservableObject {
             .always {
                 self.queueRequestedSubject.send(nil)
             }
+    }
+    
+    public func share(track: Playable, completionHandler: ((Bool) -> Void)? = nil){
+        
+//        guard let url = track.inviteUrl(for: activeAuth?.user, fallback: track.inviteUrl) else {
+//            completionHandler?(false)
+//            return
+//        }
+//
+//        let someText: String = "Hi, lets listen to songs together in \"\(room.name)\" \(url.absoluteString)"
+//        
+//        self.share(text: someText, url: url, completionHandler: completionHandler)
     }
     
     public func share(room: Room, completionHandler: ((Bool) -> Void)? = nil){

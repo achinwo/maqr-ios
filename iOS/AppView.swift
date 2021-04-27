@@ -11,9 +11,11 @@ import JoliApi
 import JoliCore
 import Combine
 import Promises
+import AlertToast
 
 public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentView {
     
+    @State public var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var scrollPosition: ScrollPosition = .leadingEdge
     

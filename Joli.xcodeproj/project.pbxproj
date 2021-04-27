@@ -23,6 +23,7 @@
 		920958B325601F030014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		9209B1E12629E32500786A6A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9209B1E02629E32500786A6A /* LaunchScreen.storyboard */; };
 		9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
+		922BFD33263757F8007CAF36 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 922BFD32263757F8007CAF36 /* AlertToast */; };
 		923657552530654B008A8A83 /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		9236575C2530654D008A8A83 /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		923BD58E25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
@@ -329,6 +330,7 @@
 				928A392A24E9EB5A00A029A1 /* MapKit.framework in Frameworks */,
 				9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */,
 				92EDE43A26193DFA00688802 /* KeychainAccess in Frameworks */,
+				922BFD33263757F8007CAF36 /* AlertToast in Frameworks */,
 				92EDE41226193AE000688802 /* PartialSheet in Frameworks */,
 				92EDE41026193AD500688802 /* Kingfisher in Frameworks */,
 				925C6FF324CB722A0016963F /* FBLPromises in Frameworks */,
@@ -682,6 +684,7 @@
 				92EDE40F26193AD500688802 /* Kingfisher */,
 				92EDE41126193AE000688802 /* PartialSheet */,
 				92EDE43926193DFA00688802 /* KeychainAccess */,
+				922BFD32263757F8007CAF36 /* AlertToast */,
 			);
 			productName = JoliPlayground;
 			productReference = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */;
@@ -891,6 +894,7 @@
 				927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */,
 				921BA25B253E03B4007C2FE0 /* XCRemoteSwiftPackageReference "Sourceful" */,
 				92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+				922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1900,6 +1904,14 @@
 				revision = ef82b07261dceeedb6e48f1ecd4f4305b5cd10f8;
 			};
 		};
+		922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/elai950/AlertToast.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.3;
+			};
+		};
 		923C2B0224CC7506009E2380 /* XCRemoteSwiftPackageReference "PartialSheet" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/AndreaMiotto/PartialSheet.git";
@@ -1978,6 +1990,11 @@
 		9203B31824CB079200F465CC /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
+		};
+		922BFD32263757F8007CAF36 /* AlertToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */;
+			productName = AlertToast;
 		};
 		925C6FF224CB722A0016963F /* FBLPromises */ = {
 			isa = XCSwiftPackageProductDependency;

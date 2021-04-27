@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "AlertToast",
+        "repositoryURL": "https://github.com/elai950/AlertToast.git",
+        "state": {
+          "branch": null,
+          "revision": "0d45a0959565801126ce4ed57e7c7090ac449c8d",
+          "version": "1.2.3"
+        }
+      },
+      {
         "package": "Commander",
         "repositoryURL": "https://github.com/kylef/Commander.git",
         "state": {

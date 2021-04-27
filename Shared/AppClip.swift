@@ -17,6 +17,7 @@ import Combine
 import AuthenticationServices
 import Version
 import KeychainAccess
+import AlertToast
 
 public struct ShortCodeGenerator {
 
@@ -280,15 +281,33 @@ public protocol JoliView: View {
 
 public extension JoliView {
     
+    func presentToast(_ title: String, subTitle: String? = nil,
+                      custom: AlertToast.AlertCustom? = nil,
+                      type: AlertToast.AlertType,
+                      displayMode: AlertToast.DisplayMode = .alert,
+                      duration: Double = 2,
+                      tapToDismiss: Bool = true,
+                      onDismiss: @escaping (Bool) -> Void) {
+        
+        let alertToast = AlertToast(displayMode: displayMode,
+                                    type: type,
+                                    title: title,
+                                    subTitle: subTitle,
+                                    custom: custom)
+        appCoordinator.globalToastInfo.send((alertToast, onDismiss))
+    }
+    
     var tag: String {
         return "[\(Self.self)]"
     }
     
     var body: some View {
-        self.contentView
+        return self.contentView
             .onReceive(appCoordinator.connectionStateSubject) { state in
                 self.onConnectionStateChange(state.state)
-            }
+            }//.toast(isPresenting: <#T##Binding<Bool>#>, alert: <#T##() -> AlertToast#>)
+        
+            //.toast(isPresenting: isPresentingToast, alert: <#T##() -> AlertToast#>)
 //            .onAppear() {
 //                self.visibility = (appearedAt: Date(), disappearedAt: self.visibility.disappearedAt)
 //            }
@@ -320,9 +339,48 @@ public protocol JoliContentView: JoliView {
     var localPlaybackController: PlaybackControllerType { get }
     var websocket: Socket { get }
     var websocketCancel: AnyCancellable? { get nonmutating set }
+    
+    var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? { get nonmutating set }
 }
 
 extension JoliContentView {
+    
+    public var body: some View {
+        
+        
+        let isPresentingToast = Binding<Bool>(){
+            return toastInfo != nil
+        } set: { newValue in
+            print("\(tag) setting presenting to: \(newValue)")
+            guard toastInfo != nil, !newValue else {
+                return
+            }
+            
+            self.toastInfo = nil
+        }
+        return self.contentView
+            .overlay(
+                GeometryReader(){ proxy in
+                    HStack(alignment: .top) {
+                        Spacer()
+                            .ifLet(self.toastInfo) { view, alertToast in
+                                view.toast(isPresenting: isPresentingToast) {
+                                    alertToast.alert
+                                } completion: { closed in
+                                    print("[\(Self.self)] toast completion: \(closed)")
+                                    alertToast.onDismiss(closed)
+                                }
+                            }
+                    }
+                }
+            )
+            .onReceive(appCoordinator.connectionStateSubject) { state in
+                self.onConnectionStateChange(state.state)
+            }
+            .onReceive(appCoordinator.globalToastInfo) { info in
+                self.toastInfo = info
+            }
+    }
     
     static var defaultIdleTime: Double {
         return Strings.appName == "Joli" ? 4 : 6
@@ -451,7 +509,7 @@ class ShareActivity: UIActivity {
     }
     
     override var activityTitle: String? {
-        return "Joli"
+        return Strings.appName
     } // default returns nil. subclass must override and must return non-nil value
     
     override var activityImage: UIImage? {

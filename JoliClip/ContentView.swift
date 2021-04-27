@@ -9,7 +9,7 @@
 import SwiftUI
 import JoliPlayground
 import JoliCore
-
+import AlertToast
 //#if canImport(StoreKit)
 //import StoreKit
 //#endif
@@ -219,7 +219,7 @@ public struct PlayroomView: JoliView {
 struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {
     
     @State var websocketCancel: AnyCancellable? = nil
-    
+    @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     @Binding var playroom: Playroom?

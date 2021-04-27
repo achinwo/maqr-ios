@@ -293,7 +293,7 @@ public struct PlayroomHeaderView: JoliView {
                                             .padding()
                                         }
                                         
-                                        let descriptionHeader = Text("Discription")
+                                        let descriptionHeader = Text("Description")
                                             .foregroundColor(.secondary)
                                             .font(Font.title.weight(.thin))
                                         

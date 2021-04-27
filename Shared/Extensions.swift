@@ -429,6 +429,7 @@ struct ResignKeyboardOnDragGesture: ViewModifier {
 }
 
 public extension View {
+    
     func resignKeyboardOnDragGesture() -> some View {
         return modifier(ResignKeyboardOnDragGesture())
     }
@@ -439,6 +440,35 @@ public extension View {
             target[keyPath: assign] = value
         }
     }
+    
+    @ViewBuilder
+    func ifLet<V, Transform: View>(_ value: V?, transform: (Self, V) -> Transform) -> some View {
+        if let value = value {
+            transform(self, value)
+        } else {
+            self
+        }
+    }
+    
+    @ViewBuilder
+    func `if`<Transform: View>(_ condition: Bool, transform: (Self) -> Transform) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
+    
+    @ViewBuilder
+    func `if`<TrueContent: View, FalseContent: View>(_ condition: Bool,if ifTransform: (Self) -> TrueContent, else elseTransform: (Self) -> FalseContent
+    ) -> some View {
+        if condition {
+            ifTransform(self)
+        } else {
+            elseTransform(self)
+        }
+    }
+    
 }
 
 @available(iOS 13.0, OSX 10.15, tvOS 13.0, watchOS 6.0, *)
