@@ -106,27 +106,72 @@ public struct TrackView2<AddonView: View>: JoliView {
     
     public var controlsView: some View {
         HStack(){
-            Image(systemName: "plus").padding(Sizing.small)
-            Image(systemName: "square.and.arrow.up").padding([.trailing, .vertical], Sizing.small)
             
+            Button(){
+                print("Play track: \(track.title)")
+                self.play(true)
+            } label: {
+                Image(systemName: "play")
+                    .padding(Sizing.small)
+                    .background(Color.secondarySystemBackground)
+            }
+            .clipShape(Circle())
+            .padding(.leading, 2)
+            
+//            Button(){
+//                print("Add track: \(track.title)")
+//            } label: {
+//                Image(systemName: "plus")
+//                    .padding(Sizing.small)
+//                    .background(Color.secondarySystemBackground)
+//            }
+//            .clipShape(Circle())
+            
+            Button(){
+                appCoordinator.share(track: track){ success in
+                    guard !success else {
+                        return
+                    }
+                    
+                    let msg = "Something went wrong while attempting to share \"\(track.title)\", re-launch app if issue persists"
+                    self.presentToast("Unable to share track", subTitle: msg, type: .error(.red), displayMode: .alert){ _ in
+                    }
+                }
+            } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .padding(Sizing.small)
+                    .background(Color.secondarySystemBackground)
+            }
+            .clipShape(Circle())
             
             if let state = self.userPlayState, state.playingState == .playing {
-                Image(systemName: "info.circle").padding(.vertical, Sizing.small)
-                PauseButton() {
-                        self.appCoordinator.pausePlayback()
-                    }
-                    .matchedGeometryEffect(id: "pause-btn-\(state.userName)", in: animation)
-                    .padding(Sizing.small)
+                //Image(systemName: "info.circle").padding(.vertical, Sizing.small)
+                Divider().padding(.horizontal, 2)
+                Button(){
+                    self.appCoordinator.pausePlayback()
+                } label: {
+                    Image(systemName: "pause")
+                        .padding(Sizing.small)
+                        .background(Color.secondarySystemBackground)
+                }
+                .clipShape(Circle())
+                .matchedGeometryEffect(id: "pause-btn-\(state.userName)", in: animation, isSource: true)
+                .padding(.trailing, 2)
                     //.background(Color.yellow)
             } else {
-                Image(systemName: "info.circle").padding(Sizing.small)
+                //Image(systemName: "info.circle").padding(Sizing.small)
             }
         }
+        .padding(2)
         .foregroundColor(Color.secondary)
         .font(Font.title2)
-        .background(BlurView(.extraLight).opacity(0.7).cornerRadius(32))
+        .background(BlurView(colorScheme == .dark ? .systemThickMaterialDark : .systemUltraThinMaterialLight)
+                        .opacity(0.7)
+                        .cornerRadius(32))
         .animation(.easeInOut(duration: 0.3))
     }
+    
+    @Environment(\.colorScheme) public var colorScheme
     
     private func play(_ fromBegining: Bool = false) {
         self.requestingPlay = true
@@ -236,7 +281,6 @@ public struct TrackView2<AddonView: View>: JoliView {
                 
                 HStack() {
                     ZStack(){
-                        
                         Rectangle()
                             .foregroundColor(Color.primary.opacity(0.001))
                             .background(Color.clear)
@@ -258,17 +302,18 @@ public struct TrackView2<AddonView: View>: JoliView {
                             }
                         
                         self.trackDetailsView
-                            
+                    }
+                    .overlay(
                         HStack(){
                             Spacer()
                             
                             if menuEnabled {
                                 self.controlsView
+                                    .padding(.trailing, Sizing.small)
                                     .opacity(menuEnabled ? 1 : 0)
                             }
                         }
-                        .padding(.trailing, Sizing.small)
-                    }
+                    )
                     
                     if let state = self.userPlayState, state.playingState == .playing && !menuEnabled {
                         PauseButton() {

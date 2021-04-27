@@ -363,6 +363,7 @@ extension JoliContentView {
                 GeometryReader(){ proxy in
                     HStack(alignment: .top) {
                         Spacer()
+                            .padding(.top, 200)
                             .ifLet(self.toastInfo) { view, alertToast in
                                 view.toast(isPresenting: isPresentingToast) {
                                     alertToast.alert
@@ -372,6 +373,8 @@ extension JoliContentView {
                                 }
                             }
                     }
+                    .frame(width: proxy.size.width, height: proxy.size.height / 2)
+                    .padding(.top, proxy.safeAreaInsets.top)
                 }
             )
             .onReceive(appCoordinator.connectionStateSubject) { state in

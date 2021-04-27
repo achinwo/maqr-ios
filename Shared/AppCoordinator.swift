@@ -436,14 +436,17 @@ public final class AppCoordinator: ObservableObject {
     
     public func share(track: Playable, completionHandler: ((Bool) -> Void)? = nil){
         
-//        guard let url = track.inviteUrl(for: activeAuth?.user, fallback: track.inviteUrl) else {
-//            completionHandler?(false)
-//            return
-//        }
-//
-//        let someText: String = "Hi, lets listen to songs together in \"\(room.name)\" \(url.absoluteString)"
-//        
-//        self.share(text: someText, url: url, completionHandler: completionHandler)
+        let spotifyUrl = URL(string: "https://open.spotify.com")
+        let trackId = track.uri.replacingOccurrences(of: "spotify:track:", with: String.empty)
+        
+        guard let url = URL(string: "/track/\(trackId)", relativeTo: spotifyUrl) else {
+            completionHandler?(false)
+            return
+        }
+
+        let someText: String = "Here's a song suggestion for you \"\(track.title)\" by \(track.artistName) \(url.absoluteString)"
+        
+        self.share(text: someText, url: url, completionHandler: completionHandler)
     }
     
     public func share(room: Room, completionHandler: ((Bool) -> Void)? = nil){
