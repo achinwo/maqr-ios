@@ -8,7 +8,10 @@
 
 import SwiftUI
 import JoliCore
+
+#if !os(macOS)
 import LetterAvatarKit
+#endif
 
 //protocol User {
 //    var name: String { get }

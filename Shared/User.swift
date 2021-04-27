@@ -90,10 +90,14 @@ public extension UserIdentifiable {
     }
     
     var isOwnDevice: Bool {
+        #if os(macOS)
+        return false
+        #else
         guard case let DeviceUid.uuid(uid) = deviceUid, let currentUuid = UIDevice.current.identifierForVendor else {
             return false
         }
         return uid == currentUuid
+        #endif
     }
 }
 

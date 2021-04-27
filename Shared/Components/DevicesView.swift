@@ -9,7 +9,10 @@
 import SwiftUI
 import JoliCore
 import Combine
+
+#if !os(macOS)
 import PartialSheet
+#endif
 
 public struct DevicesView: JoliView {
     

@@ -14,6 +14,25 @@ import JoliApi
 import AppKit
 public typealias UIFont = NSFont
 public typealias UIImage = NSImage
+
+public extension UIImage {
+    
+    func pngData() -> Data? {
+        if let imageTiffData = self.tiffRepresentation, let imageRep = NSBitmapImageRep(data: imageTiffData) {
+            // let imageProps = [NSImageCompressionFactor: 0.9] // Tiff/Jpeg
+            // let imageProps = [NSImageInterlaced: NSNumber(value: true)] // PNG
+            let imageProps: [NSBitmapImageRep.PropertyKey: Any] = [:]
+            let imageData = imageRep.representation(using: NSBitmapImageRep.FileType.png, properties: imageProps) as Data?
+            return imageData
+        }
+        return nil
+    }
+    
+    func jpegData(compressionQuality: CGFloat) -> Data? {
+        return nil
+    }
+}
+
 #else
 import UIKit
 #endif

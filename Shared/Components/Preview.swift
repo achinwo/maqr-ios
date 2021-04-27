@@ -5,7 +5,10 @@
 //  Created by Anthony Chinwo on 16/08/2020.
 //  Copyright © 2020 Anthony Chinwo. All rights reserved.
 //
+#if !os(macOS)
 import UIKit
+#endif
+
 import SwiftUI
 import JoliCore
 

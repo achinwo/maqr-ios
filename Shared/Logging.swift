@@ -10,7 +10,13 @@ import Foundation
 import SwiftyBeaver
 import Promises
 import Combine
+
+#if os(macOS)
+import AppKit
+#else
 import UIKit
+#endif
+
 import JoliCore
 
 public extension Array where Element: Persistable {
@@ -84,12 +90,21 @@ public class ServerDestination: BaseDestination, ObservableObject {
         let lines: [String] = Array(bufferedLines)
         self.bufferedLines = []
         
+        
+        #if !os(macOS)
+        let deviceName: String = UIDevice.current.name
+        #else
+        let deviceName: String = Host.current().localizedName ?? "Mac"
+        #endif
+        
         let logLines: [LogEntryRecord] = lines.map() { (line: String) -> LogEntryRecord in
             let props: LogEntry.PropertiesDict = [
                 LogEntry.CodingKeys.line: line as AnyObject,
-                LogEntry.CodingKeys.deviceName: UIDevice.current.name as AnyObject,
+                LogEntry.CodingKeys.deviceName: deviceName as AnyObject,
                 LogEntry.CodingKeys.platform: "ios" as AnyObject,
             ]
+            
+            
             return LogEntryRecord(properties: props)
         }
         

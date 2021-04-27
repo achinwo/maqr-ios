@@ -7,7 +7,13 @@
 //
 
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
 import UIKit
+#endif
+
 import PhotosUI
 
 public class ImagePickerCoordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate, PHPickerViewControllerDelegate {

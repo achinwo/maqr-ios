@@ -8,8 +8,6 @@
 
 import Foundation
 import SwiftUI
-import UIKit
-import PartialSheet
 import JoliApi
 import JoliCore
 import Promises
@@ -18,6 +16,20 @@ import AuthenticationServices
 import Version
 import KeychainAccess
 import AlertToast
+
+#if os(macOS)
+
+public enum FeedbackStyle {
+    case soft
+    case rigid
+}
+
+#else
+import UIKit
+import PartialSheet
+
+public typealias FeedbackStyle = UIImpactFeedbackGenerator.FeedbackStyle
+#endif
 
 public struct ShortCodeGenerator {
 
@@ -63,6 +75,7 @@ public extension JoliApi {
         return body
     }
     
+    @available(iOS 14.0, *)
     func upload(_ image: UIImage, fileName: String? = nil, ext: ImageExtension = .jpeg, timeout: TimeInterval = 60.0) -> Promise<URL> {
         
         let fileName = fileName ?? "\(ShortCodeGenerator.getCode().lowercased()).\(ext.rawValue)"
@@ -71,6 +84,7 @@ public extension JoliApi {
         guard let extResolved = ImageExtension(rawValue: fileExt), extResolved == ext else {
             return Promise(NetworkError.badRequest("Invalid file extension \"\(fileExt)\""))
         }
+        
         
         guard let imageData = (ext == .jpeg ? image.pngData() : image.jpegData(compressionQuality: 0.5)) else {
             return Promise(NetworkError.badRequest("Unable to convert image to data"))
@@ -260,12 +274,14 @@ public extension AppLocation {
     
 }
 
+#if !os(macOS)
 public extension PartialSheetManager {
     
     func show<T>(_ onDismiss: (() -> Void)? = nil, @ViewBuilder content: @escaping () -> T) where T: SwiftUI.View {
         self.showPartialSheet(onDismiss, content: content)
     }
 }
+#endif
 
 public protocol JoliView: View {
     associatedtype Content: View
@@ -322,7 +338,7 @@ public extension JoliView {
     
     func onConnectionStateChange(_ state: ConnectionState) -> Void { }
     
-    func withImpact(_ impact: UIImpactFeedbackGenerator.FeedbackStyle = .soft, animated: Animation? = nil, _ action: () -> Void){
+    func withImpact(_ impact: FeedbackStyle = .soft, animated: Animation? = nil, _ action: () -> Void){
         if let animation = animated {
             withAnimation(animation) {
                 appCoordinator.withImpact(impact, action)

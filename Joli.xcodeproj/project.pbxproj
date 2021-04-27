@@ -32,9 +32,7 @@
 		923C2B0624CC752E009E2380 /* JoliPlayground.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		923D0D8D26205DFF008BB6EA /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
 		923D0D9526205E0A008BB6EA /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
-		923D0D9D26205E25008BB6EA /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 925E5C72236A742100D95AB7 /* SpotifyiOS.framework */; };
 		923D0DB226205EC0008BB6EA /* SpotifyDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */; };
-		923D0DB326205EC0008BB6EA /* SpotifyDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */; };
 		923D0DC126205FA8008BB6EA /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
 		923D0DC226205FA8008BB6EA /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
 		923D0DC326205FA8008BB6EA /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
@@ -57,6 +55,31 @@
 		925C6FF324CB722A0016963F /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 925C6FF224CB722A0016963F /* FBLPromises */; };
 		9263B87824F080E6008962EC /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
 		9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
+		926DB4A6263897F500D62912 /* AppClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3524E9ADC000C8257D /* AppClip.swift */; };
+		926DB4A7263897FE00D62912 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
+		926DB4A826389CF000D62912 /* LobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927AE0C02554AC020027493D /* LobbyView.swift */; };
+		926DB4A926389DF500D62912 /* LogOnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDB24C79C07007C960E /* LogOnView.swift */; };
+		926DB4AA26389DF800D62912 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9208ACF224CC559400773730 /* DevicesView.swift */; };
+		926DB4AB26389DFB00D62912 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
+		926DB4AC26389DFF00D62912 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
+		926DB4AD26389E0300D62912 /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD424C79C07007C960E /* ImageView.swift */; };
+		926DB4AE26389E0600D62912 /* JoyMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A392324E9E2FA00A029A1 /* JoyMeterView.swift */; };
+		926DB4AF26389E0900D62912 /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
+		926DB4B026389E0D00D62912 /* ListenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A391B24E9DAE600A029A1 /* ListenView.swift */; };
+		926DB4B126389E1300D62912 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
+		926DB4B226389E1700D62912 /* PeopleGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC424C79C06007C960E /* PeopleGridView.swift */; };
+		926DB4B326389E1900D62912 /* PlayroomHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */; };
+		926DB4B426389E1C00D62912 /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3924E9AFFF00C8257D /* Preview.swift */; };
+		926DB4B526389E1F00D62912 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDA24C79C07007C960E /* ProfileView.swift */; };
+		926DB4B626389E2200D62912 /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
+		926DB4B726389E2500D62912 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F75F324F7B13400CF708B /* SearchView.swift */; };
+		926DB4B826389E2800D62912 /* TrackList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD124C79C06007C960E /* TrackList.swift */; };
+		926DB4B926389E2B00D62912 /* PlayroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E2E23260F40E9007F62E0 /* PlayroomCreateView.swift */; };
+		926DB4BA26389E2F00D62912 /* SpotifyConnectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */; };
+		926DB4BB26389E3200D62912 /* TrackSuggestionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925B40342621B6A6009BD781 /* TrackSuggestionsListView.swift */; };
+		926DB4BC26389E3600D62912 /* SkipVoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9257430626304BA400B518EA /* SkipVoteView.swift */; };
+		926DB4BD26389E3900D62912 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
+		926DB4BF26389EDE00D62912 /* Sourceful in Frameworks */ = {isa = PBXBuildFile; productRef = 926DB4BE26389EDE00D62912 /* Sourceful */; };
 		926E2E24260F40E9007F62E0 /* PlayroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E2E23260F40E9007F62E0 /* PlayroomCreateView.swift */; };
 		926E2E25260F40E9007F62E0 /* PlayroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E2E23260F40E9007F62E0 /* PlayroomCreateView.swift */; };
 		9270C217252CA92A0030E6AD /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9270C216252CA92A0030E6AD /* Media.xcassets */; };
@@ -90,6 +113,10 @@
 		928F75F524F7B13400CF708B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F75F324F7B13400CF708B /* SearchView.swift */; };
 		929FFE1C24FAF096000BDCF0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929FFE1B24FAF096000BDCF0 /* User.swift */; };
 		929FFE1D24FAF096000BDCF0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929FFE1B24FAF096000BDCF0 /* User.swift */; };
+		92A2B9352638919B00F59C37 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD024C79C06007C960E /* Extensions.swift */; };
+		92A2B9372638921A00F59C37 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92A2B9362638921A00F59C37 /* Kingfisher */; };
+		92A2B93F2638923100F59C37 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92A2B93E2638923100F59C37 /* KeychainAccess */; };
+		92A2B9412638923100F59C37 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 92A2B9402638923100F59C37 /* AlertToast */; };
 		92A32D6724C799B8007C960E /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D6624C799B8007C960E /* Tests_iOS.swift */; };
 		92A32D7224C799B8007C960E /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32D7124C799B8007C960E /* Tests_macOS.swift */; };
 		92A32D8824C79A13007C960E /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
@@ -132,10 +159,6 @@
 		92BD11D924CB104D00AAB7DE /* LetterAvatarKit in Frameworks */ = {isa = PBXBuildFile; productRef = 92BD11D824CB104D00AAB7DE /* LetterAvatarKit */; };
 		92D31DB325EAFF9100522E28 /* LogOnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDB24C79C07007C960E /* LogOnView.swift */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
-		92EC6264252CBE220092E497 /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC6263252CBE220092E497 /* Promises */; };
-		92EC626C252CBE3A0092E497 /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC626B252CBE3A0092E497 /* FBLPromises */; };
-		92EC626E252CBE3A0092E497 /* FBLPromisesTestHelpers in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC626D252CBE3A0092E497 /* FBLPromisesTestHelpers */; };
-		92EC6270252CBE3A0092E497 /* PromisesTestHelpers in Frameworks */ = {isa = PBXBuildFile; productRef = 92EC626F252CBE3A0092E497 /* PromisesTestHelpers */; };
 		92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE3CD2619394000688802 /* SFSafeSymbols */; };
 		92EDE41026193AD500688802 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE40F26193AD500688802 /* Kingfisher */; };
 		92EDE41226193AE000688802 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE41126193AE000688802 /* PartialSheet */; };
@@ -377,12 +400,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				92EC626C252CBE3A0092E497 /* FBLPromises in Frameworks */,
-				923D0D9D26205E25008BB6EA /* SpotifyiOS.framework in Frameworks */,
-				92EC6264252CBE220092E497 /* Promises in Frameworks */,
+				926DB4BF26389EDE00D62912 /* Sourceful in Frameworks */,
+				92A2B9412638923100F59C37 /* AlertToast in Frameworks */,
+				92A2B9372638921A00F59C37 /* Kingfisher in Frameworks */,
+				92A2B93F2638923100F59C37 /* KeychainAccess in Frameworks */,
 				9270C229252CAA3B0030E6AD /* JoliApi in Frameworks */,
-				92EC6270252CBE3A0092E497 /* PromisesTestHelpers in Frameworks */,
-				92EC626E252CBE3A0092E497 /* FBLPromisesTestHelpers in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -785,10 +807,10 @@
 			name = "Joli (macOS)";
 			packageProductDependencies = (
 				9270C228252CAA3B0030E6AD /* JoliApi */,
-				92EC6263252CBE220092E497 /* Promises */,
-				92EC626B252CBE3A0092E497 /* FBLPromises */,
-				92EC626D252CBE3A0092E497 /* FBLPromisesTestHelpers */,
-				92EC626F252CBE3A0092E497 /* PromisesTestHelpers */,
+				92A2B9362638921A00F59C37 /* Kingfisher */,
+				92A2B93E2638923100F59C37 /* KeychainAccess */,
+				92A2B9402638923100F59C37 /* AlertToast */,
+				926DB4BE26389EDE00D62912 /* Sourceful */,
 			);
 			productName = "Joli (macOS)";
 			productReference = 92A32D5A24C799B8007C960E /* Joli.app */;
@@ -1130,15 +1152,39 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				926DB4A7263897FE00D62912 /* AppCoordinator.swift in Sources */,
 				92A32E2D24C7BB53007C960E /* Consts.swift in Sources */,
+				926DB4A6263897F500D62912 /* AppClip.swift in Sources */,
+				926DB4AD26389E0300D62912 /* ImageView.swift in Sources */,
+				92A2B9352638919B00F59C37 /* Extensions.swift in Sources */,
+				926DB4B626389E2200D62912 /* RefreshableScrollView.swift in Sources */,
+				926DB4AE26389E0600D62912 /* JoyMeterView.swift in Sources */,
+				926DB4AB26389DFB00D62912 /* ExploreView.swift in Sources */,
+				926DB4B526389E1F00D62912 /* ProfileView.swift in Sources */,
+				926DB4B126389E1300D62912 /* NetworkImageView.swift in Sources */,
+				926DB4A926389DF500D62912 /* LogOnView.swift in Sources */,
 				92A32DB824C79B59007C960E /* UserSettings.swift in Sources */,
-				923D0DB326205EC0008BB6EA /* SpotifyDelegate.swift in Sources */,
+				926DB4B426389E1C00D62912 /* Preview.swift in Sources */,
+				926DB4AA26389DF800D62912 /* DevicesView.swift in Sources */,
+				926DB4A826389CF000D62912 /* LobbyView.swift in Sources */,
 				920958B325601F030014626D /* Logging.swift in Sources */,
+				926DB4B926389E2B00D62912 /* PlayroomCreateView.swift in Sources */,
+				926DB4BA26389E2F00D62912 /* SpotifyConnectButton.swift in Sources */,
 				9270C353252CB4AD0030E6AD /* App.swift in Sources */,
 				923D0E3926207656008BB6EA /* User.swift in Sources */,
 				92A32E3224CA22FA007C960E /* Publishers.swift in Sources */,
+				926DB4BD26389E3900D62912 /* WebView.swift in Sources */,
+				926DB4B726389E2500D62912 /* SearchView.swift in Sources */,
+				926DB4BB26389E3200D62912 /* TrackSuggestionsListView.swift in Sources */,
+				926DB4B326389E1900D62912 /* PlayroomHeaderView.swift in Sources */,
+				926DB4AC26389DFF00D62912 /* ImagePicker.swift in Sources */,
+				926DB4B226389E1700D62912 /* PeopleGridView.swift in Sources */,
+				926DB4AF26389E0900D62912 /* ListenTabbarView.swift in Sources */,
+				926DB4B026389E0D00D62912 /* ListenView.swift in Sources */,
 				92A32D8824C79A13007C960E /* Styles.swift in Sources */,
+				926DB4BC26389E3600D62912 /* SkipVoteView.swift in Sources */,
 				923D0DC426205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
+				926DB4B826389E2800D62912 /* TrackList.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2001,6 +2047,11 @@
 			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
 			productName = FBLPromises;
 		};
+		926DB4BE26389EDE00D62912 /* Sourceful */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 921BA25B253E03B4007C2FE0 /* XCRemoteSwiftPackageReference "Sourceful" */;
+			productName = Sourceful;
+		};
 		9270C228252CAA3B0030E6AD /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
@@ -2010,30 +2061,25 @@
 			package = 927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */;
 			productName = GradientLoadingBar;
 		};
+		92A2B9362638921A00F59C37 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		92A2B93E2638923100F59C37 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
+		};
+		92A2B9402638923100F59C37 /* AlertToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */;
+			productName = AlertToast;
+		};
 		92BD11D824CB104D00AAB7DE /* LetterAvatarKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */;
 			productName = LetterAvatarKit;
-		};
-		92EC6263252CBE220092E497 /* Promises */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
-			productName = Promises;
-		};
-		92EC626B252CBE3A0092E497 /* FBLPromises */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
-			productName = FBLPromises;
-		};
-		92EC626D252CBE3A0092E497 /* FBLPromisesTestHelpers */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
-			productName = FBLPromisesTestHelpers;
-		};
-		92EC626F252CBE3A0092E497 /* PromisesTestHelpers */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
-			productName = PromisesTestHelpers;
 		};
 		92EDE3CD2619394000688802 /* SFSafeSymbols */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -10,17 +10,30 @@ import SwiftUI
 import JoliCore
 import JoliApi
 import Promises
+
+#if os(macOS)
+import AppKit
+#else
 import UIKit
 import MessageUI
+#endif
+
 import AVFoundation
 
+public struct MailViewOptions: Equatable {
+    public let subject: String
+    public let recipients: [String]
+    public var body: String? = nil
+}
+
+#if os(macOS)
+public struct MailView {
+    public typealias Options = MailViewOptions
+}
+#else
 public struct MailView: UIViewControllerRepresentable {
     
-    public struct Options: Equatable {
-        public let subject: String
-        public let recipients: [String]
-        public var body: String? = nil
-    }
+    public typealias Options = MailViewOptions
     
     @Environment(\.presentationMode) var presentation
     @Binding var result: Result<MFMailComposeResult, Error>?
@@ -86,6 +99,7 @@ public struct MailView: UIViewControllerRepresentable {
     public func updateUIViewController(_: MFMailComposeViewController,
                                 context _: UIViewControllerRepresentableContext<MailView>) {}
 }
+#endif
 
 public struct LobbyView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator

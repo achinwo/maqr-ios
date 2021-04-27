@@ -10,18 +10,28 @@ import Foundation
 import Combine
 import JoliApi
 import JoliCore
-import PartialSheet
 import SwiftUI
 import Promises
 import Version
 import AlertToast
+
+#if os(macOS)
+
+
+#else
+import PartialSheet
+
+#endif
 
 // MARK: - AppCoordinator
 public final class AppCoordinator: ObservableObject {
     
     @Published public var currentLocation: AppLocation = .unset
     
+    #if !os(macOS)
     public var sheet: PartialSheetManager = PartialSheetManager()
+    #endif
+    
     public var api: JoliApi!
     public var serverLogDestination: ServerDestination? = nil
     private var cancellableSet: Set<AnyCancellable> = []
@@ -502,9 +512,12 @@ public final class AppCoordinator: ObservableObject {
         }
         
         public func body(content: Content) -> some View {
-            return content
-                .environmentObject(self.coordinator)
-                .environmentObject(self.coordinator.sheet)
+            let view = content.environmentObject(self.coordinator)
+            #if os(macOS)
+            return view
+            #else
+            return view.environmentObject(self.coordinator.sheet)
+            #endif
         }
         
     }

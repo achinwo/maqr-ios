@@ -9,7 +9,13 @@
 import SwiftUI
 import JoliCore
 import JoliApi
+
+#if !os(macOS)
 import UIKit
+#else
+import AppKit
+#endif
+
 import Promises
 
 struct ProfileEditView: View {

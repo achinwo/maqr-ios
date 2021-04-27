@@ -10,6 +10,10 @@ import SwiftUI
 import JoliCore
 import JoliApi
 
+#if os(macOS)
+import AppKit
+#endif
+
 public struct GradientBackgroundStyle: ButtonStyle {
     
     public var colors: [Color]

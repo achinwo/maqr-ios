@@ -11,14 +11,23 @@ import JoliApi
 import SwiftUI
 import JoliCore
 import Promises
+
+#if os(macOS)
+import AppKit
+public typealias UIApplication = NSApplication
+
+#else
 import UIKit
 import PartialSheet
+
+#endif
+
 import Combine
 import UIImageColors
 
+
 public typealias Color = SwiftUI.Color
 public typealias View = SwiftUI.View
-
 
 public enum PlaybackControllerMetadataKey: EnvironmentKey {
     
@@ -471,6 +480,37 @@ public extension View {
     
 }
 
+#if os(macOS)
+extension UIColor {
+    public static let label = UIColor.controlColor
+    public static let secondaryLabel = UIColor.controlBackgroundColor
+    public static let tertiaryLabel = UIColor.controlBackgroundColor
+    public static let quaternaryLabel = UIColor.controlBackgroundColor
+    public static let link = UIColor.controlBackgroundColor
+    public static let placeholderText = UIColor.controlBackgroundColor
+    
+    // Adaptable separators
+    public static let separator = UIColor.controlBackgroundColor
+    public static let opaqueSeparator = UIColor.controlBackgroundColor
+    
+    public static let systemBackground = UIColor.controlBackgroundColor
+    public static let secondarySystemBackground = UIColor.controlBackgroundColor
+    public static let tertiarySystemBackground = UIColor.controlBackgroundColor
+    
+    
+    // Adaptable grouped backgrounds
+    public static let systemGroupedBackground = UIColor.controlBackgroundColor
+    public static let secondarySystemGroupedBackground = UIColor.controlBackgroundColor
+    public static let tertiarySystemGroupedBackground = UIColor.controlBackgroundColor
+    
+    // Adaptable system fills
+    public static let systemFill = UIColor.controlBackgroundColor
+    public static let secondarySystemFill = UIColor.controlBackgroundColor
+    public static let tertiarySystemFill = UIColor.controlBackgroundColor
+    public static let quaternarySystemFill = UIColor.controlBackgroundColor
+}
+#endif
+
 @available(iOS 13.0, OSX 10.15, tvOS 13.0, watchOS 6.0, *)
 extension Color {
     
@@ -488,7 +528,7 @@ extension Color {
     
     // Adaptable grayscales
     public static let systemGray = Color(UIColor.systemGray)
-    #if !os(tvOS) // tvOS doesn't have the adaptable gray shades, just the primary color.
+    #if os(iOS) // tvOS doesn't have the adaptable gray shades, just the primary color.
     public static let systemGray2 = Color(UIColor.systemGray2)
     public static let systemGray3 = Color(UIColor.systemGray3)
     public static let systemGray4 = Color(UIColor.systemGray4)

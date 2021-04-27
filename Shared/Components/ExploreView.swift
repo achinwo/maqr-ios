@@ -10,9 +10,13 @@ import SwiftUI
 import Combine
 import JoliCore
 import JoliApi
-import GradientLoadingBar
-//import Sourceful
+
+//
 import Promises
+#if os(macOS)
+import Sourceful
+#else
+import GradientLoadingBar
 
 struct GradientLoadingBarView: UIViewRepresentable {
     
@@ -28,6 +32,9 @@ struct GradientLoadingBarView: UIViewRepresentable {
         //isAnimating ? uiView.startAnimating() : uiView.stopAnimating()
     }
 }
+
+#endif
+
 
 
 public extension Search.Category {
@@ -164,11 +171,12 @@ public struct ExploreView: JoliView {
             }
             .padding(.bottom, Sizing.small)
             
-            
+            #if !os(macOS)
             GradientLoadingBarView()
                 .opacity(appCoordinator.isSearching.isEmpty ? 0 : 1)
                 .animation(.easeInOut(duration: 0.2))
                 .frame(height: appCoordinator.isSearching.isEmpty ? 0 : 2)
+            #endif
             
             Divider()
         }
