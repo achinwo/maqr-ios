@@ -14,7 +14,7 @@ import Combine
 import UIImageColors
 //import Sourceful
 
-#if canImport(StoreKit)
+#if !os(macOS)
 import StoreKit
 #endif
 
@@ -798,7 +798,7 @@ struct ListenView: JoliView {
                 }
                 
                 
-                #if canImport(StoreKit)
+                #if !os(macOS)
                 Divider().opacity(self.playroom == nil ? 0 : 1).animation(.easeInOut)
                     .appStoreOverlay(isPresented: $showRecommended) {
                         SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottomRaised)

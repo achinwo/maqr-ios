@@ -8,6 +8,11 @@
 
 import SwiftUI
 import JoliApi
+import AlertToast
+
+#if os(macOS)
+import AppKit
+#endif
 
 // MARK: - SignUpView
 struct SignUpView: View {
@@ -16,7 +21,7 @@ struct SignUpView: View {
     @State var userName: String = ""
      
     var body: some View {
-        Form {
+        let form = Form {
             Section(header: Text("Personal information")) {
                 TextField("type something...", text: self.$userName)
             }
@@ -26,7 +31,12 @@ struct SignUpView: View {
                     self.presentation.wrappedValue.dismiss()
                 }
             }
-        }.navigationBarTitle(Text("Sign Up"))
+        }
+        #if !os(macOS)
+        return form.navigationBarTitle(Text("Sign Up"))
+        #else
+        return form
+        #endif
     }
     
 }
@@ -40,24 +50,36 @@ class LoginViewModel: ObservableObject {
         logger.info("[LoginViewModel] logging in!")
     }
 }
+//
+//public struct ActivityIndicator: UIViewRepresentable {
+//
+//    public typealias UIView = UIActivityIndicatorView
+//    public var isAnimating: Bool
+//    public var configuration = { (indicator: UIView) in }
+//
+//    public func makeUIView(context: UIViewRepresentableContext<Self>) -> UIView { UIView() }
+//    public func updateUIView(_ uiView: UIView, context: UIViewRepresentableContext<Self>) {
+//        isAnimating ? uiView.startAnimating() : uiView.stopAnimating()
+//        configuration(uiView)
+//    }
+//}
+//
+//extension View where Self == ActivityIndicator {
+//    func configure(_ configuration: @escaping (Self.UIView) -> Void) -> Self {
+//        Self.init(isAnimating: self.isAnimating, configuration: configuration)
+//    }
+//}
 
-public struct ActivityIndicator: UIViewRepresentable {
-
-    public typealias UIView = UIActivityIndicatorView
-    public var isAnimating: Bool
-    public var configuration = { (indicator: UIView) in }
-
-    public func makeUIView(context: UIViewRepresentableContext<Self>) -> UIView { UIView() }
-    public func updateUIView(_ uiView: UIView, context: UIViewRepresentableContext<Self>) {
-        isAnimating ? uiView.startAnimating() : uiView.stopAnimating()
-        configuration(uiView)
+public extension Image {
+    
+    init(platformImage: UIImage) {
+        #if os(macOS)
+        self.init(nsImage: platformImage)
+        #else
+        self.init(uiImage: platformImage)
+        #endif
     }
-}
-
-extension View where Self == ActivityIndicator {
-    func configure(_ configuration: @escaping (Self.UIView) -> Void) -> Self {
-        Self.init(isAnimating: self.isAnimating, configuration: configuration)
-    }
+    
 }
 
 // MARK: - SignInView
@@ -75,12 +97,14 @@ struct SignInView: JoliView {
     
     var contentView: some View {
         let img = Images.joliIconRounded.uiImage
+        let userImage = Image(platformImage: img).resizable().aspectRatio(contentMode: ContentMode.fit)
+            .frame(width: CGFloat(74.0), height: CGFloat(74.0))
+            .padding(Edge.Set.bottom, 20)
+        
         return VStack() {
             VStack(alignment: .center) {
               
-                Image(uiImage: img).resizable().aspectRatio(contentMode: ContentMode.fit)
-                    .frame(width: CGFloat(74.0), height: CGFloat(74.0))
-                    .padding(Edge.Set.bottom, 20)
+
                 
                 Text(verbatim: "Login").bold().font(.title)
                 
@@ -115,6 +139,7 @@ struct SignInView: JoliView {
                     HStack(alignment: .center) {
                         Spacer()
                         
+                        #if !os(macOS)
                         if self.submissionInProgress {
                             ActivityIndicator(isAnimating: self.submissionInProgress) { (indicator: UIActivityIndicatorView) in
                                 indicator.color = .white
@@ -122,6 +147,7 @@ struct SignInView: JoliView {
                                 //Any other UIActivityIndicatorView property you like
                             }
                         }
+                        #endif
                         
                         Text("Login").foregroundColor(Color.white).bold()
                         Spacer()
@@ -214,18 +240,28 @@ struct LogOnView: JoliView {
             .animation(.spring())
             //.offset(x: 0, y: self.appKeyboardState.keyboardHeight == 0 ? 0 : geometry.size.height / 3 * -1)
             .simultaneousGesture(gesture)
-            .navigationBarTitle("Account", displayMode: .large)
-            .navigationBarItems(trailing: Button(action: {
-                logger.info("Close Logon screen!")
-                //self.completionHandler?(true)
-                self.presentationMode.wrappedValue.dismiss()
-            }) {
-                Image(systemName: "xmark")
-                .padding()
-            })
+            .if(!isMacOs) { view in
+                #if os(macOS)
+                view
+                #else
+                view
+                .navigationBarTitle("Account", displayMode: .large)
+                .navigationBarItems(trailing: Button() {
+                        logger.info("Close Logon screen!")
+                        //self.completionHandler?(true)
+                        self.presentationMode.wrappedValue.dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                        .padding()
+                    }
+                )
+                #endif
+            }
+            
         }
         
     }
+    
     
 }
 

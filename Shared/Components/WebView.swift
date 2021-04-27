@@ -56,6 +56,18 @@ public final class WebViewWrapper: UIViewRepresentable {
     }
 }
 
+extension WebViewWrapper {
+    
+    public func makeNSView(context: Context) -> WKWebView {
+        return self.makeUIView(context: context)
+    }
+    
+    public func updateNSView(_ nsView: WKWebView, context: Context) {
+        self.updateUIView(nsView, context: context)
+    }
+    
+}
+
 extension WebViewWrapper.Coordinator: WKNavigationDelegate {
     
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {

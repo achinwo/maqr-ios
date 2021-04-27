@@ -18,10 +18,23 @@ import KeychainAccess
 import AlertToast
 
 #if os(macOS)
+import AppKit
 
 public enum FeedbackStyle {
     case soft
     case rigid
+    case medium
+    case light
+}
+
+public typealias UIWindow = NSWindow
+public typealias UIEdgeInsets = NSEdgeInsets
+
+public extension UIWindow {
+    
+    var safeAreaInsets: NSEdgeInsets {
+        return .init()
+    }
 }
 
 #else
@@ -521,6 +534,7 @@ public enum ViewIdentifier: String, Identifiable {
     }
 }
 
+#if !os(macOS)
 class ShareActivity: UIActivity {
     
     override var activityType: UIActivity.ActivityType {
@@ -543,6 +557,7 @@ class ShareActivity: UIActivity {
         logger.debug("[ShareActivity] finished: \(completed)")
     }
 }
+#endif
 
 private struct SafeAreaInsetsKey: EnvironmentKey {
 
@@ -555,12 +570,16 @@ private struct SafeAreaInsetsKey: EnvironmentKey {
     }
     
     static var defaultWindow: UIWindow? {
+        #if os(macOS)
+        return nil
+        #else
         guard let scene = UIApplication.shared.connectedScenes.first,
               let windowSceneDelegate = scene.delegate as? UIWindowSceneDelegate,
               let window = windowSceneDelegate.window else {
             return nil
         }
         return window
+        #endif
     }
 }
 
@@ -724,11 +743,22 @@ public extension AppClip {
     }
     
     static var defaultHeaders: [String: String] {
+        
+        #if os(macOS)
+        let uuid: String? = nil
+        let model: String = "Mac"
+        let name: String = Host.current().localizedName ?? model
+        #else
+        let uuid: String? = UIDevice.current.identifierForVendor?.uuidString
+        let model: String = UIDevice.current.model
+        let name: String = UIDevice.current.name
+        #endif
+        
         return [
             "X-PLATFORM": "ios",
-            "X-DEVICE-UUID": UIDevice.current.identifierForVendor?.uuidString ?? "",
-            "X-DEVICE-MODEL": UIDevice.current.model,
-            "X-DEVICE-NAME": UIDevice.current.name,
+            "X-DEVICE-UUID": uuid ?? "",
+            "X-DEVICE-MODEL": model,
+            "X-DEVICE-NAME": name,
             "X-APP-VERSION": Self.version.description,
             "X-APP-SKU": Self.isAppclip ? "APPCLIP" : "FULL",
             //"X-SESSION-ID": activeSessionId,
@@ -794,7 +824,13 @@ public extension AppClip {
         WindowGroup {
             ZStack(){
                 self.contentView
-                    .addPartialSheet()
+                    .if(!isMacOs){ view in
+                        #if os(macOS)
+                        view
+                        #else
+                        view.addPartialSheet()
+                        #endif
+                    }
             }
             .onOpenURL(perform: self.onOpenUrl)
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: self.onUserActivity)

@@ -260,7 +260,13 @@ public struct ExploreView: JoliView {
                         }
                     }
                     //.frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-                    .listStyle(GroupedListStyle())
+                    .if(!isMacOs) { view in
+                        #if os(macOS)
+                        view
+                        #else
+                        view.listStyle(GroupedListStyle())
+                        #endif
+                    }
                     //.padding(.top, edges.top)
                     .animation(.easeInOut)
                     .padding(.bottom, safeAreaInsets.bottom > screenHeight / 4 ? safeAreaInsets.bottom : 0)
@@ -328,7 +334,7 @@ public struct ExploreView: JoliView {
                 switch itm.element.result.category {
                     case .tracks:
                         itm.element
-                            .frame(width: UIScreen.main.bounds.width, height: 68)
+                            .frame(width: screenWidth, height: 68)
                             .id(itm.element.id)
                     default:
                         itm.element.frame(height: 65)

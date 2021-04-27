@@ -312,8 +312,14 @@ public struct UserAvatarView: JoliView {
                     URL(string: "images/\(user.imageLarge!)", relativeTo: api.baseUrlHttp)
                     : nil)
         
+        #if os(macOS)
+        let dummyImage = UIImage(systemName: "person")!
+        #else
+        let dummyImage = UIImage.makeLetterAvatar(withUsername: user.displayName.name ?? "Anonymous")!
+        #endif
+        
         return NetworkImage(url: url) {
-                    Image(uiImage: UIImage.makeLetterAvatar(withUsername: user.displayName.name ?? "Anonymous")!)
+                    Image(platformImage: dummyImage)
                         .resizable()
                         .renderingMode(.original)
                 }

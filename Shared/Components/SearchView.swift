@@ -59,7 +59,7 @@ public struct SearchBar: View {
                 .font(Font.callout.weight(.light))
                 .padding(7)
                 .padding(.horizontal, 25)
-                .background(Color(.systemGray6))
+                .background(Color(.systemGroupedBackground))
                 .cornerRadius(8)
                 .overlay(
                     HStack {

@@ -195,7 +195,14 @@ public struct PlayroomCreateView: JoliView {
                     }
                 }
                 .edgesIgnoringSafeArea(.bottom)
-                .navigationBarTitle("Making a Playroom", displayMode: .automatic)
+                .if(!isMacOs){ view in
+                    #if os(macOS)
+                    view
+                    #else
+                    view
+                    .navigationBarTitle("Making a Playroom", displayMode: .automatic)
+                    #endif
+                }
                 .simultaneousGesture(
                     TapGesture()
                         .onEnded(){

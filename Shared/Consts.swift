@@ -15,6 +15,8 @@ import AppKit
 public typealias UIFont = NSFont
 public typealias UIImage = NSImage
 
+public let isMacOs = true
+
 public extension UIImage {
     
     func pngData() -> Data? {
@@ -35,6 +37,7 @@ public extension UIImage {
 
 #else
 import UIKit
+public let isMacOs = false
 #endif
 import os
 

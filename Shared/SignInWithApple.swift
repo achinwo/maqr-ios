@@ -7,7 +7,13 @@
 //
 
 import Foundation
+
+#if os(macOS)
+import AppKit
+#else
 import UIKit
+#endif
+
 import SwiftUI
 import AuthenticationServices
 
@@ -21,6 +27,14 @@ public final class SignInWithApple: UIViewRepresentable {
     
     public func updateUIView(_ uiView: ASAuthorizationAppleIDButton, context: Context) {}
     
+}
+
+extension SignInWithApple {
+    public func makeNSView(context: Context) -> ASAuthorizationAppleIDButton {
+        return ASAuthorizationAppleIDButton()
+    }
+    
+    public func updateNSView(_ uiView: ASAuthorizationAppleIDButton, context: Context) {}
 }
 
 public class SignInWithAppleDelegates: NSObject {

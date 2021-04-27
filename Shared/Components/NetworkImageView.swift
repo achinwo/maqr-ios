@@ -9,6 +9,15 @@
 import SwiftUI
 import Kingfisher
 
+#if os(macOS)
+extension UIImage {
+    
+    convenience init?(systemName: String) {
+        self.init(systemSymbolName: systemName, accessibilityDescription: nil)
+    }
+}
+#endif
+
 public struct QrCodeImageView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
@@ -54,9 +63,15 @@ public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
         
         return ZStack(){
                 if let image = image {
+                    #if os(macOS)
+                    SwiftUI.Image(nsImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                    #else
                     SwiftUI.Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
+                    #endif
                 } else {
                     placeholderContent
                 }
@@ -92,7 +107,13 @@ public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
 extension NetworkImage where PlaceHolderContent == SwiftUI.Image {
     
     init(imageURL: URL, placeholderImage: UIImage, onLoaded: Callback? = nil) {
+        
+        #if os(macOS)
+        self.placeholderContent = SwiftUI.Image(nsImage: placeholderImage)
+        #else
         self.placeholderContent = SwiftUI.Image(uiImage: placeholderImage)
+        #endif
+        
         self._imageURL = State(initialValue: imageURL)
         self.callback = onLoaded
     }

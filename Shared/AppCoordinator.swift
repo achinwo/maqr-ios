@@ -298,6 +298,7 @@ public final class AppCoordinator: ObservableObject {
         
         let notificationCenter = NotificationCenter.default
         
+        #if !os(macOS)
         notificationCenter.publisher(for: UIWindow.keyboardWillShowNotification)
             .map {
                 guard
@@ -314,6 +315,7 @@ public final class AppCoordinator: ObservableObject {
             .map { _ in 0 }
             .assign(to: \.keyboardHeight, on: self)
             .store(in: &cancellableSet)
+        #endif
     }
     
     public func synchronizePlayroom(_ playroom: Musicroom) -> Void {
@@ -327,7 +329,9 @@ public final class AppCoordinator: ObservableObject {
     
     
     public func dismissKeyboard() {
+        #if !os(macOS)
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        #endif
     }
     
     @discardableResult
@@ -476,17 +480,25 @@ public final class AppCoordinator: ObservableObject {
         
         let sharedObjects: [AnyObject] = [text as AnyObject]//, url as AnyObject]
         
+        #if os(macOS)
+        completionHandler?(false)
+        #else
         let av = UIActivityViewController(activityItems: sharedObjects, applicationActivities: [ShareActivity()])
         UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true) {
             print("[AppCoordinator#share] share view presented")
             completionHandler?(true)
         }
+        #endif
     }
     
-    public func withImpact(_ impact: UIImpactFeedbackGenerator.FeedbackStyle = .soft, _ action: () -> Void){
+    public func withImpact(_ impact: FeedbackStyle = .soft, _ action: () -> Void){
+        #if os(macOS)
+        action()
+        #else
         let impactHeavy = UIImpactFeedbackGenerator(style: impact)
         action()
         impactHeavy.impactOccurred()
+        #endif
     }
     
     public var isSimulatorOrTestFlight: Bool {

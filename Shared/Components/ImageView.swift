@@ -12,6 +12,7 @@ public struct ImageView<Content: View>: View {
     
     public typealias Callback = (UIImage?, Error?) -> Void
     
+    #if !os(macOS)
     var buttons: [ActionSheet.Button] {
         let buttons: [ActionSheet.Button] = [
             .default(Text("🌄 Photo Library")) {
@@ -29,6 +30,10 @@ public struct ImageView<Content: View>: View {
         return buttons
     }
     
+    @State private var sourceType: UIImagePickerController.SourceType = .photoLibrary
+    
+    #endif
+    
     @State var imageChooserPresented = false
     @State var sheetPresented = false
     
@@ -40,7 +45,6 @@ public struct ImageView<Content: View>: View {
     @State public var imageURL: URL? = nil
     public var placeholderContent: Content? = nil
     
-    @State private var sourceType: UIImagePickerController.SourceType = .photoLibrary
     
     var onSelected: Callback? = nil
     var onLoaded: Callback? = nil
@@ -118,7 +122,7 @@ public struct ImageView<Content: View>: View {
         
         if let uiImage = uiImage {
             img = AnyView(
-                Image(uiImage: uiImage)
+                Image(platformImage: uiImage)
                 .resizable()
                 .renderingMode(.original)
                 .aspectRatio(contentMode: .fit)
@@ -145,6 +149,10 @@ public struct ImageView<Content: View>: View {
                 .sheet(isPresented: self.$imageChooserPresented) {
                     print("thing is dismissed!")
                 } content: {
+                    #if os(macOS)
+                    Text("Unsupported!")
+                    #else
+                    
                     if sourceType == .camera {
                         CameraImagePicker(callback: onSelectedCb)
                             .edgesIgnoringSafeArea(.bottom)
@@ -152,12 +160,20 @@ public struct ImageView<Content: View>: View {
                         SingleImagePicker(callback: onSelectedCb)
                             .edgesIgnoringSafeArea(.bottom)
                     }
+                    #endif
                 }
-                .actionSheet(isPresented: self.$sheetPresented) {
-                    ActionSheet(title: Text(self.title),
-                                message: Text(self.message),
-                                buttons: buttons)
+                .if(!isMacOs){ view in
+                    #if os(macOS)
+                    view
+                    #else
+                    view.actionSheet(isPresented: self.$sheetPresented) {
+                        ActionSheet(title: Text(self.title),
+                                    message: Text(self.message),
+                                    buttons: buttons)
+                    }
+                    #endif
                 }
+                
         )
     }
 }

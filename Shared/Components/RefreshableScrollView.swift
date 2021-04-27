@@ -9,6 +9,13 @@
 // Author: The SwiftUI Lab
 // Full article: https://swiftui-lab.com/scrollview-pull-to-refresh/
 import SwiftUI
+#if os(macOS)
+import AppKit
+
+public typealias UIActivityIndicatorView = NSProgressIndicator
+public typealias UIViewRepresentable = NSViewRepresentable
+public typealias UIViewRepresentableContext = NSViewRepresentableContext
+#endif
 
 struct RefreshableScrollView<Content: View>: View {
     @State private var previousScrollOffset: CGFloat = 0
@@ -175,9 +182,24 @@ struct ActivityRep: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: UIActivityIndicatorView, context: UIViewRepresentableContext<ActivityRep>) {
+        #if !os(macOS)
         uiView.startAnimating()
+        #endif
     }
 }
+
+extension ActivityRep {
+    
+    func makeNSView(context: UIViewRepresentableContext<ActivityRep>) -> UIActivityIndicatorView {
+        return UIActivityIndicatorView()
+    }
+    
+    func updateNSView(_ uiView: UIActivityIndicatorView, context: UIViewRepresentableContext<ActivityRep>) {
+    }
+    
+}
+
+
 //
 //struct RefreshableScrollView_Previews: PreviewProvider {
 //    static var previews: some View {

@@ -41,13 +41,16 @@ extension UIImage {
     let heightRatio = targetSize.height / size.height
     let newSize = widthRatio > heightRatio ?  CGSize(width: size.width * heightRatio, height: size.height * heightRatio) : CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
     let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
-
+    
+    #if os(macOS)
+    return self
+    #else
     UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
     self.draw(in: rect)
     let newImage = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
-
     return newImage!
+    #endif
   }
     
 }
@@ -72,12 +75,12 @@ public struct UserProfileView2: JoliView {
     }
     
     var logoutAlertView: Alert {
-        let send = ActionSheet.Button.destructive(Text("Logout")) {
+        let send = Alert.Button.destructive(Text("Logout")) {
             print("hit send")
         }
 
         // If the cancel label is omitted, the default "Cancel" text will be shown
-        let cancel = ActionSheet.Button.cancel(Text("Cancel")) {
+        let cancel = Alert.Button.cancel(Text("Cancel")) {
             print("hit abort")
         }
         
@@ -122,6 +125,12 @@ public struct UserProfileView2: JoliView {
         
         let onSelectedCallback = user.isOwnDevice ? imageCallback : nil
         
+        #if os(macOS)
+        let platformImage = UIImage(systemName: "person")!
+        #else
+        let platformImage = UIImage.makeLetterAvatar(withUsername: self.userName)!
+        #endif
+        
         return Form() {
             ZStack(alignment: .center){
                 
@@ -133,7 +142,7 @@ public struct UserProfileView2: JoliView {
                             Text("Loading Image")
                         }
                     } else {
-                        ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: onSelectedCallback)
+                        ImageView(uiImage: platformImage, callback: onSelectedCallback)
                     }
                 }
                 //ImageView(uiImage: UIImage.makeLetterAvatar(withUsername: self.userName)!, callback: imageCallback)
@@ -143,6 +152,8 @@ public struct UserProfileView2: JoliView {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle())
                                 .foregroundColor(.white)
+                        } else {
+                            EmptyView()
                         }
                     }
                     .background(Colors.lightGray.opacity(0.6))
@@ -224,15 +235,15 @@ public struct UserProfileView2: JoliView {
     
 }
 
-struct UserProfileView2_Previews: PreviewProvider {
-    
-    static var previews: some View {
-        let user = SEED_DATA.users.first!
-        
-        return NavigationView(){
-            UserProfileView2(user: .constant(user.builder())).offset(x: 0, y: 1)
-        }
-        .navigationBarItems(leading: Text("Save Changes"))
-    }
-    
-}
+//struct UserProfileView2_Previews: PreviewProvider {
+//    
+//    static var previews: some View {
+//        let user = SEED_DATA.users.first!
+//        
+//        return NavigationView(){
+//            UserProfileView2(user: .constant(user.builder())).offset(x: 0, y: 1)
+//        }
+//        .navigationBarItems(leading: Text("Save Changes"))
+//    }
+//    
+//}

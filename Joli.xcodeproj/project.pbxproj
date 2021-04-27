@@ -61,7 +61,6 @@
 		926DB4A926389DF500D62912 /* LogOnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDB24C79C07007C960E /* LogOnView.swift */; };
 		926DB4AA26389DF800D62912 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9208ACF224CC559400773730 /* DevicesView.swift */; };
 		926DB4AB26389DFB00D62912 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
-		926DB4AC26389DFF00D62912 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
 		926DB4AD26389E0300D62912 /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD424C79C07007C960E /* ImageView.swift */; };
 		926DB4AE26389E0600D62912 /* JoyMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A392324E9E2FA00A029A1 /* JoyMeterView.swift */; };
 		926DB4AF26389E0900D62912 /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
@@ -80,6 +79,13 @@
 		926DB4BC26389E3600D62912 /* SkipVoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9257430626304BA400B518EA /* SkipVoteView.swift */; };
 		926DB4BD26389E3900D62912 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
 		926DB4BF26389EDE00D62912 /* Sourceful in Frameworks */ = {isa = PBXBuildFile; productRef = 926DB4BE26389EDE00D62912 /* Sourceful */; };
+		926DB4C22638B30600D62912 /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
+		926DB4C42638B83C00D62912 /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926DB4C32638B83C00D62912 /* BlurView.swift */; };
+		926DB4C52638B83C00D62912 /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926DB4C32638B83C00D62912 /* BlurView.swift */; };
+		926DB4C62638B83C00D62912 /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926DB4C32638B83C00D62912 /* BlurView.swift */; };
+		926DB4C82638BDD000D62912 /* ActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926DB4C72638BDD000D62912 /* ActivityIndicator.swift */; };
+		926DB4C92638BDD000D62912 /* ActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926DB4C72638BDD000D62912 /* ActivityIndicator.swift */; };
+		926DB4CA2638BDD000D62912 /* ActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926DB4C72638BDD000D62912 /* ActivityIndicator.swift */; };
 		926E2E24260F40E9007F62E0 /* PlayroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E2E23260F40E9007F62E0 /* PlayroomCreateView.swift */; };
 		926E2E25260F40E9007F62E0 /* PlayroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E2E23260F40E9007F62E0 /* PlayroomCreateView.swift */; };
 		9270C217252CA92A0030E6AD /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9270C216252CA92A0030E6AD /* Media.xcassets */; };
@@ -274,6 +280,8 @@
 		925E5C72236A742100D95AB7 /* SpotifyiOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SpotifyiOS.framework; sourceTree = "<group>"; };
 		925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Joli-Bridging-Header.h"; sourceTree = "<group>"; };
 		9263B87724F080E6008962EC /* ListenTabbarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListenTabbarView.swift; sourceTree = "<group>"; };
+		926DB4C32638B83C00D62912 /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
+		926DB4C72638BDD000D62912 /* ActivityIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityIndicator.swift; sourceTree = "<group>"; };
 		926E2E23260F40E9007F62E0 /* PlayroomCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayroomCreateView.swift; sourceTree = "<group>"; };
 		926E8FE024C76DE100378436 /* Styles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Styles.swift; sourceTree = "<group>"; };
 		9270C216252CA92A0030E6AD /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
@@ -498,6 +506,8 @@
 				920958AA25601EE10014626D /* Logging.swift */,
 				923BD58D25E16D63003863AB /* SignInWithApple.swift */,
 				923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */,
+				926DB4C32638B83C00D62912 /* BlurView.swift */,
+				926DB4C72638BDD000D62912 /* ActivityIndicator.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1052,6 +1062,7 @@
 				927E0E3624E9ADC000C8257D /* AppClip.swift in Sources */,
 				9203B31724CB070200F465CC /* ProfileView.swift in Sources */,
 				928A392424E9E2FA00A029A1 /* JoyMeterView.swift in Sources */,
+				926DB4C82638BDD000D62912 /* ActivityIndicator.swift in Sources */,
 				9251F1C525CE190200906D9D /* RefreshableScrollView.swift in Sources */,
 				928A391C24E9DAE700A029A1 /* ListenView.swift in Sources */,
 				928F75F424F7B13400CF708B /* SearchView.swift in Sources */,
@@ -1062,6 +1073,7 @@
 				925B40352621B6A6009BD781 /* TrackSuggestionsListView.swift in Sources */,
 				92870E49259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */,
 				9203B32B24CB080000F465CC /* Publishers.swift in Sources */,
+				926DB4C42638B83C00D62912 /* BlurView.swift in Sources */,
 				9208ACF524CC559400773730 /* DevicesView.swift in Sources */,
 				92BD11D024CB0BD200AAB7DE /* PeopleGridView.swift in Sources */,
 				92BD11CF24CB0BCF00AAB7DE /* ImageView.swift in Sources */,
@@ -1119,6 +1131,7 @@
 				9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */,
 				92A32DBB24C79B59007C960E /* AppState+Methods.swift in Sources */,
 				928F75F524F7B13400CF708B /* SearchView.swift in Sources */,
+				926DB4C92638BDD000D62912 /* ActivityIndicator.swift in Sources */,
 				928A392524E9E2FA00A029A1 /* JoyMeterView.swift in Sources */,
 				92A32DF624C79C07007C960E /* TrackList.swift in Sources */,
 				92A32DB924C79B59007C960E /* AppState+Spotify.swift in Sources */,
@@ -1137,6 +1150,7 @@
 				929FFE1D24FAF096000BDCF0 /* User.swift in Sources */,
 				9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */,
 				923D0DC326205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
+				926DB4C52638B83C00D62912 /* BlurView.swift in Sources */,
 				92A32E0824C79C07007C960E /* ProfileView.swift in Sources */,
 				923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */,
 				928A392124E9E1A600A029A1 /* SpotifyDelegate.swift in Sources */,
@@ -1160,10 +1174,13 @@
 				926DB4B626389E2200D62912 /* RefreshableScrollView.swift in Sources */,
 				926DB4AE26389E0600D62912 /* JoyMeterView.swift in Sources */,
 				926DB4AB26389DFB00D62912 /* ExploreView.swift in Sources */,
+				926DB4C22638B30600D62912 /* SignInWithApple.swift in Sources */,
 				926DB4B526389E1F00D62912 /* ProfileView.swift in Sources */,
 				926DB4B126389E1300D62912 /* NetworkImageView.swift in Sources */,
+				926DB4CA2638BDD000D62912 /* ActivityIndicator.swift in Sources */,
 				926DB4A926389DF500D62912 /* LogOnView.swift in Sources */,
 				92A32DB824C79B59007C960E /* UserSettings.swift in Sources */,
+				926DB4C62638B83C00D62912 /* BlurView.swift in Sources */,
 				926DB4B426389E1C00D62912 /* Preview.swift in Sources */,
 				926DB4AA26389DF800D62912 /* DevicesView.swift in Sources */,
 				926DB4A826389CF000D62912 /* LobbyView.swift in Sources */,
@@ -1177,7 +1194,6 @@
 				926DB4B726389E2500D62912 /* SearchView.swift in Sources */,
 				926DB4BB26389E3200D62912 /* TrackSuggestionsListView.swift in Sources */,
 				926DB4B326389E1900D62912 /* PlayroomHeaderView.swift in Sources */,
-				926DB4AC26389DFF00D62912 /* ImagePicker.swift in Sources */,
 				926DB4B226389E1700D62912 /* PeopleGridView.swift in Sources */,
 				926DB4AF26389E0900D62912 /* ListenTabbarView.swift in Sources */,
 				926DB4B026389E0D00D62912 /* ListenView.swift in Sources */,

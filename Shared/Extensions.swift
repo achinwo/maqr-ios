@@ -248,7 +248,11 @@ public extension Search {
 public extension View {
     
     var screenSize: CGSize {
+        #if os(macOS)
+        return NSScreen.main?.frame.size ?? .zero
+        #else
         return UIScreen.main.bounds.size
+        #endif
     }
     
     var screenWidth: CGFloat {
@@ -326,6 +330,12 @@ extension JoliApi {
 
 extension UIImage {
     
+    #if os(macOS)
+    var scale: CGFloat {
+        1.0
+    }
+    #endif
+    
     var noir: UIImage? {
         let context = CIContext(options: nil)
         
@@ -333,6 +343,7 @@ extension UIImage {
             return nil
         }
         
+        #if !os(macOS)
         currentFilter.setValue(CIImage(image: self), forKey: kCIInputImageKey)
         
         guard let output = currentFilter.outputImage, let cgImage = context.createCGImage(output, from: output.extent) else {
@@ -340,6 +351,9 @@ extension UIImage {
         }
         
         return UIImage(cgImage: cgImage, scale: scale, orientation: imageOrientation)
+        #else
+        return nil
+        #endif
     }
     
     func squared() -> UIImage? {
@@ -355,12 +369,16 @@ extension UIImage {
             width: cropWidth * scale,
             height: cropWidth * scale
         )
-
+        
+        #if os(macOS)
+        return nil
+        #else
         guard let imageRef = cgImage?.cropping(to: cropRect) else {
             return nil
         }
-        //print("[UIImage] new size: \(cropRect)")
+        
         return UIImage(cgImage: imageRef, scale: scale, orientation: imageOrientation)
+        #endif
     }
     
 }
@@ -418,10 +436,18 @@ extension Data {
 
 extension UIApplication {
     func endEditing(_ force: Bool) {
+        #if os(macOS)
+        
+        self.windows
+            .filter{$0.isKeyWindow}
+            .first?
+            .endEditing(for: force)
+        #else
         self.windows
             .filter{$0.isKeyWindow}
             .first?
             .endEditing(force)
+        #endif
     }
 }
 

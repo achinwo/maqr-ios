@@ -63,8 +63,7 @@ public struct DevicesView: JoliView {
 //                    .foregroundColor(.green)
 //                    .tag(roomTab.rawValue)
 //            }
-//        }
-        
+//        }playbackConnectBtn
         
         let view = VStack(){
             
@@ -229,7 +228,9 @@ public struct DevicesView: JoliView {
                         .padding([.vertical, .trailing])
                         .foregroundColor(playbackControllerMetadata.brandColor)
                     } icon: {
-                        Image(uiImage: #imageLiteral(resourceName: "Spotify_Icon_RGB_Green")).resizable().frame(width: logoImageSize, height: logoImageSize, alignment: .center)
+                        Image(platformImage: #imageLiteral(resourceName: "Spotify_Icon_RGB_Green"))
+                            .resizable()
+                            .frame(width: logoImageSize, height: logoImageSize, alignment: .center)
                     }
                 }
                 .disabled(appCoordinator.localPlaybackConnectRequest != nil)
@@ -298,7 +299,7 @@ public struct DevicesSampleView: View {
     @State var activeDevice: Spotify.Device?
     @State var volume: CGFloat = 30
     
-    @EnvironmentObject var partialSheetManager: PartialSheetManager
+    //@EnvironmentObject var partialSheetManager: PartialSheetManager
     
     public init(){
         
@@ -319,29 +320,29 @@ public struct DevicesSampleView: View {
         return VStack() {
             Text("Some stuff")
         }
-        .addPartialSheet()
+        //.addPartialSheet()
         .padding()
         .background(Color.pink)
         .onTapGesture() {
             //self.chooserPresented.toggle()
             
-            self.partialSheetManager.showPartialSheet(){
-                print("Partial sheet dismissed")
-            } content: {
-                DevicesView()
-            }
+//            self.partialSheetManager.showPartialSheet(){
+//                print("Partial sheet dismissed")
+//            } content: {
+//                DevicesView()
+//            }
         }
     }
 }
-
-struct DevicesView_Previews: PreviewProvider {
-    
-    static var partialManager = PartialSheetManager()
-    
-    static var previews: some View {
-        
-        return NavigationView(){
-            DevicesSampleView()
-        }.environmentObject(DevicesView_Previews.partialManager)
-    }
-}
+//
+//struct DevicesView_Previews: PreviewProvider {
+//
+//    static var partialManager = PartialSheetManager()
+//
+//    static var previews: some View {
+//
+//        return NavigationView(){
+//            DevicesSampleView()
+//        }.environmentObject(DevicesView_Previews.partialManager)
+//    }
+//}
