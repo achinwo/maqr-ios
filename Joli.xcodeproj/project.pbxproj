@@ -128,7 +128,6 @@
 		92A32D8824C79A13007C960E /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
 		92A32D8924C79A13007C960E /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
 		92A32DA524C79B3D007C960E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9424C79B3D007C960E /* Assets.xcassets */; };
-		92A32DA624C79B3D007C960E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9424C79B3D007C960E /* Assets.xcassets */; };
 		92A32DAD24C79B3D007C960E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9924C79B3D007C960E /* Localizable.strings */; };
 		92A32DAE24C79B3D007C960E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9924C79B3D007C960E /* Localizable.strings */; };
 		92A32DB524C79B59007C960E /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DB024C79B59007C960E /* AppState.swift */; };
@@ -999,7 +998,6 @@
 				92A32DAE24C79B3D007C960E /* Localizable.strings in Resources */,
 				92A32DC224C79B6C007C960E /* Preview Assets.xcassets in Resources */,
 				92A32E1F24C7A9FC007C960E /* env.json in Resources */,
-				92A32DA624C79B3D007C960E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

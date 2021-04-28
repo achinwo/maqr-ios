@@ -249,7 +249,7 @@ public extension View {
     
     var screenSize: CGSize {
         #if os(macOS)
-        return NSScreen.main?.frame.size ?? .zero
+        return CGSize(width: 400, height: 600)//NSScreen.main?.frame.size ?? .zero
         #else
         return UIScreen.main.bounds.size
         #endif

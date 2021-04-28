@@ -18,9 +18,17 @@ public struct SpotifyConnectButton: JoliView {
         } label: {
             HStack() {
                 Spacer()
-                Image(platformImage: #imageLiteral(resourceName: "Spotify_Icon_RGB_Green.png"))
+                
+                #if os(macOS)
+                Image(systemName: "hifispeaker")
                     .resizable()
                     .frame(width: 64, height: 64, alignment: .center)
+                #else
+                Image(platformImage: Images.spotifyLogo.uiImage)
+                    .resizable()
+                    .frame(width: 64, height: 64, alignment: .center)
+                #endif
+                
                 VStack(alignment: .leading){
                     Text("Connect to Spotify ")
                         .font(.subheadline)
