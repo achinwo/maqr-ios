@@ -207,6 +207,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     
     case invited(String) // joli.live/r/abc
     case playroom(String)
+    case rsvp(String)
     
     case unset
     case home
@@ -222,6 +223,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
             self = .invited(inviteId)
         } else if let matches = patterns.playroom.matchGroups(rawValue), let roomId = matches["roomId"] {
             self = .playroom(roomId)
+        } else if let matches = patterns.rsvp.matchGroups(rawValue), let eventId = matches["eventId"] {
+            self = .rsvp(eventId)
         } else if rawValue == AppLocation.upgrade.rawValue {
             self = .upgrade
         } else if rawValue == AppLocation.default {
@@ -244,6 +247,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                 return "/r/\(roomId)"
             case .unset:
                 return .empty
+            case .rsvp(let eventId):
+                return "/rsvp/\(eventId)"
             default:
                 return AppLocation.default
         }
@@ -252,7 +257,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     static var patterns = (
         home: Regex("^/$"),
         invited: Regex("^/(playroom/invite|i)/(?<inviteId>.+)$"),
-        playroom: Regex("^/r/(?<roomId>.+)$")
+        playroom: Regex("^/r/(?<roomId>.+)$"),
+        rsvp: Regex("^/rsvp/(?<eventId>.+)$")
     )
     
     public var description: String {
@@ -892,7 +898,16 @@ public extension AppClip {
     }
     
     func onUserActivity(_ activity: NSUserActivity) -> Void {
+        let lastLocation = self.coordinator.currentLocation
         self.coordinator.currentLocation = AppLocation(activity) ?? .home
+        
+        guard lastLocation != self.coordinator.currentLocation else {
+            return
+        }
+        
+        let msg = "[\(Self.self)] navigation: \(lastLocation) -> \(self.coordinator.currentLocation)"
+        coordinator.serverLogDestination?.send(.info, msg: msg, thread: Thread.current.description,
+                                               file: #file, function: #function, line: #line)
     }
     
     func onNotificationRecieved(_ deviceToken: Data) {

@@ -72,19 +72,19 @@ public struct BlurView: NSViewRepresentable {
 
 public typealias BlurEffectStyle = UIBlurEffect.Style
 
-struct BlurView: UIViewRepresentable {
+public struct BlurView: UIViewRepresentable {
     
     let style: BlurEffectStyle
     
-    init(_ style: BlurEffectStyle = .systemMaterial) {
+    public init(_ style: BlurEffectStyle = .systemMaterial) {
         self.style = style
     }
     
-    func makeUIView(context: Context) -> UIVisualEffectView {
+    public func makeUIView(context: Context) -> UIVisualEffectView {
         return UIVisualEffectView(effect: UIBlurEffect(style: self.style))
     }
     
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+    public func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
         uiView.effect = UIBlurEffect(style: self.style)
         uiView.isUserInteractionEnabled = false
     }

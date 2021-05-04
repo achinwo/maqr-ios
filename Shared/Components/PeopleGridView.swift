@@ -8,6 +8,7 @@
 
 import SwiftUI
 import JoliCore
+import AVFoundation
 
 #if !os(macOS)
 import LetterAvatarKit

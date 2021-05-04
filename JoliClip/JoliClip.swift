@@ -368,12 +368,6 @@ struct JoliClip: AppClip {
         
     }
     
-    func onUserActivity(_ activity: NSUserActivity) -> Void {
-        self.coordinator.currentLocation = AppLocation(activity) ?? .home
-        
-        logger.debug("[\(Self.self)] onUserActivity: \(self.coordinator.currentLocation)")
-    }
-    
     func onScenePhaseChange(_ phase: ScenePhase){
         switch phase {
             case .active:

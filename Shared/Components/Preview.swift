@@ -54,15 +54,23 @@ public enum AppPreview: View, Equatable {
     case playroomCreate
 }
 
-struct AppPreviewView: JoliView {
+public struct AppPreviewView: JoliView {
     
-    @EnvironmentObject var appCoordinator: AppCoordinator
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @Binding var preview: AppPreview?
     @Binding var currentUser: User?
+    @Binding var closeable: Bool
     var animation: Namespace.ID
     
-    var contentView: some View {
+    public init(preview: Binding<AppPreview?>, currentUser: Binding<User?>, isDismissable: Binding<Bool> = .constant(true), animation: Namespace.ID){
+        self._preview = preview
+        self._currentUser = currentUser
+        self._closeable = isDismissable
+        self.animation = animation
+    }
+    
+    public var contentView: some View {
         ZStack(){
             
             VStack(spacing: .zero){
@@ -72,35 +80,38 @@ struct AppPreviewView: JoliView {
                 if let currentUser = currentUser, preview == .userAccount {
                     UserProfileView2(user: .constant(currentUser))
                 } else if let preview = self.preview {
-                    preview.environmentObject(appCoordinator)
+                    preview
                 } else {
                     Text("No Preview.")
                 }
                 Spacer(minLength: .zero)
                 Divider()
             }
+            .environmentObject(appCoordinator)
             .matchedGeometryEffect(id: "preview", in: animation)
             
-            let largeTitleSize = UIFont.preferredFont(forTextStyle: .title1).pointSize
-            VStack(alignment: .trailing){
-                HStack(){
+            if closeable {
+                let largeTitleSize = UIFont.preferredFont(forTextStyle: .title1).pointSize
+                VStack(alignment: .trailing){
+                    HStack(){
+                        Spacer()
+                        Image(systemName: "xmark")
+                            .font(Font.title.weight(.light))
+                            .foregroundColor(.gray)
+                            .opacity(0.9)
+                            .background(Circle()
+                                            .frame(width: largeTitleSize * 1.4, height: largeTitleSize * 1.6)
+                                            .foregroundColor(Colors.lightGray.opacity(0.8)))
+                            
+                            .padding([.top, .trailing], Sizing.medium)
+                    }
+                    .padding()
+                    .onTapGesture() {
+                        self.preview = nil
+                    }
+                    //.frame(maxWidth: Sizing.large, maxHeight: Sizing.large)
                     Spacer()
-                    Image(systemName: "xmark")
-                        .font(Font.title.weight(.light))
-                        .foregroundColor(.gray)
-                        .opacity(0.9)
-                        .background(Circle()
-                                        .frame(width: largeTitleSize * 1.4, height: largeTitleSize * 1.6)
-                                        .foregroundColor(Colors.lightGray.opacity(0.8)))
-                        
-                        .padding([.top, .trailing], Sizing.medium)
                 }
-                .padding()
-                .onTapGesture() {
-                    self.preview = nil
-                }
-                //.frame(maxWidth: Sizing.large, maxHeight: Sizing.large)
-                Spacer()
             }
         }
         

@@ -141,13 +141,13 @@ public struct PlayroomHeaderView: JoliView {
     @State var tappedUri: String? = nil
     
     public init(playroom: Binding<Playroom?>, strip: Binding<TrackStrip>, preview: Binding<AppPreview?>,
-                tracks: Binding<[Playable]>, scrollProxy: Binding<ScrollViewProxy?>, isCloseable: Binding<Bool> = .constant(true)){
+                tracks: Binding<[Playable]>, scrollProxy: Binding<ScrollViewProxy?>, isDismissable: Binding<Bool> = .constant(true)){
         self._playroom = playroom
         self._strip = strip
         self._preview = preview
         self._tracks = tracks
         self._scrollProxy = scrollProxy
-        self._closeable = isCloseable
+        self._closeable = isDismissable
     }
     
     let tappedSubject: AutoResetSubject<String?, Never, DispatchQueue> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))

@@ -248,7 +248,7 @@ public protocol Room {
     var deletedById: Int? { get }
     var deletedByUser: User? { get }
     var details: String { get }
-    var entitlements: [Entitlement] { get set }
+    var entitlements: [Entitlement]? { get set }
     var imageLarge: String? { get }
     var imageMedium: String? { get }
     var imageSmall: String? { get }
@@ -289,7 +289,7 @@ public extension Room {
     
     func inviteUrl<U: UserIdentifiable & Identifiable>(for user: U) -> URL? where U.ID == Int {
         
-        let entitlement: Entitlement? = entitlements.first() { $0.createdById == user.id }
+        let entitlement: Entitlement? = entitlements?.first() { $0.createdById == user.id }
         
         guard let uuid = entitlement?.uuid ?? uuid, let url = URL(string: "/i/\(uuid)", relativeTo: baseUrl) else {
             return nil

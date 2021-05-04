@@ -18,6 +18,22 @@ import Promises
 import UIImageColors
 import Combine
 
+struct SizePreferenceKey: PreferenceKey {
+    typealias Value = CGSize
+
+    static var defaultValue: Value = .zero
+
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        let next = nextValue()
+        
+        guard next != .zero else { return }
+        
+        print("[BoundsPreferenceKey] \(value) -> \(next)")
+        value = next
+        //value = value + nextValue()
+    }
+}
+
 public struct PlayroomView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
@@ -25,11 +41,13 @@ public struct PlayroomView: JoliView {
     
     @Binding public var playroom: Playroom
     @Binding public var showRecommended: Bool
+    @Binding public var preview: AppPreview?
     @State public var authcallback: () -> Void
     
     @State private var votesByQueuedTrackId: [Int: Int] = [:]
     @State private var strip: PlayroomHeaderView.TrackStrip = (nil, nil, nil)
     @State private var tracks: [Playable] = []
+    
     @State private var scrollProxy: ScrollViewProxy? = nil
     
     @State private var pendingAction: (() -> Void)? = nil
@@ -47,10 +65,10 @@ public struct PlayroomView: JoliView {
         let header: PlayroomHeaderView = PlayroomHeaderView(
             playroom: binding,
             strip: $strip,
-            preview: .constant(nil),
+            preview: $preview,
             tracks: $tracks,
             scrollProxy: $scrollProxy,
-            isCloseable: .constant(false)
+            isDismissable: .constant(false)
         )
         
         let installMessage = "Install the full experience for the ability to create your own playrooms and more"
@@ -109,6 +127,11 @@ public struct PlayroomView: JoliView {
             
             VStack(spacing: .zero){
                 header
+                    .overlay(
+                        GeometryReader(){ proxy in
+                            Color.clear.preference(key: SizePreferenceKey.self, value: proxy.size)
+                        }
+                    )
                     .padding(.horizontal, Sizing.small * 0.6)
                     .padding([.horizontal, .bottom], Sizing.small * 0.5)
                     .padding(.top, safeAreaInsets.top)
@@ -131,8 +154,14 @@ public struct PlayroomView: JoliView {
             self.voteCasted = vote
         }
         .onReceive(playroom.$strip, assign: \.strip, target: self)
+        .onAppear(){
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2){
+                ready.toggle()
+            }
+        }
     }
     
+    @State var ready = false
     @State var requestingVoteTrackId: Int? = nil
     @State var voteCasted: QueuedTrackVote? = nil
     
@@ -237,12 +266,6 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     @State var tabbarExpaned = false
     
     @State var currentLocation: AppLocation = .home
-    
-    @State var strip: PlayroomHeaderView.TrackStrip = (nil, nil, nil)
-    @State var requestingVoteTrackId: Int? = nil
-    @State var votesByTrack: [Int: [QueuedTrackVote]] = [:]
-    @State var voteCasted: QueuedTrackVote? = nil
-    @State var votes: [QueuedTrackVote] = []
     @Binding var showRecommended: Bool
     
     @State var tracks: [Playable] = []
@@ -278,23 +301,38 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         //                        ScrollView(.vertical, showsIndicators: true) {
         
         
-        return VStack(alignment: .center, spacing: .zero){
-            if loadingView {
-                ProgressView("Loading Playroom").padding()
-            } else if let error = errorMessage {
-                Text(error).font(Font.title.weight(.light)).padding()
-                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
-            } else if let playroom = playroom {
-                PlayroomView(playroom: .constant(playroom), showRecommended: $showRecommended) {
+        return ZStack(){
+            
+            VStack(alignment: .center, spacing: .zero){
+                if loadingView {
+                    ProgressView("Loading Playroom").padding()
+                } else if let error = errorMessage {
+                    Text(error).font(Font.title.weight(.light)).padding()
+                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4)
+                } else if let playroom = playroom {
+                    PlayroomView(playroom: .constant(playroom), showRecommended: $showRecommended, preview: $preview) {
                         localPlaybackController.authorize(token: nil)
                     }
                     .background(Color.systemBackground)
                     .frame(width: screenWidth)
                     .id(playroom.name)
-            } else {
-                Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
-                refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4) i/0mzKhO
+                } else {
+                    Text(Self.GENERIC_ERROR_MESSAGE).font(Font.title.weight(.light)).padding()
+                    refreskButton//.padding(.top, UIScreen.main.bounds.height / 1.4) i/0mzKhO
+                }
             }
+            
+            AppPreviewView(preview: self.$preview, currentUser: .constant(nil), isDismissable: $previewDismissable, animation: animation)
+                .frame(maxWidth: screenWidth)
+                .frame(minWidth: screenWidth, maxHeight: screenHeight)
+                .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                .padding(.top, self.headerSize.height + safeAreaInsets.top)
+                //.padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
+                .offset(x: 0, y: self.preview == nil ? screenHeight : 0)
+                .animation(.spring())
+        }
+        .onPreferenceChange(SizePreferenceKey.self) { size in
+            self.headerSize = size
         }
         .edgesIgnoringSafeArea([.top, .bottom])
         .frame(width: screenWidth, height: screenHeight, alignment: .center)
@@ -326,13 +364,18 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             self.assertWebsocketConnected()
         }
         .onAppear() {
-            //self.scrollProxy = scrollProxy
-            print("Current LOACTION: \(appCoordinator.currentLocation)")
             if [.home, .unset].contains(appCoordinator.currentLocation) {
                 self.fetchPlayroomByInviteId("mnsv9A")
             }
         }
     }
+    
+    @State var previewDismissable = true
+    @Environment(\.safeAreaInsets) var safeAreaInsets
+    @State var headerSize: CGSize = .zero
+    @Environment(\.colorScheme) var colorScheme
+    @Namespace var animation
+    @State var creatingRoomEntitlement: Bool = false
     
     static var GENERIC_ERROR_MESSAGE: String {
         return "An error occured while loading your Playroom invitation, please try again later."
@@ -340,8 +383,6 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     @discardableResult
     func fetchPlayroomByInviteId(_ inviteId: String) -> Promise<Entitlement> {
-        
-        
         let url = "/i/\(inviteId)"
         self.loadingView = true
         return HttpMethod.Fetch.get(url: url, dataType: Entitlement.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)

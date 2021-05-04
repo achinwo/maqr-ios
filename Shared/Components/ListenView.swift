@@ -399,53 +399,61 @@ struct ListenView: JoliView {
             LobbyView(recentTracks: self.$recentTracks, liveTracks: self.$liveTracks, playrooms: self.$playrooms, filterText: self.$filterText, isLoading: self.$loadingLiveTracks, preview: self.$preview) { room in
                 self.tracks = []
                 self.votesByQueuedTrackId = [:]
-                self.playroom = Playroom(musicroom: room, socket: self.websocket, api: api)
                 
-                guard let auth = appCoordinator.activeAuth, !room.entitlements.contains(where: { $0.userId == auth.user.id }) else {
-                    return
-                }
+                let playroom = Playroom(musicroom: room, socket: self.websocket, api: api)
+                self.playroom = playroom
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    self.preview = .view() {
-                        VStack(){
-                            Spacer()
-                            Text(room.name).font(.largeTitle).padding().padding(.top, Sizing.xxxLarge)
-                            Text(room.details).font(.subheadline).foregroundColor(.secondary).padding()
-                            
-                            if self.creatingRoomEntitlement {
-                                ProgressView().padding()
-                                    .matchedGeometryEffect(id: "entering-room", in: animation)
-                            } else {
-                                Button("Enter") {
-                                    var entitlement = EntitlementRecord()
-                                    entitlement.userId = auth.user.id
-                                    entitlement.type = "musicroom"
-                                    entitlement.targetRecordId = room.id
-                                    entitlement.acceptedAt = Date()
-                                    
-                                    self.creatingRoomEntitlement = true
-                                    entitlement.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
-                                        .then() { ent in
-                                            logger.debug("[ListenView#lobbyView] created entitlement: \(ent)")
-                                            self.preview = nil
-                                        }
-                                        .always {
-                                            self.creatingRoomEntitlement = false
-                                        }
-                                }
-                                .font(Font.title)
-                                .padding()
-                                .matchedGeometryEffect(id: "entering-room", in: animation)
-                            }
-                            
-                            Spacer()
-                        }.eraseToAnyView()
-                    }
+                    self.assertJoin(playroom)
                 }
             }
         }
         .frame(width: screenWidth)
         .background(Color.systemBackground)
+    }
+    
+    func assertJoin(_ room: Playroom){
+        guard let auth = appCoordinator.activeAuth,
+              let entitlements = room.entitlements,
+              !entitlements.contains(where: { $0.userId == auth.user.id }) else {
+            return
+        }
+        
+        self.preview = .view() {
+            VStack(){
+                Spacer()
+                Text(room.name).font(.largeTitle).padding().padding(.top, Sizing.xxxLarge)
+                Text(room.details).font(.subheadline).foregroundColor(.secondary).padding()
+                
+                if self.creatingRoomEntitlement {
+                    ProgressView().padding()
+                        .matchedGeometryEffect(id: "entering-room", in: animation)
+                } else {
+                    Button("Enter") {
+                        var entitlement = EntitlementRecord()
+                        entitlement.userId = auth.user.id
+                        entitlement.type = "musicroom"
+                        entitlement.targetRecordId = room.musicroom.id
+                        entitlement.acceptedAt = Date()
+                        
+                        self.creatingRoomEntitlement = true
+                        entitlement.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
+                            .then() { ent in
+                                logger.debug("[ListenView#lobbyView] created entitlement: \(ent)")
+                                self.preview = nil
+                            }
+                            .always {
+                                self.creatingRoomEntitlement = false
+                            }
+                    }
+                    .font(Font.title)
+                    .padding()
+                    .matchedGeometryEffect(id: "entering-room", in: animation)
+                }
+                
+                Spacer()
+            }.eraseToAnyView()
+        }
     }
     
     @StateObject var refreshModel = Model()

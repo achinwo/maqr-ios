@@ -80,7 +80,7 @@ public class Playroom: ObservableObject, Room, Equatable {
     
     @Published public var themeTracks: [Track] = []
     
-    @Published public var entitlements: [Entitlement] {
+    @Published public var entitlements: [Entitlement]? = nil {
         didSet {
             self.updateMembership()
         }
@@ -260,16 +260,15 @@ public class Playroom: ObservableObject, Room, Equatable {
     }
     
     public func updateMembership() {
-        let userIds = entitlements.compactMap() { $0.userId }
         
-        guard !userIds.isEmpty else { return }
+        guard let userIds = entitlements?.compactMap({ $0.userId }), !userIds.isEmpty else { return }
         
         User.findByIds(ids: userIds, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(on: .main) { users in
-                print("[Playroom] fetched \(users.count) users for \(self.entitlements.count) entitlements")
+                print("[Playroom] fetched \(users.count) users for \(String(describing: self.entitlements?.count)) entitlements")
                 let userMap = Dictionary(uniqueKeysWithValues: users.map() { ($0.id, $0) })
                 
-                self.membership = self.entitlements.compactMap() { entitlement in
+                self.membership = (self.entitlements ?? []).compactMap() { entitlement in
                     
                     guard let user = userMap[entitlement.userId] else {
                         return nil
@@ -321,13 +320,12 @@ public class Playroom: ObservableObject, Room, Equatable {
                 //self.entitlementCancel?.cancel()
             } receiveValue: { value in
                 //print("[Playroom#Entitlement] \(value)")
-                guard !self.entitlements.contains(value) else {
+                guard var entitlements = self.entitlements, !entitlements.contains(value) else {
                     return
                 }
                 
-                var ents = self.entitlements
-                ents.append(value)
-                self.entitlements = ents
+                entitlements.append(value)
+                self.entitlements = entitlements
             }
             .store(in: &cancellationSet)
         
