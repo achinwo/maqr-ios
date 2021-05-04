@@ -72,7 +72,7 @@ public struct SingleImagePicker: ImagePickerRepresentable {
     
     public func makeUIViewController(context: UIViewControllerRepresentableContext<SingleImagePicker>) -> PHPickerViewController {
         var configuration = PHPickerConfiguration()
-        configuration.filter = .livePhotos
+        configuration.filter = .any(of: [.images, .livePhotos])
         
         let picker = PHPickerViewController(configuration: configuration)
         picker.delegate = context.coordinator

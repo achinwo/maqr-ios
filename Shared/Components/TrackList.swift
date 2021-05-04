@@ -249,7 +249,7 @@ public struct TrackView2<AddonView: View>: JoliView {
         
         return HStack(alignment: .center) {
             
-            NetworkImage(imageURL: URL(string: track.albumCoverUrl)!,
+            NetworkImage(imageURL: URL(string: track.thumbnailUrl)!,
                          placeholderImage: UIImage(systemName: "timelapse")!) { (loadedImage, _) in
                 
                 guard let loadedImage = loadedImage, useDynamicColors else {

@@ -16,7 +16,11 @@ import PartialSheet
 
 public struct DevicesView: JoliView {
     
-    @State var activeDevice: Spotify.Device? = nil
+    var activeDevice: Spotify.Device? {
+        return devices.first() { $0.id == activeDeviceId }
+    }
+    
+    @State var activeDeviceId: String? = nil
     @State var volume: CGFloat = .zero
     @State var devices: [Spotify.Device] = []
     let onClose: ((Spotify.Device?) -> Void)?
@@ -181,27 +185,26 @@ public struct DevicesView: JoliView {
                 }
                 .padding()
             } else {
-                LazyVGrid(columns: deviceGridItems, spacing: Sizing.medium){
-                    
-                    ForEach(devices) { device in
-                        Button(){
-                            logger.debug("[DevicesView] setting active device: \(String(describing: device))")
-                            
-                            self.appCoordinator.activeDeviceSubject.send(device)
-                        } label: {
-                            VStack {
-                                Image(systemName: device.imageName)
-                                    .font(Font.title.weight(.thin))
-                                Text(device.name)
-                                    .lineLimit(2)
-                                    .font(.caption)
-                            }
-                        }
-                        .padding()
-                        .background(device.id == activeDevice?.id ? Colors.lightGray : Color.clear)
-                        .cornerRadius(20)
+                let activeDeviceIds = Binding<[String]>(){
+                    guard let id = activeDeviceId else { return [] }
+                    return [id]
+                } set: { ids in
+                    self.activeDeviceId = ids.first
+                }
+                
+                GridChooserView(items: $devices, selections: activeDeviceIds){ item in
+                    print("[Device] selected: \(item)")
+                    self.appCoordinator.activeDeviceSubject.send(item)
+                } content: { device in
+                    VStack {
+                        Image(systemName: device.imageName)
+                            .font(Font.title.weight(.thin))
+                        Text(device.name)
+                            .lineLimit(2)
+                            .font(.caption)
                     }
-                }.padding()
+                }
+                .padding()
             }
             
             if let playbackControllerMetadata = playbackControllerMetadata, playbackControllerMetadata.isInstalled, playbackControllerMetadata.connectionState != .connected {
@@ -268,7 +271,7 @@ public struct DevicesView: JoliView {
             
             logger.debug("[DevicesView] active device updated: \(String(describing: activeDevice))")
             //let prevActive = self.activeDevice
-            self.activeDevice = activeDevice
+            self.activeDeviceId = activeDevice?.id
             
             guard let device = activeDevice else {
                 return

@@ -23,6 +23,9 @@
 		920958B325601F030014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		9209B1E12629E32500786A6A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9209B1E02629E32500786A6A /* LaunchScreen.storyboard */; };
 		9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
+		922989A72641FCA800FDD58F /* GridChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989A62641FCA800FDD58F /* GridChooserView.swift */; };
+		922989A82641FCA800FDD58F /* GridChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989A62641FCA800FDD58F /* GridChooserView.swift */; };
+		922989A92641FCA800FDD58F /* GridChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989A62641FCA800FDD58F /* GridChooserView.swift */; };
 		922BFD33263757F8007CAF36 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 922BFD32263757F8007CAF36 /* AlertToast */; };
 		923657552530654B008A8A83 /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		9236575C2530654D008A8A83 /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
@@ -267,6 +270,7 @@
 		920958AA25601EE10014626D /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		9209B1E02629E32500786A6A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9222BE1724CD8A5800F19973 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
+		922989A62641FCA800FDD58F /* GridChooserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridChooserView.swift; sourceTree = "<group>"; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		923BD58D25E16D63003863AB /* SignInWithApple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApple.swift; sourceTree = "<group>"; };
 		923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publishers+Playback.swift"; sourceTree = "<group>"; };
@@ -629,6 +633,7 @@
 				925B40342621B6A6009BD781 /* TrackSuggestionsListView.swift */,
 				9257430626304BA400B518EA /* SkipVoteView.swift */,
 				9246B81F263090C6004D2ADF /* WebView.swift */,
+				922989A62641FCA800FDD58F /* GridChooserView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1074,6 +1079,7 @@
 				926DB4C42638B83C00D62912 /* BlurView.swift in Sources */,
 				9208ACF524CC559400773730 /* DevicesView.swift in Sources */,
 				92BD11D024CB0BD200AAB7DE /* PeopleGridView.swift in Sources */,
+				922989A72641FCA800FDD58F /* GridChooserView.swift in Sources */,
 				92BD11CF24CB0BCF00AAB7DE /* ImageView.swift in Sources */,
 				9257430726304BA400B518EA /* SkipVoteView.swift in Sources */,
 				9203B32824CB07F200F465CC /* Extensions.swift in Sources */,
@@ -1148,6 +1154,7 @@
 				929FFE1D24FAF096000BDCF0 /* User.swift in Sources */,
 				9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */,
 				923D0DC326205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
+				922989A82641FCA800FDD58F /* GridChooserView.swift in Sources */,
 				926DB4C52638B83C00D62912 /* BlurView.swift in Sources */,
 				92A32E0824C79C07007C960E /* ProfileView.swift in Sources */,
 				923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */,
@@ -1172,6 +1179,7 @@
 				926DB4B626389E2200D62912 /* RefreshableScrollView.swift in Sources */,
 				926DB4AE26389E0600D62912 /* JoyMeterView.swift in Sources */,
 				926DB4AB26389DFB00D62912 /* ExploreView.swift in Sources */,
+				922989A92641FCA800FDD58F /* GridChooserView.swift in Sources */,
 				926DB4C22638B30600D62912 /* SignInWithApple.swift in Sources */,
 				926DB4B526389E1F00D62912 /* ProfileView.swift in Sources */,
 				926DB4B126389E1300D62912 /* NetworkImageView.swift in Sources */,
