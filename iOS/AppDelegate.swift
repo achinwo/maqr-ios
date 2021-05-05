@@ -162,6 +162,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             JoliApi.Environment.loadEnvConfig()
         }
         
+        application.applicationIconBadgeNumber = 0
+        
         logger.debug("[AppDelegate#willFinishLaunchingWithOptions] notifOptions:\(String(describing: launchOptions))")
         return true
     }

@@ -17,25 +17,43 @@ public struct GridChooserView<Item: Identifiable, Content: View>: JoliView {
     var onSelection: ((Item) -> Void)? = nil
     let content: (Item) -> Content
     let mode: SelectionMode
+    let layout: LayoutStyle
     
     public enum SelectionMode {
         case single
         case multiple
     }
     
-    public init(items: Binding<[Item]>, selections: Binding<[Item.ID]>, mode: SelectionMode = .single, onSelection: @escaping (Item) -> Void, @ViewBuilder content: @escaping (Item) -> Content) {
+    public enum LayoutStyle {
+        case grid
+        case list
+    }
+    
+    public init(items: Binding<[Item]>, selection: Binding<Item.ID?>, layout: LayoutStyle = .grid, onSelection: @escaping (Item) -> Void, @ViewBuilder content: @escaping (Item) -> Content) {
         self._items = items
         self.content = content
         self.onSelection = onSelection
-        self._selections = selections
-        self.mode = mode
+        
+        self._selections = Binding<[Item.ID]>(){
+            guard let id = selection.wrappedValue else {
+                return []
+            }
+            
+            return [id]
+        } set: { ids in
+            selection.wrappedValue = ids.first
+        }
+        
+        self.mode = .single
+        self.layout = layout
     }
     
-    public init(items: Binding<[Item]>, selections: Binding<[Item.ID]>, mode: SelectionMode = .single, @ViewBuilder content: @escaping (Item) -> Content) {
+    public init(items: Binding<[Item]>, selections: Binding<[Item.ID]>, layout: LayoutStyle = .grid, @ViewBuilder content: @escaping (Item) -> Content) {
         self._items = items
         self.content = content
         self._selections = selections
-        self.mode = mode
+        self.mode = .multiple
+        self.layout = layout
         self.onSelection = self.onSelect(_:)
     }
     
@@ -44,7 +62,7 @@ public struct GridChooserView<Item: Identifiable, Content: View>: JoliView {
             self.selections = [item.id]
             return
         }
-        
+         
         guard !self.selections.contains(item.id) else {
             return
         }
@@ -59,19 +77,28 @@ public struct GridChooserView<Item: Identifiable, Content: View>: JoliView {
         ]
     }
     
+    private var forEachView: some View {
+        ForEach(items) { item in
+            Button(){
+                self.onSelection?(item)
+            } label: {
+                content(item)
+            }
+            .cornerRadius(20)
+            .id(item.id)
+        }
+    }
+    
     public var contentView: some View {
-        LazyVGrid(columns: columns, spacing: Sizing.medium){
-            
-            ForEach(items) { device in
-                Button(){
-                    logger.debug("[DevicesView] setting active device: \(String(describing: device))")
-                    self.onSelection?(device)
-                } label: {
-                    content(device)
+        Group(){
+            if layout == .grid {
+                LazyVGrid(columns: columns, spacing: Sizing.medium){
+                    forEachView
                 }
-                .padding()
-                .background(selections.contains(device.id) ? Color.tertiarySystemBackground : Color.clear)
-                .cornerRadius(20)
+            } else {
+                VStack(){
+                    forEachView
+                }
             }
         }
     }

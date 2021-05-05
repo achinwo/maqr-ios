@@ -185,15 +185,8 @@ public struct DevicesView: JoliView {
                 }
                 .padding()
             } else {
-                let activeDeviceIds = Binding<[String]>(){
-                    guard let id = activeDeviceId else { return [] }
-                    return [id]
-                } set: { ids in
-                    self.activeDeviceId = ids.first
-                }
-                
-                GridChooserView(items: $devices, selections: activeDeviceIds){ item in
-                    print("[Device] selected: \(item)")
+                GridChooserView(items: $devices, selection: self.$activeDeviceId){ item in
+                    logger.debug("[DevicesView] setting active device: \(String(describing: item))")
                     self.appCoordinator.activeDeviceSubject.send(item)
                 } content: { device in
                     VStack {
@@ -203,6 +196,8 @@ public struct DevicesView: JoliView {
                             .lineLimit(2)
                             .font(.caption)
                     }
+                    .padding()
+                    .background(self.activeDeviceId == device.id ? Color.tertiarySystemBackground : Color.clear)
                 }
                 .padding()
             }
