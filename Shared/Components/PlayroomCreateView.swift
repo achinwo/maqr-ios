@@ -8,6 +8,7 @@
 
 import SwiftUI
 import JoliCore
+import Promises
 
 public struct PlayroomCreateView: JoliView {
     
@@ -135,7 +136,7 @@ public struct PlayroomCreateView: JoliView {
                                     .frame(height: screenHeight * 0.1)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 6)
-                                            .stroke(Colors.lightGray, lineWidth: 1)
+                                            .stroke(Color.tertiarySystemBackground, lineWidth: 1)
 //                                            .stroke(LinearGradient(gradient: Gradient(colors: [.green, .blue]),
 //                                                                   startPoint: .topLeading,
 //                                                                   endPoint: .bottomTrailing), lineWidth: 1)
@@ -157,6 +158,8 @@ public struct PlayroomCreateView: JoliView {
 //                            Text("room")
 //                        }
 //                        .padding()
+                        self.eventView
+                            .padding()
                         
                         HStack(){
                             Spacer()
@@ -191,7 +194,7 @@ public struct PlayroomCreateView: JoliView {
                             .disabled(disabled)
                             Spacer()
                         }
-                        .padding(.top, Sizing.medium)
+                        .padding(.vertical, Sizing.medium)
                     }
                 }
                 .edgesIgnoringSafeArea(.bottom)
@@ -215,15 +218,79 @@ public struct PlayroomCreateView: JoliView {
         
     }
     
+    var eventView: some View {
+        let themeSongHeader = Text("Event (optional)")
+            .foregroundColor(.secondary)
+            .font(Font.title.weight(.thin))
+        
+        let sectionBody = HStack(alignment: .center){
+            VStack(alignment: .leading) {
+                Text("Enable event setup")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Text("Is this playroom associated with an event such as birthday or wedding?")
+                    .lineLimit(3)
+                    .font(.footnote)
+                    .foregroundColor(Color.secondary)
+            }
+            Spacer()
+            
+            Toggle("Event Enabled", isOn: self.$eventEnabled)
+                .labelsHidden()
+                .padding()
+        }
+        
+        return Group(){
+            if self.eventEnabled {
+                DisclosureGroup(isExpanded: self.$eventSectionExpanded){
+                    VStack(){
+                        sectionBody
+                        DatePicker("Starts", selection: $eventStartsAt, displayedComponents: [.hourAndMinute, .date])
+                        DatePicker("Ends", selection: $eventEndsAt, displayedComponents: [.hourAndMinute, .date])
+                    }
+                    .padding(.horizontal)
+                } label: {
+                    themeSongHeader
+                }
+            } else {
+                Section(header: themeSongHeader){
+                    sectionBody
+                        .padding(.horizontal)
+                }
+            }
+        }
+        .animation(.easeInOut)
+        
+    }
     
+    @State var eventSectionExpanded = true
+    @State var eventEnabled: Bool = false
     @State var creatingPlayroom: Bool = false
+    @State var eventStartsAt = Date()
+    @State var eventEndsAt = Date()
+    
+    private func createEvent(_ room: Musicroom) -> Promise<Event> {
+        
+        var event = EventRecord()
+        event.endsAt = eventEndsAt
+        event.startsAt = eventStartsAt
+        event.title = self.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        event.subtitle = self.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        event.roomId = room.id
+        
+        return event
+            .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
+            .catch(self.appCoordinator.globalErrorHandler())
+    }
     
     private func createMusicroom() {
         print("Creating playroom...")
         
+        let name = self.name.trimmingCharacters(in: .whitespacesAndNewlines)
         let props: [MusicroomRecord.PersistedType.CodingKeys: AnyObject] = [
             .details: self.description.trimmingCharacters(in: .whitespacesAndNewlines) as AnyObject,
-            .name: self.name.trimmingCharacters(in: .whitespacesAndNewlines) as AnyObject,
+            .name: name as AnyObject,
             .membership: Membership.membershipOpen.rawValue as AnyObject,
             .themeTrackUri: selectedTrack?.uri as AnyObject
         ]
@@ -233,7 +300,22 @@ public struct PlayroomCreateView: JoliView {
             .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
             .then() { room in
                 logger.debug("[PlayroomCreate] created: \(room)")
-                self.appCoordinator.globalPreviewSubject.send(nil)
+                
+                let onComplete = {
+                    presentToast("\(name) created", type: .complete(.green)) { _ in
+                        self.appCoordinator.globalPreviewSubject.send(nil)
+                    }
+                }
+                
+                guard !eventEnabled else {
+                    self.createEvent(room)
+                        .then(){ event in
+                            onComplete()
+                        }
+                    return
+                }
+                
+                onComplete()
             }
             .catch(self.appCoordinator.globalErrorHandler())
             .always {
