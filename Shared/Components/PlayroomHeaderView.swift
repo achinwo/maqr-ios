@@ -271,49 +271,7 @@ public struct PlayroomHeaderView: JoliView {
                         .onReceive(playroom.$themeTracks, assign: \.themeTracks, target: self)
                         .onTapGesture() {
                             self.preview = .view() {
-                                VStack() {
-                                    Text(playroom.name)
-                                        .font(.largeTitle)
-                                        .matchedGeometryEffect(id: "playroom/\(playroom.musicroom.id)/name",
-                                                               in: appCoordinator.namespace ?? localNamespace)
-                                    
-                                    Divider()
-                                    
-                                    VStack(alignment: .leading) {
-                                        if let track = themeTracks.first {
-                                            let themeSongHeader = Text("Theme Song")
-                                                .foregroundColor(.secondary)
-                                                .font(Font.title.weight(.thin))
-                                            
-                                            Section(header: themeSongHeader){
-                                                TrackView2<Never>(track: .constant(track), playroom: $playroom, useDynamicColors: false)
-                                                    .id("playroom/\(playroom.name)/theme/\(track.uri)")
-                                            }
-                                            
-                                            .padding()
-                                        }
-                                        
-                                        let descriptionHeader = Text("Description")
-                                            .foregroundColor(.secondary)
-                                            .font(Font.title.weight(.thin))
-                                        
-                                        Section(header: descriptionHeader){
-                                            Text(playroom.details)
-                                                .lineLimit(10)
-                                                .font(.subheadline)
-                                        }
-                                        .padding()
-                                    }
-                                    
-                                    Spacer()
-                                    Button() {
-                                        self.appCoordinator.synchronizePlayroom(playroom.musicroom)
-                                    } label: {
-                                        Text("Synchronize Playlist")
-                                    }
-                                    .padding()
-                                    Spacer()
-                                }
+                                PlayroomView(room: playroom)
                                 .padding(.top, Sizing.large)
                                 .padding()
                                 .background(Color.clear)

@@ -10,6 +10,72 @@ import SwiftUI
 import JoliCore
 import Promises
 
+public struct PlayroomView: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    
+    let playroom: Playroom
+    @Namespace var localNamespace
+    
+    @State var themeTracks: [Track] = []
+    
+    public init(room: Playroom){
+        self.playroom = room
+    }
+    
+    public var contentView: some View {
+        ScrollViewReader() { scrollProxy in
+            ScrollView(){
+                VStack() {
+                    Text(playroom.name)
+                        .font(.largeTitle)
+                        .matchedGeometryEffect(id: "playroom/\(playroom.musicroom.id)/name",
+                                               in: appCoordinator.namespace ?? localNamespace)
+                    
+                    Divider()
+                    
+                    VStack(alignment: .leading) {
+                        if let track = themeTracks.first {
+                            let themeSongHeader = Text("Theme Song")
+                                .foregroundColor(.secondary)
+                                .font(Font.title.weight(.thin))
+                            
+                            Section(header: themeSongHeader){
+                                TrackView2<Never>(track: .constant(track), playroom: .constant(playroom), useDynamicColors: false)
+                                    .id("playroom/\(playroom.name)/theme/\(track.uri)")
+                            }
+                            
+                            .padding()
+                        }
+                        
+                        let descriptionHeader = Text("Description")
+                            .foregroundColor(.secondary)
+                            .font(Font.title.weight(.thin))
+                        
+                        Section(header: descriptionHeader){
+                            Text(playroom.details)
+                                .lineLimit(10)
+                                .font(.subheadline)
+                        }
+                        .padding()
+                    }
+                    
+                    Spacer()
+                    Button() {
+                        self.appCoordinator.synchronizePlayroom(playroom.musicroom)
+                    } label: {
+                        Text("Synchronize Playlist")
+                    }
+                    .padding()
+                    Spacer()
+                }
+            }
+        }
+        .onReceive(playroom.$themeTracks, assign: \.themeTracks, target: self)
+    }
+    
+}
+
 public struct PlayroomCreateView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
@@ -219,7 +285,7 @@ public struct PlayroomCreateView: JoliView {
     }
     
     var eventView: some View {
-        let themeSongHeader = Text("Event (optional)")
+        let themeSongHeader = Text("Event\(eventEnabled ? .empty : " (optional)")")
             .foregroundColor(.secondary)
             .font(Font.title.weight(.thin))
         

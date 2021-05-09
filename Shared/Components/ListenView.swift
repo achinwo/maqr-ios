@@ -807,7 +807,8 @@ struct ListenView: JoliView {
                 
                 
                 #if !os(macOS)
-                Divider().opacity(self.playroom == nil ? 0 : 1).animation(.easeInOut)
+                Divider()
+                    .opacity(self.playroom == nil ? 0 : 1).animation(.easeInOut)
                     .appStoreOverlay(isPresented: $showRecommended) {
                         SKOverlay.AppConfiguration(appIdentifier: Strings.appId, position: .bottomRaised)
                     }
@@ -819,7 +820,7 @@ struct ListenView: JoliView {
                     .frame(maxWidth: screenWidth)
                     .frame(minWidth: screenWidth, maxHeight: screenHeight)
                     .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
-                    .padding(.bottom, self.peopleViewBounds?.height.advanced(by: 1))
+                    .padding(.bottom, self.peopleViewBounds?.height)
                     .offset(x: 0, y: self.preview == nil ? screenHeight : 0)
                     .animation(.spring())
                 

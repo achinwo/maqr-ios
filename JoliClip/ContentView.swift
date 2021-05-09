@@ -34,6 +34,17 @@ struct SizePreferenceKey: PreferenceKey {
     }
 }
 
+public struct EventView: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    let event: Event? = nil
+    
+    public var contentView: some View {
+        Text("An Event")
+    }
+    
+}
+
 public struct PlayroomView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
@@ -342,8 +353,9 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             switch location {
                 case .invited(let inviteId):
                     self.fetchPlayroomByInviteId(inviteId)
-                //case .error:
+                case .rsvp(let eventUid):
                 //   self.errorMessage = Self.GENERIC_ERROR_MESSAGE
+                    self.fetchPlayroomByEventId(eventUid)
                 default:
                     self.fetchPlayroomByInviteId("mnsv9A") // Joli Live
             }
@@ -367,9 +379,12 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             if [.home, .unset].contains(appCoordinator.currentLocation) {
                 self.fetchPlayroomByInviteId("mnsv9A")
             }
+            
+            print("Location: \(currentLocation)")
         }
     }
     
+    @State var event: Event? = nil
     @State var previewDismissable = true
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @State var headerSize: CGSize = .zero
@@ -379,6 +394,20 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     static var GENERIC_ERROR_MESSAGE: String {
         return "An error occured while loading your Playroom invitation, please try again later."
+    }
+    
+    func fetchPlayroomByEventId(_ eventUid: String) -> Void { //Promise<(event: Event, room: Musicroom)?> {
+//        return Event.all(where: [.uuid: eventUid as AnyObject],
+//                         limit: 1, baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
+//            .then() { events -> Event in
+//                guard let event = events.first else {
+//                    return nil
+//                }
+//                return event
+//            }
+//            .then() { event -> (event: Event, room: Musicroom)? in
+//
+//            }
     }
     
     @discardableResult
