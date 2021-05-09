@@ -208,6 +208,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     case invited(String) // joli.live/r/abc
     case playroom(String)
     case rsvp(String)
+    case reward(String)
     
     case unset
     case home
@@ -225,6 +226,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
             self = .playroom(roomId)
         } else if let matches = patterns.rsvp.matchGroups(rawValue), let eventId = matches["eventId"] {
             self = .rsvp(eventId)
+        } else if let matches = patterns.reward.matchGroups(rawValue), let rewardUid = matches["rewardId"] {
+            self = .reward(rewardUid)
         } else if rawValue == AppLocation.upgrade.rawValue {
             self = .upgrade
         } else if rawValue == AppLocation.default {
@@ -248,7 +251,9 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
             case .unset:
                 return .empty
             case .rsvp(let eventId):
-                return "/rsvp/\(eventId)"
+                return "/rsvp/b/\(eventId)"
+            case .reward(let uid):
+                return "/ir/\(uid)"
             default:
                 return AppLocation.default
         }
@@ -258,7 +263,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
         home: Regex("^/$"),
         invited: Regex("^/(playroom/invite|i)/(?<inviteId>.+)$"),
         playroom: Regex("^/r/(?<roomId>.+)$"),
-        rsvp: Regex("^/rsvp/(?<eventId>.+)$")
+        rsvp: Regex("^/rsvp/b/(?<eventId>.+)$"),
+        reward: Regex("^/ir/(?<rewardId>.+)$")
     )
     
     public var description: String {

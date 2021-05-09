@@ -73,7 +73,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "_XCAppClipURL"
-            value = "https://dev.jolimc.com/rsvp/mSTqBn"
+            value = "https://dev.jolimc.com/rsvp/b/mSTqBn"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

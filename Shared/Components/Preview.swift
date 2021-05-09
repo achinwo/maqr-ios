@@ -11,6 +11,7 @@ import UIKit
 
 import SwiftUI
 import JoliCore
+import Promises
 
 public enum AppPreview: View, Equatable {
     
@@ -39,6 +40,9 @@ public enum AppPreview: View, Equatable {
                         Text("\(track.title)")
                     }
                 }
+            case .event(let evt, let cb):
+                EventView(evt, callback: cb)
+                    .id(evt.uuid)
             case .playroomCreate:
                 PlayroomCreateView()
                     .background(Color.clear)
@@ -50,8 +54,405 @@ public enum AppPreview: View, Equatable {
     case userAccount
     case userProfile(UserIdentifiable)
     case track(Track)
+    case event(Event, (Entitlement) -> Void)
     case view(Axis.Set? = nil, () -> AnyView)
     case playroomCreate
+}
+
+
+public struct EventView: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    
+    @State var entitlement: Entitlement? = nil
+    let event: Event
+    let callback: (Entitlement) -> Void
+    
+    @State var loadingDietaryChoices = false
+    
+    public init(_ event: Event, callback: @escaping (Entitlement) -> Void){
+        self.callback = callback
+        self.event = event
+    }
+    
+    var entitlementRecord: EntitlementRecord {
+        var ent = EntitlementRecord()
+        ent.type = "event"
+        //ent.uuid = event.uuid
+        ent.targetRecordId = event.id
+        ent.userId = appCoordinator.activeAuth?.user.id
+        
+        return ent
+    }
+    
+    private func saveEntitlement(_ entitlement: EntitlementRecord) {
+        entitlement.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
+            .then() { e in
+                self.entitlement = e
+                
+                guard e.rejectedAt != nil else {
+                    return
+                }
+                
+                self.callback(e)
+            }
+            .catch() { error in
+                self.presentToast("Unable to action", subTitle: "An error occured, try terminating and restarting the App", type: .error(.red), onDismiss: { _ in })
+                appCoordinator.globalErrorHandler()(error)
+            }
+    }
+    
+    func onAccept() {
+        print("Accepted Invite")
+        var rec = entitlementRecord
+        rec.acceptedAt = Date()
+        self.saveEntitlement(rec)
+        self.loadFoodAndDrinks()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1){
+            scrollProxy?.scrollTo("food")
+        }
+    }
+    
+    func onReject() {
+        print("Rejected Invite")
+        var rec = entitlementRecord
+        rec.rejectedAt = Date()
+        self.saveEntitlement(rec)
+    }
+    
+    private func loadFoodAndDrinks() {
+        self.loadingDietaryChoices = true
+        
+        let p1 = Food.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then(on: .main){ foods in
+                self.foods = foods
+            }
+        
+        let p2 = Drink.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then(on: .main){ drinks in
+                self.drinks = drinks
+            }
+        
+        Promises.all(p1, p2)
+            .then() { (_, _) in
+                updateSelections()
+            }
+            .always {
+                self.loadingDietaryChoices = false
+            }
+    }
+    
+    @State var foods: [Food] = []
+    @State var selectedFoods: [Food.ID] = []
+    
+    @State var drinks: [Drink] = []
+    @State var selectedDrinks: [Drink.ID] = []
+    
+    @State var allChoices: [MealChoice] = []
+    
+    var choicesIds: (drinks: [Drink.ID], foods: [Food.ID]) {
+        let choices = self.allChoices.filter() { $0.eventId == event.id && $0.createdById == appCoordinator.activeAuth?.user.id }
+        let drinkIds = choices.filter({ $0.type == .drink }).map() { $0.id }
+        let foodIds = choices.filter({ $0.type == .food }).map() { $0.id }
+        return (drinkIds, foodIds)
+    }
+    
+    @State var scrollProxy: ScrollViewProxy? = nil
+    
+    public var dietaryView: some View {
+        VStack(){
+            GridChooserView(items: $foods, selections: $selectedFoods, layout: .list) { food in
+                
+                let choices = self.allChoices.filter() { $0.id == food.id && $0.eventId == event.id }
+                let userChoices = choices.filter({ $0.createdById == appCoordinator.activeAuth?.user.id })
+                
+                HStack(alignment: .center) {
+                    NetworkImage(url: api.baseUrlHttp.appendingPathComponent("/images/\(food.imageName)")) {
+                        Image(systemName: "xmark.octagon")
+                    }
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width:  80, height: 80)
+                    VStack(alignment: .leading){
+                        Text(food.title).font(.headline).foregroundColor(.label)
+                        Text(food.subtitle).font(.subheadline)
+                            .lineLimit(4)
+                            .foregroundColor(.secondary)
+                        
+                        if choices.count > 0 {
+                            Label(){
+                                Text(choices.count.description)
+                            } icon: {
+                                Image(systemName: "person.2.fill")
+                            }
+                            .font(.footnote)
+                        }
+                    }
+                    .padding()
+                    
+                    VStack(){
+                        Spacer()
+                        let selected = userChoices.contains(where: {  $0.type == .food && $0.targetId == food.id })
+                        Image(systemName: selected ? "hand.thumbsup.fill" : "hand.thumbsup")
+                        .font(.title)
+                        .foregroundColor(selected ? .green : .label)
+                        .padding()
+                        Spacer()
+                    }
+                }
+                .id(food.id)
+                
+            }
+            .padding(.bottom)
+            
+            Divider().padding()
+            
+            GridChooserView(items: $drinks, selections: $selectedDrinks, layout: .grid) { drink in
+                
+                let choices = self.allChoices.filter() { $0.id == drink.id && $0.eventId == event.id}
+                
+                VStack(alignment: .center) {
+                    NetworkImage(url: api.baseUrlHttp.appendingPathComponent("/images/\(drink.imageName)")) {
+                        Image(systemName: "xmark.octagon")
+                    }
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width:  80, height: 80)
+                    .padding(.top)
+                    
+                    VStack(alignment: .leading){
+                        Text(drink.title).font(.headline).foregroundColor(.label)
+                        Text(drink.subtitle).font(.subheadline)
+                            .lineLimit(4)
+                            .foregroundColor(.secondary)
+                        
+                        if choices.count > 0 {
+                            Label(){
+                                Text(choices.count.description)
+                            } icon: {
+                                Image(systemName: "person.2.fill")
+                            }
+                            .font(.footnote)
+                        }
+                    }
+                    .padding()
+                    
+                }
+                .overlay(
+                    Group(){
+                        
+                        if choicesIds.drinks.contains(drink.id) {
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.green, lineWidth: 2)
+                        } else {
+                            Color.clear
+                        }
+                    }
+                )
+                .id(drink.id)
+                
+            }
+        }
+        .onChange(of: selectedDrinks) { drinks in
+            let toCreated = drinks.filter({ !self.choicesIds.drinks.contains($0) })
+            
+            guard !toCreated.isEmpty else { return }
+            
+            self.selectItem(type: "drink", ids: toCreated)
+        }
+        .onChange(of: selectedFoods) { foods in
+            let toCreated = foods.filter({ !self.choicesIds.foods.contains($0) })
+            
+            guard !toCreated.isEmpty else { return }
+            
+            self.selectItem(type: "food", ids: toCreated)
+        }
+    }
+    
+    func selectItem(type: String, ids: [Int]) {
+        for elemId in ids {
+            var ch = MealChoiceRecord()
+            ch.eventId = event.id
+            ch.roomId = event.roomId
+            ch.type = type
+            ch.targetId = elemId
+            
+            ch.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                .then(on: .main) { choice in
+                    allChoices.append(choice)
+                }
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            self.updateSelections()
+        }
+    }
+    
+    private func updateSelections(){
+        MealChoice.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+        .then(on: .main){ choices in
+            self.allChoices = choices
+            
+            let userChoices = self.choicesIds
+            
+            self.selectedDrinks = userChoices.drinks
+            self.selectedFoods = userChoices.foods
+        }
+    }
+    
+    public var contentView: some View {
+        ZStack(){
+            ScrollViewReader() { scrollProxy in
+                
+                ScrollView(){
+                    VStack(alignment: .center) {
+                        Text(event.title)
+                            .font(.largeTitle)
+                            .padding()
+                        Text(event.subtitle)
+                            .font(.body.weight(.light))
+                            .multilineTextAlignment(.center)
+                            .padding(.bottom)
+                        
+                        let timeHeader = HStack(){
+                            Label(){
+                                Text("Time")
+                            } icon: {
+                                Image(systemName: "calendar")
+                                    .font(Font.title.weight(.thin))
+                            }
+                            .foregroundColor(.secondary)
+                            .font(Font.title.weight(.thin))
+                            
+                            Spacer()
+                        }
+                        
+                        Section(header: timeHeader) {
+                            HStack(){
+                                Text(event.startsAt, style: .date)
+                                Text(event.startsAt, style: .time).padding(.leading, 2)
+                                Text("—").padding(.horizontal, 4)
+                                Text(event.endsAt, style: .date)
+                                Text(event.endsAt, style: .time).padding(.leading, 2)
+                            }
+                            .padding()
+                        }
+                        
+                        if let venue = event.venue {
+                            let header = HStack(){
+                                Label(){
+                                    Text("Venue")
+                                } icon: {
+                                    Image(systemName: "location")
+                                        .font(Font.title.weight(.thin))
+                                }
+                                .foregroundColor(.secondary)
+                                .font(Font.title.weight(.thin))
+                                
+                                Spacer()
+                            }
+                            
+                            Section(header: header) {
+                                Text(venue).font(.body.weight(.light)).padding()
+                            }
+                        }
+                        
+                        let menuHeader = HStack(){
+                            Text("Food & Drinks")
+                                .foregroundColor(.secondary)
+                                .font(Font.title.weight(.thin))
+                            
+                            Spacer()
+                        }
+                        
+                        if entitlement != nil {
+                            Section(header: menuHeader) {
+                                Group(){
+                                    if self.loadingDietaryChoices {
+                                        ProgressView("Loading choices")
+                                    } else {
+                                        self.dietaryView
+                                    }
+                                }
+                            }
+                            .id("food")
+                        }
+                    }
+                    .padding()
+                    .padding(.bottom, Sizing.xxLarge * 3)
+                    .onAppear(){
+                        self.scrollProxy = scrollProxy
+                    }
+                }
+            }
+            
+            VStack(alignment: .center, spacing: .zero) {
+                Spacer()
+                
+                Divider().padding(.horizontal)
+                
+                HStack(alignment: .center, spacing: Sizing.medium) {
+                    Spacer()
+                    
+                    if let entitlement = entitlement {
+                        Button(){
+                            self.presentToast("You're all set!", type: .complete(.green), onDismiss: { _ in })
+                            
+                            self.callback(entitlement)
+                        } label: {
+                            VStack(){
+                                Text("I'm done").font(.headline)
+                                Text("Take me to song list").font(.footnote)
+                            }
+                        }
+                        .buttonStyle(FilledButton())
+                    } else {
+                        
+                        Button(action: self.onReject) {
+                            Text("Can't make it")
+                        }
+                        .buttonStyle(OutlineButton())
+                        
+                        Button(action: self.onAccept) {
+                            Text("I'll be there!")
+                        }
+                        .buttonStyle(FilledButton())
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+                .padding(.bottom, Sizing.xxLarge)
+                .background(Color.tertiarySystemBackground.opacity(0.4))
+            }
+        }
+    }
+    
+}
+
+struct FilledButton: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration
+            .label
+            .foregroundColor(configuration.isPressed ? .gray : .label)
+            .padding()
+            .background(Color.accentColor)
+            .cornerRadius(8)
+    }
+}
+
+struct OutlineButton: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration
+            .label
+            .foregroundColor(configuration.isPressed ? .gray : .accentColor)
+            .padding()
+            .background(
+                RoundedRectangle(
+                    cornerRadius: 8,
+                    style: .continuous
+                ).stroke(Color.accentColor)
+            )
+    }
 }
 
 public struct AppPreviewView: JoliView {
