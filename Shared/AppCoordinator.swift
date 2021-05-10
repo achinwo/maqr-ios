@@ -23,6 +23,12 @@ import PartialSheet
 
 #endif
 
+public enum AuthenticationFlow {
+    case apple((Bool) -> Void)
+    case spotify((Bool) -> Void)
+}
+
+
 // MARK: - AppCoordinator
 public final class AppCoordinator: ObservableObject {
     
@@ -44,6 +50,8 @@ public final class AppCoordinator: ObservableObject {
     
     public let signoutSubject = PassthroughSubject<Auth, Never>()
     public let globalToastInfo = PassthroughSubject<(alert: AlertToast, onDismiss: (Bool) -> Void), Never>()
+    
+    public let requestedSignIn = PassthroughSubject<AuthenticationFlow, Never>()
     
     @Published public var playStatePublisher: PlayState.Publisher? = nil
     @Published public var votesPublisher: QueuedTrackVote.Publisher? = nil {

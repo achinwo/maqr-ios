@@ -16,6 +16,8 @@ import UIKit
 
 import SwiftUI
 import AuthenticationServices
+import KeychainAccess
+import JoliCore
 
 public final class SignInWithApple: UIViewRepresentable {
     
@@ -37,45 +39,92 @@ extension SignInWithApple {
     public func updateNSView(_ uiView: ASAuthorizationAppleIDButton, context: Context) {}
 }
 
-public class SignInWithAppleDelegates: NSObject {
+
+/// Represents the details about the user which were provided during initial registration.
+struct UserData: Codable {
+    /// The email address to use for user communications.  Remember it might be a relay!
+    let email: String
     
-    private let signInSucceeded: (Bool) -> Void
-    private weak var window: UIWindow!
+    /// The components which make up the user's name.  See `displayName(style:)`
+    let name: PersonNameComponents
     
-    public init(window: UIWindow?, onSignedIn: @escaping (Bool) -> Void) {
-        self.window = window
-        self.signInSucceeded = onSignedIn
+    /// The team scoped identifier Apple provided to represent this user.
+    let identifier: String
+    
+    /// Returns the localized name for the person
+    /// - Parameter style: The `PersonNameComponentsFormatter.Style` to use for the display.
+    func displayName(style: PersonNameComponentsFormatter.Style = .default) -> String {
+        PersonNameComponentsFormatter.localizedString(from: name, style: style)
     }
 }
+
+public class SignInWithAppleDelegates: NSObject {
+    
+    private let signInSucceeded: (AppleAuthData?, Error?) -> Void
+    private weak var window: UIWindow!
+    private let keychain: Keychain
+    
+    public struct AppleAuthData {
+        let user: UserData
+        let identityToken: Data?
+        let authorizationCode: Data?
+    }
+    
+    public init(window: UIWindow?, keychain: Keychain, onSignedIn: @escaping (AppleAuthData?, Error?) -> Void) {
+        self.window = window
+        self.signInSucceeded = onSignedIn
+        self.keychain = keychain
+    }
+    
+}
+
+public enum SignInWithAppleError: Error {
+    case keychainPersist(Error)
+    case keychainRetreive
+    case unknownCredential(AnyObject)
+}
+
 
 extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
     
     private func registerNewAccount(credential: ASAuthorizationAppleIDCredential) {
-        // 1
-        //        let userData = UserData(email: credential.email!,
-        //                                name: credential.fullName!,
-        //                                identifier: credential.user)
-        //
-        //        // 2
-        //        let keychain = UserDataKeychain()
-        print("[SignInWithAppleDelegates] recieved new credentials: \(credential)")
-//        do {
-//            //try keychain.store(userData)
-//        } catch {
-//            self.signInSucceeded(false)
-//        }
-//
-//        // 3
-//        do {
-//            //            let success = try WebApi.Register(
-//            //                user: userData,
-//            //                identityToken: credential.identityToken,
-//            //                authorizationCode: credential.authorizationCode
-//            //            )
-//            //self.signInSucceeded(success)
-//        } catch {
-//            self.signInSucceeded(false)
-//        }
+        let userData = UserData(email: credential.email!,
+                                name: credential.fullName!,
+                                identifier: credential.user)
+        
+        do {
+            let data = try Musicroom.jsonEncoder().encode(userData)
+            try keychain.label("apple-signin").set(data, key: userData.email)
+        } catch {
+            self.signInSucceeded(nil, SignInWithAppleError.keychainPersist(error))
+        }
+
+        let success = AppleAuthData(
+            user: userData,
+            identityToken: credential.identityToken,
+            authorizationCode: credential.authorizationCode
+        )
+        self.signInSucceeded(success, nil)
+    }
+    
+    var userDataStored: UserData? {
+        let jsonDecoder = Musicroom.jsonDecoder()
+        let items = keychain.allKeys()
+        
+        for item in items {
+            
+            guard let attributes = try? keychain.get(item, handler: { $0 }),
+                  let label = attributes.label,
+                  let data = attributes.data,
+                  let userData = try? jsonDecoder.decode(UserData.self, from: data),
+                  label == "apple-signin" else {
+                continue
+            }
+            
+            return userData
+        }
+        
+        return nil
     }
     
     private func signInWithExistingAccount(credential: ASAuthorizationAppleIDCredential) {
@@ -83,18 +132,21 @@ extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
         // from your server that the account doesn't exist, you can look in the keychain
         // for the credentials and rerun setup
         
-        // if (WebAPI.login(credential.user,
-        //                  credential.identityToken,
-        //                  credential.authorizationCode)) {
-        //   ...
-        // }
-        print("[SignInWithAppleDelegates] existing credentials: \(credential)")
-        self.signInSucceeded(true)
+        guard let stored = userDataStored else {
+            self.signInSucceeded(nil, SignInWithAppleError.keychainRetreive)
+            return
+        }
+        
+        let success = AppleAuthData(
+            user: stored,
+            identityToken: credential.identityToken,
+            authorizationCode: credential.authorizationCode
+        )
+        
+        self.signInSucceeded(success, nil)
     }
     
     public func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        
-        
         switch authorization.credential {
             case let appleIdCredential as ASAuthorizationAppleIDCredential:
                 if let _ = appleIdCredential.email, let _ = appleIdCredential.fullName {
@@ -106,14 +158,13 @@ extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
                 }
             default:
                 logger.error("Unknown Apple Auth creds: \(String(describing: authorization.credential))")
+                self.signInSucceeded(nil, SignInWithAppleError.unknownCredential(authorization.credential))
         }
-        
-        
-        
     }
     
     public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
         logger.error("[SignInWithAppleDelegates] error: \(String(describing: error))")
+        self.signInSucceeded(nil, error)
     }
     
 }

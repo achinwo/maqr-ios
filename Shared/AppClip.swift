@@ -652,7 +652,7 @@ public protocol AppClip: App {
     func onInternalError(_ error: Error) -> Void
     func onNotificationRecieved(_ message: Data) -> Void
     
-    func authenticate(_ credentials: JoliApi.AuthCredentials) -> Void
+    func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) -> Promise<Auth?>
 }
 
 public extension AppClip {
@@ -673,21 +673,20 @@ public extension AppClip {
         #endif
     }
     // MARK: - authenticate
-    func authenticate(_ credentials: JoliApi.AuthCredentials){
+    @discardableResult
+    func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool = true) -> Promise<Auth?> {
         
         if case let .sessionToken(token) = credentials, token.isEmpty {
             logger.error("[\(Self.self)#authentication] call aborted, empty token")
-            return
+            return Promise<Auth?>(nil)
         }
         
-        coordinator.api.authenticate(credentials)
-            .then() { auth in
+        return coordinator.api.authenticate(credentials)
+            .then() { auth -> Auth? in
                 
                 guard let auth = auth else {
-                    return
+                    return nil
                 }
-                
-                //
                 
                 var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
                 newAuths.append(auth)
@@ -706,14 +705,19 @@ public extension AppClip {
                 self.coordinator.userHeartsSubject.send(Hearts(score: points <= HeartLevel.empty.rawValue ? HeartLevel.quarter.rawValue : points))
                 
                 //logger.debug("[App#authentication] activeSessionToken: \(String(describing: self.activeSessionToken))")
+                return auth
             }
             .catch() { error in
                 logger.error("[App#authentication] creds: \(String(describing: credentials)), error: \(String(describing: error))")
                 
                 guard case let .sessionToken(token) = credentials, let error = error as? SpotifyError, error != SpotifyError.unathorized else {
                     
-                    let message = "If the issue persists, try closing and re-launching the app"
-                    coordinator.withAlert("Unable to complete Sign In", message: message)
+                    
+                    if alertOnFail {
+                        let message = "If the issue persists, try closing and re-launching the app"
+                        coordinator.withAlert("Unable to complete Sign In", message: message)
+                    }
+                    
                     return
                 }
                 
@@ -791,19 +795,39 @@ public extension AppClip {
         return JoliApi.Environment(rawValue: json["env"] as? String ?? JoliApi.Environment.local.rawValue) ?? .development
     }
     
-    func presentSignInWithApple() {
+    func presentSignInWithApple(callback: @escaping (Bool) -> Void) {
         let request = ASAuthorizationAppleIDProvider().createRequest()
         request.requestedScopes = [.fullName, .email]
-        performSignIn(using: [request])
+        performSignIn(using: [request], callback: callback)
     }
     
-    func performSignIn(using requests: [ASAuthorizationRequest]) {
-        appleSignInDelegates = SignInWithAppleDelegates(window: UIApplication.shared.windows.last) { success in
-            if success {
-                // update UI
-            } else {
-                // show the user an error
+    func performSignIn(using requests: [ASAuthorizationRequest], callback: @escaping (Bool) -> Void) {
+        appleSignInDelegates = SignInWithAppleDelegates(window: self.window, keychain: keychain) { data, error in
+            print("[\(#file)#performSignIn] auth data: \(String(describing: data))")
+            
+            guard let data = data,
+                  let idToken = data.identityToken,
+                  let authCode = data.authorizationCode,
+                  let identityToken = String(data: idToken, encoding: .utf8),
+                  let authorizationCode = String(data: authCode, encoding: .utf8)
+                  else {
+                callback(false)
+                return
             }
+            
+            self.authenticate(.apple(data.user.displayName(), data.user.email, data.user.identifier, identityToken, authorizationCode), alertOnFail: false)
+                .then() { auth in
+                    callback(auth != nil)
+                }
+                .catch() { _ in
+                    callback(false)
+                }
+            
+//            if success {
+//                // update UI
+//            } else {
+//                // show the user an error
+//            }
         }
         
         let controller = ASAuthorizationController(authorizationRequests: requests)
@@ -821,7 +845,7 @@ public extension AppClip {
         ]
         
         // 2
-        performSignIn(using: requests)
+        performSignIn(using: requests) { _ in }
         #endif
     }
     
@@ -852,6 +876,14 @@ public extension AppClip {
             .onOpenURL(perform: self.onOpenUrl)
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: self.onUserActivity)
             .onChange(of: scenePhase, perform: self.onScenePhaseChange)
+            .onReceive(coordinator.requestedSignIn) { authFlow in
+                switch authFlow {
+                    case .apple(let cb):
+                        self.presentSignInWithApple(callback: cb)
+                    case .spotify:
+                        print("[Spotify sign in request]")
+                }
+            }
             .onReceive(apnTokenPublisher) { (notification: Notification) in
                 guard let notif = notification.object as? [Notification.Name: Data],
                       let data = notif[Notifications.apnToken] else {

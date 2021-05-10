@@ -13,6 +13,72 @@ import SwiftUI
 import JoliCore
 import Promises
 
+
+
+struct SignInSheetView: JoliView {
+    
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    
+    @State var title: String
+    @State var subtitle: String
+    @State var callback: (Bool) -> Void
+    
+    var contentView: some View {
+        VStack {
+            VStack {
+                Text(title).font(.title)
+                Text(subtitle)
+                    .lineLimit(4)
+                    .padding()
+                    .frame(maxWidth: screenWidth - 100)
+                    .fixedSize()
+                    .font(.subheadline)
+                    .foregroundColor(.secondaryLabel)
+                
+                
+                SignInWithApple()
+                    .onTapGesture() {
+                        self.appCoordinator.requestedSignIn.send(.apple(callback))
+                    }
+                    .frame(width: screenWidth - 100, height: 60)
+                Text("Allows voting ONLY")
+                    .font(.footnote.weight(.light))
+                    .foregroundColor(.secondaryLabel)
+                    .padding(.bottom)
+                
+                Button(){
+                    print("Login with spotify")
+                } label: {
+                    HStack(){
+                        Spacer()
+                        Image(platformImage: Images.spotifyLogo.uiImage)
+                            .resizable()
+                            .frame(width: 24, height: 24, alignment: .center)
+                        Text("Sign in with Spotify")
+                            .font(.title3)
+                            .foregroundColor(.label)
+                        Spacer()
+                    }
+                }
+                .frame(width: screenWidth - 100, height: 60)
+                .buttonStyle(OutlineButton())
+                
+                Text("Allows voting & playback")
+                    .font(.footnote.weight(.light))
+                    .foregroundColor(.secondaryLabel)
+                    .padding(.bottom, Sizing.xxLarge)
+                
+
+            }
+            .padding(.bottom, Sizing.xxLarge)
+            .onTapGesture {
+                // Fixes issue with scroll
+            }
+            .padding()
+        }
+    }
+}
+
 public enum AppPreview: View, Equatable {
     
     public static func == (lhs: AppPreview, rhs: AppPreview) -> Bool {
@@ -103,23 +169,75 @@ public struct EventView: JoliView {
             }
     }
     
+    func authenticateAndPerform(_ callback: @escaping (Bool) -> Void){
+        #if !os(macOS)
+        self.appCoordinator.sheet.show(){
+            print("Sheet dismissed!")
+        } content: {
+            SignInSheetView(title: "Authentication Required", subtitle: "Choose an authentication method", callback: callback)
+        }
+        #endif
+    }
+    
     func onAccept() {
         print("Accepted Invite")
-        var rec = entitlementRecord
-        rec.acceptedAt = Date()
-        self.saveEntitlement(rec)
-        self.loadFoodAndDrinks()
         
-        DispatchQueue.main.async(){
-            scrollProxy?.scrollTo("food", anchor: .top)
+        let perform = { (authSuccessful: Bool) -> Void in
+            
+            guard authSuccessful else {
+                presentToast("Authentication Failed", subTitle: "Unable to complete authenication", type: .error(.red)) { _ in
+                    #if !os(macOS)
+                    self.appCoordinator.sheet.closePartialSheet()
+                    #endif
+                }
+                return
+            }
+            
+            var rec = entitlementRecord
+            rec.acceptedAt = Date()
+            self.saveEntitlement(rec)
+            self.loadFoodAndDrinks()
+            
+            DispatchQueue.main.async(){
+                scrollProxy?.scrollTo("food", anchor: .top)
+            }
         }
+        
+        
+        guard appCoordinator.activeAuth != nil else {
+            authenticateAndPerform(perform)
+            return
+        }
+        
+        perform(true)
     }
     
     func onReject() {
         print("Rejected Invite")
-        var rec = entitlementRecord
-        rec.rejectedAt = Date()
-        self.saveEntitlement(rec)
+        
+        let perform = { (authSuccessful: Bool) -> Void in
+            
+            guard authSuccessful else {
+                presentToast("Authentication Failed", subTitle: "Unable to complete authenication", type: .error(.red)) { _ in
+                    #if !os(macOS)
+                    self.appCoordinator.sheet.closePartialSheet()
+                    #endif
+                }
+                return
+            }
+            
+            var rec = entitlementRecord
+            rec.rejectedAt = Date()
+            self.saveEntitlement(rec)
+        }
+        
+        guard appCoordinator.activeAuth != nil else {
+            authenticateAndPerform(perform)
+            return
+        }
+        
+        perform(true)
+        
     }
     
     private func loadFoodAndDrinks() {
