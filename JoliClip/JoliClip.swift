@@ -226,6 +226,14 @@ struct JoliClip: AppClip {
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true
             }
+            .onReceive(coordinator.$spotifyAuthRequestedAt) { requestedAt in
+                
+                guard requestedAt != nil else {
+                    return
+                }
+                
+                self.spotify.authorize(token: coordinator.authorizedSpotify?.accessToken)
+            }
             .onAppear() {
                 
                 self.websocket.connect()

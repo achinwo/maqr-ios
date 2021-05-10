@@ -705,10 +705,23 @@ public extension AppClip {
                 self.coordinator.userHeartsSubject.send(Hearts(score: points <= HeartLevel.empty.rawValue ? HeartLevel.quarter.rawValue : points))
                 
                 //logger.debug("[App#authentication] activeSessionToken: \(String(describing: self.activeSessionToken))")
+                
+                DispatchQueue.main.async { // Hack - authentication sideeffect needs refactoring
+                    if case .spotifyRefreshToken(_) = credentials, let pendingCallback = self.coordinator.pendingSpotifyAuthCallback.value {
+                        pendingCallback(true)
+                    }
+                }
+                
                 return auth
             }
             .catch() { error in
                 logger.error("[App#authentication] creds: \(String(describing: credentials)), error: \(String(describing: error))")
+                
+                DispatchQueue.main.async { // Hack - authentication sideeffect needs refactoring
+                    if case .spotifyRefreshToken(_) = credentials, let pendingCallback = self.coordinator.pendingSpotifyAuthCallback.value {
+                        pendingCallback(false)
+                    }
+                }
                 
                 guard case let .sessionToken(token) = credentials, let error = error as? SpotifyError, error != SpotifyError.unathorized else {
                     
@@ -880,8 +893,12 @@ public extension AppClip {
                 switch authFlow {
                     case .apple(let cb):
                         self.presentSignInWithApple(callback: cb)
-                    case .spotify:
-                        print("[Spotify sign in request]")
+                    case .spotify(let cb):
+                        self.coordinator.pendingSpotifyAuthCallback.send() { success in
+                            self.coordinator.pendingSpotifyAuthCallback.send(nil)
+                            cb(success)
+                        }
+                        self.coordinator.spotifyAuthRequestedAt = Date()
                 }
             }
             .onReceive(apnTokenPublisher) { (notification: Notification) in

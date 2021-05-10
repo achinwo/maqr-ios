@@ -100,6 +100,8 @@ public final class AppCoordinator: ObservableObject {
     public let userHeartsSubject = CurrentValueSubject<Hearts?, Never>(nil)
     public let authsSubject = CurrentValueSubject<[Auth], Never>([])
     
+    public let pendingSpotifyAuthCallback = CurrentValueSubject<((Bool) -> Void)?, Never>(nil)
+    
     @Published public var activeSessionToken: String? = nil {
         didSet {
             self.authSubject.send(activeAuth)

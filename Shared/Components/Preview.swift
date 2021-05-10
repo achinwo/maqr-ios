@@ -47,7 +47,8 @@ struct SignInSheetView: JoliView {
                     .padding(.bottom)
                 
                 Button(){
-                    print("Login with spotify")
+                    print("perform spotify auth!")
+                    self.appCoordinator.requestedSignIn.send(.spotify(callback))
                 } label: {
                     HStack(){
                         Spacer()
@@ -200,6 +201,7 @@ public struct EventView: JoliView {
             
             DispatchQueue.main.async(){
                 scrollProxy?.scrollTo("food", anchor: .top)
+                self.appCoordinator.sheet.closePartialSheet()
             }
         }
         
@@ -229,6 +231,10 @@ public struct EventView: JoliView {
             var rec = entitlementRecord
             rec.rejectedAt = Date()
             self.saveEntitlement(rec)
+            
+            DispatchQueue.main.async {
+                self.appCoordinator.sheet.closePartialSheet()
+            }
         }
         
         guard appCoordinator.activeAuth != nil else {
