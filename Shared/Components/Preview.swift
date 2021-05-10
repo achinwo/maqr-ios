@@ -40,8 +40,8 @@ public enum AppPreview: View, Equatable {
                         Text("\(track.title)")
                     }
                 }
-            case .event(let evt, let cb):
-                EventView(evt, callback: cb)
+            case .event(let evt, let ent, let cb):
+                EventView(evt, entitlement: ent, callback: cb)
                     .id(evt.uuid)
             case .playroomCreate:
                 PlayroomCreateView()
@@ -54,7 +54,7 @@ public enum AppPreview: View, Equatable {
     case userAccount
     case userProfile(UserIdentifiable)
     case track(Track)
-    case event(Event, (Entitlement) -> Void)
+    case event(Event, Entitlement? = nil, (Entitlement) -> Void)
     case view(Axis.Set? = nil, () -> AnyView)
     case playroomCreate
 }
@@ -70,9 +70,10 @@ public struct EventView: JoliView {
     
     @State var loadingDietaryChoices = false
     
-    public init(_ event: Event, callback: @escaping (Entitlement) -> Void){
+    public init(_ event: Event, entitlement: Entitlement? = nil, callback: @escaping (Entitlement) -> Void){
         self.callback = callback
         self.event = event
+        self._entitlement = State(initialValue: entitlement)
     }
     
     var entitlementRecord: EntitlementRecord {
@@ -109,8 +110,8 @@ public struct EventView: JoliView {
         self.saveEntitlement(rec)
         self.loadFoodAndDrinks()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1){
-            scrollProxy?.scrollTo("food")
+        DispatchQueue.main.async(){
+            scrollProxy?.scrollTo("food", anchor: .top)
         }
     }
     
@@ -128,11 +129,13 @@ public struct EventView: JoliView {
             .then(on: .main){ foods in
                 self.foods = foods
             }
+            .catch(self.appCoordinator.globalErrorHandler())
         
         let p2 = Drink.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(on: .main){ drinks in
-                self.drinks = drinks
+                self.drinks = drinks.sorted(by: { $0.alcoholContent ?? 0 > $1.alcoholContent ?? 0})
             }
+            .catch(self.appCoordinator.globalErrorHandler())
         
         Promises.all(p1, p2)
             .then() { (_, _) in
@@ -153,8 +156,8 @@ public struct EventView: JoliView {
     
     var choicesIds: (drinks: [Drink.ID], foods: [Food.ID]) {
         let choices = self.allChoices.filter() { $0.eventId == event.id && $0.createdById == appCoordinator.activeAuth?.user.id }
-        let drinkIds = choices.filter({ $0.type == .drink }).map() { $0.id }
-        let foodIds = choices.filter({ $0.type == .food }).map() { $0.id }
+        let drinkIds = choices.filter({ $0.type == .drink }).compactMap() { $0.targetId }
+        let foodIds = choices.filter({ $0.type == .food }).compactMap() { $0.targetId }
         return (drinkIds, foodIds)
     }
     
@@ -164,8 +167,7 @@ public struct EventView: JoliView {
         VStack(){
             GridChooserView(items: $foods, selections: $selectedFoods, layout: .list) { food in
                 
-                let choices = self.allChoices.filter() { $0.id == food.id && $0.eventId == event.id }
-                let userChoices = choices.filter({ $0.createdById == appCoordinator.activeAuth?.user.id })
+                let choices = self.allChoices.filter() { $0.targetId == food.id && $0.eventId == event.id  && $0.type == .food }
                 
                 HStack(alignment: .center) {
                     NetworkImage(url: api.baseUrlHttp.appendingPathComponent("/images/\(food.imageName)")) {
@@ -173,9 +175,12 @@ public struct EventView: JoliView {
                     }
                     .aspectRatio(contentMode: .fit)
                     .frame(width:  80, height: 80)
+                    
                     VStack(alignment: .leading){
                         Text(food.title).font(.headline).foregroundColor(.label)
-                        Text(food.subtitle).font(.subheadline)
+                        Text(food.subtitle)
+                            .fixedSize()
+                            .font(.subheadline)
                             .lineLimit(4)
                             .foregroundColor(.secondary)
                         
@@ -190,9 +195,10 @@ public struct EventView: JoliView {
                     }
                     .padding()
                     
+                    Spacer()
                     VStack(){
                         Spacer()
-                        let selected = userChoices.contains(where: {  $0.type == .food && $0.targetId == food.id })
+                        let selected = choicesIds.foods.contains(food.id)
                         Image(systemName: selected ? "hand.thumbsup.fill" : "hand.thumbsup")
                         .font(.title)
                         .foregroundColor(selected ? .green : .label)
@@ -209,7 +215,7 @@ public struct EventView: JoliView {
             
             GridChooserView(items: $drinks, selections: $selectedDrinks, layout: .grid) { drink in
                 
-                let choices = self.allChoices.filter() { $0.id == drink.id && $0.eventId == event.id}
+                let choices = self.allChoices.filter() { $0.targetId == drink.id && $0.type == .drink && $0.eventId == event.id}
                 
                 VStack(alignment: .center) {
                     NetworkImage(url: api.baseUrlHttp.appendingPathComponent("/images/\(drink.imageName)")) {
@@ -254,22 +260,61 @@ public struct EventView: JoliView {
         }
         .onChange(of: selectedDrinks) { drinks in
             let toCreated = drinks.filter({ !self.choicesIds.drinks.contains($0) })
+            let toDelete = self.choicesIds.drinks.filter({ !drinks.contains($0) })
             
-            guard !toCreated.isEmpty else { return }
+            if !toCreated.isEmpty {
+                self.selectItem(type: "drink", ids: toCreated)
+            }
             
-            self.selectItem(type: "drink", ids: toCreated)
+            if !toDelete.isEmpty {
+                self.removeItem(type: "drink", ids: toDelete)
+            }
         }
         .onChange(of: selectedFoods) { foods in
             let toCreated = foods.filter({ !self.choicesIds.foods.contains($0) })
+            let toDelete = self.choicesIds.foods.filter({ !foods.contains($0) })
             
-            guard !toCreated.isEmpty else { return }
+            if !toCreated.isEmpty {
+                self.selectItem(type: "food", ids: toCreated)
+            }
             
-            self.selectItem(type: "food", ids: toCreated)
+            if !toDelete.isEmpty {
+                self.removeItem(type: "food", ids: toDelete)
+            }
+        }
+    }
+    
+    func removeItem(type: String, ids: [Int]) {
+        let allChoices = self.allChoices
+        var toRemove = [MealChoice]()
+        
+        for meal in allChoices {
+            guard meal.createdById == appCoordinator.activeAuth?.user.id, let mealId = meal.targetId, meal.type.rawValue == type, ids.contains(mealId) else { continue }
+            
+            meal.delete(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                .then(on: .main){ _ in
+                    toRemove.append(meal)
+                }
+        }
+        
+        self.allChoices = self.allChoices.filter() { !toRemove.contains($0) }
+        
+        let userChoices = self.choicesIds
+        self.selectedDrinks = userChoices.drinks
+        self.selectedFoods = userChoices.foods
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.updateSelections()
         }
     }
     
     func selectItem(type: String, ids: [Int]) {
         for elemId in ids {
+            
+            guard allChoices.first(where: { $0.targetId == elemId && $0.type.rawValue == type && $0.createdById == appCoordinator.activeAuth?.user.id }) == nil else {
+                continue
+            }
+            
             var ch = MealChoiceRecord()
             ch.eventId = event.id
             ch.roomId = event.roomId
@@ -290,13 +335,14 @@ public struct EventView: JoliView {
     private func updateSelections(){
         MealChoice.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
         .then(on: .main){ choices in
-            self.allChoices = choices
+            self.allChoices = choices.filter() { $0.deletedAt == nil }
             
             let userChoices = self.choicesIds
             
             self.selectedDrinks = userChoices.drinks
             self.selectedFoods = userChoices.foods
         }
+        .catch(self.appCoordinator.globalErrorHandler())
     }
     
     public var contentView: some View {
@@ -400,7 +446,7 @@ public struct EventView: JoliView {
                             self.callback(entitlement)
                         } label: {
                             VStack(){
-                                Text("I'm done").font(.headline)
+                                Text("I'm done choosing").font(.headline)
                                 Text("Take me to song list").font(.footnote)
                             }
                         }
@@ -421,11 +467,23 @@ public struct EventView: JoliView {
                     Spacer()
                 }
                 .padding()
-                .padding(.bottom, Sizing.xxLarge)
+                .padding(.bottom, bottomPadding)
                 .background(Color.tertiarySystemBackground.opacity(0.4))
             }
         }
+        .onAppear(){
+            
+            guard entitlement != nil else { return }
+            
+            self.loadFoodAndDrinks()
+        }
     }
+    
+    #if APPCLIP
+    let bottomPadding = Sizing.xxLarge
+    #else
+    let bottomPadding = Sizing.small
+    #endif
     
 }
 

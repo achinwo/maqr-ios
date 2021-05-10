@@ -63,11 +63,11 @@ public struct GridChooserView<Item: Identifiable, Content: View>: JoliView {
             return
         }
          
-        guard !self.selections.contains(item.id) else {
-            return
+        if self.selections.contains(item.id) {
+            self.selections.removeAll(where: { $0 == item.id })
+        } else {
+            self.selections.append(item.id)
         }
-        
-        self.selections.append(item.id)
     }
     
     var columns: [GridItem] {

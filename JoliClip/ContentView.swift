@@ -27,8 +27,6 @@ struct SizePreferenceKey: PreferenceKey {
         let next = nextValue()
         
         guard next != .zero else { return }
-        
-        print("[BoundsPreferenceKey] \(value) -> \(next)")
         value = next
         //value = value + nextValue()
     }
@@ -317,11 +315,10 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     .frame(width: screenWidth)
                     .id(playroom.name)
                     .onAppear(){
-                        print("Playroom loaded: event: \(event), entitlement: \(eventEntitlement)")
                         
-                        guard let event = event, eventEntitlement == nil else { return }
+                        guard let event = event else { return } //, eventEntitlement == nil else { return }
                         
-                        self.preview = .event(event) { entitlement in
+                        self.preview = .event(event, eventEntitlement) { entitlement in
                                 self.eventEntitlement = entitlement
                                 self.preview = nil
                             

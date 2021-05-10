@@ -251,6 +251,8 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
                 }
                 .onAppear() {
                     
+                    presentEventView()
+                    
                     guard self.selectedViewId != .notset else {
                         self.selectedViewId = .listen
                         return
@@ -297,6 +299,8 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
             switch location {
             case .invited(let inviteId):
                 self.fetchPlayroomByInviteId(inviteId)
+            case .rsvp(let eventUid):
+                self.fetchPlayroomByEventId(eventUid)
             case .error:
                 //self.errorMessage = Self.GENERIC_ERROR_MESSAGE
                 print("[\(Self.self)] error handling lacation: \(location)")
@@ -375,6 +379,87 @@ public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentV
             //clearPending()
         }
     }
+    
+    
+    func presentEventView() {
+        guard let event = event else { return } //, eventEntitlement == nil else { return }
+        
+        self.preview = .event(event, eventEntitlement) { entitlement in
+            self.eventEntitlement = entitlement
+            self.preview = nil
+            
+            guard entitlement.rejectedAt != nil else {
+                return
+            }
+            
+            self.presentToast("Sorry you can't make it", type: .systemImage("info.circle", .blue), onDismiss: { _ in })
+            
+        }
+    }
+    
+    func fetchPlayroomByEventId(_ eventUid: String) -> Void { //Promise<(event: Event, room: Musicroom)?> {
+        //self.loadingView = true
+        Event.all(where: [.uuid: eventUid as AnyObject],
+                  limit: 1, baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
+            .then() { events -> Promise<(room: Musicroom, event: Event)?> in
+                guard let event = events.first else {
+                    return Promise(nil)
+                }
+                
+                return Musicroom.findById(id: event.roomId, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                    .then() { room -> (room: Musicroom, event: Event)? in
+                        guard let room = room else { return nil }
+                        
+                        return (room, event)
+                    }
+                    .catch(self.appCoordinator.globalErrorHandler())
+            }
+            .then() { roomData -> Promise<(room: Musicroom, event: Event, eventEntitlement: Entitlement?)?> in
+                guard let roomData = roomData else { return Promise(nil) }
+                
+                return Entitlement.all(where: [.type: "event" as AnyObject], baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
+                    .then(){ (ents: [Entitlement]) -> (room: Musicroom, event: Event, eventEntitlement: Entitlement?)? in
+                        
+                        guard let entitlement = ents.first(where: { $0.userId == appCoordinator.activeAuth?.user.id && $0.targetRecordId == roomData.event.id }) else {
+                            return (roomData.room, roomData.event, nil)
+                        }
+                        
+                        return (roomData.room, roomData.event, entitlement)
+                    }
+                    .catch() { error in
+                        print("[fetchPlayroomByEventId] error fetching: \(error)")
+                        self.appCoordinator.globalErrorHandler()(error)
+                    }
+            }
+            .then() { data in
+                
+                guard let data = data else { return }
+                
+                let play = Playroom(musicroom: data.room, socket: websocket, api: api)
+                self.playroom = play
+                self.event = data.event
+                self.eventEntitlement = data.eventEntitlement
+                
+                play.updateQueuedTracks()
+                    .then(){ _ in
+                        play.fetchSpotifyTopArtists()
+                            .then(){ artists in
+                                let filtered = artists.filter() { $0.imageMedium != nil }
+                                play.artists = filtered
+                            }
+                            .catch(self.appCoordinator.globalErrorHandler())
+                    }
+                    .catch(self.appCoordinator.globalErrorHandler())
+            }
+            .catch(self.appCoordinator.globalErrorHandler())
+            .always {
+                //self.loadingView = false
+                self.presentEventView()
+            }
+    }
+    
+    @State var event: Event? = nil
+    @State var eventEntitlement: Entitlement? = nil
     
     @discardableResult
     func fetchPlayroomByInviteId(_ inviteId: String) -> Promise<Entitlement> {

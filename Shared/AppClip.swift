@@ -491,7 +491,12 @@ extension JoliContentView {
         print("[\(tag)#onConnectionStateChanged] connected: \(connected)")
         
         guard connected else {
-            DispatchQueue.main.async() {
+            let randomInt = Int.random(in: 2..<7)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(randomInt)) {
+                
+                guard !socket.isConnected else { return }
+                
                 socket.connect()
             }
             return
