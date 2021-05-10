@@ -194,12 +194,64 @@ public extension PlayState {
     }
 }
 
+#if os(macOS)
+public typealias UIActivityIndicatorView = NSProgressIndicator
+public typealias UIViewRepresentable = NSViewRepresentable
+public typealias UIViewRepresentableContext = NSViewRepresentableContext
+#endif
+
+public extension Search.Category {
+ 
+    mutating func empty() {
+        for cat in Self.allCases {
+            self.remove(cat)
+        }
+    }
+    
+}
+
 
 public extension Search.Engine {
     
-    typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[ExploreView.SearchResult], Never>
+    typealias SearchMethod2 = (String, Set<Search.Category>, Int) -> AnyPublisher<Spotify.SearchResult?, Never>
     
-    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod) -> AnyPublisher<[ExploreView.SearchResult], Never> {
+    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod2) -> AnyPublisher<Spotify.SearchResult?, Never> {
+        let supported = categories.filter(){ supportedCategories.contains($0) }
+        
+        guard !supported.isEmpty else {
+            return Just(nil).eraseToAnyPublisher()
+        }
+        
+        return searchFn(q, supported, limit)
+    }
+    
+}
+
+
+public extension Character {
+    var stringValue: String {
+        return String(self)
+    }
+}
+
+public extension Image {
+    
+    init(platformImage: UIImage) {
+        #if os(macOS)
+        self.init(nsImage: platformImage)
+        #else
+        self.init(uiImage: platformImage)
+        #endif
+    }
+    
+}
+
+
+public extension Search.Engine {
+    
+    typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[SearchResult], Never>
+    
+    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod) -> AnyPublisher<[SearchResult], Never> {
         let supported = categories.filter(){ supportedCategories.contains($0) }
         
         guard !supported.isEmpty else {
@@ -207,6 +259,25 @@ public extension Search.Engine {
         }
         
         return searchFn(q, supported, limit)
+    }
+    
+}
+
+public extension Array where Element == Spotify.Image {
+    
+    var smallestImage: Spotify.Image? {
+        return self.last
+    }
+    
+    var largestImage: Spotify.Image? {
+        return self.first
+    }
+    
+    var mediumImage: Spotify.Image? {
+        guard count >= 2 else {
+            return self.largestImage
+        }
+        return self[1]
     }
     
 }

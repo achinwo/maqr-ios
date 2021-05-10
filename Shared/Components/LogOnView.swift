@@ -70,18 +70,6 @@ class LoginViewModel: ObservableObject {
 //    }
 //}
 
-public extension Image {
-    
-    init(platformImage: UIImage) {
-        #if os(macOS)
-        self.init(nsImage: platformImage)
-        #else
-        self.init(uiImage: platformImage)
-        #endif
-    }
-    
-}
-
 // MARK: - SignInView
 struct SignInView: JoliView {
     

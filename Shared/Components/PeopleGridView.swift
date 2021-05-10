@@ -182,10 +182,10 @@ public struct InvitePeopleView: JoliView {
                 Divider().padding()
             }
             
-            PersonGenericImage()
-                .frame(width: screenWidth / 3, height: screenWidth / 3, alignment: .center)
-                .fixedSize()
-                .padding([.top, .bottom], Sizing.large)
+//            PersonGenericImage()
+//                .frame(width: screenWidth / 3, height: screenWidth / 3, alignment: .center)
+//                .fixedSize()
+//                .padding([.top, .bottom], Sizing.large)
             
             HStack(){
                 Button() {

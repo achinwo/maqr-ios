@@ -59,21 +59,6 @@ struct ShakeButtonView: View {
     }
 }
 
-public extension Search.Engine {
-    
-    typealias SearchMethod2 = (String, Set<Search.Category>, Int) -> AnyPublisher<Spotify.SearchResult?, Never>
-    
-    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod2) -> AnyPublisher<Spotify.SearchResult?, Never> {
-        let supported = categories.filter(){ supportedCategories.contains($0) }
-        
-        guard !supported.isEmpty else {
-            return Just(nil).eraseToAnyPublisher()
-        }
-        
-        return searchFn(q, supported, limit)
-    }
-    
-}
 
 struct ListenView: JoliView {
     
@@ -959,12 +944,6 @@ public struct AppVisorView: JoliView {
         HStack(spacing: .zero){
             //Spacer()
         }
-    }
-}
-
-public extension Character {
-    var stringValue: String {
-        return String(self)
     }
 }
 

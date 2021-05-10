@@ -11,10 +11,6 @@
 import SwiftUI
 #if os(macOS)
 import AppKit
-
-public typealias UIActivityIndicatorView = NSProgressIndicator
-public typealias UIViewRepresentable = NSViewRepresentable
-public typealias UIViewRepresentableContext = NSViewRepresentableContext
 #endif
 
 struct RefreshableScrollView<Content: View>: View {
