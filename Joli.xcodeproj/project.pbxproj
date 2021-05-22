@@ -13,6 +13,11 @@
 		9202D3DC2659B6E900D5974F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D3DB2659B6E900D5974F /* Preview Assets.xcassets */; };
 		9202D3FD2659B72800D5974F /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		9202D3FE2659B72800D5974F /* JoliPlayground.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D4092659BC0B00D5974F /* SmartzClipApp.swift */; };
+		9202D40C2659BC0B00D5974F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D40B2659BC0B00D5974F /* ContentView.swift */; };
+		9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D40D2659BC0E00D5974F /* Assets.xcassets */; };
+		9202D4112659BC0E00D5974F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D4102659BC0E00D5974F /* Preview Assets.xcassets */; };
+		9202D42C2659BC0E00D5974F /* SmartzClip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 9202D4072659BC0B00D5974F /* SmartzClip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9203B31324CB06C900F465CC /* JoliPlayground.h in Headers */ = {isa = PBXBuildFile; fileRef = 9203B31124CB06C900F465CC /* JoliPlayground.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9203B31924CB079200F465CC /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 9203B31824CB079200F465CC /* JoliApi */; };
 		9203B32724CB07EE00F465CC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9924C79B3D007C960E /* Localizable.strings */; };
@@ -185,6 +190,13 @@
 			remoteGlobalIDString = 9203B30E24CB06C900F465CC;
 			remoteInfo = JoliPlayground;
 		};
+		9202D42A2659BC0E00D5974F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9202D4062659BC0B00D5974F;
+			remoteInfo = SmartzClip;
+		};
 		923C2B0724CC752E009E2380 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
@@ -234,6 +246,17 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9202D4302659BC0E00D5974F /* Embed App Clips */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/AppClips";
+			dstSubfolderSpec = 16;
+			files = (
+				9202D42C2659BC0E00D5974F /* SmartzClip.app in Embed App Clips */,
+			);
+			name = "Embed App Clips";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9274A80D24CDB29900B45EDF /* Embed App Clips */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -277,6 +300,13 @@
 		9202D3DB2659B6E900D5974F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9202D3DD2659B6E900D5974F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9202D4022659B7CD00D5974F /* Smartz.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Smartz.entitlements; sourceTree = "<group>"; };
+		9202D4072659BC0B00D5974F /* SmartzClip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartzClip.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9202D4092659BC0B00D5974F /* SmartzClipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartzClipApp.swift; sourceTree = "<group>"; };
+		9202D40B2659BC0B00D5974F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		9202D40D2659BC0E00D5974F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9202D4102659BC0E00D5974F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		9202D4122659BC0E00D5974F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9202D4132659BC0E00D5974F /* SmartzClip.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SmartzClip.entitlements; sourceTree = "<group>"; };
 		9203B30F24CB06C900F465CC /* JoliPlayground.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = JoliPlayground.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9203B31124CB06C900F465CC /* JoliPlayground.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JoliPlayground.h; sourceTree = "<group>"; };
 		9203B31224CB06C900F465CC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -379,6 +409,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9202D4042659BC0B00D5974F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9203B30C24CB06C900F465CC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -469,6 +506,27 @@
 			isa = PBXGroup;
 			children = (
 				9202D3DB2659B6E900D5974F /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		9202D4082659BC0B00D5974F /* SmartzClip */ = {
+			isa = PBXGroup;
+			children = (
+				9202D4092659BC0B00D5974F /* SmartzClipApp.swift */,
+				9202D40B2659BC0B00D5974F /* ContentView.swift */,
+				9202D40D2659BC0E00D5974F /* Assets.xcassets */,
+				9202D4122659BC0E00D5974F /* Info.plist */,
+				9202D4132659BC0E00D5974F /* SmartzClip.entitlements */,
+				9202D40F2659BC0E00D5974F /* Preview Content */,
+			);
+			path = SmartzClip;
+			sourceTree = "<group>";
+		};
+		9202D40F2659BC0E00D5974F /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				9202D4102659BC0E00D5974F /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
@@ -685,6 +743,7 @@
 				9274A7E524CDB29200B45EDF /* JoliClip */,
 				922DEAC7264BAFED00D91D99 /* JoliTV */,
 				9202D3D32659B6E700D5974F /* Smartz */,
+				9202D4082659BC0B00D5974F /* SmartzClip */,
 				92F379E02363534D005FE2AB /* Products */,
 				92F37A18236458F2005FE2AB /* Frameworks */,
 			);
@@ -701,6 +760,7 @@
 				9274A7E424CDB29200B45EDF /* JoliClip.app */,
 				922DEAC6264BAFED00D91D99 /* JoliTV.app */,
 				9202D3D22659B6E700D5974F /* Smartz.app */,
+				9202D4072659BC0B00D5974F /* SmartzClip.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -737,16 +797,35 @@
 				9202D3CF2659B6E700D5974F /* Frameworks */,
 				9202D3D02659B6E700D5974F /* Resources */,
 				9202D4012659B72800D5974F /* Embed Frameworks */,
+				9202D4302659BC0E00D5974F /* Embed App Clips */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				9202D4002659B72800D5974F /* PBXTargetDependency */,
+				9202D42B2659BC0E00D5974F /* PBXTargetDependency */,
 			);
 			name = Smartz;
 			productName = Smartz;
 			productReference = 9202D3D22659B6E700D5974F /* Smartz.app */;
 			productType = "com.apple.product-type.application";
+		};
+		9202D4062659BC0B00D5974F /* SmartzClip */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9202D42D2659BC0E00D5974F /* Build configuration list for PBXNativeTarget "SmartzClip" */;
+			buildPhases = (
+				9202D4032659BC0B00D5974F /* Sources */,
+				9202D4042659BC0B00D5974F /* Frameworks */,
+				9202D4052659BC0B00D5974F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SmartzClip;
+			productName = SmartzClip;
+			productReference = 9202D4072659BC0B00D5974F /* SmartzClip.app */;
+			productType = "com.apple.product-type.application.on-demand-install-capable";
 		};
 		9203B30E24CB06C900F465CC /* JoliPlayground */ = {
 			isa = PBXNativeTarget;
@@ -916,6 +995,9 @@
 					9202D3D12659B6E700D5974F = {
 						CreatedOnToolsVersion = 12.5;
 					};
+					9202D4062659BC0B00D5974F = {
+						CreatedOnToolsVersion = 12.5;
+					};
 					9203B30E24CB06C900F465CC = {
 						CreatedOnToolsVersion = 12.0;
 					};
@@ -976,6 +1058,7 @@
 				92A32D6C24C799B8007C960E /* Tests macOS */,
 				922DEAC5264BAFED00D91D99 /* JoliTV */,
 				9202D3D12659B6E700D5974F /* Smartz */,
+				9202D4062659BC0B00D5974F /* SmartzClip */,
 			);
 		};
 /* End PBXProject section */
@@ -987,6 +1070,15 @@
 			files = (
 				9202D3DC2659B6E900D5974F /* Preview Assets.xcassets in Resources */,
 				9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9202D4052659BC0B00D5974F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9202D4112659BC0E00D5974F /* Preview Assets.xcassets in Resources */,
+				9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1084,6 +1176,15 @@
 			files = (
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9202D4032659BC0B00D5974F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9202D40C2659BC0B00D5974F /* ContentView.swift in Sources */,
+				9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1266,6 +1367,11 @@
 			target = 9203B30E24CB06C900F465CC /* JoliPlayground */;
 			targetProxy = 9202D3FF2659B72800D5974F /* PBXContainerItemProxy */;
 		};
+		9202D42B2659BC0E00D5974F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9202D4062659BC0B00D5974F /* SmartzClip */;
+			targetProxy = 9202D42A2659BC0E00D5974F /* PBXContainerItemProxy */;
+		};
 		923C2B0824CC752E009E2380 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9203B30E24CB06C900F465CC /* JoliPlayground */;
@@ -1309,6 +1415,7 @@
 		9202D3F42659B6EA00D5974F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
@@ -1333,6 +1440,7 @@
 		9202D3F52659B6EA00D5974F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
@@ -1347,6 +1455,53 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9202D42E2659BC0E00D5974F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
+				DEVELOPMENT_TEAM = 2L26ZMA265;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = SmartzClip/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9202D42F2659BC0E00D5974F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
+				DEVELOPMENT_TEAM = 2L26ZMA265;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = SmartzClip/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1916,6 +2071,15 @@
 			buildConfigurations = (
 				9202D3F42659B6EA00D5974F /* Debug */,
 				9202D3F52659B6EA00D5974F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9202D42D2659BC0E00D5974F /* Build configuration list for PBXNativeTarget "SmartzClip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9202D42E2659BC0E00D5974F /* Debug */,
+				9202D42F2659BC0E00D5974F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
