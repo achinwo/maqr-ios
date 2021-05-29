@@ -74,6 +74,15 @@
         }
       },
       {
+        "package": "M13Checkbox",
+        "repositoryURL": "https://github.com/Marxon13/M13Checkbox.git",
+        "state": {
+          "branch": null,
+          "revision": "96ff6c8862db87095315480a56dcebe51e15dac8",
+          "version": "3.4.1"
+        }
+      },
+      {
         "package": "PartialSheet",
         "repositoryURL": "https://github.com/AndreaMiotto/PartialSheet.git",
         "state": {

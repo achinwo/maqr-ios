@@ -31,6 +31,7 @@
 		920958B225601F020014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		920958B325601F030014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		9209B1E12629E32500786A6A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9209B1E02629E32500786A6A /* LaunchScreen.storyboard */; };
+		920CE8C02662AD90008F9EAB /* M13Checkbox in Frameworks */ = {isa = PBXBuildFile; productRef = 920CE8BF2662AD90008F9EAB /* M13Checkbox */; };
 		921ADE92265E759E0023DC87 /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
 		921ADE93265E759E0023DC87 /* SpotifyiOS.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
@@ -443,6 +444,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				92C1A2462662677700A11E0F /* JoliPlayground.framework in Frameworks */,
+				920CE8C02662AD90008F9EAB /* M13Checkbox in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -856,6 +858,9 @@
 				92C1A2492662677700A11E0F /* PBXTargetDependency */,
 			);
 			name = SmartzClip;
+			packageProductDependencies = (
+				920CE8BF2662AD90008F9EAB /* M13Checkbox */,
+			);
 			productName = SmartzClip;
 			productReference = 9202D4072659BC0B00D5974F /* SmartzClip.app */;
 			productType = "com.apple.product-type.application.on-demand-install-capable";
@@ -1078,6 +1083,7 @@
 				921BA25B253E03B4007C2FE0 /* XCRemoteSwiftPackageReference "Sourceful" */,
 				92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 				922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */,
+				920CE8BE2662AD90008F9EAB /* XCRemoteSwiftPackageReference "M13Checkbox" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -2205,6 +2211,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		920CE8BE2662AD90008F9EAB /* XCRemoteSwiftPackageReference "M13Checkbox" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Marxon13/M13Checkbox.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.4.1;
+			};
+		};
 		921BA25B253E03B4007C2FE0 /* XCRemoteSwiftPackageReference "Sourceful" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/twostraws/Sourceful.git";
@@ -2299,6 +2313,11 @@
 		9203B31824CB079200F465CC /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
+		};
+		920CE8BF2662AD90008F9EAB /* M13Checkbox */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 920CE8BE2662AD90008F9EAB /* XCRemoteSwiftPackageReference "M13Checkbox" */;
+			productName = M13Checkbox;
 		};
 		922989AF2649208A00FDD58F /* GradientLoadingBar */ = {
 			isa = XCSwiftPackageProductDependency;
