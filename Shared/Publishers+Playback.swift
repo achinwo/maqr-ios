@@ -12,6 +12,16 @@ import Combine
 import SwiftUI
 
 public struct PlaybackControllerMetadata: Equatable, Identifiable, CustomStringConvertible {
+    
+    public init(id: String, name: String, logoImage: Images, brandColor: Color, isInstalled: Bool, connectionState: ConnectionState) {
+        self.id = id
+        self.name = name
+        self.logoImage = logoImage
+        self.brandColor = brandColor
+        self.isInstalled = isInstalled
+        self.connectionState = connectionState
+    }
+    
     public var id: String
     public var name: String
     public var logoImage: Images
@@ -22,6 +32,8 @@ public struct PlaybackControllerMetadata: Equatable, Identifiable, CustomStringC
     public var description: String {
         return "playback-controller/\(id)/metadata(name: \(name), logoname: \(logoImage), installed: \(isInstalled), connectionstate: \(connectionState))"
     }
+    
+    
 }
 
 public protocol PlaybackController: ConnectablePublisher, CustomCombineIdentifierConvertible, Identifiable, ObservableObject where Output == JoliCore.ConnectionState, Failure == Error {
