@@ -52,6 +52,8 @@ struct SmartzClipApp: AppClip {
     
     @State var activeSessionToken: String? = nil
     var api: JoliApi
+    @State var alertInfo: Alert? = nil
+    @State var isActionSheetPresented: Bool = false
     
     @State var currentUser: User? = nil
     let videoController = VideoPlaybackController()
@@ -73,5 +75,9 @@ struct SmartzClipApp: AppClip {
     
     var contentView: some View {
         ContentView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+            .onReceive(coordinator.globalAlertSubject) { alertInfo in
+                self.alertInfo = alertInfo
+                self.isActionSheetPresented = true
+            }
     }
 }

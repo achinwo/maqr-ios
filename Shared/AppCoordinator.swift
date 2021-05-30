@@ -15,12 +15,8 @@ import Promises
 import Version
 import AlertToast
 
-#if os(macOS)
-
-
-#else
+#if !os(macOS)
 import PartialSheet
-
 #endif
 
 public enum AuthenticationFlow {

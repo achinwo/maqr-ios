@@ -15,31 +15,38 @@ import JoliCore
 
 public struct Step: Identifiable {
     
-    public init(id: String, title: String, description: String, isOptional: Bool = false) {
+    public init(id: String, title: String, description: String, duration: TimeInterval? = nil, isOptional: Bool = false, spicy: String? = nil, caution: String? = nil) {
         self.id = id
         self.title = title
         self.description = description
         self.isOptional = isOptional
+        self.duration = duration
+        self.spicy = spicy
+        self.caution = caution
     }
     
+    public var duration: TimeInterval? = nil
     public var isOptional: Bool
     public var id: String
     public var title: String
     public var description: String
     
+    public var spicy: String?
+    public var caution: String?
+    
 }
 
 let steps: [Step] = [
-    Step(id: "heat_oil", title: "Heat Palm Oil", description: "Heat the bleached palm oil on medium heat"),
+    Step(id: "heat_oil", title: "Heat Palm Oil", description: "Heat the bleached palm oil on medium heat for 1-2mins. ", duration: 60.0 * 2, caution: "Do Not Cover"),
     Step(id: "add_locust_beans", title: "Add Locust Beans", description: "Add in locust beans to cook for 50 secs, stir continuously to avoid burning"),
-    Step(id: "add_protein", title: "Add Protein", description: "Add protein (meat/fish) and fry for 2-3mins stirring continuously"),
+    Step(id: "add_protein", title: "Add Protein", description: "Add protein (meat/fish) and fry for 2-3mins stirring continuously", duration: 60.0 * 3),
     Step(id: "add_red_pepper", title: "Add Red Pepper", description: "Add the precooked red pepper"),
     Step(id: "add_chillies", title: "Add Chilli Flakes", description: "Add the chilli flakes"),
     Step(id: "add_crayfish", title: "Add Crayfish", description: "Add the crayfish", isOptional: true),
     Step(id: "add_scotch_bonnet", title: "Add scotch bonnet", description: "Add scotch bonnet (quarter teaspoon at a time, until desired level of spice is reached) (spicy)"),
     Step(id: "add_spice", title: "Add the spice/season mix", description: "Add the spice/season mix as desired (half a teaspoon at a time)"),
     Step(id: "add_salt", title: "Add a pinch of salt", description: "Add a pinch of salt, optionally tasting till you achieve your desired taste"),
-    Step(id: "cover_and_simmer", title: "Cover and leave to simmer", description: "Cover and leave to simmer for 6-10mins on medium heat"),
+    Step(id: "cover_and_simmer", title: "Cover and leave to simmer", description: "Cover and leave to simmer for 6-10mins on medium heat", duration: 60.0 * 10),
     Step(id: "serve_enjoy", title: "Serve warn and enjoy", description: "Serve warn and enjoy your meal"),
 ]
 
@@ -81,6 +88,19 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             }
         }
         
+        var color: Color {
+            switch self {
+                case .gallery:
+                    return .orange
+                case .help:
+                    return Color.systemIndigo
+                case .steps:
+                    return .pink
+                case .information:
+                    return .green
+            }
+        }
+        
         var emoji: (default: String, active: String) {
             switch self {
                 case .gallery:
@@ -96,7 +116,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     }
     
     @Environment(\.colorScheme) var colorScheme
-    @State var selectedTab = Tab.information
+    @State var selectedTab = Tab.steps
     
     public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
         self._currentUser = currentUser
@@ -104,28 +124,131 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         self.localPlaybackController = localPlaybackController
     }
     
-    var autoResetting = AutoResetSubject<String?, Never, DispatchQueue>(nil, delay: 0.3, scheduler: DispatchQueue.main)
+    var autoResetting = AutoResetSubject<Int?, Never, DispatchQueue>(nil, delay: 0.3, scheduler: DispatchQueue.main)
+    
+    @State var tappedStepId: Int? = nil
+    @State var lastStepId: Int = -1
     
     var stepsView: some View {
-        NavigationView(){
-            List(Array(steps.enumerated()), id: \.element.title) { itm in
-                HStack(alignment: .top){
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .brief
+        formatter.allowedUnits = [.minute]
+        
+        return NavigationView(){
+            ZStack(){
+                
+                if lastStepId >= 0 {
+                    let currentValue = lastStepId + 1
+                    let percentage = Double(currentValue) / Double(steps.count) * 100.0
+                    
                     VStack(){
-                        Text(itm.offset.advanced(by: 1).description) + Text(".")
+                        Group(){
+                            ProgressView(value: percentage, total: 100) {
+                                Group(){
+                                    if percentage >= 100 {
+                                        Text("All done, enjoy your meal! 🥘")
+                                    } else {
+                                        Text("\(lastStepId + 1)").font(.subheadline.weight(.semibold)) +
+                                            Text(" of ") +
+                                            Text("\(steps.count) ").font(.subheadline.weight(.semibold)) +
+                                            Text("steps completed")
+                                    }
+                                }
+                                .padding(.horizontal)
+                                .padding(.bottom, 2)
+                            }
+                            .progressViewStyle(LinearProgressViewStyle())
+                            .labelsHidden()
+                            .accentColor(.green)
+                            .foregroundColor(.secondary)
+                            .font(.subheadline)
+                            .animation(.easeInOut)
+                            .padding(.top)
+                        }
+                        .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
                         Spacer()
                     }
+                    .zIndex(1000)
                     
-                    VStack(){
-                        //Text(itm.element.title)
-                        Text(itm.element.description).font(.body)
-                    }
-                    
-                    Spacer()
-                    Image(systemName: "checkmark.circle")
                 }
-                .padding()
+                
+                ScrollView(){
+                    VStack(){
+                        Image("food_ofada")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: screenWidth - 100, height: screenWidth - 100)
+                            .padding(.top)
+                        
+                        Divider().padding()
+                        
+                        ForEach(Array(steps.enumerated()), id: \.element.title) { itm in
+                            
+                            let isChecked = self.lastStepId >= itm.offset
+                            
+                            HStack(alignment: .top){
+                                VStack(){
+                                    Text(itm.offset.advanced(by: 1).description) + Text(".")
+                                    Spacer()
+                                }
+                                .foregroundColor(.tertiaryLabel)
+                                
+                                VStack(alignment: .leading){
+                                    Text(itm.element.description)
+                                        .strikethrough(isChecked, color: .secondaryLabel)
+                                        .lineLimit(nil)
+                                        .font(.body)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .foregroundColor(isChecked ? .secondaryLabel : .primary)
+                                    
+                                    HStack() {
+                                        if let duration = itm.element.duration, let durationStr = formatter.string(from: duration) {
+                                            Label(durationStr, systemImage: "timer")
+                                                .font(.footnote)
+                                        }
+                                        Spacer()
+                                        if let caution = itm.element.caution {
+                                            Label(caution, systemImage: "nosign")
+                                                .font(.footnote)
+                                                .foregroundColor(.yellow)
+                                        }
+                                    }
+                                    .foregroundColor(.secondary)
+                                    .padding(.top, 2)
+                                }
+                                
+                                Spacer()
+                                Button() {
+                                    self.autoResetting.send(itm.offset)
+                                    self.lastStepId = self.lastStepId == 0 && itm.offset == 0 ? -1 : itm.offset
+                                    
+                                    guard self.lastStepId != steps.count - 1 else { return }
+                                    
+                                    
+                                } label: {
+                                    let active = self.tappedStepId == itm.offset
+                                    Image(systemName: isChecked ? "checkmark.circle" : "circle.dashed")
+                                        .foregroundColor(isChecked ? .green : Color.secondaryLabel)
+                                        .padding()
+                                        .font(.title.weight(.light))
+                                        .scaleEffect(x: active ? 1.5 : 1, y: active ? 1.5 : 1)
+                                        .animation(.easeInOut)
+                                }
+                                
+                            }
+                            .padding([.bottom, .horizontal])
+                        }
+                        .navigationTitle("Preparing Ofada Sauce")
+                    }
+                    .frame(maxWidth: screenWidth)
+                    .padding(.bottom, safeAreaInsets.bottom)
+                    //.frame(minHeight: screenHeight)
+                }
             }
-            .navigationTitle("The Steps")
+            
+        }
+        .onReceive(self.autoResetting) { value in
+            self.tappedStepId = value
         }
     }
     
@@ -145,11 +268,11 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             self.selectedTab = tab
                         } label: {
                             Label(tab.label, systemImage: selectedTab == tab ? tab.emoji.active : tab.emoji.default)
-                                .foregroundColor(Color.label)
+                                .foregroundColor(selectedTab == tab ? tab.color : .primary)
                                 .padding()
                         }
                         .if(selectedTab == tab){ view in
-                            view.background(BlurView(colorScheme == .dark ? .systemThinMaterialDark : .systemThinMaterialLight))
+                            view.background(BlurView(colorScheme == .dark ? .systemThickMaterialDark : .systemThickMaterialLight))
                         } else: { view in
                             view.background(Color.clear)
                         }
