@@ -921,7 +921,7 @@ public final class AutoResetSubject<Output, Failure, S>: Subject where Failure :
     let resetValue: Output
     let delay: S.SchedulerTimeType.Stride
     
-    init(_ resetValue: Output, delay: S.SchedulerTimeType.Stride, scheduler: S) {
+    public init(_ resetValue: Output, delay: S.SchedulerTimeType.Stride, scheduler: S) {
         self.resetValue = resetValue
         self.delay = delay
         
