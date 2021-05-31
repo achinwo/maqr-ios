@@ -13,6 +13,31 @@ import JoliApi
 import AlertToast
 import JoliCore
 
+public struct Ingredient: Identifiable {
+    
+    public init(id: String, title: String, description: String, spicy: String? = nil) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.spicy = spicy
+    }
+    
+    public var id: String
+    public var title: String
+    public var description: String
+    
+    public var spicy: String?
+    
+}
+
+let ingredients: [Ingredient] = [
+    Ingredient(id: "food_ing_chilliflakes", title: "Chilli Flakes", description: "Crushed Chillies flakes contain the flesh and seeds of whole chillies; if you want to add a warm, fiery punch to a dish, then look no further"),
+    Ingredient(id: "food_ing_palmoil", title: "Bleached Palm oil", description: "A unique tasting oil made by bleaching red palm oil for a few minutes till it looks somewhat like vegetable oil"),
+    Ingredient(id: "food_ing_salt", title: "Salt", description: "Cooking salt – a seasoning to enhance taste and bring out the natural flavours"),
+    Ingredient(id: "food_ing_scotch_bornet", title: "Scotch Bonnet", description: "Scotch bonnet, also known as bonney peppers, or Caribbean red peppers, is a variety of chili pepper named for its resemblance to a tam o' shanter hat"),
+    Ingredient(id: "food_ing_seasoningmix", title: "Season Mix", description: "A flavourful, umami-packed blend of ground dried ginger, peanuts, and more"),
+]
+
 public struct Step: Identifiable {
     
     public init(id: String, title: String, description: String, duration: TimeInterval? = nil, isOptional: Bool = false, spicy: String? = nil, caution: String? = nil) {
@@ -37,15 +62,15 @@ public struct Step: Identifiable {
 }
 
 let steps: [Step] = [
-    Step(id: "heat_oil", title: "Heat Palm Oil", description: "Heat the bleached palm oil on medium heat for 1-2mins. ", duration: 60.0 * 2, caution: "Do Not Cover"),
+    Step(id: "heat_oil", title: "Heat Palm Oil", description: "Heat the bleached palm oil on medium heat for 1-2mins", duration: 60.0 * 2, caution: "Do Not Cover"),
     Step(id: "add_locust_beans", title: "Add Locust Beans", description: "Add in locust beans to cook for 50 secs, stir continuously to avoid burning"),
     Step(id: "add_protein", title: "Add Protein", description: "Add protein (meat/fish) and fry for 2-3mins stirring continuously", duration: 60.0 * 3),
-    Step(id: "add_red_pepper", title: "Add Red Pepper", description: "Add the precooked red pepper"),
-    Step(id: "add_chillies", title: "Add Chilli Flakes", description: "Add the chilli flakes"),
+    Step(id: "add_red_pepper", title: "Add Red Pepper", description: "Add the precooked red pepper", spicy: "🌶"),
+    Step(id: "add_chillies", title: "Add Chilli Flakes", description: "Add the chilli flakes", spicy: "🌶🌶"),
     Step(id: "add_crayfish", title: "Add Crayfish", description: "Add the crayfish", isOptional: true),
-    Step(id: "add_scotch_bonnet", title: "Add scotch bonnet", description: "Add scotch bonnet (quarter teaspoon at a time, until desired level of spice is reached) (spicy)"),
+    Step(id: "add_scotch_bonnet", title: "Add scotch bonnet", description: "Add scotch bonnet (quarter teaspoon at a time, until desired level of spice is reached)", spicy: "🌶🌶🌶"),
     Step(id: "add_spice", title: "Add the spice/season mix", description: "Add the spice/season mix as desired (half a teaspoon at a time)"),
-    Step(id: "add_salt", title: "Add a pinch of salt", description: "Add a pinch of salt, optionally tasting till you achieve your desired taste"),
+    Step(id: "add_salt", title: "Add a pinch of salt", description: "Add a pinch of salt, optionally tasting till you achieve your desired taste", isOptional: true),
     Step(id: "cover_and_simmer", title: "Cover and leave to simmer", description: "Cover and leave to simmer for 6-10mins on medium heat", duration: 60.0 * 10),
     Step(id: "serve_enjoy", title: "Serve warn and enjoy", description: "Serve warn and enjoy your meal"),
 ]
@@ -116,7 +141,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     }
     
     @Environment(\.colorScheme) var colorScheme
-    @State var selectedTab = Tab.information
+    @AppStorage("active-tab") var selectedTab = Tab.information
     
     public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
         self._currentUser = currentUser
@@ -133,6 +158,43 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         let formatter = DateComponentsFormatter()
         formatter.unitsStyle = .brief
         formatter.allowedUnits = [.minute]
+        
+        let ingredientsView = VStack(){
+            
+            let header = HStack(){
+                Image(systemName: "list.bullet.rectangle")//.renderingMode(.original)
+                Text("Ingredients")
+                Spacer()
+            }
+            .font(.title2)
+            .padding()
+            
+            Section(header: header){
+                VStack(){
+                    ForEach(ingredients) { ing in
+                        HStack(){
+                            Image(ing.id)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 100, height: 100)
+                            VStack(alignment: .leading){
+                                Text(ing.title).font(.subheadline)
+                                Text(ing.description).font(.caption).foregroundColor(.secondaryLabel).fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+            }
+        }
+        
+        let shareView = VStack(){
+            
+        }
+        
+        let reorderView = VStack(){
+            
+        }
         
         return NavigationView(){
             ZStack(){
@@ -180,6 +242,14 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             .frame(width: screenWidth - 100, height: screenWidth - 100)
                             .padding(.top)
                         
+                        (Text("(Pronounced Or-far-da) ").fontWeight(.semibold) + Text("also known as designer stew, originates from Western Nigeria and gets its name from a locally grown rice known as Ofada rice. This delicious sauce is enriched with flavours as it is originally made with a variety of red peppers."))
+                            .padding()
+                            .padding(.horizontal)
+                            .font(.body.weight(.light))
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        Divider().padding()
+                        ingredientsView
                         Divider().padding()
                         
                         ForEach(Array(steps.enumerated()), id: \.element.title) { itm in
@@ -202,11 +272,24 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                                         .foregroundColor(isChecked ? .secondaryLabel : .primary)
                                     
                                     HStack() {
+                                        
+                                        if itm.element.isOptional {
+                                            Label("Optional", systemImage: "info.circle")
+                                                .font(.footnote).foregroundColor(Color.systemIndigo.opacity(0.7))
+                                        }
+                                        
                                         if let duration = itm.element.duration, let durationStr = formatter.string(from: duration) {
                                             Label(durationStr, systemImage: "timer")
                                                 .font(.footnote)
                                         }
+                                        
+                                        if let spicy = itm.element.spicy {
+                                            Text(spicy)
+                                                .font(.footnote)
+                                        }
+                                        
                                         Spacer()
+                                        
                                         if let caution = itm.element.caution {
                                             Label(caution, systemImage: "nosign")
                                                 .font(.footnote)
@@ -239,6 +322,12 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             .padding([.bottom, .horizontal])
                         }
                         .navigationTitle("Preparing Ofada Sauce")
+                        
+                        Divider().padding(.vertical)
+                        shareView
+                        
+                        Divider().padding()
+                        reorderView
                     }
                     .frame(maxWidth: screenWidth)
                     .padding(.bottom, safeAreaInsets.bottom)
