@@ -622,8 +622,13 @@ struct FilledButton: ButtonStyle {
     }
 }
 
-struct OutlineButton: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
+public struct OutlineButton: ButtonStyle {
+    
+    public init(){
+        
+    }
+    
+    public func makeBody(configuration: Configuration) -> some View {
         configuration
             .label
             .foregroundColor(configuration.isPressed ? .gray : .accentColor)

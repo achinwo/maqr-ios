@@ -116,7 +116,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     }
     
     @Environment(\.colorScheme) var colorScheme
-    @State var selectedTab = Tab.steps
+    @State var selectedTab = Tab.information
     
     public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
         self._currentUser = currentUser
@@ -252,12 +252,149 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         }
     }
     
+    var galleryView: some View {
+        
+        let images: [String] = [
+            "food_ofada",
+            "food_ofada-2",
+            "food_ofada-3",
+            "food_ofada-4",
+        ]
+        
+        return NavigationView(){
+            ScrollView(){
+                LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
+                    ForEach(images, id: \.self) { name in
+                        Image(name)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: screenWidth / 2, maxHeight: screenWidth / 2)
+                            .id(name)
+                    }
+                    
+                    
+                    Button(){
+                        print("post image")
+                    } label: {
+                        VStack(){
+                            Image(systemName: "plus.viewfinder")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .font(.title.weight(.thin))
+                                .frame(maxWidth: screenWidth / 2, maxHeight: screenWidth / 2)
+                                .padding()
+                                .id("add-new")
+                            Text("Post a Photo").font(.subheadline)
+                        }
+                    }
+                    
+                }
+                .padding()
+            }
+            .navigationTitle("🤳🏾 Sise Photo Gallery")
+        }
+    }
+    
+    var infoView: some View {
+        ScrollViewReader() { proxy in
+            ScrollView(){
+                VStack(spacing: .zero){
+                    Image("sise_cover")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: screenWidth, height: screenWidth / 2)
+                        //.clipped()
+                        .overlay(
+                            GeometryReader(){ proxy in
+                                ZStack(){
+                                    
+                                    
+                                    LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .top, endPoint: .bottom)
+                                        .frame(width: proxy.size.width, height: proxy.size.height)
+                                    
+                                }
+                            }
+                        )
+                        
+                    Divider()
+                    Image("sise_logo")
+                        .resizable()
+                        .frame(width: screenWidth / 2, height: screenWidth / 2)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .overlay(Circle()
+                                    .stroke(Color.secondaryLabel, lineWidth: 1))
+                        .offset(x: 0, y: (screenWidth / 24) * -1)
+                        .shadow(radius: 1)
+                        .id("brand")
+                    //
+                    
+                    VStack(){
+                        Section(header: Text("HELLO & WELCOME").font(.title3)) {
+                            Text("Sísè ").font(.subheadline.weight(.semibold)) + Text("pronounced sea-say, is a Yoruba word that means cook").font(.subheadline.weight(.light))
+                            Text("Sísè food box provides you with pre-prepped ingredients as well as simple step by step instructions required to cook delicious mouth-watering meals in under 20mins! \n\nOur ❤️ for food means that we source only the best ingredients with quality and authenticity at the heart of it all.")
+                                .font(.body.weight(.light))
+                        }
+                        .padding()
+                    }
+                    .frame(width: screenWidth - 100)
+                    .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .padding(.bottom)
+                    .id("body")
+                    
+                    Button(){
+                        self.selectedTab = .steps
+                    } label: {
+                        HStack(){
+                            Spacer()
+                            Text("Get to Cooking! 🧑🏾‍🍳")
+                                .font(.title3)
+                                .foregroundColor(.label)
+                            Spacer()
+                        }
+                    }
+                    .background(Color.pink)
+                    .clipShape(RoundedRectangle(
+                        cornerRadius: 8,
+                        style: .continuous
+                    ))
+                    .frame(width: screenWidth - 100, height: 60)
+                    .accentColor(.orange)
+                    .buttonStyle(OutlineButton())
+                    
+                    Spacer()
+                }
+                .frame(minHeight: screenHeight * 1.2)
+            }
+            
+            .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+            )
+            .onAppear(){
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    withAnimation(){
+                        proxy.scrollTo("body", anchor: .center)
+                    }
+                }
+            }
+        }
+    }
+    
     var contentView: some View {
         ZStack(){
             
-            if self.selectedTab == .steps {
-                stepsView
+            Group(){
+                if self.selectedTab == .steps {
+                    stepsView
+                } else if self.selectedTab == .gallery {
+                    galleryView
+                } else if self.selectedTab == .information {
+                    infoView
+                }
             }
+            .animation(.easeInOut)
             
             VStack(){
                 Spacer()
