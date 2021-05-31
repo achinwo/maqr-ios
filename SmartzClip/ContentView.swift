@@ -12,6 +12,53 @@ import Combine
 import JoliApi
 import AlertToast
 import JoliCore
+import UIKit
+import PassKit
+
+struct PaymentButton: View {
+    
+    init(_ style: PKPaymentButtonStyle = .automatic){
+        
+    }
+    
+    var body: some View {
+        Button(action: { /* Custom payment code here */ }, label: { EmptyView() } )
+            .buttonStyle(PaymentButtonStyle())
+    }
+}
+
+struct PaymentButtonStyle: ButtonStyle {
+    func makeBody(configuration: Self.Configuration) -> some View {
+        return PaymentButtonHelper()
+    }
+}
+
+struct PaymentButtonHelper: View {
+    var body: some View {
+        PaymentButtonRepresentable()
+            .frame(minWidth: 100, maxWidth: 400)
+            .frame(height: 60)
+            .frame(maxWidth: .infinity)
+    }
+}
+
+extension PaymentButtonHelper {
+    
+    struct PaymentButtonRepresentable: UIViewRepresentable {
+        
+        var button: PKPaymentButton {
+            let button = PKPaymentButton(paymentButtonType: .order, paymentButtonStyle: .automatic) /*customize here*/
+            button.cornerRadius = 4.0 /* also customize here */
+            return button
+        }
+        
+        func makeUIView(context: Context) -> PKPaymentButton {
+            return button
+        }
+        func updateUIView(_ uiView: PKPaymentButton, context: Context) { }
+    }
+    
+}
 
 public struct Ingredient: Identifiable {
     
@@ -147,12 +194,104 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         self._currentUser = currentUser
         self.websocket = websocket
         self.localPlaybackController = localPlaybackController
+        self.startDate = Date(timeIntervalSinceNow: 0)
+        self._deliveryDate = State(initialValue: startDate)
     }
     
     var autoResetting = AutoResetSubject<Int?, Never, DispatchQueue>(nil, delay: 0.3, scheduler: DispatchQueue.main)
     
     @State var tappedStepId: Int? = nil
     @State var lastStepId: Int = -1
+    
+    
+    @State var deliveryDate: Date
+    let startDate: Date
+    @State var completed = false
+    @State var helpText: String = .empty
+    
+    var helpView: some View {
+        ScrollView(){
+            VStack(){
+                VStack(){
+                    
+                    
+                    Section(header: Text("Get in Touch").font(.largeTitle)) {
+                        Text("Our team of highly trained food technicians are here to help!").font(.subheadline.weight(.light)).padding(.bottom)
+                        TextEditor(text: self.$helpText)
+                            .frame(height: screenWidth / 2)
+                            .overlay(VStack(alignment: .leading){
+                                Text("Enter your message here").padding().foregroundColor(.tertiaryLabel)
+                            })
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        
+                    }
+                    .padding()
+                    
+                    Button(){
+                        print("submitted help!")
+                    } label: {
+                        HStack(){
+                            Spacer()
+                            Text("Send Message")
+                                .font(.title3)
+                                .foregroundColor(.label)
+                            Spacer()
+                        }
+                    }
+                    .background(Color.systemIndigo)
+                    .clipShape(RoundedRectangle(
+                        cornerRadius: 8,
+                        style: .continuous
+                    ))
+                    .frame(width: screenWidth - 150, height: 60)
+                    .accentColor(.white)
+                    .buttonStyle(OutlineButton())
+                    .padding()
+                }
+                .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .padding(.bottom)
+                
+                .overlay(
+                    GeometryReader(){ _ in
+                        VStack(){
+                            Image("sise_logo")
+                                .resizable()
+                                .frame(width: screenWidth / 6, height: screenWidth / 6)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .overlay(Circle()
+                                            .stroke(Color.secondaryLabel, lineWidth: 1))
+                                .offset(x: 0, y: (screenWidth / 24) * -1)
+                                .shadow(radius: 1)
+                            Spacer()
+                        }
+                    }
+                )
+                
+                VStack(){
+                    Spacer()
+                    HStack(){
+                        Text("Powered by").font(.caption).foregroundColor(.secondary).shadow(color: .white, radius: 0.2, x: 0.2, y: 0.2)
+                        Image("smartz_logo")
+                            .resizable()
+                            .frame(width: 38, height: 38)
+                        Text("Smartz").font(.subheadline.weight(.semibold))
+                    }
+                }
+                .padding()
+                Spacer()
+            }
+            .frame(width: screenWidth - 100)
+            .padding(.top, safeAreaInsets.top * 2)
+        }
+        .frame(minWidth: screenWidth, minHeight: screenHeight)
+        .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+        )
+        
+    }
     
     var stepsView: some View {
         let formatter = DateComponentsFormatter()
@@ -189,11 +328,61 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         }
         
         let shareView = VStack(){
-            
+            VStack(){
+                Text("Would you mind doing us a favour?").font(.title2.weight(.light))
+                Text("Post your fine dish, it only takes a tap")
+                    .lineLimit(3)
+                    .font(.body.weight(.light)).foregroundColor(.secondaryLabel).fixedSize(horizontal: false, vertical: true)
+                
+                HStack(){
+                    Spacer()
+                    
+                    VStack(){
+                        Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                        Text("Tag us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
+                        Text("@ashabismeals").font(.body.weight(.semibold)).foregroundColor(.primary)
+                    }
+                    .padding()
+                    
+                    VStack(){
+                        Image("fbk_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                        Text("Share us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
+                        Text("#madewithsise").font(.body.weight(.semibold)).foregroundColor(.primary)
+                    }
+                    .padding()
+                    
+                    Spacer()
+                }
+            }
+            .padding()
         }
+        .id("share-section")
+        
         
         let reorderView = VStack(){
-            
+            VStack(){
+                Text("Schedule a re-order?").font(.title2.weight(.light))
+                Text("Scheduling a re-delivery of Ofada sauce is effortless with Apple Pay")
+                    .lineLimit(3)
+                    .font(.body.weight(.light))
+                    .foregroundColor(.secondaryLabel)
+                    .padding()
+                    .fixedSize(horizontal: false, vertical: true)
+                
+                VStack(){
+                    DatePicker("Pick an arrival date", selection: $deliveryDate, displayedComponents: [.date])
+                        .padding(.bottom)
+                        .padding(.bottom)
+                    
+                    if let deliveryDay = Calendar.current.dateComponents([.day], from: deliveryDate).day,
+                       let today = Calendar.current.dateComponents([.day], from: Date()).day, deliveryDay != today {
+                        PaymentButton()
+                    }
+                }
+                .padding()
+                .animation(.easeInOut)
+            }
+            .padding()
         }
         
         return NavigationView(){
@@ -234,104 +423,130 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     
                 }
                 
-                ScrollView(){
-                    VStack(){
-                        Image("food_ofada")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: screenWidth - 100, height: screenWidth - 100)
-                            .padding(.top)
-                        
-                        (Text("(Pronounced Or-far-da) ").fontWeight(.semibold) + Text("also known as designer stew, originates from Western Nigeria and gets its name from a locally grown rice known as Ofada rice. This delicious sauce is enriched with flavours as it is originally made with a variety of red peppers."))
-                            .padding()
-                            .padding(.horizontal)
-                            .font(.body.weight(.light))
-                            .fixedSize(horizontal: false, vertical: true)
-                        
-                        Divider().padding()
-                        ingredientsView
-                        Divider().padding()
-                        
-                        ForEach(Array(steps.enumerated()), id: \.element.title) { itm in
+                
+                ScrollViewReader() { proxy in
+                    ScrollView(){
+                        VStack(){
+                            Image("food_ofada")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: screenWidth - 100, height: screenWidth - 100)
+                                .padding(.top)
                             
-                            let isChecked = self.lastStepId >= itm.offset
+                            (Text("(Pronounced Or-far-da) ").fontWeight(.semibold) + Text("also known as designer stew, originates from Western Nigeria and gets its name from a locally grown rice known as Ofada rice. This delicious sauce is enriched with flavours as it is originally made with a variety of red peppers."))
+                                .padding()
+                                .padding(.horizontal)
+                                .font(.body.weight(.light))
+                                .fixedSize(horizontal: false, vertical: true)
                             
-                            HStack(alignment: .top){
-                                VStack(){
-                                    Text(itm.offset.advanced(by: 1).description) + Text(".")
-                                    Spacer()
-                                }
-                                .foregroundColor(.tertiaryLabel)
+                            Divider().padding()
+                            ingredientsView
+                            Divider().padding()
+                            
+                            ForEach(Array(steps.enumerated()), id: \.element.title) { itm in
                                 
-                                VStack(alignment: .leading){
-                                    Text(itm.element.description)
-                                        .strikethrough(isChecked, color: .secondaryLabel)
-                                        .lineLimit(nil)
-                                        .font(.body)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .foregroundColor(isChecked ? .secondaryLabel : .primary)
-                                    
-                                    HStack() {
-                                        
-                                        if itm.element.isOptional {
-                                            Label("Optional", systemImage: "info.circle")
-                                                .font(.footnote).foregroundColor(Color.systemIndigo.opacity(0.7))
-                                        }
-                                        
-                                        if let duration = itm.element.duration, let durationStr = formatter.string(from: duration) {
-                                            Label(durationStr, systemImage: "timer")
-                                                .font(.footnote)
-                                        }
-                                        
-                                        if let spicy = itm.element.spicy {
-                                            Text(spicy)
-                                                .font(.footnote)
-                                        }
-                                        
+                                let isChecked = self.lastStepId >= itm.offset
+                                
+                                HStack(alignment: .top){
+                                    VStack(){
+                                        Text(itm.offset.advanced(by: 1).description) + Text(".")
                                         Spacer()
-                                        
-                                        if let caution = itm.element.caution {
-                                            Label(caution, systemImage: "nosign")
-                                                .font(.footnote)
-                                                .foregroundColor(.yellow)
-                                        }
                                     }
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, 2)
+                                    .foregroundColor(.tertiaryLabel)
+                                    
+                                    VStack(alignment: .leading){
+                                        Text(itm.element.description)
+                                            .strikethrough(isChecked, color: .secondaryLabel)
+                                            .lineLimit(nil)
+                                            .font(.body)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                            .foregroundColor(isChecked ? .secondaryLabel : .primary)
+                                        
+                                        HStack() {
+                                            
+                                            if itm.element.isOptional {
+                                                Label("Optional", systemImage: "info.circle")
+                                                    .font(.footnote).foregroundColor(Color.systemIndigo.opacity(0.7))
+                                            }
+                                            
+                                            if let duration = itm.element.duration, let durationStr = formatter.string(from: duration) {
+                                                Label(durationStr, systemImage: "timer")
+                                                    .font(.footnote)
+                                            }
+                                            
+                                            if let spicy = itm.element.spicy {
+                                                Text(spicy)
+                                                    .font(.footnote)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            if let caution = itm.element.caution {
+                                                Label(caution, systemImage: "nosign")
+                                                    .font(.footnote)
+                                                    .foregroundColor(.yellow)
+                                            }
+                                        }
+                                        .foregroundColor(.secondary)
+                                        .padding(.top, 2)
+                                    }
+                                    
+                                    Spacer()
+                                    Button() {
+                                        self.autoResetting.send(itm.offset)
+                                        self.lastStepId = self.lastStepId == 0 && itm.offset == 0 ? -1 : itm.offset
+                                        
+                                        guard self.lastStepId == steps.count - 1 else { return }
+                                        
+                                        withImpact(.heavy, animated: .easeInOut){
+                                            
+                                            self.presentToast("All done!", subTitle: "Enoy your meal", custom: .none, type: .image("confetti", .clear), displayMode: .alert) { dismissed in
+                                                print("Alert closed")
+                                                self.completed = true
+                                                
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
+                                                    withAnimation(){
+                                                        proxy.scrollTo("share-section", anchor: .center)
+                                                    }
+                                                }
+                                                
+                                            }
+                                            
+                                        }
+                                        
+                                    } label: {
+                                        let active = self.tappedStepId == itm.offset
+                                        Image(systemName: isChecked ? "checkmark.circle" : "circle.dashed")
+                                            .foregroundColor(isChecked ? .green : Color.secondaryLabel)
+                                            .padding()
+                                            .font(.title.weight(.light))
+                                            .scaleEffect(x: active ? 1.5 : 1, y: active ? 1.5 : 1)
+                                            .animation(.easeInOut)
+                                    }
+                                    
                                 }
-                                
-                                Spacer()
-                                Button() {
-                                    self.autoResetting.send(itm.offset)
-                                    self.lastStepId = self.lastStepId == 0 && itm.offset == 0 ? -1 : itm.offset
-                                    
-                                    guard self.lastStepId != steps.count - 1 else { return }
-                                    
-                                    
-                                } label: {
-                                    let active = self.tappedStepId == itm.offset
-                                    Image(systemName: isChecked ? "checkmark.circle" : "circle.dashed")
-                                        .foregroundColor(isChecked ? .green : Color.secondaryLabel)
-                                        .padding()
-                                        .font(.title.weight(.light))
-                                        .scaleEffect(x: active ? 1.5 : 1, y: active ? 1.5 : 1)
-                                        .animation(.easeInOut)
-                                }
-                                
+                                .padding([.bottom, .horizontal])
                             }
-                            .padding([.bottom, .horizontal])
+                            .navigationTitle("Preparing Ofada Sauce")
+                            
+                            Group(){
+                                if completed {
+                                    
+                                    
+                                    Divider().padding(.vertical)
+                                    shareView
+                                    
+                                    Divider().padding()
+                                    reorderView
+                                }
+                            }
+                            .padding(.bottom, safeAreaInsets.bottom)
+                            
                         }
-                        .navigationTitle("Preparing Ofada Sauce")
-                        
-                        Divider().padding(.vertical)
-                        shareView
-                        
-                        Divider().padding()
-                        reorderView
+                        .frame(maxWidth: screenWidth)
+                        .padding(.bottom, safeAreaInsets.bottom)
+                        //.frame(minHeight: screenHeight)
                     }
-                    .frame(maxWidth: screenWidth)
-                    .padding(.bottom, safeAreaInsets.bottom)
-                    //.frame(minHeight: screenHeight)
                 }
             }
             
@@ -459,7 +674,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             
             .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
                             .resizable()
-                            .aspectRatio(contentMode: .fit)
+                            .aspectRatio(contentMode: .fill)
             )
             .onAppear(){
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -481,6 +696,8 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     galleryView
                 } else if self.selectedTab == .information {
                     infoView
+                } else if self.selectedTab == .help {
+                    helpView
                 }
             }
             .animation(.easeInOut)
