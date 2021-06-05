@@ -31,7 +31,6 @@
 		920958B225601F020014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		920958B325601F030014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		9209B1E12629E32500786A6A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9209B1E02629E32500786A6A /* LaunchScreen.storyboard */; };
-		920CE8C02662AD90008F9EAB /* M13Checkbox in Frameworks */ = {isa = PBXBuildFile; productRef = 920CE8BF2662AD90008F9EAB /* M13Checkbox */; };
 		921ADE92265E759E0023DC87 /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
 		921ADE93265E759E0023DC87 /* SpotifyiOS.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
@@ -68,6 +67,8 @@
 		9251F1C625CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		9252603C261B376F00316AE1 /* SpotifyConnectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */; };
 		9252603D261B376F00316AE1 /* SpotifyConnectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */; };
+		92562E2A266BC118004972E6 /* demo_sise_appclip.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 92562E29266BC118004972E6 /* demo_sise_appclip.mp4 */; };
+		92562E2C266BC162004972E6 /* demo_sise_intro.mov in Resources */ = {isa = PBXBuildFile; fileRef = 92562E2B266BC162004972E6 /* demo_sise_intro.mov */; };
 		9257430726304BA400B518EA /* SkipVoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9257430626304BA400B518EA /* SkipVoteView.swift */; };
 		9257430826304BA400B518EA /* SkipVoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9257430626304BA400B518EA /* SkipVoteView.swift */; };
 		92595B4D253A1AD200609558 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
@@ -358,6 +359,8 @@
 		9246B81F263090C6004D2ADF /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		9251F1C425CE190200906D9D /* RefreshableScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableScrollView.swift; sourceTree = "<group>"; };
 		9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyConnectButton.swift; sourceTree = "<group>"; };
+		92562E29266BC118004972E6 /* demo_sise_appclip.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = demo_sise_appclip.mp4; sourceTree = "<group>"; };
+		92562E2B266BC162004972E6 /* demo_sise_intro.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = demo_sise_intro.mov; sourceTree = "<group>"; };
 		9257430626304BA400B518EA /* SkipVoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkipVoteView.swift; sourceTree = "<group>"; };
 		92595B4C253A1AD200609558 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		925B40342621B6A6009BD781 /* TrackSuggestionsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSuggestionsListView.swift; sourceTree = "<group>"; };
@@ -444,7 +447,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				92C1A2462662677700A11E0F /* JoliPlayground.framework in Frameworks */,
-				920CE8C02662AD90008F9EAB /* M13Checkbox in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -524,6 +526,8 @@
 		9202D3D32659B6E700D5974F /* Smartz */ = {
 			isa = PBXGroup;
 			children = (
+				92562E2B266BC162004972E6 /* demo_sise_intro.mov */,
+				92562E29266BC118004972E6 /* demo_sise_appclip.mp4 */,
 				9202D4022659B7CD00D5974F /* Smartz.entitlements */,
 				9202D3D42659B6E700D5974F /* SmartzApp.swift */,
 				9202D3D62659B6E700D5974F /* ContentView.swift */,
@@ -859,7 +863,6 @@
 			);
 			name = SmartzClip;
 			packageProductDependencies = (
-				920CE8BF2662AD90008F9EAB /* M13Checkbox */,
 			);
 			productName = SmartzClip;
 			productReference = 9202D4072659BC0B00D5974F /* SmartzClip.app */;
@@ -1107,6 +1110,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92562E2C266BC162004972E6 /* demo_sise_intro.mov in Resources */,
+				92562E2A266BC118004972E6 /* demo_sise_appclip.mp4 in Resources */,
 				9202D3DC2659B6E900D5974F /* Preview Assets.xcassets in Resources */,
 				9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */,
 				92C1A24B26626BF800A11E0F /* env.json in Resources */,
@@ -2313,11 +2318,6 @@
 		9203B31824CB079200F465CC /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
-		};
-		920CE8BF2662AD90008F9EAB /* M13Checkbox */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 920CE8BE2662AD90008F9EAB /* XCRemoteSwiftPackageReference "M13Checkbox" */;
-			productName = M13Checkbox;
 		};
 		922989AF2649208A00FDD58F /* GradientLoadingBar */ = {
 			isa = XCSwiftPackageProductDependency;

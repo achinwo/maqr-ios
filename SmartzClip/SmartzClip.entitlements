@@ -7,6 +7,9 @@
 		<string>webcredentials:shops.smartstickr.com</string>
 		<string>appclips:shops.smartstickr.com</string>
 		<string>applinks:shops.smartstickr.com</string>
+		<string>webcredentials:smartstikr.com</string>
+		<string>appclips:smartstikr.com</string>
+		<string>applinks:smartstikr.com</string>
 	</array>
 	<key>com.apple.developer.parent-application-identifiers</key>
 	<array>
