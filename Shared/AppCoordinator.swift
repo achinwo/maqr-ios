@@ -247,10 +247,10 @@ public final class AppCoordinator: ObservableObject {
         return deferred.deferred
     }
     
-    @Published var mailOptions: MailView.Options? = nil
+    @Published public var mailOptions: MailView.Options? = nil
     @Published var refreshingDevices = false
     
-    static var version: Version {
+    public static var version: Version {
         
         guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
               let version = Version("\(appVersion).\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0")") else {

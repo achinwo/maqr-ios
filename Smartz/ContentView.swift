@@ -68,7 +68,7 @@ struct ContentView: JoliView {
 //                case .gallery:
 //                    return (default: "photo.on.rectangle", active: "photo.on.rectangle.angled")
                 case .feedback:
-                    return (default: "questionmark.circle", active: "questionmark.circle.fill")
+                    return (default: "envelope", active: "envelope.fill")
                 case .appClipCreator:
                     return (default: "qrcode", active: "qrcode.viewfinder")
                 case .information:
@@ -150,26 +150,212 @@ struct ContentView: JoliView {
     
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.safeAreaInsets) var safeAreaInsets
-    @State var selectedTab: Tab = .information
+    @AppStorage("active-tab") var selectedTab: Tab = .information
+    
+    @State var feebackText: String = .empty
+    
+    var appclipsCodesView: some View {
+        VStack(){
+            Image("appclipcode_with_logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: screenWidth / 2)
+                .overlay(
+                    GeometryReader() { proxy in
+                        Text("Coming Soon")
+                            .fixedSize(horizontal: true, vertical: true)
+                            .font(.title)
+                            .foregroundColor(.fixedWhite)
+                            .padding()
+                            .padding(.horizontal, proxy.size.height / 8)
+                            .background(Color.fixedGray)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .offset(x: proxy.size.width / 2 * -1, y: proxy.size.height / 4)
+                            .rotationEffect(.degrees(-45), anchor: .leading)
+                    }
+                )
+                .clipped()
+            Text("App Clip Code Generator").font(.largeTitle).multilineTextAlignment(.center).foregroundColor(.primary).padding()
+            Text("Design and download custom auto-downloading App Clip codes for your brand!").font(.title2).foregroundColor(.secondaryLabel).padding(.horizontal).multilineTextAlignment(.center)
+        }
+        .padding()
+        .padding(.top, safeAreaInsets.top)
+    }
+    
+    var feedbackView: some View {
+        ScrollView(){
+            VStack(){
+                VStack(){
+                    
+                    
+                    Section(header: Text("Get in Touch").font(.largeTitle)) {
+                        Text("We'd love to hear from you!").font(.subheadline.weight(.light)).padding(.bottom).multilineTextAlignment(.center).lineLimit(5)
+                        
+                        TextEditor(text: self.$feebackText)
+                            .frame(height: screenWidth / 2)
+                            .overlay(
+                                VStack(alignment: .leading){
+                                    if feebackText.isEmpty {
+                                        Text("Enter your message here").padding().foregroundColor(.tertiaryLabel)
+                                        Spacer()
+                                    }
+                                }
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        
+                    }
+                    .padding()
+                    
+                    Button(){
+                        print("submitted help!")
+                        let subject = "SmartStikr iOS App Feedback - \(AppCoordinator.version)"
+                        self.appCoordinator.mailOptions = .init(subject: subject, recipients: [Strings.appSupportEmail], body: feebackText)
+                    } label: {
+                        HStack(){
+                            Spacer()
+                            Text("Send Message")
+                                .font(.title3)
+                                .foregroundColor(.label)
+                            Spacer()
+                        }
+                    }
+                    .background(Color.systemIndigo)
+                    .clipShape(RoundedRectangle(
+                        cornerRadius: 8,
+                        style: .continuous
+                    ))
+                    .frame(width: screenWidth - 150, height: 60)
+                    .accentColor(.white)
+                    .buttonStyle(OutlineButton())
+                    .padding()
+                }
+                .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .padding(.bottom)
+                .overlay(
+                    GeometryReader(){ _ in
+                        VStack(){
+                            Image("smartz_logo")
+                                .resizable()
+                                .frame(width: screenWidth / 6, height: screenWidth / 6)
+                                .clipShape(Circle())
+                                .offset(x: 0, y: (screenWidth / 24) * -1)
+                                .shadow(radius: 1)
+                            Spacer()
+                        }
+                    }
+                )
+                .simultaneousGesture(
+                    TapGesture()
+                        .onEnded() { value in
+                            
+                            guard appCoordinator.keyboardHeight > 0 else {
+                                return
+                            }
+                            
+                            appCoordinator.dismissKeyboard()
+                        }
+                )
+                
+            }
+            .frame(width: screenWidth - 100)
+            .padding(.top, safeAreaInsets.top * 2)
+        }
+        .frame(minWidth: screenWidth, minHeight: screenHeight)
+        
+    }
+    
     
     var contentView: some View {
         NavigationView(){
             
                 ZStack(){
-                    ScrollView(.vertical){
-                        if self.selectedTab == .information {
-                            self.mainView
-                                .padding(.top, safeAreaInsets.top)
-                                .padding(.bottom, safeAreaInsets.bottom)
-                                .animation(.easeInOut)
-                        }
-//                        } else if self.selectedTab == .gallery {
-//                            galleryView
-//                        } else if self.selectedTab == .information {
-//                            infoView
-//                        } else if self.selectedTab == .help {
-//                            helpView
-//                        }
+                    
+                        VStack(){
+                            if self.selectedTab == .information {
+                                ScrollView(.vertical){
+                                    Image("smartz_logo")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(maxWidth: screenWidth / 3, maxHeight: screenWidth / 3)
+                                    Text("Smart Stikr").font(.caption).foregroundColor(.tertiaryLabel).padding([.bottom])
+                                    (Text("Welcome to the ").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)
+                                        + Text("Paperless ").font(.title.weight(.light)).foregroundColor(.secondaryLabel)
+                                        + Text("Future").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)).multilineTextAlignment(.center)
+                                    Text("""
+                                    Ditch all that paper & give your customers a more customised and streamlined experience for their meal prep boxes by digitizing through Smart Stikr App clip. The experience will be completely customised to your company style and offerings and your customers will have options to reorder or just browse your menu for other ideas and seamlessly place the order from you directly with one click through apple pay.
+                                    
+                                    By simply attaching one or few of the below app clips on the box delivered to the clients, you take away the need for paper instructions and
+                                    give your customers a more involved experience to Meal Prep with you and your company.
+                                """)
+                                        .multilineTextAlignment(.center)
+                                        .font(.subheadline)
+                                        .foregroundColor(.primary)
+                                        .padding()
+                                    Divider().padding()
+                                    self.mainView
+                                    Divider().padding()
+                                    
+                                    Button(){
+                                        self.selectedTab = .appClipCreator
+                                    } label: {
+                                        HStack(){
+                                            Spacer()
+                                            HStack(){
+                                                Text("Create & Download Codes")
+                                                Image(systemName: "qrcode")
+                                            }
+                                            .font(.title3)
+                                            .foregroundColor(.label)
+                                            Spacer()
+                                        }
+                                    }
+                                    .background(Color.pink)
+                                    .clipShape(
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    )
+                                    .overlay(
+                                        GeometryReader() { proxy in
+                                            HStack(){
+                                                Spacer()
+                                                Text("Coming Soon")
+                                                    .fixedSize(horizontal: true, vertical: true)
+                                                    .font(.subheadline.weight(.semibold))
+                                                    .foregroundColor(.fixedWhite)
+                                                    .padding(2)
+                                                    .background(Color.fixedGray)
+                                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                                    .offset(x: proxy.size.height / 4, y: proxy.size.height / 12 * -1)
+                                                    .rotationEffect(.degrees(15))
+                                                //.rotationEffect(.degres(15))
+                                            }
+                                        }
+                                    )
+                                    .frame(width: screenWidth - 100, height: 60)
+                                    .accentColor(.orange)
+                                    .buttonStyle(OutlineButton())
+                                    .padding(.top, safeAreaInsets.top)
+                                    .padding(.bottom, safeAreaInsets.bottom)
+                                    .animation(.easeInOut)
+                                }
+                            } else if self.selectedTab == .feedback {
+                                ScrollView(.vertical){
+                                    feedbackView
+                                }
+                            } else if self.selectedTab == .appClipCreator {
+                                ScrollView(.vertical){
+                                    appclipsCodesView
+                                }
+                            }
+                            
+                            //                        } else if self.selectedTab == .gallery {
+                            //                            galleryView
+                            //                        } else if self.selectedTab == .information {
+                            //                            infoView
+                            //                        } else if self.selectedTab == .help {
+                            //                            helpView
+                            //                        }
+                            
                     }
                     
                     VStack(){
@@ -194,6 +380,9 @@ struct ContentView: JoliView {
                                 }
                                 .clipShape(RoundedRectangle(cornerRadius: 25.0))
                                 .font(.subheadline.weight(selectedTab == tab ? .semibold : .light))
+                                .onTapGesture {
+                                    self.selectedTab = tab
+                                }
                             }
                         }
                         .padding(4)
@@ -215,6 +404,17 @@ struct ContentView: JoliView {
         }
         .edgesIgnoringSafeArea(.all)
         .frame(minWidth: screenWidth, minHeight: screenHeight)
+        .background(
+            Group(){
+                if self.selectedTab == .feedback {
+                    Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    EmptyView()
+                }
+            }
+        )
         .overlay(
             GeometryReader(){ proxy in
                 Group(){

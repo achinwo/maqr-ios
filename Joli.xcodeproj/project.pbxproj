@@ -69,6 +69,7 @@
 		9252603D261B376F00316AE1 /* SpotifyConnectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */; };
 		92562E2A266BC118004972E6 /* demo_sise_appclip.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 92562E29266BC118004972E6 /* demo_sise_appclip.mp4 */; };
 		92562E2C266BC162004972E6 /* demo_sise_intro.mov in Resources */ = {isa = PBXBuildFile; fileRef = 92562E2B266BC162004972E6 /* demo_sise_intro.mov */; };
+		92562E2E266C003D004972E6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D40D2659BC0E00D5974F /* Assets.xcassets */; };
 		9257430726304BA400B518EA /* SkipVoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9257430626304BA400B518EA /* SkipVoteView.swift */; };
 		9257430826304BA400B518EA /* SkipVoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9257430626304BA400B518EA /* SkipVoteView.swift */; };
 		92595B4D253A1AD200609558 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
@@ -1114,6 +1115,7 @@
 				92562E2A266BC118004972E6 /* demo_sise_appclip.mp4 in Resources */,
 				9202D3DC2659B6E900D5974F /* Preview Assets.xcassets in Resources */,
 				9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */,
+				92562E2E266C003D004972E6 /* Assets.xcassets in Resources */,
 				92C1A24B26626BF800A11E0F /* env.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

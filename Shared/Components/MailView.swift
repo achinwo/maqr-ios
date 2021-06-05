@@ -17,6 +17,13 @@ import MessageUI
 import AVFoundation
 
 public struct MailViewOptions: Equatable {
+    
+    public init(subject: String, recipients: [String], body: String? = nil) {
+        self.subject = subject
+        self.recipients = recipients
+        self.body = body
+    }
+    
     public let subject: String
     public let recipients: [String]
     public var body: String? = nil
@@ -28,6 +35,13 @@ public struct MailView {
 }
 #else
 public struct MailView: UIViewControllerRepresentable {
+    
+    public init(result: Binding<Result<MFMailComposeResult, Error>?>, subject: String? = nil, recipients: [String] = [String](), body: String? = nil) {
+        self.subject = subject
+        self.recipients = recipients
+        self.body = body
+        self._result = result
+    }
     
     public typealias Options = MailViewOptions
     
