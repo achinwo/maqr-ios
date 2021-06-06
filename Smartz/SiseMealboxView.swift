@@ -563,8 +563,6 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
         let images: [String] = [
             "food_ofada",
             "food_ofada-2",
-            "food_ofada-3",
-            "food_ofada-4",
         ]
         
         return NavigationView(){
