@@ -13,12 +13,26 @@ import JoliPlayground
 enum AssetInfo {
     case video(AVPlayer)
     case image(String)
+    case symbol(String)
 }
 
 struct ProductSection: Identifiable {
+    
+    internal init(asset: AssetInfo, title: String, subtitle: String, subtitle2: String? = nil, bulletpoints: [String]? = nil, learnMore: URL? = nil) {
+        self.asset = asset
+        self.title = title
+        self.subtitle = subtitle
+        self.bulletpoints = bulletpoints
+        self.subtitle2 = subtitle2
+        self.learnMore = learnMore
+    }
+    
+    let subtitle2: String?
+    let bulletpoints: [String]?
     let asset: AssetInfo
     let title: String
     let subtitle: String
+    let learnMore: URL?
     
     var id: String {
         title
@@ -100,17 +114,39 @@ struct ContentView: JoliView {
     @State var maximised: Bool = false
     
     let sections: [ProductSection] = [
-        ProductSection(asset: .video(AVPlayer(url: Bundle.main.url(forResource: "demo_sise_intro", withExtension: "mov")!)),
-                       title: "NFC demo",
-                       subtitle: "Contactless experience activation"),
-        
-        ProductSection(asset: .video(AVPlayer(url: Bundle.main.url(forResource: "demo_sise_appclip", withExtension: "mp4")!)),
-                       title: "Bespoke Native App Experience",
-                       subtitle: "App experiences tailored to your business and customers needs, with seamless Apple Pay integration"),
+        ProductSection(asset: .image("sise_box_ofada"),
+                       title: "Services",
+                       //subtitle: "Reasons To Choose SmartStikr",
+                       subtitle: "No matter your e-commerce business type, SmartStikr has an innovative solution for you. Our App clips can be used for anything from welcoming guests to your restaurant or business place, providing options for customers to reach waiting staff during the dine-in process and check out with apple pay, providing interactive step by step instructions for your meal prep boxes and even up to solutions for AirBnB and Uber guests and many more. There is no limit to our innovative and interactive solutions for SmartStikr. In all of these we limit and sometimes eliminate the need for paper and we streamline the process of doing business with your business, ultimately saving you money, time and eliminating redundancy.",
+                       bulletpoints: [
+                        "Organised and Impressive dine-In check in processes",
+                        "Seamlessly Interact with customers",
+                        "Curate more intimate relationships with customers",
+                        "Easily direct and improve re-order percentage",
+                        "Easy & Quick “jump-to” opportunities for specific product categories that can be tailored to different groups",
+                        "AirBnB Check-in and Check out processes",
+                       ]
+                       ),
         
         ProductSection(asset: .image("app_clip_choices"),
-                       title: "Custom Designs",
-                       subtitle: "App Clip codes as unique as your brand"),
+                       title: "The Technology - Automatically Downloading Codes",
+                       subtitle: "Apple’s App Clips technology was introduced to the world in May 2020. The technology behind these scannable codes give them a notable advantage over traditional QR codes. Whereas QR Codes redirect customers to the App Store to download the app, App Clip codes take customers directly to the experience by automating the download step on the customers behalf, significantly improving convenience, driving engagement and reducing session abandonment.",
+                       learnMore: URL(string: "https://developer.apple.com/app-clips/")!
+                       ),
+        
+        ProductSection(asset: .video(AVPlayer(url: Bundle.main.url(forResource: "demo_sise_appclip", withExtension: "mp4")!)),
+                       title: "Rich Customer Experience",
+                       subtitle: "Our mission here at SmartStikr is simple. We want to give e-commerce businesses the ability to seamlessly organise, market and streamline their business processes and interact with customers in the language they speak using impressive user friendly technology while saving our planet at the same time."),
+        
+        ProductSection(asset: .video(AVPlayer(url: Bundle.main.url(forResource: "demo_sise_intro", withExtension: "mov")!)),
+                       title: "Go Contactless",
+                       subtitle: "Stikrs support NFC for a contactless experience."),
+        
+        ProductSection(asset: .symbol("leaf.fill"),
+                       title: "Want to Help go Sustainable",
+                       subtitle: "SmartStikr is committed to creating a greener planet by reducing paper waste and taking advantage of technology that will propel e-commerce industry to the future and forefront of technological advancement. Join us in our green earth commitment"),
+        
+        
         
     ]
     
@@ -127,34 +163,71 @@ struct ContentView: JoliView {
                                 .multilineTextAlignment(.center)
                                 .font(.subheadline.weight(.light))
                                 .foregroundColor(.secondaryLabel)
-                                .lineLimit(4)
-                                .fixedSize(horizontal: false, vertical: true)
+                                .lineLimit(nil)
+                                //.fixedSize(horizontal: false, vertical: true)
+                            
+                            if let learnMore = section.learnMore {
+                                Link("Learn More...", destination: learnMore).padding()
+                            }
+                            
+                            if let bullets = section.bulletpoints {
+                                VStack(alignment: .leading) {
+                                    ForEach(bullets, id: \.self) { bulletpoint in
+                                        HStack(){
+                                            Image(systemName: "circlebadge.fill").renderingMode(.original)
+                                            Text(bulletpoint)
+                                        }
+                                        .font(Font.subheadline)
+                                        .padding(.vertical, 2)
+                                        .padding(.leading, Sizing.small)
+                                    }
+                                }
+                                .padding(.vertical)
+                            }
                             
                             Group(){
                                 if case let .video(player) = section.asset {
                                     VideoPlayer(player: player)
                                         .frame(height: screenWidth - 100)
-                                        .onTapGesture {
-                                            print("Tapped Video")
-                                            maximised.toggle()
-                    
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                                if maximised {
-                                                    player.play()
-                                                } else {
-                                                    player.pause()
-                                                }
-                                            }
-                                        }
+//                                        .onTapGesture {
+//                                            print("Tapped Video")
+//                                            maximised.toggle()
+//
+//                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+//                                                if maximised {
+//                                                    player.play()
+//                                                } else {
+//                                                    player.pause()
+//                                                }
+//                                            }
+//                                        }
+                                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
                                 } else if case let .image(imageName) = section.asset {
                                     Image(imageName)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
+                                        .frame(height: screenWidth - 100)
+                                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                                } else if case let .symbol(systemName) = section.asset {
+                                    Image(systemName: systemName)
+                                        .resizable()
+                                        .renderingMode(.original)
+                                        .aspectRatio(contentMode: .fit)
+                                        .font(.largeTitle)
+                                        .frame(maxWidth: screenWidth / 2)
                                 }
                             }
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
                             .padding(.vertical)
+                            
+                            if let subtitle2 = section.subtitle2 {
+                                Text(subtitle2)
+                                    .multilineTextAlignment(.center)
+                                    .font(.subheadline.weight(.light))
+                                    .foregroundColor(.secondaryLabel)
+                                    .lineLimit(nil)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                         }
                     }
                     .padding([.bottom, .horizontal])
@@ -198,7 +271,7 @@ struct ContentView: JoliView {
             
             let heeader = HStack(){
                 Image(systemName: "qrcode.viewfinder")
-                Text("Brands Experiences")
+                Text("Brand Experiences")
                 Spacer()
             }
             .font(.title2.weight(.light)).foregroundColor(.secondaryLabel)
@@ -360,6 +433,20 @@ struct ContentView: JoliView {
         
     }
     
+//    var whoWeAreText: String {
+//        """
+//Ditch all that paper & give your customers a more customised and streamlined experience for their meal prep boxes by digitizing through Smart Stikr App clip. The experience will be completely customised to your company style and offerings and your customers will have options to reorder or just browse your menu for other ideas and seamlessly place the order from you directly with one click through apple pay.
+//
+//By simply attaching one or few of the below app clips on the box delivered to the clients, you take away the need for paper instructions and
+//give your customers a more involved experience to Meal Prep with you and your company.
+//"""
+//    }
+    
+    var whoWeAreText: String {
+        """
+SmartStikr was created with the end user in mind, to fill a gaping hole in the e-commerce consumer experience by streamlining inefficient processes to create futuristic and seamless experiences. Our App clips curates novel experiences for your business which allows customers to interact with your business on an intimate level designed to nurture that customer service relationship from a different angle that is guaranteed to expand your business reach and make your customers Stik with you.
+"""
+    }
     
     var contentView: some View {
         NavigationView(){
@@ -373,20 +460,22 @@ struct ContentView: JoliView {
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(maxWidth: screenWidth / 3, maxHeight: screenWidth / 3)
-                                    Text("Smart Stikr").font(.caption).foregroundColor(.tertiaryLabel).padding([.bottom])
+                                    Text("Smart Stikr").font(.headline.weight(.light)).foregroundColor(.tertiaryLabel).padding([.bottom])
                                     (Text("Welcome to the ").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)
                                         + Text("Paperless ").font(.title.weight(.light)).foregroundColor(.secondaryLabel)
                                         + Text("Future").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)).multilineTextAlignment(.center)
-                                    Text("""
-                                    Ditch all that paper & give your customers a more customised and streamlined experience for their meal prep boxes by digitizing through Smart Stikr App clip. The experience will be completely customised to your company style and offerings and your customers will have options to reorder or just browse your menu for other ideas and seamlessly place the order from you directly with one click through apple pay.
-                                    
-                                    By simply attaching one or few of the below app clips on the box delivered to the clients, you take away the need for paper instructions and
-                                    give your customers a more involved experience to Meal Prep with you and your company.
-                                """)
+                                    Text(whoWeAreText)
                                         .multilineTextAlignment(.center)
                                         .font(.subheadline)
                                         .foregroundColor(.primary)
                                         .padding()
+                                    
+                                    VideoPlayer(player: AVPlayer(url: Bundle.main.url(forResource: "demo_sise_code_scan", withExtension: "mov")!))
+                                        .frame(height: screenWidth - 100)
+                                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
+                                        .padding()
+                                    
                                     Divider().padding()
                                     self.mainView
                                     Divider().padding()
@@ -430,7 +519,30 @@ struct ContentView: JoliView {
                                     .accentColor(.orange)
                                     .buttonStyle(OutlineButton())
                                     .padding(.top, safeAreaInsets.top)
-                                    .padding(.bottom, safeAreaInsets.bottom)
+                                    
+                                    HStack(){
+                                        Spacer()
+                                        
+                                        Link(destination: URL(string: "https://www.instagram.com/smartstickrz/")!) {
+                                            VStack(){
+                                                Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                                                Text("Follow Us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
+                                                Text("@smartstickrz").font(.body.weight(.semibold)).foregroundColor(.primary)
+                                            }
+                                            .padding()
+                                        }
+                                        
+//                                        VStack(){
+//                                            Image("fbk_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+//                                            Text("Share us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
+//                                            Text("#madewithsise").font(.body.weight(.semibold)).foregroundColor(.primary)
+//                                        }
+//                                        .padding()
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.top, safeAreaInsets.top)
+                                    .padding(.bottom, safeAreaInsets.bottom * 4)
                                     .animation(.easeInOut)
                                 }
                             } else if self.selectedTab == .feedback {
