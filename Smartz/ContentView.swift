@@ -25,6 +25,23 @@ struct ProductSection: Identifiable {
     }
 }
 
+struct Product: Identifiable {
+    let companyName: String
+    let name: String
+    let description: String
+    let location: AppLocation
+    let companyLogoName: String?
+    let companyDescription: String
+    let isComingSoon: Bool
+    
+    var id: String { name }
+}
+
+let products: [Product] = [
+    Product(companyName: "Sísè Food", name: "Ofada sauce kit", description: "decribe ofada", location: .product("ofada"), companyLogoName: "sise_logo", companyDescription: "Meal box delivery", isComingSoon: false),
+    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey/sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: true)
+]
+
 struct ContentView: JoliView {
     
     enum Tab: Int, Identifiable, CaseIterable {
@@ -46,7 +63,7 @@ struct ContentView: JoliView {
                 case .appClipCreator:
                     return "Codes"
                 case .information:
-                    return "Info"
+                    return "Welcome"
             }
         }
         
@@ -177,9 +194,87 @@ struct ContentView: JoliView {
                 .clipped()
             Text("App Clip Code Generator").font(.largeTitle).multilineTextAlignment(.center).foregroundColor(.primary).padding()
             Text("Design and download custom auto-downloading App Clip codes for your brand!").font(.title2).foregroundColor(.secondaryLabel).padding(.horizontal).multilineTextAlignment(.center)
+            Divider().padding(.vertical)
+            
+            let heeader = HStack(){
+                Image(systemName: "qrcode.viewfinder")
+                Text("Brands Experiences")
+                Spacer()
+            }
+            .font(.title2.weight(.light)).foregroundColor(.secondaryLabel)
+            .padding(.vertical)
+            
+            Section(header: heeader){
+                VStack(){
+                    ForEach(products) { product in
+                        HStack(){
+                            Group(){
+                                if let name = product.companyLogoName {
+                                    Image(name)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                } else {
+                                    Image(systemName: "calendar.circle.fill")
+                                        .renderingMode(.original)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .font(.title3)
+                                }
+                            }
+                            .frame(width: 64, height: 64)
+                            .background(Color.fixedWhite)
+                            .clipShape(Circle())
+                            .padding(.trailing, 2)
+                            VStack(alignment: .leading){
+                                Text(product.name)
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                    .lineLimit(4)
+                                    .fixedSize(horizontal: true, vertical: true)
+                                    .padding(.vertical, 2)
+                                Label(product.companyName, systemImage: "building.2.crop.circle")
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                    .foregroundColor(.secondaryLabel)
+                                    .fixedSize(horizontal: true, vertical: true)
+                                Label(product.companyDescription, systemImage: "tag")
+                                    .font(.caption2)
+                                    .lineLimit(1)
+                                    .foregroundColor(.secondaryLabel)
+                                    .fixedSize(horizontal: true, vertical: true)
+                            }
+                            Spacer()
+                            Button(){
+                                guard !product.isComingSoon else {
+                                    return
+                                }
+                                appCoordinator.currentLocation = product.location
+                            } label: {
+                                Text(product.isComingSoon ? "Coming Soon" : "Try It!")
+                                    .multilineTextAlignment(.center)
+                                    .lineLimit(2)
+                                    .font(product.isComingSoon ? .caption : .subheadline.weight(.semibold))
+                                    .foregroundColor(product.isComingSoon ? .secondaryLabel : .blue)
+                                    .padding()
+                                    .background(Color.secondarySystemGroupedBackground)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .disabled(product.isComingSoon)
+                            .clipShape(RoundedRectangle(cornerRadius: 32))
+                        }
+                        .padding()
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.secondaryLabel.opacity(0.6), lineWidth: 1))
+                    }
+                }
+                .padding(.horizontal)
+                
+            }
+            
         }
         .padding()
         .padding(.top, safeAreaInsets.top)
+        .padding(.bottom, safeAreaInsets.bottom * 4)
     }
     
     var feedbackView: some View {

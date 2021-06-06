@@ -209,6 +209,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     case playroom(String)
     case rsvp(String)
     case reward(String)
+    case product(String)
     
     case unset
     case home
@@ -228,6 +229,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
             self = .rsvp(eventId)
         } else if let matches = patterns.reward.matchGroups(rawValue), let rewardUid = matches["rewardId"] {
             self = .reward(rewardUid)
+        } else if let matches = patterns.product.matchGroups(rawValue), let productId = matches["productId"] {
+            self = .product(productId)
         } else if rawValue == AppLocation.upgrade.rawValue {
             self = .upgrade
         } else if rawValue == AppLocation.default {
@@ -254,6 +257,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                 return "/rsvp/b/\(eventId)"
             case .reward(let uid):
                 return "/ir/\(uid)"
+            case .product(let pId):
+                return "/sise/\(pId)"
             default:
                 return AppLocation.default
         }
@@ -264,7 +269,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
         invited: Regex("^/(playroom/invite|i)/(?<inviteId>.+)$"),
         playroom: Regex("^/r/(?<roomId>.+)$"),
         rsvp: Regex("^/rsvp/b/(?<eventId>.+)$"),
-        reward: Regex("^/ir/(?<rewardId>.+)$")
+        reward: Regex("^/ir/(?<rewardId>.+)$"),
+        product: Regex("^/sise/(?<productId>.+)$")
     )
     
     public var description: String {
@@ -940,7 +946,9 @@ public extension AppClip {
     }
     
     func onOpenUrl(url: URL){
-        logger.debug("[\(Self.self)] open URL: \(url)")
+        let prevLoc = self.coordinator.currentLocation
+        self.coordinator.currentLocation = AppLocation(url) ?? self.coordinator.currentLocation
+        logger.debug("[\(Self.self)#onOpenUrl] url: \(url), previousLocation: \(prevLoc), currentLocation: \(self.coordinator.currentLocation)")
     }
     
     func onScenePhaseChange(_ phase: ScenePhase){

@@ -80,7 +80,37 @@ struct SmartzApp: AppClip {
     @State var result: Result<MFMailComposeResult, Error>? = nil
     
     var contentView: some View {
-        ContentView()
+        Group(){
+                if [AppLocation.home, AppLocation.unset].contains(currentLocation) {
+                    ContentView()
+                } else {
+                    SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                        .overlay(
+                            GeometryReader() { proxy in
+                                VStack(){
+                                    HStack(){
+                                        Button(){
+                                            currentLocation = .home
+                                        } label: {
+                                            Image("smartz_logo")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 48, height: 48)
+                                                .padding(4)
+                                                .opacity(0.4)
+                                                .grayscale(0.8)
+                                                .shadow(color: Color.secondaryLabel, radius: 1, x: 0.2, y: 0.2)
+                                        }
+                                        .clipShape(Circle())
+                                        Spacer()
+                                    }
+                                    Spacer()
+                                }
+                            }
+                        )
+                }
+            }
+            .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
             .onReceive(coordinator.globalAlertSubject) { alertInfo in
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true
