@@ -11,6 +11,10 @@
 		<string>appclips:smartstikr.com</string>
 		<string>applinks:smartstikr.com</string>
 	</array>
+	<key>com.apple.developer.in-app-payments</key>
+	<array>
+		<string>merchant.com.smartstickr.Smartz</string>
+	</array>
 	<key>com.apple.developer.parent-application-identifiers</key>
 	<array>
 		<string>$(AppIdentifierPrefix)com.smartstickr.Smartz</string>
