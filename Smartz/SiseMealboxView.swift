@@ -546,7 +546,7 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                             
                         }
                         .frame(maxWidth: screenWidth)
-                        .padding(.bottom, safeAreaInsets.bottom)
+                        .padding(.bottom, max(100, safeAreaInsets.bottom))
                         //.frame(minHeight: screenHeight)
                     }
                 }
