@@ -53,7 +53,8 @@ struct Product: Identifiable {
 
 let products: [Product] = [
     Product(companyName: "Sísè Food", name: "Ofada sauce kit", description: "decribe ofada", location: .product("ofada"), companyLogoName: "sise_logo", companyDescription: "Meal box delivery", isComingSoon: false),
-    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey/sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: true)
+    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey/sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: true),
+    Product(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "decribe ofada", location: .product("p/sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true)
 ]
 
 struct ContentView: JoliView {
@@ -287,9 +288,9 @@ struct ContentView: JoliView {
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                 } else {
-                                    Image(systemName: "calendar.circle.fill")
-                                        .renderingMode(.original)
+                                    Image(systemName: product.companyName == "Re-order Now!" ? "creditcard.fill" : "calendar.circle.fill")
                                         .resizable()
+                                        .renderingMode(.original)
                                         .aspectRatio(contentMode: .fit)
                                         .font(.title3)
                                 }
@@ -303,7 +304,8 @@ struct ContentView: JoliView {
                                     .font(.body)
                                     .foregroundColor(.primary)
                                     .lineLimit(4)
-                                    .fixedSize(horizontal: true, vertical: true)
+                                    .multilineTextAlignment(.leading)
+                                    .fixedSize(horizontal: false, vertical: true)
                                     .padding(.vertical, 2)
                                 Label(product.companyName, systemImage: "building.2.crop.circle")
                                     .font(.caption)
@@ -323,14 +325,14 @@ struct ContentView: JoliView {
                                 }
                                 appCoordinator.currentLocation = product.location
                             } label: {
-                                Text(product.isComingSoon ? "Coming Soon" : "Try It!")
+                                Text(product.isComingSoon ? "Coming\nSoon" : "Try It!")
                                     .multilineTextAlignment(.center)
                                     .lineLimit(2)
                                     .font(product.isComingSoon ? .caption : .subheadline.weight(.semibold))
                                     .foregroundColor(product.isComingSoon ? .secondaryLabel : .blue)
+                                    .fixedSize(horizontal: false, vertical: true)
                                     .padding()
                                     .background(Color.secondarySystemGroupedBackground)
-                                    .fixedSize(horizontal: false, vertical: true)
                             }
                             .disabled(product.isComingSoon)
                             .clipShape(RoundedRectangle(cornerRadius: 32))
@@ -523,11 +525,11 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                                     HStack(){
                                         Spacer()
                                         
-                                        Link(destination: URL(string: "https://www.instagram.com/smartstickrz/")!) {
+                                        Link(destination: URL(string: "https://www.instagram.com/smartstikr/")!) {
                                             VStack(){
                                                 Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
                                                 Text("Follow Us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-                                                Text("@smartstickrz").font(.body.weight(.semibold)).foregroundColor(.primary)
+                                                Text("@smartstikr").font(.body.weight(.semibold)).foregroundColor(.primary)
                                             }
                                             .padding()
                                         }

@@ -12,6 +12,7 @@ import KeychainAccess
 import Version
 import JoliApi
 import JoliCore
+import MessageUI
 
 @main
 struct SmartzClipApp: AppClip {
@@ -58,6 +59,10 @@ struct SmartzClipApp: AppClip {
     @State var currentUser: User? = nil
     let videoController = VideoPlaybackController()
     
+    @State var mailOptions: MailView.Options? = nil
+    @State var isSheetPresented: Bool = false
+    @State var result: Result<MFMailComposeResult, Error>? = nil
+    
     init() {
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
         
@@ -79,5 +84,48 @@ struct SmartzClipApp: AppClip {
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true
             }
+            .onChange(of: self.mailOptions) { opts in
+                isSheetPresented = self.mailOptions != nil
+            }
+            .sheet(isPresented: $isSheetPresented){
+                self.mailOptions = nil
+            } content: {
+                Group(){
+                    if let opts = self.mailOptions {
+                        MailView(result: $result, subject: opts.subject, recipients: opts.recipients, body: opts.body)
+                    }
+                }
+                .environmentObject(coordinator)
+            }
+            .onReceive(coordinator.$mailOptions) { opts in
+                
+                guard let opts = opts else {
+                    self.mailOptions = nil
+                    return
+                }
+                
+                guard MFMailComposeViewController.canSendMail() else {
+                    
+                    if let encoded = opts.subject.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
+                       let validUrl = URL(string: "mailto:\(Strings.appSupportEmail)?subject=\(encoded)") {
+                        UIApplication.shared.open(validUrl)
+                    } else {
+                        coordinator.serverLogDestination?.send(.error, msg: "[\(Self.self)] unable to send mail: subject=\(opts.subject)",
+                                                               thread: Thread.current.debugDescription, file: #file, function: #function, line: #line)
+                    }
+                    
+                    return
+                }
+                
+                self.mailOptions = opts
+            }
     }
+}
+
+extension Strings {
+    
+    internal static var appSupportEmail: String {
+        return "smartstikr@gmail.com"
+    }
+    
 }

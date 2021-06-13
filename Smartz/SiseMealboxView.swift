@@ -188,7 +188,7 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
     }
     
     @Environment(\.colorScheme) var colorScheme
-    @AppStorage("active-tab") var selectedTab = Tab.information
+    @AppStorage("active-tab-mealprep") var selectedTab = Tab.information
     
     public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
         self._currentUser = currentUser
@@ -210,18 +210,28 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
     @State var helpText: String = .empty
     
     var helpView: some View {
-        ScrollView(){
+        ScrollView(showsIndicators: false){
             VStack(){
                 VStack(){
                     
                     
-                    Section(header: Text("Get in Touch").font(.largeTitle)) {
-                        Text("Our team of highly trained food technicians are here to help!").font(.subheadline.weight(.light)).padding(.bottom)
+                    Section(header: Text("Get in Touch").font(.title)) {
+                        Text("Our team of highly trained food technicians are here to help!")
+                            .font(.subheadline.weight(.light))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(5)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.bottom)
                         TextEditor(text: self.$helpText)
                             .frame(height: screenWidth / 2)
-                            .overlay(VStack(alignment: .leading){
-                                Text("Enter your message here").padding().foregroundColor(.tertiaryLabel)
-                            })
+                            .overlay(
+                                VStack(alignment: .leading){
+                                    if helpText.isEmpty {
+                                        Text("Enter your message here").padding().foregroundColor(.tertiaryLabel)
+                                        Spacer()
+                                    }
+                                }
+                            )
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         
                     }
@@ -229,6 +239,8 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                     
                     Button(){
                         print("submitted help!")
+                        let subject = "Sísè Food Help - \(AppCoordinator.version)"
+                        self.appCoordinator.mailOptions = .init(subject: subject, recipients: [Strings.appSupportEmail], body: helpText)
                     } label: {
                         HStack(){
                             Spacer()
@@ -276,19 +288,30 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                         Image("smartz_logo")
                             .resizable()
                             .frame(width: 38, height: 38)
-                        Text("Smartz").font(.subheadline.weight(.semibold))
+                        Text("SmartStikr").font(.subheadline.weight(.semibold))
                     }
                 }
                 .padding()
                 Spacer()
             }
             .frame(width: screenWidth - 100)
-            .padding(.top, safeAreaInsets.top * 2)
+            .padding(.vertical, max(40, safeAreaInsets.top) * 2)
         }
-        .frame(maxWidth: screenWidth, maxHeight: screenHeight)
+        .frame(width: screenWidth, height: screenHeight)
         .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
                         .resizable()
                         .aspectRatio(contentMode: .fill)
+        )
+        .simultaneousGesture(
+            TapGesture()
+                .onEnded() { value in
+                    
+                    guard appCoordinator.keyboardHeight > 0 else {
+                        return
+                    }
+                    
+                    appCoordinator.dismissKeyboard()
+                }
         )
         
     }
@@ -332,22 +355,29 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                 Text("Would you mind doing us a favour?").font(.title2.weight(.light))
                 Text("Post your fine dish, it only takes a tap")
                     .lineLimit(3)
-                    .font(.body.weight(.light)).foregroundColor(.secondaryLabel).fixedSize(horizontal: false, vertical: true)
+                    .font(.body.weight(.light))
+                    .foregroundColor(.secondaryLabel)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                 
                 HStack(){
                     Spacer()
-                    
-                    VStack(){
-                        Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
-                        Text("Tag us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-                        Text("@ashabismeals").font(.body.weight(.semibold)).foregroundColor(.primary)
+                    Link(destination: URL(string: "https://www.instagram.com/ashabismeals/")!) {
+                        VStack(){
+                            Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                            Text("Tag us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
+                            Text("@ashabismeals").font(.body.weight(.semibold)).foregroundColor(.primary)
+                        }
                     }
                     .padding()
+                    //https://www.instagram.com/explore/tags/madewithsise/
                     
-                    VStack(){
-                        Image("fbk_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
-                        Text("Share us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-                        Text("#madewithsise").font(.body.weight(.semibold)).foregroundColor(.primary)
+                    Link(destination: URL(string: "https://www.instagram.com/explore/tags/madewithsise/")!) {
+                        VStack(){
+                            Image("fbk_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                            Text("Share us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
+                            Text("#madewithsise").font(.body.weight(.semibold)).foregroundColor(.primary)
+                        }
                     }
                     .padding()
                     
@@ -367,6 +397,7 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                     .font(.body.weight(.light))
                     .foregroundColor(.secondaryLabel)
                     .padding()
+                    .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 VStack(){
@@ -376,7 +407,13 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                     
                     if let deliveryDay = Calendar.current.dateComponents([.day], from: deliveryDate).day,
                        let today = Calendar.current.dateComponents([.day], from: Date()).day, deliveryDay != today {
-                        PaymentButton()
+                        VStack(){
+                            PaymentButton()
+                            Label("Apple Pay is coming soon!", systemImage: "creditcard.fill")
+                                .foregroundColor(.secondaryLabel)
+                                .font(.caption)
+                                .multilineTextAlignment(.center)
+                        }
                     }
                 }
                 .padding()
@@ -492,28 +529,28 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                                     }
                                     
                                     Spacer()
+                                    
                                     Button() {
-                                        self.autoResetting.send(itm.offset)
                                         self.lastStepId = self.lastStepId == 0 && itm.offset == 0 ? -1 : itm.offset
                                         
-                                        guard self.lastStepId == steps.count - 1 else { return }
+                                        let feeback: FeedbackStyle = self.lastStepId == steps.count - 1 ? .heavy : .light
                                         
-                                        withImpact(.heavy, animated: .easeInOut){
+                                        withImpact(feeback, animated: .easeInOut){
+                                            self.autoResetting.send(itm.offset)
                                             
-                                            self.presentToast("All done!", subTitle: "Enoy your meal", custom: .none, type: .image("confetti", .clear), displayMode: .alert) { dismissed in
-                                                print("Alert closed")
-                                                self.completed = true
-                                                
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
-                                                    withAnimation(){
-                                                        guard selectedTab == .steps else { return }
-                                                        
-                                                        proxy.scrollTo("share-section", anchor: .center)
-                                                    }
+                                            guard self.lastStepId == steps.count - 1 else { return }
+                                            
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3){
+                                                withAnimation(){
+                                                    self.completed = true
+                                                    
+                                                    guard selectedTab == .steps else { return }
+                                                    
+                                                    proxy.scrollTo("share-section", anchor: .center)
                                                 }
-                                                
                                             }
                                             
+                                            self.presentToast("All done!", subTitle: "Enoy your meal", custom: .none, type: .image("confetti", .clear), displayMode: .alert) { _ in }
                                         }
                                         
                                     } label: {
@@ -670,8 +707,8 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                     Spacer()
                 }
                 .frame(minHeight: screenHeight * 1.2)
+                .padding(.bottom, max(100, safeAreaInsets.bottom))
             }
-            
             .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
                             .resizable()
                             .aspectRatio(contentMode: .fill)
@@ -713,9 +750,14 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                         Button() {
                             self.selectedTab = tab
                         } label: {
-                            Label(tab.label, systemImage: selectedTab == tab ? tab.emoji.active : tab.emoji.default)
-                                .foregroundColor(selectedTab == tab ? tab.color : .primary)
-                                .padding()
+                            HStack(){
+                                Image(systemName: selectedTab == tab ? tab.emoji.active : tab.emoji.default)
+                                Text(tab.label)
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: true)
+                            }
+                            .foregroundColor(selectedTab == tab ? tab.color : .primary)
+                            .padding()
                         }
                         .if(selectedTab == tab){ view in
                             view.background(BlurView(colorScheme == .dark ? .systemThickMaterialDark : .systemThickMaterialLight))
@@ -731,7 +773,7 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                 .clipShape(RoundedRectangle(cornerRadius: 25.0))
                 .animation(.easeInOut)
             }
-            .padding(.bottom, safeAreaInsets.bottom)
+            .padding(.bottom, max(16, safeAreaInsets.bottom))
             
             
             //            HStack(){
@@ -740,6 +782,7 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
             //                }
             //            }
         }
+        .frame(maxWidth: screenWidth, maxHeight: screenHeight)
         .edgesIgnoringSafeArea(.all)
     }
 }
