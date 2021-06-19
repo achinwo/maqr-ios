@@ -79,7 +79,16 @@ struct SmartzClipApp: AppClip {
     }
     
     var contentView: some View {
-        SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+        Group(){
+                if case let AppLocation.product(storeId, productId) = currentLocation,
+                   storeId.lowercased() == "joey" {//[AppLocation.home, AppLocation.unset].contains(currentLocation) {
+                    //ContentView()
+                    JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                } else {
+                    SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                }
+            }
+            .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
             .onReceive(coordinator.globalAlertSubject) { alertInfo in
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true

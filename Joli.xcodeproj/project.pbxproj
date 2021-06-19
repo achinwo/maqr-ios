@@ -187,6 +187,8 @@
 		92C1A24C26626BF900A11E0F /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C1A24D26626D5B00A11E0F /* Playback.swift */; };
 		92C1A24F26626D5B00A11E0F /* Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C1A24D26626D5B00A11E0F /* Playback.swift */; };
+		92DD6554267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
+		92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
 		92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE3CD2619394000688802 /* SFSafeSymbols */; };
 		92EDE41026193AD500688802 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE40F26193AD500688802 /* Kingfisher */; };
@@ -434,6 +436,7 @@
 		92A32E3024CA22FA007C960E /* Publishers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Publishers.swift; sourceTree = "<group>"; };
 		92A7120C24D85EC500AD6729 /* NetworkImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageView.swift; sourceTree = "<group>"; };
 		92C1A24D26626D5B00A11E0F /* Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playback.swift; sourceTree = "<group>"; };
+		92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeyRestuarantView.swift; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -541,6 +544,7 @@
 				9202D3DA2659B6E900D5974F /* Preview Content */,
 				92C1A24D26626D5B00A11E0F /* Playback.swift */,
 				92562E2F266D3C38004972E6 /* SiseMealboxView.swift */,
+				92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -1231,6 +1235,7 @@
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
 				9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */,
 				92562E30266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
+				92DD6554267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1240,6 +1245,7 @@
 			files = (
 				92C1A24F26626D5B00A11E0F /* Playback.swift in Sources */,
 				9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */,
+				92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1481,7 +1487,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1492,6 +1498,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1507,7 +1514,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1517,6 +1524,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1531,7 +1539,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1542,6 +1550,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1556,7 +1565,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1566,6 +1575,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

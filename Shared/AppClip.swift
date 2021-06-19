@@ -209,7 +209,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     case playroom(String)
     case rsvp(String)
     case reward(String)
-    case product(String)
+    case product(String, String)
     
     case unset
     case home
@@ -229,8 +229,10 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
             self = .rsvp(eventId)
         } else if let matches = patterns.reward.matchGroups(rawValue), let rewardUid = matches["rewardId"] {
             self = .reward(rewardUid)
-        } else if let matches = patterns.product.matchGroups(rawValue), let productId = matches["productId"] {
-            self = .product(productId)
+        } else if let matches = patterns.product.matchGroups(rawValue),
+                  let storeId = matches["storeId"],
+                  let productId = matches["productId"] {
+            self = .product(storeId, productId)
         } else if rawValue == AppLocation.upgrade.rawValue {
             self = .upgrade
         } else if rawValue == AppLocation.default {
@@ -257,8 +259,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                 return "/rsvp/b/\(eventId)"
             case .reward(let uid):
                 return "/ir/\(uid)"
-            case .product(let pId):
-                return "/s/sise/\(pId)"
+            case .product(let storeId, let pId):
+                return "/s/\(storeId)/\(pId)"
             default:
                 return AppLocation.default
         }
@@ -270,7 +272,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
         playroom: Regex("^/r/(?<roomId>.+)$"),
         rsvp: Regex("^/rsvp/b/(?<eventId>.+)$"),
         reward: Regex("^/ir/(?<rewardId>.+)$"),
-        product: Regex("^/s/sise/(?<productId>.+)$")
+        product: Regex("^/s/(?<storeId>.+)/(?<productId>.+)$")
     )
     
     public var description: String {
