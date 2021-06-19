@@ -53,7 +53,7 @@ struct Product: Identifiable {
 
 let products: [Product] = [
     Product(companyName: "Sísè Food", name: "Ofada sauce kit", description: "decribe ofada", location: .product("sise", "ofada"), companyLogoName: "sise_logo", companyDescription: "Meal box delivery", isComingSoon: false),
-    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: true),
+    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false),
     Product(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "decribe ofada", location: .product("stikr", "sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true)
 ]
 

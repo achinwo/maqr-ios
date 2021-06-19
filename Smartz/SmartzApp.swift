@@ -84,30 +84,38 @@ struct SmartzApp: AppClip {
                 if [AppLocation.home, AppLocation.unset].contains(currentLocation) {
                     ContentView()
                 } else {
-                    SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
-                        .overlay(
-                            GeometryReader() { proxy in
-                                VStack(){
-                                    HStack(){
-                                        Button(){
-                                            currentLocation = .home
-                                        } label: {
-                                            Image("smartz_logo")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 48, height: 48)
-                                                .padding(4)
-                                                .opacity(0.4)
-                                                .grayscale(0.8)
-                                                .shadow(color: Color.secondaryLabel, radius: 1, x: 0.2, y: 0.2)
-                                        }
-                                        .clipShape(Circle())
-                                        Spacer()
+                    
+                    Group(){
+                        if case let AppLocation.product(storeId, _) = currentLocation,
+                               storeId.lowercased() == "joey" {
+                            JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                        } else {
+                            SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                        }
+                    }
+                    .overlay(
+                        GeometryReader() { proxy in
+                            VStack(){
+                                HStack(){
+                                    Button(){
+                                        currentLocation = .home
+                                    } label: {
+                                        Image("smartz_logo")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 48, height: 48)
+                                            .padding(4)
+                                            .opacity(0.4)
+                                            .grayscale(0.8)
+                                            .shadow(color: Color.secondaryLabel, radius: 1, x: 0.2, y: 0.2)
                                     }
+                                    .clipShape(Circle())
                                     Spacer()
                                 }
+                                Spacer()
                             }
-                        )
+                        }
+                    )
                 }
             }
             .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
