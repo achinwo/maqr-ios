@@ -80,7 +80,7 @@ struct SmartzClipApp: AppClip {
     
     var contentView: some View {
         Group(){
-                if case let AppLocation.product(storeId, productId) = currentLocation,
+                if case let AppLocation.product(storeId, _) = currentLocation,
                    storeId.lowercased() == "joey" {//[AppLocation.home, AppLocation.unset].contains(currentLocation) {
                     //ContentView()
                     JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
