@@ -48,6 +48,7 @@ class LoopingPlayerUIView: UIView {
         playerLooper = AVPlayerLooper(player: player, templateItem: item)
 
         // Start the movie
+        player.isMuted = true
         player.play()
     }
 
@@ -115,7 +116,8 @@ struct JoeyRestuarantView<PlaybackControllerType: PlaybackController>: JoliConte
                             + Text("restaurant features a warm and modern industrial design and a seasonal rooftop patio in this popular Toronto neighbourhood gathering spot.")
                                 .font(.body.weight(.light))
                             )
-                            .padding([.horizontal,.bottom])
+                            .padding(.bottom)
+                            .multilineTextAlignment(.center)
                         }
                         .padding()
                     }
