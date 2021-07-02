@@ -40,15 +40,15 @@ struct SmartzApp: AppClip {
     
     @State var serverVersion: Version? = nil
     
-    var apnTokenPublisher: NotificationCenter.Publisher =  NotificationCenter.default.publisher(for: Notifications.apnToken)
+    var apnTokenPublisher: NotificationCenter.Publisher
     
     var websocket: Socket
     
     @State var window: UIWindow?
     
-    @State var safeAreaInsets: EdgeInsets = EdgeInsets()
+    @State var safeAreaInsets: EdgeInsets
     
-    var keychain: Keychain = Keychain(service: "com.smartstickr.session-token")
+    let keychain: Keychain
     
     @State var auths: [Auth] = []
     
@@ -58,10 +58,16 @@ struct SmartzApp: AppClip {
     @State var isActionSheetPresented: Bool = false
     
     @State var currentUser: User? = nil
-    let videoController = VideoPlaybackController()
+    let videoController: VideoPlaybackController
     
     init() {
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
+        
+        apnTokenPublisher = NotificationCenter.default.publisher(for: Notifications.apnToken)
+        keychain = Keychain(service: "com.smartstickr.session-token")
+        videoController = VideoPlaybackController()
+        
+        _safeAreaInsets = State(initialValue: EdgeInsets())
         
         let coordinator = AppCoordinator()
         self.coordinator = coordinator
@@ -83,6 +89,7 @@ struct SmartzApp: AppClip {
         Group(){
                 if [AppLocation.home, AppLocation.unset].contains(currentLocation) {
                     ContentView()
+                    //RestaurantView()
                 } else {
                     
                     Group(){
@@ -160,12 +167,4 @@ struct SmartzApp: AppClip {
                 self.mailOptions = opts
             }
     }
-}
-
-extension Strings {
-    
-    internal static var appSupportEmail: String {
-        return "smartstikr@gmail.com"
-    }
-    
 }

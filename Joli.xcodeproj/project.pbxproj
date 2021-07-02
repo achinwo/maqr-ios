@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		920264CB268FAE06005643E1 /* ExperienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CA268FAE06005643E1 /* ExperienceView.swift */; };
+		920264CE268FB907005643E1 /* ExperienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CA268FAE06005643E1 /* ExperienceView.swift */; };
 		9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D3D42659B6E700D5974F /* SmartzApp.swift */; };
 		9202D3D72659B6E700D5974F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D3D62659B6E700D5974F /* ContentView.swift */; };
 		9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D3D82659B6E900D5974F /* Assets.xcassets */; };
@@ -328,6 +330,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		920264CA268FAE06005643E1 /* ExperienceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceView.swift; sourceTree = "<group>"; };
 		9202D3D22659B6E700D5974F /* Smartz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Smartz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9202D3D42659B6E700D5974F /* SmartzApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartzApp.swift; sourceTree = "<group>"; };
 		9202D3D62659B6E700D5974F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -545,6 +548,7 @@
 				92C1A24D26626D5B00A11E0F /* Playback.swift */,
 				92562E2F266D3C38004972E6 /* SiseMealboxView.swift */,
 				92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */,
+				920264CA268FAE06005643E1 /* ExperienceView.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -1231,6 +1235,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				920264CB268FAE06005643E1 /* ExperienceView.swift in Sources */,
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
 				9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */,
@@ -1246,6 +1251,7 @@
 				92C1A24F26626D5B00A11E0F /* Playback.swift in Sources */,
 				9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */,
 				92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
+				920264CE268FB907005643E1 /* ExperienceView.swift in Sources */,
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
