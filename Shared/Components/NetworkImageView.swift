@@ -43,7 +43,7 @@ public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
     public let placeholderContent: PlaceHolderContent
     public let animation: Animation = .easeInOut
     
-    init(string: String?, onLoaded: Callback? = nil, @ViewBuilder content: () -> PlaceHolderContent) {
+    public init(string: String?, onLoaded: Callback? = nil, @ViewBuilder content: () -> PlaceHolderContent) {
         guard let string = string else {
             self.init(url: nil, onLoaded: onLoaded, content: content)
             return
@@ -51,7 +51,7 @@ public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
         self.init(url: URL(string: string), onLoaded: onLoaded, content: content)
     }
     
-    init(url: URL? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> PlaceHolderContent) {
+    public init(url: URL? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> PlaceHolderContent) {
         //self.placeholderImage = placeholderImage
         self.callback = onLoaded
         self.placeholderContent = content()
@@ -106,7 +106,7 @@ public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
 
 extension NetworkImage where PlaceHolderContent == SwiftUI.Image {
     
-    init(imageURL: URL, placeholderImage: UIImage, onLoaded: Callback? = nil) {
+    public init(imageURL: URL, placeholderImage: UIImage, onLoaded: Callback? = nil) {
         
         #if os(macOS)
         self.placeholderContent = SwiftUI.Image(nsImage: placeholderImage)

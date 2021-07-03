@@ -78,6 +78,8 @@ struct SmartzClipApp: AppClip {
         self.coordinator.api = api
     }
     
+    @State var modalView: AppPreview? = nil
+    
     var contentView: some View {
         Group(){
                 if case let AppLocation.product(storeId, _) = currentLocation,
@@ -96,15 +98,29 @@ struct SmartzClipApp: AppClip {
             .onChange(of: self.mailOptions) { opts in
                 isSheetPresented = self.mailOptions != nil
             }
+            .onChange(of: self.modalView) { modal in
+                isSheetPresented = self.modalView != nil
+            }
             .sheet(isPresented: $isSheetPresented){
+                self.modalView = nil
                 self.mailOptions = nil
             } content: {
-                Group(){
-                    if let opts = self.mailOptions {
-                        MailView(result: $result, subject: opts.subject, recipients: opts.recipients, body: opts.body)
+                
+                if let opts = self.mailOptions {
+                    MailView(result: $result, subject: opts.subject, recipients: opts.recipients, body: opts.body)
+                } else {
+                    GeometryReader() { proxy in
+                        AppPreviewView(preview: self.$modalView, currentUser: self.$currentUser, animation: namespace)
+                            .frame(width: proxy.size.width, height: proxy.size.height + proxy.safeAreaInsets.bottom)
+                            .animation(.spring())
+                            .edgesIgnoringSafeArea([.bottom])
+                        //.background(Color.yellow)
                     }
+                    .environmentObject(coordinator)
                 }
-                .environmentObject(coordinator)
+            }
+            .onReceive(coordinator.globalModalSubject) { view in
+                self.modalView = view
             }
             .onReceive(coordinator.$mailOptions) { opts in
                 
