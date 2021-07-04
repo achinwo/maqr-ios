@@ -101,6 +101,8 @@ public enum AppPreview: View, Equatable {
                 ScrollView(scrollAxis ?? .vertical){
                     viewFunc().clipped()
                 }
+            case .view2(let viewFunc):
+                viewFunc().clipped()
             case .track(let track):
                 VStack() {
                     NetworkImage(string: track.albumCoverUrl) {
@@ -123,6 +125,7 @@ public enum AppPreview: View, Equatable {
     case track(Track)
     case event(Event, Entitlement? = nil, (Entitlement) -> Void)
     case view(Axis.Set? = nil, () -> AnyView)
+    case view2(() -> AnyView) /// no scrollview embedding
     case playroomCreate
 }
 

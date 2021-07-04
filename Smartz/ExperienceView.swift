@@ -121,6 +121,8 @@ struct RestaurantView: ExperienceView {
     @Environment(\.colorScheme) var colorScheme
     @State var arrivedAt: Date? = Date()
     
+    @State var menu: RestaurantMenu?
+    
     public init(data: Model? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
         self.dataModel = data ?? Model()
         self._editMode = editMode
@@ -175,7 +177,7 @@ struct RestaurantView: ExperienceView {
                             .font(.title2.weight(.light))
                             .padding(.bottom)
                         
-                        NavigationLink(destination: RestaurantWalkinView(arrivedAt: $arrivedAt).navigationTitle(Text("Walk-In"))){
+                        NavigationLink(destination: RestaurantWalkinView(menu: $menu, arrivedAt: $arrivedAt).navigationTitle(Text("Walk-In"))){
                             Text("I'd like to walk in")
                                 .font(.title3)
                                 .foregroundColor(.label)
@@ -191,7 +193,7 @@ struct RestaurantView: ExperienceView {
                         .buttonStyle(OutlineButton())
                         .padding(.bottom)
                         
-                        NavigationLink(destination: RestaurantReservationView().navigationTitle(Text("Reservation"))) {
+                        NavigationLink(destination: RestaurantReservationView(menu: $menu).navigationTitle(Text("Reservation"))) {
                             Text("I have a reservation")
                                 .font(.title3)
                                 .foregroundColor(.label)
@@ -207,7 +209,7 @@ struct RestaurantView: ExperienceView {
                         .buttonStyle(OutlineButton())
                         .padding(.bottom)
                         
-                        RestaurantMenuButtonView()
+                        RestaurantMenuButtonView(menu: $menu)
                             .frame(width: screenWidth - 100, height: 60)
                     }
                     
@@ -240,21 +242,34 @@ struct RestaurantView: ExperienceView {
         }
         .edgesIgnoringSafeArea(.vertical)
         .showEditPencil(.constant(.readonly))
+        .onAppear() {
+            self.menu = RestaurantMenu.getDefaultMenu()
+            
+            print("MENU: \(self.menu)")
+        }
     }
     
 }
 
 struct RestaurantMenuButtonView: JoliView {
     
+    @Binding var menu: RestaurantMenu?
     @EnvironmentObject var appCoordinator: AppCoordinator
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
     var contentView: some View {
         Button(){
-            let preview: AppPreview = .view(){
-                RestaurantMenuView()
+            
+            guard let menu = self.menu else {
+                
+                print("Unable to load menu")
+                return
+            }
+            
+            let preview: AppPreview = .view2(){
+                RestaurantMenuView(menu: menu)
                     .frame(width: screenWidth)
-                    .frame(minHeight: screenHeight - (safeAreaInsets.bottom + safeAreaInsets.top))
+                    .frame(minHeight: screenHeight - safeAreaInsets.top)
                     .eraseToAnyView()
             }
             
@@ -323,6 +338,7 @@ struct AnimatableGradientView: View {
 
 struct RestaurantReservationView: View {
     
+    @Binding var menu: RestaurantMenu?
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
@@ -378,7 +394,7 @@ struct RestaurantReservationView: View {
                         .padding(.horizontal)
                     
                     Divider().padding(.vertical)
-                    RestaurantMenuButtonView()
+                    RestaurantMenuButtonView(menu: $menu)
                         .padding(.bottom)
                 }
                 .frame(width: screenWidth - 100)
@@ -406,6 +422,7 @@ struct RestaurantReservationView: View {
 
 struct RestaurantWalkinView: View {
     
+    @Binding var menu: RestaurantMenu?
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.presentationMode) var presentationMode
     
@@ -500,7 +517,7 @@ struct RestaurantWalkinView: View {
                     .padding(.bottom)
                     
                     Divider().padding(.vertical)
-                    RestaurantMenuButtonView()
+                    RestaurantMenuButtonView(menu: $menu)
                         .padding(.bottom)
                 }
                 .frame(width: screenWidth - 100)
@@ -530,44 +547,159 @@ struct RestaurantWalkinView: View {
 
 struct RestaurantMenuView: View {
     
-    @State private var selectedTab: Int = 1
+    @State var menu: RestaurantMenu
+    @State private var selectedTab: Int = 0
     
-    var tabNames = ["FOOD", "DRINKS", "HAPPY HOUR", "NUTRITION"]
+    var tabNames: [String] {
+        let drinks: [String] = RestaurantDrink.Category.allCases.map() { "Drink - \($0.rawValue)" }
+        return ["Food"] + drinks
+    }
+    
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
-    var body: some View {
-        NavigationView(){
-            TabView(selection: $selectedTab) {
-                VStack(alignment: .leading){
+    func drinkView(_ category: RestaurantDrink.Category) -> some View {
+        
+        return ScrollView(.vertical){
+            VStack(alignment: .leading){
+                Text("Drink - \(category.rawValue)".uppercased())
+                    .lineLimit(2)
+                    .font(.largeTitle.weight(.ultraLight))
+                    .fixedSize(horizontal: true, vertical: true)
+                    .padding()
+                    .padding(.top, safeAreaInsets.top)
+                ForEach(menu.drinks, id: \.id) { drinkGroup in
                     
-                
-                    Text("Food").font(.largeTitle)
-                    Text("Some food")
+                    if let drinks = drinkGroup.items.filter() { $0.category == category }, !drinks.isEmpty {
+                        
+                        if let url = drinkGroup.imageUrl {
+                            NetworkImage(url: url){
+                                ProgressView()
+                            }
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: screenWidth, height: screenWidth / 2)
+                            .clipped()
+                        }
+                        
+                        Section(header: Text(drinkGroup.title).font(.title.weight(.light)).padding()){
+                            VStack(){
+                                ForEach(drinks) { itm in
+                                    self.drinkView(itm)
+                                        .padding(.horizontal)
+                                }
+                            }
+                        }
+                        .padding(.bottom)
+                    }
                 }
-                .tag(1)
-                
-                VStack(alignment: .leading){
-                    Text("Drink").font(.largeTitle)
-                    Text("Some drink")
-                }
-                .tag(2)
-                
-                VStack(alignment: .leading){
-                    Text("Happy Hour").font(.largeTitle)
-                    Text("Some happy")
-                }
-                .tag(3)
-                
-                VStack(alignment: .leading){
-                    Text("Nutrition").font(.largeTitle)
-                    Text("Some nut")
-                }
-                .tag(4)
             }
-            .navigationTitle(Text(tabNames[selectedTab - 1]))
+            .padding(.horizontal)
+        }
+    }
+    
+    func drinkView(_ itm: RestaurantDrink) -> some View {
+        HStack(){
+            VStack(alignment: .leading) {
+                Text(itm.title)
+                    .fontWeight(.light)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .font(.subheadline)
+                
+//                if let subtitle = itm.subtitle {
+//                    Text(subtitle)
+//                        .fontWeight(.light)
+//                        .multilineTextAlignment(.leading)
+//                        .fixedSize(horizontal: false, vertical: true)
+//                        .foregroundColor(.secondaryLabel)
+//                }
+            }
+            Spacer()
+            
+            Text(itm.price)
+                .font(.title3.weight(.light))
+                .foregroundColor(.secondaryLabel)
+                .padding()
+        }
+        
+    }
+    
+    func itemView(_ itm: RestaurantMeal) -> some View {
+        HStack(){
+            
+            Text(itm.dietary ?? " ")
+                .frame(minWidth: 5)
+                .font(.caption)
+                .foregroundColor(.tertiaryLabel)
+            
+            VStack(alignment: .leading) {
+                Text(itm.title).font(.title3)
+                
+                if let subtitle = itm.subtitle {
+                    Text(subtitle)
+                        .fontWeight(.light)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundColor(.secondaryLabel)
+                }
+            }
+            Spacer()
+            
+            Text(itm.price)
+                .font(.title3.weight(.light))
+        }
+        
+    }
+    
+    var foodView: some View {
+        ScrollView(.vertical){
+            VStack(alignment: .leading){
+                ForEach(menu.foods, id: \.id) { foodGroup in
+                    
+                    
+                    if let url = foodGroup.imageUrl {
+                        NetworkImage(url: url){
+                            ProgressView()
+                        }
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: screenWidth, height: screenWidth / 2)
+                        .clipped()
+                    }
+                    
+                    Section(header: Text(foodGroup.title).font(.title.weight(.semibold)).padding()){
+                        VStack(){
+                            ForEach(foodGroup.items) { itm in
+                                self.itemView(itm)
+                                    .padding([.bottom, .horizontal])
+                            }
+                        }
+                    }
+                    .padding(.bottom)
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    var body: some View {
+        //NavigationView(){
+        ZStack(){
+            
+            TabView(selection: $selectedTab) {
+                
+                foodView
+                    .tag(0)
+                
+                ForEach(Array(RestaurantDrink.Category.allCases.enumerated()), id: \.offset) { item in
+                    self.drinkView(item.element)
+                        .tag(item.offset + 1)
+                }
+            }
+            .navigationTitle(Text(tabNames.count > selectedTab ? tabNames[selectedTab] : ""))
             .tabViewStyle(PageTabViewStyle())
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
         }
+            
+        //}
     }
 }
 

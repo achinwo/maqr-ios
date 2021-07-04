@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		920264CB268FAE06005643E1 /* ExperienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CA268FAE06005643E1 /* ExperienceView.swift */; };
 		920264CE268FB907005643E1 /* ExperienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CA268FAE06005643E1 /* ExperienceView.swift */; };
+		920264D02691D4EA005643E1 /* Restaurant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CF2691D4EA005643E1 /* Restaurant.swift */; };
+		920264D12691D4EA005643E1 /* Restaurant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CF2691D4EA005643E1 /* Restaurant.swift */; };
+		920264D926921632005643E1 /* joey_sherway_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 920264D826921632005643E1 /* joey_sherway_data.json */; };
+		920264DA26921632005643E1 /* joey_sherway_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 920264D826921632005643E1 /* joey_sherway_data.json */; };
 		9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D3D42659B6E700D5974F /* SmartzApp.swift */; };
 		9202D3D72659B6E700D5974F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D3D62659B6E700D5974F /* ContentView.swift */; };
 		9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D3D82659B6E900D5974F /* Assets.xcassets */; };
@@ -331,6 +335,8 @@
 
 /* Begin PBXFileReference section */
 		920264CA268FAE06005643E1 /* ExperienceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceView.swift; sourceTree = "<group>"; };
+		920264CF2691D4EA005643E1 /* Restaurant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Restaurant.swift; sourceTree = "<group>"; };
+		920264D826921632005643E1 /* joey_sherway_data.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = joey_sherway_data.json; path = ../../../../Downloads/joey_sherway_data.json; sourceTree = "<group>"; };
 		9202D3D22659B6E700D5974F /* Smartz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Smartz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9202D3D42659B6E700D5974F /* SmartzApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartzApp.swift; sourceTree = "<group>"; };
 		9202D3D62659B6E700D5974F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -536,6 +542,7 @@
 		9202D3D32659B6E700D5974F /* Smartz */ = {
 			isa = PBXGroup;
 			children = (
+				920264D826921632005643E1 /* joey_sherway_data.json */,
 				92562E2B266BC162004972E6 /* demo_sise_intro.mov */,
 				92562E29266BC118004972E6 /* demo_sise_appclip.mp4 */,
 				92562E32266D65EC004972E6 /* demo_sise_code_scan.mov */,
@@ -549,6 +556,7 @@
 				92562E2F266D3C38004972E6 /* SiseMealboxView.swift */,
 				92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */,
 				920264CA268FAE06005643E1 /* ExperienceView.swift */,
+				920264CF2691D4EA005643E1 /* Restaurant.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -1129,6 +1137,7 @@
 				9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */,
 				92562E2E266C003D004972E6 /* Assets.xcassets in Resources */,
 				92562E33266D65EC004972E6 /* demo_sise_code_scan.mov in Resources */,
+				920264D926921632005643E1 /* joey_sherway_data.json in Resources */,
 				92C1A24B26626BF800A11E0F /* env.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1137,6 +1146,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				920264DA26921632005643E1 /* joey_sherway_data.json in Resources */,
 				9202D4112659BC0E00D5974F /* Preview Assets.xcassets in Resources */,
 				9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */,
 				92C1A24C26626BF900A11E0F /* env.json in Resources */,
@@ -1236,6 +1246,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				920264CB268FAE06005643E1 /* ExperienceView.swift in Sources */,
+				920264D02691D4EA005643E1 /* Restaurant.swift in Sources */,
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
 				9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */,
@@ -1250,6 +1261,7 @@
 			files = (
 				92C1A24F26626D5B00A11E0F /* Playback.swift in Sources */,
 				9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */,
+				920264D12691D4EA005643E1 /* Restaurant.swift in Sources */,
 				92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
 				920264CE268FB907005643E1 /* ExperienceView.swift in Sources */,
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
