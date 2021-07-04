@@ -661,7 +661,7 @@ struct RestaurantMenuView: View {
                             ProgressView()
                         }
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: screenWidth, height: screenWidth / 2)
+                        .frame(height: screenWidth / 2)
                         .clipped()
                     }
                     
@@ -675,8 +675,8 @@ struct RestaurantMenuView: View {
                     }
                     .padding(.bottom)
                 }
+                
             }
-            .padding(.horizontal)
         }
     }
     
@@ -687,10 +687,12 @@ struct RestaurantMenuView: View {
             TabView(selection: $selectedTab) {
                 
                 foodView
+                    .frame(maxWidth: screenWidth)
                     .tag(0)
                 
                 ForEach(Array(RestaurantDrink.Category.allCases.enumerated()), id: \.offset) { item in
                     self.drinkView(item.element)
+                        .frame(maxWidth: screenWidth)
                         .tag(item.offset + 1)
                 }
             }
