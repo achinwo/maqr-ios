@@ -15,12 +15,19 @@ import AVKit
 import AVFoundation
 
 struct PlayerView: UIViewRepresentable {
+    
+    var url: URL
+    
+    init(url: URL? = nil){
+        self.url = url ?? URL(string: "https://joeyrestaurants.com/assets/craftAssets/Joey-Restaurants-Welcome-Back-With-Audio.mp4")!
+    }
+    
     func updateUIView(_ uiView: UIView, context: UIViewRepresentableContext<PlayerView>) {
     }
 
     func makeUIView(context: Context) -> UIView {
         let width = UIScreen.main.bounds.width
-        return LoopingPlayerUIView(frame: CGRect.init(origin: .zero, size: .init(width: width, height: width / 1.2)))
+        return LoopingPlayerUIView(frame: CGRect.init(origin: .zero, size: .init(width: width, height: width / 1.2)), url: url)
     }
 }
 
@@ -28,15 +35,18 @@ struct PlayerView: UIViewRepresentable {
 class LoopingPlayerUIView: UIView {
     private let playerLayer = AVPlayerLayer()
     private var playerLooper: AVPlayerLooper?
+    
+    public var url: URL = URL(string: "https://joeyrestaurants.com/assets/craftAssets/Joey-Restaurants-Welcome-Back-With-Audio.mp4")!
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override init(frame: CGRect) {
+    init(frame: CGRect, url: URL? = nil) {
         super.init(frame: frame)
 
-        let item = AVPlayerItem(url: URL(string: "https://joeyrestaurants.com/assets/craftAssets/Joey-Restaurants-Welcome-Back-With-Audio.mp4")!)
+        self.url = url ?? URL(string: "https://joeyrestaurants.com/assets/craftAssets/Joey-Restaurants-Welcome-Back-With-Audio.mp4")!
+        let item = AVPlayerItem(url: self.url)
         
         // Setup the player
         let player = AVQueuePlayer()

@@ -97,6 +97,9 @@ struct SmartzApp: AppClip {
                         if case let AppLocation.product(storeId, _) = currentLocation,
                                storeId.lowercased() == "joey" {
                             JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                        } else if case let AppLocation.product(storeId, _) = currentLocation,
+                           storeId.lowercased() == "shows" {
+                            TvShowPromoView()
                         } else {
                             SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                         }

@@ -1,0 +1,282 @@
+//
+//  TvShowPromoView.swift
+//  Joli
+//
+//  Created by Anthony Chinwo on 06/07/2021.
+//  Copyright © 2021 Anthony Chinwo. All rights reserved.
+//
+
+import SwiftUI
+import JoliPlayground
+import Combine
+import JoliCore
+
+struct TvShowCastInfo: Codable, Identifiable {
+    let name: String
+    let characterName: String
+    let imageUrl: URL
+    let bio: String
+    
+    var id: String {
+        return name
+    }
+    
+    public static func load(from bundle: Bundle? = nil) throws -> [Self]? {
+        //https://storage.googleapis.com/joli-app-bucket/images/joey_sherway_data.json
+        
+        let decoder = Musicroom.jsonDecoder()
+        let bundle = bundle ?? Bundle.main
+        
+        guard let filePath = bundle.path(forResource: "show_cast_data", ofType: "json") else {
+            print("Unable to load file!")
+            return nil
+        }
+        
+        let data = try Data(contentsOf: URL(fileURLWithPath: filePath))
+        let obj: [Self] = try decoder.decode([Self].self, from: data)
+        
+        return obj
+    }
+}
+
+struct TvShowPromoView: ExperienceView {
+    
+    @Binding var editMode: EditMode
+    
+    class Model: ExperienceData {
+        
+        
+    }
+    
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    
+    let dataModel: Model
+    @Environment(\.safeAreaInsets) var safeAreaInsets
+    @Environment(\.colorScheme) var colorScheme
+    @State var arrivedAt: Date? = Date()
+    
+    @State var menu: [TvShowCastInfo] = []
+    
+    public init(data: Model? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
+        self.dataModel = data ?? Model()
+        self._editMode = editMode
+    }
+    
+    var infoView: some View {
+        ScrollViewReader() { proxy in
+            ScrollView(showsIndicators: false){
+                VStack(spacing: .zero){
+                    
+                    //VideoPlayer(player: joeyVideo)
+                    PlayerView(url: URL(string: "https://storage.googleapis.com/joli-app-bucket/images/Its_a_crazy_world_trailer.mp4")!)
+                        .frame(width: screenWidth, height: screenWidth / 2.28)
+                        .clipped()
+                        .background(
+                            BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight)
+                                .overlay(ProgressView().progressViewStyle(CircularProgressViewStyle()))
+                        )
+                    
+                    Image("logo_crazyworld")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: screenWidth * 0.7)
+                        .padding()
+                        .padding(.vertical)
+                        //.offset(x: 0, y: -200)
+                        .id("brand")
+                    //
+                    
+                    Text("Premieres 8 pm on Thursday, April 30th on Silverbird Network (STV) Dstv 252, Startimes 109, and GOtv 92/192")
+                        .font(.caption.weight(.light))
+                        .multilineTextAlignment(.center)
+                        .padding([.horizontal, .bottom])
+                    
+                    VStack(){
+                        (Text("“It’s a crazy world” ").font(.subheadline.weight(.semibold))
+                            + Text("is a modern-day 30-minute sitcom created by Amanda Ebeye and majorly directed by KC Muel and Amanda Ebeye. It tells the story of a very wealthy man with three women and three kids. It’s a hilarious sitcom that addresses the competition women go through in general trying to outdo themselves and constantly vying for the man’s attention. In this case, these women would use any means available to them, with social media being their number one go-to tool. \n\nThe other two women are constantly trying to win the favorite spot which the first wife already occupies as he constantly reminds them that besides pregnancy and the kids from the other women; he’s a man with a one-man-one-woman personality. So they try every way they can to win that spot, employing social media tools, the last wife and the kids’ area always on Instagram, Snapchat, Facebook, living a lie, making their worlds look perfect when it is not.")
+                            .font(.subheadline.weight(.light))
+                        )
+                        .padding()
+                        .multilineTextAlignment(.center)
+                        
+                        Divider().padding(.vertical)
+                        
+                        TvShowCastButtonView(menu: $menu)
+                            .frame(height: 60)
+                            .padding(.bottom)
+                    }
+                    .frame(width: screenWidth - 100)
+                    .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .padding(.bottom)
+                    .padding(.bottom)
+                    .id("body")
+                    
+                    VStack(){
+                        Link(destination: URL(string: "https://www.instagram.com/naijaonnetflix/")!) {
+                            VStack(){
+                                Image("logo_netflix").resizable().aspectRatio(contentMode: .fit).frame(width: screenWidth / 3)
+                                Text("Coming July 25th").font(.caption.weight(.light)).foregroundColor(.secondaryLabel)
+                                Text("@naijaonnetflix").font(.body.weight(.semibold)).foregroundColor(.primary)
+                            }
+                        }
+                        .padding(.bottom)
+                        
+                        Link(destination: URL(string: "https://www.instagram.com/itsacrazyworld_tvseries/")!) {
+                            VStack(){
+                                Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                                Text("Follow us").font(.caption.weight(.light)).foregroundColor(.secondaryLabel)
+                                Text("@itsacrazyworld_tvseries").font(.body.weight(.semibold)).foregroundColor(.primary)
+                            }
+                        }
+                        .padding(.bottom)
+                        //https://www.instagram.com/explore/tags/madewithsise/
+                        
+                        
+                    }
+                    .padding(.bottom, 120)
+                    
+                    Spacer()
+                    Link("Restaurant Menu Icon by Icons8", destination: URL(string: "https://icons8.com/icon/tmr075NtT7e6/restaurant-menu")!)
+                        .font(.caption)
+                }
+                .frame(minHeight: screenHeight * 1.2)
+                .padding(.bottom, max(100, safeAreaInsets.bottom))
+                //.padding(.top, safeAreaInsets.top)
+            }
+            .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+            )
+            .onAppear(){
+                self.menu = (try? TvShowCastInfo.load()) ?? []
+            }
+        }
+    }
+    
+    
+    var contentView: some View {
+        NavigationView(){
+            ZStack(){
+                infoView
+                    .frame(width: screenWidth, height: screenHeight)
+                    .onAppear(){
+                    }
+            }
+            .edgesIgnoringSafeArea(.vertical)
+            .navigationBarHidden(true)
+        }
+        .edgesIgnoringSafeArea(.vertical)
+        .showEditPencil(.constant(.readonly))
+    }
+    
+}
+
+struct TvShowCastButtonView: JoliView {
+    
+    @Binding var menu: [TvShowCastInfo]
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    @Environment(\.safeAreaInsets) var safeAreaInsets
+    
+    var contentView: some View {
+        Button(){
+            
+            let preview: AppPreview = .view2(){
+                TvShowCastView(menu: menu)
+                    .frame(width: screenWidth)
+                    .frame(minHeight: screenHeight - safeAreaInsets.top)
+                    .eraseToAnyView()
+            }
+            
+            appCoordinator.globalModalSubject.send(preview)
+        } label: {
+            Label(){
+                Text(" Meet The Cast")
+            } icon: {
+                Image(systemName: "rectangle.stack.person.crop")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundColor(.orange)
+                    .frame(height: 24)
+                
+            }
+            .font(.title3.weight(.light))
+            .accentColor(Color.yellow)
+        }
+    }
+    
+}
+
+
+struct TvShowCastView: View {
+    
+    @State var menu: [TvShowCastInfo]
+    @State private var selectedTab: Int = 0
+    
+    var tabNames: [String] {
+        return menu.map() { $0.name }
+    }
+    
+    @Environment(\.safeAreaInsets) var safeAreaInsets
+    @Environment(\.colorScheme) var colorScheme
+    
+    func castView(_ info: TvShowCastInfo) -> some View {
+        ScrollView(.vertical){
+            VStack(alignment: .leading){
+                Spacer()
+                Spacer()
+                VStack(){
+                    
+                    let header = VStack(){
+                        Text(info.name).font(.largeTitle.weight(.ultraLight)).lineLimit(1)
+                        Text("as ").font(.callout).foregroundColor(.secondaryLabel) + Text(info.characterName).font(.title3)
+                        Rectangle().frame(height: 1).foregroundColor(.yellow.opacity(0.7)).padding(.horizontal)
+                    }
+                    
+                    VStack(spacing: .zero){
+                        header
+                        Text(info.bio)
+                            .font(.subheadline.weight(.light))
+                            .multilineTextAlignment(.center)
+                            .padding()
+                    }
+                    .padding()
+                }
+                .frame(width: screenWidth - 100)
+                .background(BlurView(colorScheme == .dark ? .systemThinMaterialDark : .systemThinMaterialLight))
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                Spacer()
+            }
+            .frame(minHeight: screenHeight)
+            .frame(width: screenWidth)
+        }
+        .background(
+            ZStack(){
+                NetworkImage(url: info.imageUrl){
+                    ProgressView()
+                }
+                .clipped()
+            }
+        )
+    }
+    
+    var body: some View {
+        //NavigationView(){
+        ZStack(){
+            
+            TabView(selection: $selectedTab) {
+                ForEach(Array(menu.enumerated()), id: \.offset) { item in
+                    self.castView(item.element)
+                        .frame(maxWidth: screenWidth)
+                        .clipped()
+                        .tag(item.offset + 1)
+                }
+            }
+            .navigationTitle(Text(tabNames.count > selectedTab ? tabNames[selectedTab] : ""))
+            .tabViewStyle(PageTabViewStyle())
+            .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+        }
+        
+        //}
+    }
+}
