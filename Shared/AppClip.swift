@@ -416,9 +416,9 @@ extension JoliContentView {
                             .ifLet(self.toastInfo) { view, alertToast in
                                 view.toast(isPresenting: isPresentingToast) {
                                     alertToast.alert
-                                } completion: { closed in
-                                    print("[\(Self.self)] toast completion: \(closed)")
-                                    alertToast.onDismiss(closed)
+                                } completion: {
+                                    print("[\(Self.self)] toast completion")
+                                    alertToast.onDismiss(true)
                                 }
                             }
                     }

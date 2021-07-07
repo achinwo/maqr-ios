@@ -56,14 +56,17 @@ struct Product: Identifiable {
     let companyLogoName: String?
     let companyDescription: String
     let isComingSoon: Bool
+    var iconName: String? = nil
     
     var id: String { name }
 }
 
 let products: [Product] = [
     Product(companyName: "Sísè Food", name: "Ofada sauce kit", description: "decribe ofada", location: .product("sise", "ofada"), companyLogoName: "sise_logo", companyDescription: "Meal box delivery", isComingSoon: false),
-    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false),
-    Product(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "decribe ofada", location: .product("stikr", "sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true)
+    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false, iconName: "calendar.circle.fill"),
+    Product(companyName: "Portal", name: "Brand promotion", description: "decribe ofada", location: .product("shows", "iacw"), companyLogoName: nil, companyDescription: "Brand", isComingSoon: false,
+            iconName: "film.fill"),
+    Product(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "decribe ofada", location: .product("stikr", "sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true, iconName: "creditcard.fill")
 ]
 
 struct ContentView: JoliView {
@@ -297,11 +300,15 @@ struct ContentView: JoliView {
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                 } else {
-                                    Image(systemName: product.companyName == "Re-order Now!" ? "creditcard.fill" : "calendar.circle.fill")
+                                    let iconName = product.iconName ?? "calendar.circle.fill"
+                                    Image(systemName: iconName)
                                         .resizable()
                                         .renderingMode(.original)
                                         .aspectRatio(contentMode: .fit)
                                         .font(.title3)
+                                        .if(iconName != "calendar.circle.fill") { view in
+                                            view.padding()
+                                        }
                                 }
                             }
                             .frame(width: 64, height: 64)

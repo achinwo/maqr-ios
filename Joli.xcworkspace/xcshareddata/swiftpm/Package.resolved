@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/elai950/AlertToast.git",
         "state": {
           "branch": null,
-          "revision": "0d45a0959565801126ce4ed57e7c7090ac449c8d",
-          "version": "1.2.3"
+          "revision": "0a6f9182ce19ccd267f7d022ebbc9ae3952f4012",
+          "version": "1.2.9"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/fxm90/GradientLoadingBar.git",
         "state": {
           "branch": null,
-          "revision": "75593d9d14e698bf0fad1da9bde94b2729b8c7c2",
-          "version": "2.1.0"
+          "revision": "456227eeb04bc22b626caf298cb01b997551d560",
+          "version": "2.1.1"
         }
       },
       {
@@ -87,8 +87,8 @@
         "repositoryURL": "https://github.com/AndreaMiotto/PartialSheet.git",
         "state": {
           "branch": null,
-          "revision": "936465232b6399e402e79d5b031622af9a5e9960",
-          "version": "2.1.11"
+          "revision": "45b8e76c67aaa799e65e607930efc3b1dac07a1c",
+          "version": "2.1.12"
         }
       },
       {
@@ -159,8 +159,8 @@
         "repositoryURL": "https://github.com/apple/swift-syntax.git",
         "state": {
           "branch": null,
-          "revision": "844574d683f53d0737a9c6d706c3ef31ed2955eb",
-          "version": "0.50300.0"
+          "revision": "2fff9fc25cdc059379b6bd309377cfab45d8520c",
+          "version": "0.50400.0"
         }
       },
       {
@@ -168,8 +168,8 @@
         "repositoryURL": "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
         "state": {
           "branch": null,
-          "revision": "2c513a2e8fbfbd6495afc4a05941d8e3fdba68e9",
-          "version": "1.9.3"
+          "revision": "2c039501d6eeb4d4cd4aec4a8d884ad28862e044",
+          "version": "1.9.5"
         }
       },
       {
@@ -186,8 +186,8 @@
         "repositoryURL": "https://github.com/mxcl/Version.git",
         "state": {
           "branch": null,
-          "revision": "a94b48f36763c05629fc102837398505032dead9",
-          "version": "2.0.0"
+          "revision": "1fe824b80d89201652e7eca7c9252269a1d85e25",
+          "version": "2.0.1"
         }
       }
     ]

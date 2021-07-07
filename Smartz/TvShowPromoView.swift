@@ -85,11 +85,22 @@ struct TvShowPromoView: ExperienceView {
                         //.offset(x: 0, y: -200)
                         .id("brand")
                     //
-                    
-                    Text("Premieres 8 pm on Thursday, April 30th on Silverbird Network (STV) Dstv 252, Startimes 109, and GOtv 92/192")
-                        .font(.caption.weight(.light))
-                        .multilineTextAlignment(.center)
-                        .padding([.horizontal, .bottom])
+                    Link(destination: URL(string: "https://www.instagram.com/naijaonnetflix/")!) {
+                        HStack(alignment: .center, spacing: .zero){
+                            (Text("Coming ").font(.subheadline)
+                                + Text("July 25th").font(.subheadline.weight(.semibold)))
+                                .foregroundColor(.primary)
+                                .padding(.trailing)
+                                .lineLimit(1)
+                                .fixedSize()
+
+                            RoundedRectangle(cornerRadius: 4).frame(width: 1.5, height: screenWidth / 10).foregroundColor(.primary)
+
+                            Image("logo_netflix").resizable().aspectRatio(contentMode: .fit).frame(height: screenWidth / 8)//.background(Color.pink)
+                        }
+                    }
+                    .frame(maxHeight: screenWidth / 8)
+                    .padding(.bottom)
                     
                     VStack(){
                         (Text("“It’s a crazy world” ").font(.subheadline.weight(.semibold))
@@ -116,7 +127,7 @@ struct TvShowPromoView: ExperienceView {
                         Link(destination: URL(string: "https://www.instagram.com/naijaonnetflix/")!) {
                             VStack(){
                                 Image("logo_netflix").resizable().aspectRatio(contentMode: .fit).frame(width: screenWidth / 3)
-                                Text("Coming July 25th").font(.caption.weight(.light)).foregroundColor(.secondaryLabel)
+                                Text("Coming July 25th").font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
                                 Text("@naijaonnetflix").font(.body.weight(.semibold)).foregroundColor(.primary)
                             }
                         }
@@ -125,7 +136,7 @@ struct TvShowPromoView: ExperienceView {
                         Link(destination: URL(string: "https://www.instagram.com/itsacrazyworld_tvseries/")!) {
                             VStack(){
                                 Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
-                                Text("Follow us").font(.caption.weight(.light)).foregroundColor(.secondaryLabel)
+                                Text("Follow us").font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
                                 Text("@itsacrazyworld_tvseries").font(.body.weight(.semibold)).foregroundColor(.primary)
                             }
                         }
@@ -134,11 +145,11 @@ struct TvShowPromoView: ExperienceView {
                         
                         
                     }
-                    .padding(.bottom, 120)
+                    .padding(.bottom)
                     
                     Spacer()
-                    Link("Restaurant Menu Icon by Icons8", destination: URL(string: "https://icons8.com/icon/tmr075NtT7e6/restaurant-menu")!)
-                        .font(.caption)
+//                    Link("Restaurant Menu Icon by Icons8", destination: URL(string: "https://icons8.com/icon/tmr075NtT7e6/restaurant-menu")!)
+//                        .font(.caption)
                 }
                 .frame(minHeight: screenHeight * 1.2)
                 .padding(.bottom, max(100, safeAreaInsets.bottom))
