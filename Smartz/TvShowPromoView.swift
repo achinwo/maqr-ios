@@ -68,7 +68,7 @@ struct TvShowPromoView: ExperienceView {
                 VStack(spacing: .zero){
                     
                     //VideoPlayer(player: joeyVideo)
-                    PlayerView(url: URL(string: "https://storage.googleapis.com/joli-app-bucket/images/Its_a_crazy_world_trailer.mp4")!)
+                    PlayerView(url: URL(string: "https://drive.google.com/uc?export=download&id=1qAq0MYDEet2LHO6_Xbl3Qp3qFMwZti0L")!)
                         .frame(width: screenWidth, height: screenWidth / 2.28)
                         .clipped()
                         .background(
@@ -239,7 +239,9 @@ struct TvShowCastView: View {
                 VStack(){
                     
                     let header = VStack(){
-                        Text(info.name).font(.largeTitle.weight(.ultraLight)).lineLimit(1)
+                        Text(info.name).font(.largeTitle.weight(.ultraLight))
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
                         Text("as ").font(.callout).foregroundColor(.secondaryLabel) + Text(info.characterName).font(.title3)
                         Rectangle().frame(height: 1).foregroundColor(.yellow.opacity(0.7)).padding(.horizontal)
                     }
