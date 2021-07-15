@@ -54,27 +54,116 @@ struct TvShowPromoView: ExperienceView {
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Environment(\.colorScheme) var colorScheme
     @State var arrivedAt: Date? = Date()
-    
+    @State var trailerUrl = URL(string: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4")!//"https://drive.google.com/uc?export=download&id=1thleK6efGtQ_hzTinD6jgHryLnkWBnHC")!
     @State var menu: [TvShowCastInfo] = []
+    @AppStorage("isvideomuted-crazyworld") var isVideoMuted = false
     
     public init(data: Model? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
         self.dataModel = data ?? Model()
         self._editMode = editMode
+        
+        self._videoLocalUrl = State(initialValue: FileManager.default.fileExists(atPath: cacheFileUrl.path) ? cacheFileUrl : nil)
     }
+    
+    var cacheFileUrl: URL {
+        let fileManager = FileManager.default
+        let urls = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
+        let cachesDirectoryUrl = urls[0]
+        let fileUrl = cachesDirectoryUrl.appendingPathComponent("crazyworld_netflix_trailer_saved.mp4")
+        return fileUrl
+    }
+    
+    func fetchVideo(_ force: Bool = false){
+        print("[fetchVideo] loading video...")
+            
+        if force && FileManager.default.fileExists(atPath: cacheFileUrl.path) {
+            try? FileManager.default.removeItem(atPath: cacheFileUrl.path)
+        }
+        
+        guard !FileManager.default.fileExists(atPath: cacheFileUrl.path) else {
+            self.videoLocalUrl = cacheFileUrl
+            return
+        }
+        
+        DispatchQueue.global(qos: .background).async {
+            guard let data = try? Data(contentsOf: trailerUrl) else {
+                print("Video fetch failed!")
+                return
+            }
+            
+            guard Int(data.count) / (1000 * 1000) > 0 else {
+                print("Video file size is too small")
+                return
+            }
+            
+            FileManager.default.createFile(atPath: cacheFileUrl.path, contents: data)
+            
+            let bcf = ByteCountFormatter()
+            bcf.allowedUnits = [.useMB] // optional: restricts the units to MB only
+            bcf.countStyle = .file
+            let string = bcf.string(fromByteCount: Int64(data.count))
+            //https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4
+            print("Wrote video to cache: \(cacheFileUrl.path) (\(string))")
+        }
+    }
+    
+    @State var videoLocalUrl: URL? = nil
     
     var infoView: some View {
         ScrollViewReader() { proxy in
             ScrollView(showsIndicators: false){
                 VStack(spacing: .zero){
-                    
-                    //VideoPlayer(player: joeyVideo)
-                    PlayerView(url: URL(string: "https://drive.google.com/uc?export=download&id=1qAq0MYDEet2LHO6_Xbl3Qp3qFMwZti0L")!)
-                        .frame(width: screenWidth, height: screenWidth / 2.28)
-                        .clipped()
+                    PlayerView(url: videoLocalUrl ?? trailerUrl, isMuted: self.isVideoMuted)
                         .background(
-                            BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight)
-                                .overlay(ProgressView().progressViewStyle(CircularProgressViewStyle()))
+                            VStack(){
+                                Image("poster_crazy_world_lowres")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .overlay(
+                                        VStack(){
+                                            ProgressView()
+                                                .progressViewStyle(CircularProgressViewStyle())
+                                                .shadow(radius: 10)
+                                            Text("Loading trailer...")
+                                                .font(.caption2.weight(.light))
+                                                .padding(.top)
+                                                .shadow(radius: 10)
+                                        }
+                                        .foregroundColor(.primary)
+                                        .padding()
+                                        .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                                    )
+                                Spacer()
+                            }
+                            .frame(maxHeight: UIScreen.main.bounds.width / 2)
+                            .clipped()
                         )
+                        .overlay(
+                            GeometryReader(){ proxy in
+                                VStack(){
+                                    Spacer()
+                                    HStack(){
+                                        Spacer()
+                                        Button(){
+                                            isVideoMuted.toggle()
+                                        } label: {
+                                            Image(systemName: isVideoMuted ? "speaker.slash.circle.fill" : "speaker.wave.2.circle.fill")
+                                                .resizable()
+                                                .frame(width: 32, height: 32)
+                                                .foregroundColor(.primary.opacity(0.5))
+                                                .padding(8)
+                                        }
+                                        .background(
+                                            BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight)
+                                        )
+                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                        .padding()
+                                    }
+                                }
+                            }
+                        )
+                        //.fixedSize()
                     
                     Image("logo_crazyworld")
                         .resizable()
@@ -118,6 +207,7 @@ struct TvShowPromoView: ExperienceView {
                     }
                     .frame(width: screenWidth - 100)
                     .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                    .fixedSize(horizontal: false, vertical: true)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .padding(.bottom)
                     .padding(.bottom)
@@ -151,7 +241,7 @@ struct TvShowPromoView: ExperienceView {
 //                    Link("Restaurant Menu Icon by Icons8", destination: URL(string: "https://icons8.com/icon/tmr075NtT7e6/restaurant-menu")!)
 //                        .font(.caption)
                 }
-                .frame(minHeight: screenHeight * 1.2)
+                .frame(minHeight: screenHeight * 1.6)
                 .padding(.bottom, max(100, safeAreaInsets.bottom))
                 //.padding(.top, safeAreaInsets.top)
             }
@@ -161,10 +251,13 @@ struct TvShowPromoView: ExperienceView {
             )
             .onAppear(){
                 self.menu = (try? TvShowCastInfo.load()) ?? []
+                
+                guard self.videoLocalUrl == nil else { return }
+                
+                fetchVideo()
             }
         }
     }
-    
     
     var contentView: some View {
         NavigationView(){
