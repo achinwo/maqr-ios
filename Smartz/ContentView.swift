@@ -259,27 +259,7 @@ struct ContentView: JoliView {
     
     var appclipsCodesView: some View {
         VStack(){
-            Image("appclipcode_with_logo")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: screenWidth / 2)
-                .overlay(
-                    GeometryReader() { proxy in
-                        Text("Coming Soon")
-                            .fixedSize(horizontal: true, vertical: true)
-                            .font(.title)
-                            .foregroundColor(.fixedWhite)
-                            .padding()
-                            .padding(.horizontal, proxy.size.height / 8)
-                            .background(Color.fixedGray)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            .offset(x: proxy.size.width / 2 * -1, y: proxy.size.height / 4)
-                            .rotationEffect(.degrees(-45), anchor: .leading)
-                    }
-                )
-                .clipped()
-            Text("App Clip Code Generator").font(.largeTitle).multilineTextAlignment(.center).foregroundColor(.primary).padding()
-            Text("Design and download custom auto-downloading App Clip codes for your brand!").font(.title2).foregroundColor(.secondaryLabel).padding(.horizontal).multilineTextAlignment(.center)
+            CodeDesignerView()
             Divider().padding(.vertical)
             
             let heeader = HStack(){
