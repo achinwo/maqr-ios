@@ -28,13 +28,44 @@ class ExperienceData: ObservableObject {
     }
 }
 
-protocol ExperienceView: JoliView {
-    associatedtype Model: ExperienceData
-    var dataModel: Model { get }
-    var editMode: EditMode { get nonmutating set }
+extension PartialKeyPath where Root == ExperienceData {
+    typealias Metadata = (title: String, description: String)
+    
+    var meta: Metadata? {
+        switch self {
+        case \Root.companyName:
+            return ("Brand Name", "Name of your company or brand")
+        case \Root.landingPageText:
+            return ("Welcome Message", "Invite customers to your brand experience")
+        case \Root.logoImageUrl:
+            return ("Logo Image", "Your brand logo image")
+        case \Root.bannerImageUrl:
+            return ("Banner Image", "Banner image of landing page")
+        case \Root.backgroundImageUrl:
+            return ("Background Image", "Default background image for your brand")
+        default:
+            return nil
+        }
+    }
 }
 
-extension ExperienceView {
+protocol Experience {
+    //associatedtype Model: ExperienceData
+    var dataModel: ExperienceData { get }
+    var editMode: EditMode { get nonmutating set }
+    static var dataKeys: [PartialKeyPath<ExperienceData>] { get }
+}
+
+extension JoliView where Self: Experience {
+    
+    static var dataKeys: [PartialKeyPath<ExperienceData>] {
+        let paths: [PartialKeyPath<ExperienceData>] = [
+            \ExperienceData.companyName,
+            \ExperienceData.logoImageUrl
+        ]
+        
+        return paths
+    }
     
     var body: some View {
         return self.contentView
@@ -105,26 +136,21 @@ enum ViewDisplayMode {
     case readonly
 }
 
-struct RestaurantView: ExperienceView {
+struct RestaurantView: Experience, JoliView {
     
     @Binding var editMode: EditMode
     
-    class Model: ExperienceData {
-        
-        
-    }
-    
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    let dataModel: Model
+    let dataModel: ExperienceData
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Environment(\.colorScheme) var colorScheme
     @State var arrivedAt: Date? = Date()
     
     @State var menu: RestaurantMenu?
     
-    public init(data: Model? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
-        self.dataModel = data ?? Model()
+    public init(data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
+        self.dataModel = data ?? ExperienceData()
         self._editMode = editMode
     }
     

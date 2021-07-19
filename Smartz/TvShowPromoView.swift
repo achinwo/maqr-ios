@@ -39,18 +39,13 @@ struct TvShowCastInfo: Codable, Identifiable {
     }
 }
 
-struct TvShowPromoView: ExperienceView {
+struct TvShowPromoView: Experience, JoliView {
     
     @Binding var editMode: EditMode
     
-    class Model: ExperienceData {
-        
-        
-    }
-    
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    let dataModel: Model
+    let dataModel: ExperienceData
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Environment(\.colorScheme) var colorScheme
     @State var arrivedAt: Date? = Date()
@@ -58,8 +53,8 @@ struct TvShowPromoView: ExperienceView {
     @State var menu: [TvShowCastInfo] = []
     @AppStorage("isvideomuted-crazyworld") var isVideoMuted = false
     
-    public init(data: Model? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
-        self.dataModel = data ?? Model()
+    public init(data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
+        self.dataModel = data ?? ExperienceData()
         self._editMode = editMode
         
         self._videoLocalUrl = State(initialValue: FileManager.default.fileExists(atPath: cacheFileUrl.path) ? cacheFileUrl : nil)

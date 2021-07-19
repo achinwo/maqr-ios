@@ -14,7 +14,14 @@ public struct CodeDesignerWorkflowView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var selectedTab = 0
     
-    @State var selectedExperience: String? = nil
+    @State var selectedExperience: Experience.Type? = nil
+    
+    static func experienceClasses() -> [Experience.Type] {
+        return [
+            RestaurantView.self,
+            TvShowPromoView.self
+        ]
+    }
     
     var tabNames: [String] {
         return [
@@ -30,8 +37,17 @@ public struct CodeDesignerWorkflowView: JoliView {
             Text("Pick Experience")
             //Spacer()
             Button(){
-                selectedExperience = "hello"
+                selectedExperience = RestaurantView.self
                 selectedTab = selectedTab + 1
+                
+                let x = ExperienceData()
+                x.companyName = "My company"
+                
+                //let k: PartialKeyPath<ExperienceData> = (\ExperienceData.companyName)
+                
+                for dt in RestaurantView.dataKeys {
+                    print("Children: \(String(describing: dt.meta))")
+                }
             } label: {
                 Text("Next").font(.title).foregroundColor(.fixedWhite)
             }
