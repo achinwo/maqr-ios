@@ -240,7 +240,7 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
                     Button(){
                         print("submitted help!")
                         let subject = "Sísè Food Help - \(AppCoordinator.version)"
-                        self.appCoordinator.mailOptions = .init(subject: subject, recipients: [Strings.appSupportEmail], body: helpText)
+                        self.appCoordinator.mailOptions = .init(subject: subject, recipients: ["order@sisefood.com"], body: helpText)
                     } label: {
                         HStack(){
                             Spacer()
