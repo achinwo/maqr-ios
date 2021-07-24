@@ -43,7 +43,6 @@
 		921C300F2694B90500527D39 /* show_cast_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 921C300E2694B90500527D39 /* show_cast_data.json */; };
 		921C30102694B90500527D39 /* show_cast_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 921C300E2694B90500527D39 /* show_cast_data.json */; };
 		922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922223E226A2E368007BD0D3 /* CodeDesignerView.swift */; };
-		922223E426A2E368007BD0D3 /* CodeDesignerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922223E226A2E368007BD0D3 /* CodeDesignerView.swift */; };
 		922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
 		922260F9265E72F00064BC6F /* SpotifyiOS.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
@@ -207,6 +206,8 @@
 		92EDE41226193AE000688802 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE41126193AE000688802 /* PartialSheet */; };
 		92EDE43A26193DFA00688802 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE43926193DFA00688802 /* KeychainAccess */; };
 		92F8597225C791810057B3BC /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
+		92FBFC8D26AB33560068DDA5 /* Templates in Resources */ = {isa = PBXBuildFile; fileRef = 92FBFC8C26AB33560068DDA5 /* Templates */; };
+		92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -456,6 +457,8 @@
 		92C1A24D26626D5B00A11E0F /* Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playback.swift; sourceTree = "<group>"; };
 		92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeyRestuarantView.swift; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		92FBFC8C26AB33560068DDA5 /* Templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Templates; sourceTree = "<group>"; };
+		92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Experiences.generated.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -555,6 +558,7 @@
 				92562E2B266BC162004972E6 /* demo_sise_intro.mov */,
 				92562E29266BC118004972E6 /* demo_sise_appclip.mp4 */,
 				92562E32266D65EC004972E6 /* demo_sise_code_scan.mov */,
+				921C300E2694B90500527D39 /* show_cast_data.json */,
 				9202D4022659B7CD00D5974F /* Smartz.entitlements */,
 				9202D3D42659B6E700D5974F /* SmartzApp.swift */,
 				9202D3D62659B6E700D5974F /* ContentView.swift */,
@@ -567,7 +571,6 @@
 				920264CA268FAE06005643E1 /* ExperienceView.swift */,
 				920264CF2691D4EA005643E1 /* Restaurant.swift */,
 				921C300B2694B29400527D39 /* TvShowPromoView.swift */,
-				921C300E2694B90500527D39 /* show_cast_data.json */,
 				922223E226A2E368007BD0D3 /* CodeDesignerView.swift */,
 			);
 			path = Smartz;
@@ -800,6 +803,8 @@
 		92F379D62363534D005FE2AB = {
 			isa = PBXGroup;
 			children = (
+				92FBFC9226AB4A110068DDA5 /* Generated */,
+				92FBFC8C26AB33560068DDA5 /* Templates */,
 				92A32E2324C7AF93007C960E /* Joli.entitlements */,
 				929BA5CB24C7925F00B11188 /* env.json */,
 				925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */,
@@ -845,6 +850,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		92FBFC9226AB4A110068DDA5 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */,
+			);
+			path = Generated;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -863,6 +876,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9202D3FA2659B6EA00D5974F /* Build configuration list for PBXNativeTarget "Smartz" */;
 			buildPhases = (
+				92FBFC9626AB4D200068DDA5 /* Run Sourcery */,
 				9202D3CE2659B6E700D5974F /* Sources */,
 				9202D3CF2659B6E700D5974F /* Frameworks */,
 				9202D3D02659B6E700D5974F /* Resources */,
@@ -1171,6 +1185,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92FBFC8D26AB33560068DDA5 /* Templates in Resources */,
 				9203B32724CB07EE00F465CC /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1252,6 +1267,24 @@
 			shellPath = /bin/sh;
 			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\ncp -fp \"${SRCROOT}/Shared/Resources/${XCC_CONFIG_PATH}\" \"${SRCROOT}/Shared/Generated/Config/Config.plist\"\n";
 		};
+		92FBFC9626AB4D200068DDA5 /* Run Sourcery */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Sourcery";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "sourcery\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -1261,6 +1294,7 @@
 			files = (
 				920264CB268FAE06005643E1 /* ExperienceView.swift in Sources */,
 				920264D02691D4EA005643E1 /* Restaurant.swift in Sources */,
+				92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */,
 				922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */,
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */,
@@ -1275,7 +1309,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				922223E426A2E368007BD0D3 /* CodeDesignerView.swift in Sources */,
 				92C1A24F26626D5B00A11E0F /* Playback.swift in Sources */,
 				9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */,
 				920264D12691D4EA005643E1 /* Restaurant.swift in Sources */,

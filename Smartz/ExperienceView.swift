@@ -12,56 +12,58 @@ import Combine
 
 
 
-class ExperienceData: ObservableObject {
+public class ExperienceData: ObservableObject {
+    
+    static let DEFAULT_BRAND_NAME = "SmartStikr"
     
     @Published var editStartedAt: Date? = nil
     
+    // sourcery: title = "Logo Image", description = "Your brand logo image"
     @Published var logoImageUrl: URL?
+    
+    // sourcery: title = "Banner Image", description = "Banner image of landing page"
     @Published var bannerImageUrl: URL?
+    
+    // sourcery: title = "Banner Video", description = "Banner video of landing page"
+    @Published var bannerVideoUrl: URL?
+    
+    // sourcery: title = "Background Image", description = "Default background image for your brand"
     @Published var backgroundImageUrl: URL?
     
-    @Published var companyName: String?
-    @Published var landingPageText: String?
+    // sourcery: title = "Brand Name", description = "Name of your company or brand"
+    @Published var brandName: String
     
-    init() {
-        
+    // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience"
+    @Published var landingPageText: String
+    
+    // sourcery: title = "Instagram", description = "Instagram account username"
+    @Published var socialInstagramUsername: String?
+    
+    init(brandName: String? = nil, landingPageText: String? = nil) {
+        self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
+        self.landingPageText = landingPageText ?? "Welcome to YOUR brand"
     }
 }
 
-extension PartialKeyPath where Root == ExperienceData {
-    typealias Metadata = (title: String, description: String)
-    
-    var meta: Metadata? {
-        switch self {
-        case \Root.companyName:
-            return ("Brand Name", "Name of your company or brand")
-        case \Root.landingPageText:
-            return ("Welcome Message", "Invite customers to your brand experience")
-        case \Root.logoImageUrl:
-            return ("Logo Image", "Your brand logo image")
-        case \Root.bannerImageUrl:
-            return ("Banner Image", "Banner image of landing page")
-        case \Root.backgroundImageUrl:
-            return ("Background Image", "Default background image for your brand")
-        default:
-            return nil
-        }
-    }
-}
-
-protocol Experience {
+public protocol Experience {
     //associatedtype Model: ExperienceData
     var dataModel: ExperienceData { get }
     var editMode: EditMode { get nonmutating set }
     static var dataKeys: [PartialKeyPath<ExperienceData>] { get }
+    static var allDataKeys: [PartialKeyPath<ExperienceData>] { get }
 }
 
-extension JoliView where Self: Experience {
+public extension JoliView where Self: Experience {
     
-    static var dataKeys: [PartialKeyPath<ExperienceData>] {
+    static var allDataKeys: [PartialKeyPath<ExperienceData>] {
+        return Self.primaryDataKeys + Self.dataKeys
+    }
+    
+    static var primaryDataKeys: [PartialKeyPath<ExperienceData>] {
         let paths: [PartialKeyPath<ExperienceData>] = [
-            \ExperienceData.companyName,
-            \ExperienceData.logoImageUrl
+            \ExperienceData.brandName,
+            \ExperienceData.logoImageUrl,
+            \ExperienceData.landingPageText
         ]
         
         return paths
@@ -152,6 +154,14 @@ struct RestaurantView: Experience, JoliView {
     public init(data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
         self.dataModel = data ?? ExperienceData()
         self._editMode = editMode
+    }
+    
+    static var dataKeys: [PartialKeyPath<ExperienceData>] {
+        let paths: [PartialKeyPath<ExperienceData>] = [
+            \ExperienceData.socialInstagramUsername,
+        ]
+        
+        return paths
     }
     
     var infoView: some View {

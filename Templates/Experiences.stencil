@@ -1,0 +1,19 @@
+{# {% for type in types.implementing.Experience %}
+{{ type.name }}
+{% endfor %} #}
+extension PartialKeyPath where Root == ExperienceData {
+    typealias Metadata = (title: String, description: String, grouping: String)
+
+    var meta: Metadata? {
+        switch self {
+{% for variable in type.ExperienceData.storedVariables|annotated: "title" %}
+            case \Root.{{ variable.name }}:
+                return ("{{ variable.annotations.title }}", "{{ variable.annotations.description }}", "{{ variable.annotations.grouping }}")
+{% endfor %}
+            default:
+                return nil
+        }
+    }
+
+    {{ test }}
+}

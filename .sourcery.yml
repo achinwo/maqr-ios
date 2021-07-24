@@ -1,0 +1,7 @@
+sources:
+  - ./Shared
+  - ./Smartz
+templates:
+  - ./Templates
+output:
+  ./Generated

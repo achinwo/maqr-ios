@@ -48,25 +48,48 @@ struct ProductSection: Identifiable {
     }
 }
 
-struct Product: Identifiable {
-    let companyName: String
-    let name: String
-    let description: String
-    let location: AppLocation
-    let companyLogoName: String?
-    let companyDescription: String
-    let isComingSoon: Bool
-    var iconName: String? = nil
+public struct Product: Identifiable {
+    public let companyName: String
+    public let name: String
+    public let description: String
+    public let location: AppLocation
+    public let companyLogoName: String?
+    public let companyDescription: String
+    public let isComingSoon: Bool
+    public let experienceCls: Experience.Type
+    public var iconName: String? = nil
     
-    var id: String { name }
+    public var id: String { name }
 }
 
-let products: [Product] = [
-    Product(companyName: "Sísè Food", name: "Ofada sauce kit", description: "decribe ofada", location: .product("sise", "ofada"), companyLogoName: "sise_logo", companyDescription: "Meal box delivery", isComingSoon: false),
-    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false, iconName: "calendar.circle.fill"),
+public struct ReorderNowView: Experience, JoliView {
+    
+    public var appCoordinator: AppCoordinator
+    
+    public var dataModel: ExperienceData = ExperienceData()
+    
+    @State public var editMode: EditMode = .inactive
+    
+    public static var dataKeys: [PartialKeyPath<ExperienceData>] {
+        return []
+    }
+    
+    public var contentView: some View {
+        VStack(){
+            Text("ReorderNow")
+        }
+    }
+    
+    
+}
+
+public let products: [Product] = [
+    Product(companyName: "Sísè Food", name: "Ofada sauce kit", description: "decribe ofada", location: .product("sise", "ofada"), companyLogoName: "sise_logo", companyDescription: "Meal box delivery", isComingSoon: false, experienceCls: MealboxView.self),
+    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false, experienceCls: RestaurantView.self, iconName: "calendar.circle.fill"),
     Product(companyName: "Portal", name: "Brand promotion", description: "decribe ofada", location: .product("shows", "iacw"), companyLogoName: nil, companyDescription: "Brand", isComingSoon: false,
-            iconName: "film.fill"),
-    Product(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "decribe ofada", location: .product("stikr", "sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true, iconName: "creditcard.fill")
+            experienceCls: TvShowPromoView.self, iconName: "film.fill"),
+    Product(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "decribe ofada", location: .product("stikr", "sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true,
+            experienceCls: ReorderNowView.self, iconName: "creditcard.fill")
 ]
 
 struct ContentView: JoliView {
@@ -258,92 +281,8 @@ struct ContentView: JoliView {
     @State var feebackText: String = .empty
     
     var appclipsCodesView: some View {
-        VStack(){
-            CodeDesignerView()
-            Divider().padding(.vertical)
-            
-            let heeader = HStack(){
-                Image(systemName: "qrcode.viewfinder")
-                Text("Brand Experiences")
-                Spacer()
-            }
-            .font(.title2.weight(.light)).foregroundColor(.secondaryLabel)
-            .padding(.vertical)
-            
-            Section(header: heeader){
-                VStack(){
-                    ForEach(products) { product in
-                        HStack(){
-                            Group(){
-                                if let name = product.companyLogoName {
-                                    Image(name)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                } else {
-                                    let iconName = product.iconName ?? "calendar.circle.fill"
-                                    Image(systemName: iconName)
-                                        .resizable()
-                                        .renderingMode(.original)
-                                        .aspectRatio(contentMode: .fit)
-                                        .font(.title3)
-                                        .if(iconName != "calendar.circle.fill") { view in
-                                            view.padding()
-                                        }
-                                }
-                            }
-                            .frame(width: 64, height: 64)
-                            .background(Color.fixedWhite)
-                            .clipShape(Circle())
-                            .padding(.trailing, 2)
-                            VStack(alignment: .leading){
-                                Text(product.name)
-                                    .font(.body)
-                                    .foregroundColor(.primary)
-                                    .lineLimit(4)
-                                    .multilineTextAlignment(.leading)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .padding(.vertical, 2)
-                                Label(product.companyName, systemImage: "building.2.crop.circle")
-                                    .font(.caption)
-                                    .lineLimit(1)
-                                    .foregroundColor(.secondaryLabel)
-                                    .fixedSize(horizontal: true, vertical: true)
-                                Label(product.companyDescription, systemImage: "tag")
-                                    .font(.caption2)
-                                    .lineLimit(1)
-                                    .foregroundColor(.secondaryLabel)
-                                    .fixedSize(horizontal: true, vertical: true)
-                            }
-                            Spacer()
-                            Button(){
-                                guard !product.isComingSoon else {
-                                    return
-                                }
-                                appCoordinator.currentLocation = product.location
-                            } label: {
-                                Text(product.isComingSoon ? "Coming\nSoon" : "Try It!")
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                    .font(product.isComingSoon ? .caption : .subheadline.weight(.semibold))
-                                    .foregroundColor(product.isComingSoon ? .secondaryLabel : .blue)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .padding()
-                                    .background(Color.secondarySystemGroupedBackground)
-                            }
-                            .disabled(product.isComingSoon)
-                            .clipShape(RoundedRectangle(cornerRadius: 32))
-                        }
-                        .padding()
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.secondaryLabel.opacity(0.6), lineWidth: 1))
-                    }
-                }
-                .padding(.horizontal)
-                
-            }
-            
-        }
-        .padding()
+        CodeDesignerView()
+        //.padding()
         .padding(.top, safeAreaInsets.top)
         .padding(.bottom, safeAreaInsets.bottom * 4)
     }

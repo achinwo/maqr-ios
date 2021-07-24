@@ -122,6 +122,7 @@ let steps: [Step] = [
     Step(id: "serve_enjoy", title: "Serve warn and enjoy", description: "Serve warn and enjoy your meal"),
 ]
 
+
 struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
@@ -136,6 +137,40 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
     @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
     
     @Binding var currentUser: User?
+
+    public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
+        self._currentUser = currentUser
+        self.websocket = websocket
+        self.localPlaybackController = localPlaybackController
+    }
+    
+    var contentView: some View {
+        MealboxView()
+    }
+    
+}
+    
+public struct MealboxView: Experience, JoliView {
+    
+    public var dataModel: ExperienceData
+    
+    @State public var editMode: EditMode
+    
+    public static var dataKeys: [PartialKeyPath<ExperienceData>] {
+        return []
+    }
+    
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    @Environment(\.safeAreaInsets) var safeAreaInsets
+    
+    
+    public init() {
+        self._editMode = State(initialValue: .inactive)
+        self.startDate = Date(timeIntervalSinceNow: 0)
+        self._deliveryDate = State(initialValue: startDate)
+        self.dataModel = ExperienceData()
+    }
     
     enum Tab: Int, Identifiable, CaseIterable {
         case information
@@ -190,13 +225,7 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
     @Environment(\.colorScheme) var colorScheme
     @AppStorage("active-tab-mealprep") var selectedTab = Tab.information
     
-    public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
-        self._currentUser = currentUser
-        self.websocket = websocket
-        self.localPlaybackController = localPlaybackController
-        self.startDate = Date(timeIntervalSinceNow: 0)
-        self._deliveryDate = State(initialValue: startDate)
-    }
+    
     
     var autoResetting = AutoResetSubject<Int?, Never, DispatchQueue>(nil, delay: 0.3, scheduler: DispatchQueue.main)
     
@@ -725,7 +754,7 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
         }
     }
     
-    var contentView: some View {
+    public var contentView: some View {
         ZStack(){
             
             Group(){
