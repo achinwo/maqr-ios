@@ -41,6 +41,10 @@ struct TvShowCastInfo: Codable, Identifiable {
 
 struct TvShowPromoView: Experience, JoliView {
     
+    static var title: String {
+        "Trailer"
+    }
+    
     static var dataKeys: [PartialKeyPath<ExperienceData>] {
         return [
             \ExperienceData.bannerVideoUrl,

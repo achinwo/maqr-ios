@@ -64,6 +64,10 @@ public struct Product: Identifiable {
 
 public struct ReorderNowView: Experience, JoliView {
     
+    public static var title: String {
+        "Re-order Now"
+    }
+    
     public var appCoordinator: AppCoordinator
     
     public var dataModel: ExperienceData = ExperienceData()

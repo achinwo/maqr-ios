@@ -152,6 +152,10 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
     
 public struct MealboxView: Experience, JoliView {
     
+    public static var title: String {
+        "Mealbox Prep"
+    }
+    
     public var dataModel: ExperienceData
     
     @State public var editMode: EditMode

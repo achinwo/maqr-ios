@@ -1,14 +1,38 @@
 {# {% for type in types.implementing.Experience %}
 {{ type.name }}
 {% endfor %} #}
-extension PartialKeyPath where Root == ExperienceData {
-    typealias Metadata = (title: String, description: String, grouping: String)
 
-    var meta: Metadata? {
+import Foundation
+
+extension PartialKeyPath where Root == ExperienceData {
+
+    public struct Metadata: Identifiable {
+
+        public let name: String
+        public let title: String
+        public let description: String
+        public let grouping: String
+        public let dataType: Any.Type
+        public let keypath: PartialKeyPath<Root>
+
+        public var id: String {
+            return name
+        }
+    
+    }
+
+    public var meta: Metadata? {
         switch self {
 {% for variable in type.ExperienceData.storedVariables|annotated: "title" %}
             case \Root.{{ variable.name }}:
-                return ("{{ variable.annotations.title }}", "{{ variable.annotations.description }}", "{{ variable.annotations.grouping }}")
+                return .init(
+                    name: "{{ variable.name }}", 
+                    title: "{{ variable.annotations.title }}", 
+                    description: "{{ variable.annotations.description }}", 
+                    grouping: "{{ variable.annotations.grouping }}", 
+                    dataType: {{ variable.typeName }}.self, 
+                    keypath: \Root.{{ variable.name }}
+                    )
 {% endfor %}
             default:
                 return nil

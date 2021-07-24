@@ -1283,7 +1283,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "sourcery\n";
+			shellScript = "if which sourcery >/dev/null; then\n    sourcery\nelse\n    echo \"warning: Sourcery not install, run \\\"brew install sourcery\\\"\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

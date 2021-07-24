@@ -9,6 +9,28 @@
 import SwiftUI
 import JoliPlayground
 
+public struct ExperienceDataView<Exp: Experience>: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    
+    let data: ExperienceData
+    
+    init(_ data: ExperienceData) {
+        self.data = data
+    }
+    
+    public var allDataKeys: [PartialKeyPath<ExperienceData>.Metadata] {
+        return Exp.allDataKeys.compactMap() { $0.meta }
+    }
+    
+    public var contentView: some View {
+        VStack(){
+            //ForEach()
+        }
+    }
+    
+}
+
 public struct CodeDesignerView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
@@ -20,20 +42,28 @@ public struct CodeDesignerView: JoliView {
         }
     }
     
+    var experienceData: ExperienceData? = nil
+    
     static func experienceClasses() -> [Experience.Type] {
         return [
             RestaurantView.self,
-            TvShowPromoView.self
+            TvShowPromoView.self,
+            MealboxView.self,
+            ReorderNowView.self,
         ]
     }
     
     var tabNames: [String] {
-        return [
-            "Pick a Brand Experience",
-            "Customise Experience",
-            "Customise Code",
-            "Confirm & Pay",
-        ]
+        var names = ["Pick a Brand Experience"]
+        
+        if let expCls = self.selectedExperience {
+            names.append("Customise \(expCls.title) Experience")
+        } else {
+            names.append("Customise Experience")
+        }
+        
+        names.append(contentsOf: ["Customise Code", "Confirm & Pay"])
+        return names
     }
     
     var pickExperienceView: some View {

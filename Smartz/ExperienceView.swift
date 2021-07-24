@@ -10,7 +10,7 @@ import SwiftUI
 import JoliPlayground
 import Combine
 
-
+public typealias StringMultiline = String
 
 public class ExperienceData: ObservableObject {
     
@@ -34,12 +34,12 @@ public class ExperienceData: ObservableObject {
     @Published var brandName: String
     
     // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience"
-    @Published var landingPageText: String
+    @Published var landingPageText: StringMultiline
     
     // sourcery: title = "Instagram", description = "Instagram account username"
     @Published var socialInstagramUsername: String?
     
-    init(brandName: String? = nil, landingPageText: String? = nil) {
+    init(brandName: String? = nil, landingPageText: StringMultiline? = nil) {
         self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
         self.landingPageText = landingPageText ?? "Welcome to YOUR brand"
     }
@@ -49,6 +49,9 @@ public protocol Experience {
     //associatedtype Model: ExperienceData
     var dataModel: ExperienceData { get }
     var editMode: EditMode { get nonmutating set }
+    
+    static var title: String { get }
+    
     static var dataKeys: [PartialKeyPath<ExperienceData>] { get }
     static var allDataKeys: [PartialKeyPath<ExperienceData>] { get }
 }
@@ -139,6 +142,10 @@ enum ViewDisplayMode {
 }
 
 struct RestaurantView: Experience, JoliView {
+    
+    static var title: String {
+        "Restaurant"
+    }
     
     @Binding var editMode: EditMode
     
