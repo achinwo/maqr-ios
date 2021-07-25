@@ -10,7 +10,7 @@ import SwiftUI
 import JoliPlayground
 import Combine
 
-public typealias StringMultiline = String
+public typealias MultilineString = String
 
 public class ExperienceData: ObservableObject {
     
@@ -34,12 +34,12 @@ public class ExperienceData: ObservableObject {
     @Published var brandName: String
     
     // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience"
-    @Published var landingPageText: StringMultiline
+    @Published var landingPageText: MultilineString
     
     // sourcery: title = "Instagram", description = "Instagram account username"
     @Published var socialInstagramUsername: String?
     
-    init(brandName: String? = nil, landingPageText: StringMultiline? = nil) {
+    init(brandName: String? = nil, landingPageText: MultilineString? = nil) {
         self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
         self.landingPageText = landingPageText ?? "Welcome to YOUR brand"
     }

@@ -36,7 +36,7 @@ extension ExperienceData {
     public func isValid(for dataKeys: [ExperienceDataKeyPath]) -> Bool {
         var missingValues: [ExperienceDataKeyPath.Metadata] = []
         
-        for dataKey in dataKeys {
+        for dataKey in Set(dataKeys) {
             guard let meta = dataKey.meta else {
                 continue
             }
@@ -68,7 +68,7 @@ public struct ExperienceDataView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    let data: ExperienceData
+    @ObservedObject var data: ExperienceData
     let experienceType: Experience.Type
     let completionCallback: (ExperienceData) -> Void
     
@@ -78,7 +78,7 @@ public struct ExperienceDataView: JoliView {
     @State var isUploadingImage = false
     
     init(_ dataType: Experience.Type, _ data: ExperienceData, callback: @escaping (ExperienceData) -> Void) {
-        self.data = data
+        self._data = ObservedObject(initialValue: data)
         self.experienceType = dataType
         self.completionCallback = callback
         self._socialInstagramUsername = State(initialValue: data.socialInstagramUsername ?? .empty)
@@ -160,11 +160,23 @@ public struct ExperienceDataView: JoliView {
     
     @State var socialInstagramUsername: String = .empty
     @State var fieldSize: CGSize = .zero
+    @Environment(\.safeAreaInsets) var safeAreaInsets
     
     public var contentView: some View {
-        Form {
+        Form() {
             
-            Section() {
+            Section(header: Text("Brand Name & Welcome Message").padding(.top, safeAreaInsets.top * 2)) {
+                if let brandMeta = allDataKeys.first(keypath: \ExperienceData.brandName) {
+                    TextField(brandMeta.description, text: $data.brandName, onEditingChanged: {_ in })
+                }
+                
+                if allDataKeys.first(keypath: \ExperienceData.landingPageText) != nil {
+                    TextEditor(text: $data.landingPageText)
+                        .frame(height: screenWidth / 2.5)
+                }
+            }
+            
+            Section(header: Text("Brand Images")) {
                 
                 if let logoMeta = allDataKeys.first(keypath: \ExperienceData.logoImageUrl) {
                     self.imagePickerFrom(meta: logoMeta)
@@ -180,10 +192,8 @@ public struct ExperienceDataView: JoliView {
                 
             }
             
-            if let instaMeta = allDataKeys.first(keypath: \ExperienceData.socialInstagramUsername) {
-                
-                Section(header: Text("Social")) {
-                
+            Section(header: Text("Social")) {
+                if let instaMeta = allDataKeys.first(keypath: \ExperienceData.socialInstagramUsername) {
                     TextField(instaMeta.description, text: $socialInstagramUsername, onEditingChanged: {_ in }) {
                         let insta = socialInstagramUsername.trimmingCharacters(in: .whitespacesAndNewlines)
                         
@@ -212,14 +222,6 @@ public struct ExperienceDataView: JoliView {
                         }
                     )
                 }
-                //                Picker("Select a color", selection: $selectedColor) {
-                //                    ForEach(colors, id: \.self) {
-                //                        Text($0)
-                //                    }
-                //                }
-                //                .pickerStyle(SegmentedPickerStyle())
-                //
-                //                Toggle("Enable Logging", isOn: $enableLogging)
             }
             
             Section(footer: Text("Note: Enabling logging may slow down the app")) {
@@ -233,26 +235,30 @@ public struct ExperienceDataView: JoliView {
 //                Toggle("Enable Logging", isOn: $enableLogging)
             }
             
-            Section {
+            let onTap: () -> Void = {
+                print("hit continue!")
+                
+                guard data.isValid(for: experienceType.allDataKeys) else {
+                    return
+                }
+                
+                self.completionCallback(data)
+            }
+            
+            Section(footer: Spacer().padding(.bottom, max(safeAreaInsets.bottom, 100) * 4)) {
                 HStack(){
                     Spacer()
                     Button(){
-                        print("hit continue!")
-                        
-                        guard data.isValid(for: experienceType.allDataKeys) else {
-                            return
-                        }
-                        
-                        self.completionCallback(data)
-                        
+                        onTap()
                     } label: {
                         // activate theme!
-                        Label("Save & Continue", systemImage: "arrow.forward")
+                        Label("Save & Continue", systemImage: "arrow.forward").padding()
                     }
                     .disabled(!data.isValid(for: experienceType.allDataKeys))
                     Spacer()
                 }
             }
+            .onTapGesture(perform: onTap)
         }
 //        VStack(){
 //            ForEach(allDataKeys) { dataKey in
@@ -274,8 +280,11 @@ public struct CodeDesignerView: JoliView {
         }
     }
     
+    @Environment(\.safeAreaInsets) var safeAreaInsets
     @Binding var experienceData: ExperienceData?
+    
     @AppStorage("cd-brand-name") var brandName: String = .empty
+    @AppStorage("cd-brand-landingpagetext") var landingPageText: MultilineString = .empty
     
     public init(_ experienceType: Binding<Experience.Type?>, _ data: Binding<ExperienceData?>){
         self._experienceData = data
@@ -305,72 +314,64 @@ public struct CodeDesignerView: JoliView {
     }
     
     var pickExperienceView: some View {
-        //VStack(){
-            
-            //Divider().padding(.vertical)
-            
-//            let heeader = HStack(){
-//                Image(systemName: "qrcode.viewfinder")
-//                Text("Brand Experiences")
-//                Spacer()
-//            }
-//            .font(.title2.weight(.light)).foregroundColor(.secondaryLabel)
-//            .padding(.vertical)
-            
-            VStack(){
-                ForEach(products) { product in
+        VStack(){
+            ForEach(products) { product in
+                
+                let onTap: () -> Void = {
+                    guard !product.isComingSoon else {
+                        return
+                    }
                     
-                    VStack(alignment: .leading){
-                        
-                        HStack(){
-                            Group(){
-                                if let name = product.companyLogoName {
-                                    Image(name)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                } else {
-                                    let iconName = product.iconName ?? "calendar.circle.fill"
-                                    Image(systemName: iconName)
-                                        .resizable()
-                                        .renderingMode(.original)
-                                        .aspectRatio(contentMode: .fit)
-                                        .font(.title3)
-                                        .if(iconName != "calendar.circle.fill") { view in
-                                            view.padding()
-                                        }
-                                }
-                            }
-                            .frame(width: 64, height: 64)
-                            .background(Color.fixedWhite)
-                            .clipShape(Circle())
-                            .padding(.trailing, 2)
-                            
-                            VStack(alignment: .leading){
-                                Text(product.name)
-                                    .font(.body)
-                                    .foregroundColor(.primary)
-                                    .lineLimit(4)
-                                    .multilineTextAlignment(.leading)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .padding(.vertical, 2)
-                                
-                                HStack(){
-                                    Label(product.companyName, systemImage: "building.2.crop.circle")
-                                        .font(.caption)
-                                        .lineLimit(1)
-                                        .foregroundColor(.secondaryLabel)
-                                        .fixedSize(horizontal: true, vertical: true)
-                                    Label(product.companyDescription, systemImage: "tag")
-                                        .font(.caption2)
-                                        .lineLimit(1)
-                                        .foregroundColor(.secondaryLabel)
-                                        .fixedSize(horizontal: true, vertical: true)
-                                }
+                    self.selectedExperience = product.experienceCls
+                }
+                
+                VStack(alignment: .leading, spacing: .zero){
+                    
+                    HStack(){
+                        Group(){
+                            if let name = product.companyLogoName {
+                                Image(name)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                            } else {
+                                let iconName = product.iconName ?? "calendar.circle.fill"
+                                Image(systemName: iconName)
+                                    .resizable()
+                                    .renderingMode(.original)
+                                    .aspectRatio(contentMode: .fit)
+                                    .font(.title3)
+                                    .if(iconName != "calendar.circle.fill") { view in
+                                        view.padding()
+                                    }
                             }
                         }
+                        .frame(width: 64, height: 64)
+                        .background(Color.fixedWhite)
+                        .clipShape(Circle())
+                        .padding(.trailing, 2)
                         
-                        HStack(){
-                            Spacer()
+                        VStack(alignment: .leading){
+                            Text(product.name)
+                                .font(.body)
+                                .foregroundColor(.primary)
+                                .lineLimit(4)
+                                .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.vertical, 2)
+                            
+                            HStack(){
+                                Label(product.companyName, systemImage: "building.2.crop.circle")
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                    .foregroundColor(.secondaryLabel)
+                                    .fixedSize(horizontal: true, vertical: true)
+                                Label(product.companyDescription, systemImage: "tag")
+                                    .font(.caption2)
+                                    .lineLimit(1)
+                                    .foregroundColor(.secondaryLabel)
+                                    .fixedSize(horizontal: true, vertical: true)
+                            }
+                            
                             
                             Button(){
                                 guard !product.isComingSoon else {
@@ -378,89 +379,152 @@ public struct CodeDesignerView: JoliView {
                                 }
                                 appCoordinator.currentLocation = product.location
                             } label: {
-                                Text(product.isComingSoon ? "Coming\nSoon" : "Try It!")
+                                Text(product.isComingSoon ? "Coming Soon" : "Try It!")
                                     .multilineTextAlignment(.center)
                                     .lineLimit(2)
                                     .font(product.isComingSoon ? .caption : .subheadline.weight(.semibold))
                                     .foregroundColor(product.isComingSoon ? .secondaryLabel : .blue)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .padding()
-                                    .background(Color.secondarySystemGroupedBackground)
-                            }
-                            .disabled(product.isComingSoon)
-                            .clipShape(RoundedRectangle(cornerRadius: 32))
-                            
-                            Button(){
-                                self.selectedExperience = product.experienceCls
-                            } label: {
-                                Text("Select")
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                    .font(product.isComingSoon ? .caption : .subheadline.weight(.semibold))
-                                    .foregroundColor(.primary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .padding()
+                                    .fixedSize(horizontal: true, vertical: true)
+                                    .padding(.vertical, 4)
+                                //.background(Color.secondarySystemGroupedBackground)
                             }
                             .disabled(product.isComingSoon)
                             .clipShape(RoundedRectangle(cornerRadius: 32))
                         }
+                        
+                        Spacer()
                     }
-                    .padding()
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.green.opacity(product.experienceCls == selectedExperience ? 0.6 : 0), lineWidth: 1)
-                    )
                 }
+                .padding()
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.green.opacity(product.experienceCls == selectedExperience ? 0.6 : 0), lineWidth: 1)
+                )
+                .onTapGesture(perform: onTap)
+                .overlay(
+                    HStack(){
+                        Spacer()
+                        
+                        VStack(){
+                            let isActive = product.experienceCls == selectedExperience
+                            
+                            Button() {
+                                onTap()
+                            } label: {
+                                Image(systemName: isActive ? "checkmark.circle.fill" : "circle.dashed")
+                                    .foregroundColor(isActive ? .green : Color.secondaryLabel)
+                                    .padding()
+                                    .font(.title.weight(.light))
+                                    .scaleEffect(x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1)
+                                    .animation(.easeInOut)
+                            }
+                            
+                            Spacer()
+                        }
+                    }
+                    .opacity(product.isComingSoon ? 0 : 1)
+                )
             }
-            .padding(.horizontal)
-            
-            
-//            Button(){
-//                selectedExperience = RestaurantView.self
-//                selectedTab = selectedTab + 1
-//
-//                let x = ExperienceData()
-//                x.brandName = "My brand"
-//
-//                //let k: PartialKeyPath<ExperienceData> = (\ExperienceData.companyName)
-//
-//                for dt in RestaurantView.allDataKeys {
-//                    print("Children: \(String(describing: dt.meta))")
-//                }
-//            } label: {
-//                Text("Next").font(.title).foregroundColor(.fixedWhite)
-//            }
-          //  Spacer()
-        //}
+            Spacer()
+        }
+        .padding(.horizontal)
+        .padding(.top, safeAreaInsets.top)
     }
+    
+    @State var isLandingPageTapped = false
     
     private func updateBrandName() {
         let brandName = brandName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let landingPageText = landingPageText.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard !brandName.isEmpty else { return }
+        guard !brandName.isEmpty && !landingPageText.isEmpty else { return }
         
-        self.experienceData = ExperienceData(brandName: brandName)
+        self.experienceData = ExperienceData(brandName: brandName, landingPageText: landingPageText)
     }
     
     func customiseExperienceView(_ experienceClass: Experience.Type) -> some View {
+        //ScrollView(.vertical){
         VStack(){
             if let experienceData = self.experienceData {
                 ExperienceDataView(experienceClass, experienceData) { data in
                     self.experienceData = data
                     self.selectedTab = 2
-                }
-            } else {
-                TextField("What's Your Brand Name", text: self.$brandName) { editing in
                     
-                } onCommit: {
-                    self.updateBrandName()
+                    self.brandName = data.brandName
+                }
+                .padding(.bottom, safeAreaInsets.bottom * 2)
+                //.padding(.top, safeAreaInsets.top)
+            } else {
+                VStack(){
+                    Text("What's Your Brand Name?")
+                        .font(.title.weight(.light))
+                        .padding(.top, safeAreaInsets.top)
+                        .padding()
+                    
+                    TextField("Enter your brand name", text: self.$brandName) { editing in
+                        
+                    } onCommit: {
+                        self.updateBrandName()
+                    }
+                    .padding([.horizontal, .bottom])
+                    .multilineTextAlignment(.center)
+                    
+                    Text("Welcome Page Message")
+                        .font(.title.weight(.light))
+                        .padding()
+                    TextEditor(text: self.$landingPageText)
+                        .frame(height: screenWidth / 2)
+                        .padding()
+                        .overlay(
+                            GeometryReader(){ proxy in
+                                VStack(alignment: .leading){
+                                    if landingPageText.isEmpty, !isLandingPageTapped {
+                                        Text("Enter a message for your \(experienceClass.title) experience's landing page")
+                                            .padding()
+                                            .foregroundColor(.tertiaryLabel)
+                                        Spacer()
+                                    }
+                                }
+                                .frame(width: proxy.size.width, height: proxy.size.height)
+                                .padding()
+                            }
+                        )
+                        .multilineTextAlignment(.center)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondaryLabel, lineWidth: 1))
+                        .padding([.horizontal, .bottom])
+                        .onTapGesture {
+                            isLandingPageTapped = true
+                        }
+                    
+                    Button(){
+                        self.updateBrandName()
+                    } label: {
+                        Label("Save & Continue", systemImage: "arrow.forward")
+                    }
+                    .disabled(brandName.isEmpty || landingPageText.isEmpty)
+                    .padding()
+                    .padding(.top)
                 }
                 .padding()
-                .padding(.top, 200)
             }
             Spacer()
         }
+        .onTapGesture {
+            guard appCoordinator.keyboardHeight > 0 else {
+                return
+            }
+            
+            appCoordinator.dismissKeyboard()
+        }
+//        .simultaneousGesture(
+//            TapGesture()
+//                .onEnded() { value in
+//
+//
+//                }
+//        )
     }
     
     var customiseCodeView: some View {
@@ -478,14 +542,14 @@ public struct CodeDesignerView: JoliView {
     var views: [(view: AnyView, index: Int)] {
         var vs: [(view: AnyView, index: Int)] = [
          (pickExperienceView
-            .background(Color.blue)
+            //.background(Color.blue)
             .eraseToAnyView(), 0),
         ]
         
         if let selectedExperience = selectedExperience {
             vs.append((
                 customiseExperienceView(selectedExperience)
-                    .background(Color.green)
+                    //.background(Color.green)
                     .eraseToAnyView(), 1
             ))
         }
@@ -494,7 +558,7 @@ public struct CodeDesignerView: JoliView {
            let expData = experienceData, expData.isValid(for: selectedExperience.allDataKeys) {
             vs.append((
                 customiseCodeView
-                    .background(Color.purple)
+                    //.background(Color.purple)
                     .eraseToAnyView(), 2
             ))
         }
@@ -503,7 +567,7 @@ public struct CodeDesignerView: JoliView {
            let expData = experienceData, expData.isValid(for: selectedExperience.allDataKeys) {
             vs.append((
                 confirmAndPayView
-                    .background(Color.purple)
+                    //.background(Color.purple)
                     .eraseToAnyView(), 3
             ))
         }
@@ -513,8 +577,8 @@ public struct CodeDesignerView: JoliView {
     }
     
     public var contentView: some View {
-        return ZStack(alignment: .top){
-            TabView(selection: $selectedTab) {
+        //return //ZStack(alignment: .top){
+        return TabView(selection: $selectedTab) {
                 ForEach(self.views, id: \.index){ item in
                     item.view
                         .tag(item.index)
@@ -522,6 +586,7 @@ public struct CodeDesignerView: JoliView {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .interactive))
+            .frame(idealHeight: screenHeight)
             
 //            HStack(){
 //                VStack(alignment: .leading){
@@ -536,9 +601,8 @@ public struct CodeDesignerView: JoliView {
 //                }
 //                Spacer()
 //            }
-        }
-        .frame(idealHeight: screenHeight)
-        .background(Color.pink)
+       // }
+        //.background(Color.pink)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { // <2>
             ToolbarItem(placement: .navigationBarLeading) { // <3>
