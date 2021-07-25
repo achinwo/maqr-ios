@@ -66,7 +66,8 @@ public extension JoliView where Self: Experience {
         let paths: [PartialKeyPath<ExperienceData>] = [
             \ExperienceData.brandName,
             \ExperienceData.logoImageUrl,
-            \ExperienceData.landingPageText
+            \ExperienceData.landingPageText,
+            \ExperienceData.socialInstagramUsername,
         ]
         
         return paths

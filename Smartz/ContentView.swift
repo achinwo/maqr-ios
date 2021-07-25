@@ -284,11 +284,15 @@ struct ContentView: JoliView {
     
     @State var feebackText: String = .empty
     
+    @State var experienceType: Experience.Type?
+    
+    @State var experienceData: ExperienceData?
+    
     var appclipsCodesView: some View {
-        CodeDesignerView()
+        CodeDesignerView($experienceType, $experienceData)
         //.padding()
-        .padding(.top, safeAreaInsets.top)
-        .padding(.bottom, safeAreaInsets.bottom * 4)
+        //.padding(.top, safeAreaInsets.top)
+        //.padding(.bottom, safeAreaInsets.bottom * 4)
     }
     
     var feedbackView: some View {
@@ -486,9 +490,19 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                                     .padding(.bottom, safeAreaInsets.bottom * 4)
                                     .animation(.easeInOut)
                                 }
+                                .navigationBarTitleDisplayMode(.inline)
+                                //.navigationBarTitle(Text(String.empty))
+                                .navigationBarHidden(true)
+                                .toolbar() {
+                                    EmptyView()
+                                }
                             } else if self.selectedTab == .feedback {
                                 ScrollView(.vertical){
                                     feedbackView
+                                }
+                                .navigationBarHidden(true)
+                                .toolbar() {
+                                    EmptyView()
                                 }
                             } else if self.selectedTab == .appClipCreator {
                                 ScrollView(.vertical){
@@ -539,7 +553,8 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                         .clipShape(RoundedRectangle(cornerRadius: 25.0))
                         .animation(.easeInOut)
                     }
-                    .padding(.bottom, safeAreaInsets.bottom)
+                    .frame(maxHeight: screenHeight - safeAreaInsets.top)
+                    //.padding(.bottom, safeAreaInsets.bottom)
                     
                     
                     //            HStack(){
@@ -550,8 +565,8 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                 }
                    // .navigationBarTitle(Text("Welcome to Smart Stikr"), displayMode: .large)
         }
-        .edgesIgnoringSafeArea(.all)
-        .frame(minWidth: screenWidth, minHeight: screenHeight)
+        .edgesIgnoringSafeArea(.bottom)
+        .frame(minWidth: screenWidth, idealHeight: screenHeight - safeAreaInsets.top)
         .background(
             Group(){
                 if self.selectedTab == .feedback {

@@ -48,6 +48,8 @@ struct TvShowPromoView: Experience, JoliView {
     static var dataKeys: [PartialKeyPath<ExperienceData>] {
         return [
             \ExperienceData.bannerVideoUrl,
+            \ExperienceData.bannerImageUrl,
+            \ExperienceData.backgroundImageUrl,
         ]
     }
     

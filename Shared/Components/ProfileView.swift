@@ -33,7 +33,7 @@ struct ProfileEditView: View {
     }
 }
 
-extension UIImage {
+public extension UIImage {
     
   func resizeImage(_ targetSize: CGSize) -> UIImage {
     let size = self.size

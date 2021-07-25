@@ -9,24 +9,256 @@
 import SwiftUI
 import JoliPlayground
 
-public struct ExperienceDataView<Exp: Experience>: JoliView {
+extension PartialKeyPath.Metadata: View where Root == ExperienceData {
+    
+    public var body: some View {
+        Text("\(self.name)")
+    }
+    
+}
+
+extension ExperienceData {
+    
+    static func unwrap(_ value: Any) -> Any? {
+        let mirror = Mirror(reflecting: value)
+        
+        if mirror.displayStyle != .optional {
+            return value
+        }
+        
+        if let child = mirror.children.first {
+            return child.value
+        } else {
+            return nil
+        }
+    }
+    
+    public func isValid(for dataKeys: [ExperienceDataKeyPath]) -> Bool {
+        var missingValues: [ExperienceDataKeyPath.Metadata] = []
+        
+        for dataKey in dataKeys {
+            guard let meta = dataKey.meta else {
+                continue
+            }
+            
+            let value = Self.unwrap(self[keyPath: meta.keypath])
+            
+            
+            guard value == nil else { continue }
+            
+            missingValues.append(meta)
+        }
+        
+        print("missingValues: \(missingValues.map(\.name))")
+        
+        return missingValues.isEmpty
+    }
+    
+}
+
+extension Array where Element == ExperienceDataKeyPath.Metadata {
+    
+    public func first(keypath: ExperienceDataKeyPath) -> Element? {
+        return self.first() { $0.keypath == keypath }
+    }
+    
+}
+
+public struct ExperienceDataView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     let data: ExperienceData
+    let experienceType: Experience.Type
+    let completionCallback: (ExperienceData) -> Void
     
-    init(_ data: ExperienceData) {
+    @State private var enableLogging = false
+    @State private var selectedColor = "Red"
+    @State private var colors = ["Red", "Green", "Blue"]
+    @State var isUploadingImage = false
+    
+    init(_ dataType: Experience.Type, _ data: ExperienceData, callback: @escaping (ExperienceData) -> Void) {
         self.data = data
+        self.experienceType = dataType
+        self.completionCallback = callback
+        self._socialInstagramUsername = State(initialValue: data.socialInstagramUsername ?? .empty)
     }
     
-    public var allDataKeys: [PartialKeyPath<ExperienceData>.Metadata] {
-        return Exp.allDataKeys.compactMap() { $0.meta }
+    public var allDataKeys: [ExperienceDataKeyPath.Metadata] {
+        return experienceType.allDataKeys.compactMap() { $0.meta }
     }
+    
+    func imagePickerFrom(meta: ExperienceDataKeyPath.Metadata) -> some View {
+        print("test: \(meta)")
+        
+        let imageCallback = { (img: UIImage?, error: Error?) in
+            print("image: \(String(describing: img)), error: \(String(describing: error))")
+            
+            guard let image = img?.resizeImage(CGSize(width: 640, height: 640)), error == nil else {
+                return
+            }
+            
+            isUploadingImage = true
+            
+            self.api.upload(image)
+                .then() { (res: URL) in
+                    print("Result: \(res.absoluteString)")
+                    
+                    let imageUrl = URL(string: "/images/\(res.lastPathComponent)", relativeTo: appCoordinator.api.baseUrlHttp)
+                    
+                    guard let keyPath = meta.keypath as? ReferenceWritableKeyPath<ExperienceData, URL?> else {
+                        print("Unable to produce writeable keypath for: \(meta)")
+                        return
+                    }
+                    
+                    self.data[keyPath: keyPath] = imageUrl
+                    print("Updated \(meta.name): \(self.data[keyPath: keyPath])")
+                }
+                .catch { error in
+                    print("uploadImage: \(error)")
+                }
+                .always() {
+                    isUploadingImage = false
+                }
+        }
+        
+        return HStack(){
+            VStack(alignment: .leading){
+                Text(meta.title).font(.headline)
+                Text(meta.description).font(.subheadline).multilineTextAlignment(.leading)
+            }
+            
+            Spacer()
+            
+            ImageView(url: data[keyPath: meta.keypath] as? URL, isCircular: false, onSelected: imageCallback) { (image, error) in
+                
+            } content: {
+                VStack(alignment: .center){
+                    Button(){
+                        print("pick image")
+                    } label: {
+                        Image(systemName: "camera.fill")
+                        
+                    }
+                }
+            }
+            .frame(width: screenWidth / 3, height: screenWidth / 3)
+            .overlay(
+                Group() {
+                    if isUploadingImage {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .foregroundColor(.primary)
+                    } else {
+                        EmptyView()
+                    }
+                }
+            )
+        }
+        .id(meta.name)
+    }
+    
+    @State var socialInstagramUsername: String = .empty
+    @State var fieldSize: CGSize = .zero
     
     public var contentView: some View {
-        VStack(){
-            //ForEach()
+        Form {
+            
+            Section() {
+                
+                if let logoMeta = allDataKeys.first(keypath: \ExperienceData.logoImageUrl) {
+                    self.imagePickerFrom(meta: logoMeta)
+                }
+                
+                if let bannerMeta = allDataKeys.first(keypath: \ExperienceData.bannerImageUrl) {
+                    self.imagePickerFrom(meta: bannerMeta)
+                }
+                
+                if let bgMeta = allDataKeys.first(keypath: \ExperienceData.backgroundImageUrl) {
+                    self.imagePickerFrom(meta: bgMeta)
+                }
+                
+            }
+            
+            if let instaMeta = allDataKeys.first(keypath: \ExperienceData.socialInstagramUsername) {
+                
+                Section(header: Text("Social")) {
+                
+                    TextField(instaMeta.description, text: $socialInstagramUsername, onEditingChanged: {_ in }) {
+                        let insta = socialInstagramUsername.trimmingCharacters(in: .whitespacesAndNewlines)
+                        
+                        guard !insta.isEmpty else { return }
+                        
+                        data.socialInstagramUsername = insta
+                    }
+                    .padding(.leading, fieldSize.height * 2.5)
+                    .overlay(
+                        GeometryReader(){ proxy in
+                            HStack(){
+                                Image("instagram_logo")
+                                    .resizable()
+                                    .frame(width: proxy.size.height, height: proxy.size.height)
+                                Image(systemName: "at")
+                                    .resizable()
+                                    .frame(width: proxy.size.height * 0.8, height: proxy.size.height * 0.8)
+                                    .foregroundColor(.secondaryLabel)
+                                Spacer()
+                            }
+                            .frame(height: proxy.size.height)
+                            //.padding(.leading, -1 * fieldSize.height * 2)
+                            .onAppear(){
+                                self.fieldSize = proxy.size
+                            }
+                        }
+                    )
+                }
+                //                Picker("Select a color", selection: $selectedColor) {
+                //                    ForEach(colors, id: \.self) {
+                //                        Text($0)
+                //                    }
+                //                }
+                //                .pickerStyle(SegmentedPickerStyle())
+                //
+                //                Toggle("Enable Logging", isOn: $enableLogging)
+            }
+            
+            Section(footer: Text("Note: Enabling logging may slow down the app")) {
+//                Picker("Select a color", selection: $selectedColor) {
+//                    ForEach(colors, id: \.self) {
+//                        Text($0)
+//                    }
+//                }
+//                .pickerStyle(SegmentedPickerStyle())
+//
+//                Toggle("Enable Logging", isOn: $enableLogging)
+            }
+            
+            Section {
+                HStack(){
+                    Spacer()
+                    Button(){
+                        print("hit continue!")
+                        
+                        guard data.isValid(for: experienceType.allDataKeys) else {
+                            return
+                        }
+                        
+                        self.completionCallback(data)
+                        
+                    } label: {
+                        // activate theme!
+                        Label("Save & Continue", systemImage: "arrow.forward")
+                    }
+                    .disabled(!data.isValid(for: experienceType.allDataKeys))
+                    Spacer()
+                }
+            }
         }
+//        VStack(){
+//            ForEach(allDataKeys) { dataKey in
+//                dataKey
+//            }
+//        }
     }
     
 }
@@ -36,13 +268,19 @@ public struct CodeDesignerView: JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var selectedTab = 0
     
-    @State var selectedExperience: Experience.Type? = nil {
+    @Binding var selectedExperience: Experience.Type? {
         didSet {
             self.selectedTab = 1
         }
     }
     
-    var experienceData: ExperienceData? = nil
+    @Binding var experienceData: ExperienceData?
+    @AppStorage("cd-brand-name") var brandName: String = .empty
+    
+    public init(_ experienceType: Binding<Experience.Type?>, _ data: Binding<ExperienceData?>){
+        self._experienceData = data
+        self._selectedExperience = experienceType
+    }
     
     static func experienceClasses() -> [Experience.Type] {
         return [
@@ -197,9 +435,31 @@ public struct CodeDesignerView: JoliView {
         //}
     }
     
+    private func updateBrandName() {
+        let brandName = brandName.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !brandName.isEmpty else { return }
+        
+        self.experienceData = ExperienceData(brandName: brandName)
+    }
+    
     func customiseExperienceView(_ experienceClass: Experience.Type) -> some View {
         VStack(){
-            Text("Customise Experience")
+            if let experienceData = self.experienceData {
+                ExperienceDataView(experienceClass, experienceData) { data in
+                    self.experienceData = data
+                    self.selectedTab = 2
+                }
+            } else {
+                TextField("What's Your Brand Name", text: self.$brandName) { editing in
+                    
+                } onCommit: {
+                    self.updateBrandName()
+                }
+                .padding()
+                .padding(.top, 200)
+            }
+            Spacer()
         }
     }
     
@@ -230,7 +490,8 @@ public struct CodeDesignerView: JoliView {
             ))
         }
         
-        if let selectedExperience = selectedExperience {
+        if let selectedExperience = selectedExperience,
+           let expData = experienceData, expData.isValid(for: selectedExperience.allDataKeys) {
             vs.append((
                 customiseCodeView
                     .background(Color.purple)
@@ -238,7 +499,8 @@ public struct CodeDesignerView: JoliView {
             ))
         }
         
-        if let selectedExperience = selectedExperience {
+        if let selectedExperience = selectedExperience,
+           let expData = experienceData, expData.isValid(for: selectedExperience.allDataKeys) {
             vs.append((
                 confirmAndPayView
                     .background(Color.purple)
@@ -251,7 +513,7 @@ public struct CodeDesignerView: JoliView {
     }
     
     public var contentView: some View {
-        ZStack(alignment: .top){
+        return ZStack(alignment: .top){
             TabView(selection: $selectedTab) {
                 ForEach(self.views, id: \.index){ item in
                     item.view
@@ -261,22 +523,39 @@ public struct CodeDesignerView: JoliView {
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .interactive))
             
-            HStack(){
-                VStack(alignment: .leading){
+//            HStack(){
+//                VStack(alignment: .leading){
+//                    Text(tabNames[selectedTab])
+//                        .font(.title)
+//                        .padding([.trailing, .leading, .top])
+//                    Text("Step \(selectedTab + 1) of \(tabNames.count)")
+//                        .font(.caption)
+//                        .foregroundColor(.secondaryLabel)
+//                        .padding([.trailing, .leading, .bottom])
+//                    Spacer()
+//                }
+//                Spacer()
+//            }
+        }
+        .frame(idealHeight: screenHeight)
+        .background(Color.pink)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { // <2>
+            ToolbarItem(placement: .navigationBarLeading) { // <3>
+                VStack(alignment: .leading) {
                     Text(tabNames[selectedTab])
-                        .font(.title)
-                        .padding([.trailing, .leading, .top])
+                        .font(.headline)
                     Text("Step \(selectedTab + 1) of \(tabNames.count)")
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundColor(.secondaryLabel)
-                        .padding([.trailing, .leading, .bottom])
-                    Spacer()
                 }
-                Spacer()
             }
         }
-        .frame(minHeight: screenHeight)
-        .background(Color.pink)
+        .onAppear() {
+            self.selectedTab = selectedExperience == nil ? 0 : 1
+            self.updateBrandName()
+        }
+        //.navigationBarTitle(Text(tabNames[selectedTab]).multilineTextAlignment(.leading))
     }
     
 }

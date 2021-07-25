@@ -49,17 +49,18 @@ public struct ImageView<Content: View>: View {
     var onSelected: Callback? = nil
     var onLoaded: Callback? = nil
     
-    init(url: String, onSelected: Callback? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
+    public init(url: String, isCircular: Bool = true, onSelected: Callback? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
         //self.placeholderImage = placeholderImage
-        self.init(url: URL(string: url), onLoaded: onLoaded, content: content)
+        self.init(url: URL(string: url), isCircular: isCircular, onLoaded: onLoaded, content: content)
     }
     
-    init(url: URL? = nil, onSelected: Callback? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
+    public init(url: URL? = nil, isCircular: Bool = true, onSelected: Callback? = nil, onLoaded: Callback? = nil, @ViewBuilder content: () -> Content) {
         //self.placeholderImage = placeholderImage
         self.onLoaded = onLoaded
         self.onSelected = onSelected
         self.placeholderContent = content()
         self._imageURL = State(initialValue: url)
+        self._isCircular = State(initialValue: isCircular)
     }
     
 //    public init(url: URL, isCircular: Bool = true, callback: ((UIImage?, Error?) -> Void)? = nil){

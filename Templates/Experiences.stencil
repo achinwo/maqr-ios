@@ -3,10 +3,13 @@
 {% endfor %} #}
 
 import Foundation
+import SwiftUI
 
-extension PartialKeyPath where Root == ExperienceData {
+public typealias ExperienceDataKeyPath = PartialKeyPath<ExperienceData>
 
-    public struct Metadata: Identifiable {
+public extension PartialKeyPath where Root == ExperienceData {
+
+    struct Metadata: Identifiable {
 
         public let name: String
         public let title: String
@@ -18,10 +21,9 @@ extension PartialKeyPath where Root == ExperienceData {
         public var id: String {
             return name
         }
-    
     }
 
-    public var meta: Metadata? {
+    var meta: Metadata? {
         switch self {
 {% for variable in type.ExperienceData.storedVariables|annotated: "title" %}
             case \Root.{{ variable.name }}:
