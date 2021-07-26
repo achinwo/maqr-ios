@@ -169,11 +169,11 @@ public struct MealboxView: Experience, JoliView {
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
     
-    public init() {
+    public init(_ data: ExperienceData? = nil) {
         self._editMode = State(initialValue: .inactive)
         self.startDate = Date(timeIntervalSinceNow: 0)
         self._deliveryDate = State(initialValue: startDate)
-        self.dataModel = ExperienceData()
+        self.dataModel = data ?? ExperienceData()
     }
     
     enum Tab: Int, Identifiable, CaseIterable {

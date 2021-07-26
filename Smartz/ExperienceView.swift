@@ -71,6 +71,8 @@ public protocol Experience {
     
     static var dataKeys: [PartialKeyPath<ExperienceData>] { get }
     static var allDataKeys: [PartialKeyPath<ExperienceData>] { get }
+    
+    init(_ data: ExperienceData?)
 }
 
 public extension JoliView where Self: Experience {
@@ -180,9 +182,13 @@ struct RestaurantView: Experience, JoliView {
     
     @State var menu: RestaurantMenu?
     
-    public init(data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
+    public init(_ data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
         self.dataModel = data ?? ExperienceData()
         self._editMode = editMode
+    }
+    
+    init(_ data: ExperienceData?) {
+        self.init(data, editMode: .constant(.inactive))
     }
     
     static var dataKeys: [PartialKeyPath<ExperienceData>] {
@@ -309,8 +315,6 @@ struct RestaurantView: Experience, JoliView {
         .showEditPencil(.constant(.readonly))
         .onAppear() {
             self.menu = RestaurantMenu.getDefaultMenu()
-            
-            print("MENU: \(self.menu)")
         }
     }
     

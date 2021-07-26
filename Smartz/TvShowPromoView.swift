@@ -66,11 +66,15 @@ struct TvShowPromoView: Experience, JoliView {
     @State var menu: [TvShowCastInfo] = []
     @AppStorage("isvideomuted-crazyworld") var isVideoMuted = false
     
-    public init(data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
+    public init(_ data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
         self.dataModel = data ?? ExperienceData()
         self._editMode = editMode
         
         self._videoLocalUrl = State(initialValue: FileManager.default.fileExists(atPath: cacheFileUrl.path) ? cacheFileUrl : nil)
+    }
+    
+    public init(_ data: ExperienceData? = nil) {
+        self.init(data, editMode: .constant(.inactive))
     }
     
     var cacheFileUrl: URL {
