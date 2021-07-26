@@ -10,6 +10,36 @@ import SwiftUI
 import JoliPlayground
 import Combine
 
+public struct AppClipCodeStyle: Identifiable {
+    public let index: Int
+    public let foregroundColor: Color
+    public let backgroundColor: Color
+    
+    public var id: Int {
+        return index
+    }
+}
+
+public extension Color {
+    
+    init(hex: String){
+        self.init(UIColor.init(hex: hex))
+    }
+    
+}
+
+public let appClipsTypes: [AppClipCodeStyle] = [
+    AppClipCodeStyle(index: 0, foregroundColor: .init(hex: "FFFFFF"), backgroundColor: .init(hex: "000000")),
+    AppClipCodeStyle(index: 2, foregroundColor: .init(hex: "FFFFFF"), backgroundColor: .init(hex: "777777")),
+    AppClipCodeStyle(index: 4, foregroundColor: .init(hex: "FFFFFF"), backgroundColor: .init(hex: "FF3B30")),
+    AppClipCodeStyle(index: 6, foregroundColor: .init(hex: "FFFFFF"), backgroundColor: .init(hex: "EE7733")),
+    AppClipCodeStyle(index: 8, foregroundColor: .init(hex: "FFFFFF"), backgroundColor: .init(hex: "33AA22")),
+    AppClipCodeStyle(index: 10, foregroundColor: .init(hex: "FFFFFF"), backgroundColor: .init(hex: "00A6A1")),
+    AppClipCodeStyle(index: 12, foregroundColor: .init(hex: "FFFFFF"), backgroundColor: .init(hex: "007AFF")),
+    AppClipCodeStyle(index: 14, foregroundColor: .init(hex: "FFFFFF"), backgroundColor: .init(hex: "5856D6")),
+    AppClipCodeStyle(index: 16, foregroundColor: .init(hex: "FFFFFF"), backgroundColor: .init(hex: "CC73E1")),
+]
+
 extension PartialKeyPath.Metadata: View where Root == ExperienceData {
     
     public var body: some View {
@@ -319,11 +349,202 @@ public struct CodeDesignerView: JoliView {
 //        )
     }
     
-    var customiseCodeView: some View {
-        VStack(){
-            Text("Customise Code")
+    @State var selectedThemeIndex = 12
+    @State var invertThemeColor = false
+    
+    var appClipsStyles: [AppClipCodeStyle] {
+        if invertThemeColor {
+            return appClipsTypes.map() { item in
+                AppClipCodeStyle(index: item.index + 1, foregroundColor: item.backgroundColor, backgroundColor: item.foregroundColor)
+            }
+        } else {
+            return appClipsTypes
         }
     }
+    
+    @State var codeFetchCancel: AnyCancellable? = nil
+    
+    class AppClipCodeModel: ObservableObject {
+        
+        public enum Logo: String {
+            case none
+            case badge
+        }
+        
+        public enum CodeType: String {
+            case cam
+            case nfc
+        }
+        
+        @Published public var requestUrl = URL(string: "/templates/", relativeTo: URL(string: "https://192.168.1.233:8084"))!
+        
+        @Published public var codeType = CodeType.cam {
+            didSet {
+                self.updateUrl()
+            }
+        }
+        
+        @Published public var logo = Logo.badge {
+            didSet {
+                self.updateUrl()
+            }
+        }
+        
+        public var index: Int = 12 {
+            didSet {
+                self.updateUrl()
+            }
+        }
+        
+        private func updateUrl(){
+            let urlString = "https://smartstikr.com/s/shows/iacw"
+            let newComp = URLComponents(string: "https://192.168.1.233:8084/templates/\(index).png?url=\(urlString)&logo=\(logo.rawValue)&type=\(codeType.rawValue)")
+            
+            guard let newUrl = newComp?.url else { return }
+            
+            self.requestUrl = newUrl
+            print("NEW URL: \(self.requestUrl)")
+        }
+    }
+    
+    @StateObject var model = AppClipCodeModel()
+    @State var appClipCode: UIImage = UIImage(named: "appclipcode_with_logo")!
+    
+    private func updateSubscriptions() {
+        if let cancel = self.codeFetchCancel {
+            cancel.cancel()
+            print("[\(Self.self)] cancelled: \(cancel)")
+        }
+        
+        self.codeFetchCancel = model.$requestUrl
+            .removeDuplicates()
+            .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInteractive))
+            .map() { url -> AnyPublisher<UIImage, Never> in
+                print("fetching code for: \(url)")
+                let img = UIImage(named: "appclipcode_with_logo")!
+                
+                return Future<UIImage, Never>() { promise in
+                    let task = self.api.urlSession.dataTask(with: url) { data, response, error in
+                        if let error = error {
+                            print("Error fetching: \(error)")
+                            promise(.success(img))
+                            return
+                        }
+                        
+                        guard let httpResponse = response as? HTTPURLResponse,
+                              (200...299).contains(httpResponse.statusCode) else {
+                            print("Error fetching: bad response code \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+                            promise(.success(img))
+                            return
+                        }
+                        
+                        guard let data = data, let realImage = UIImage(data: data) else {
+                            
+                            print("Error fetching: unable to convert data")
+                            promise(.success(img))
+                            return
+                        }
+                        
+                        promise(.success(realImage))
+                    }
+                    task.resume()
+                }
+                .eraseToAnyPublisher()
+                
+//                guard let imageData = try? Data(contentsOf: url), let img = UIImage(data: imageData) else {
+//                    print("Unable to fetch: \(url)")
+//                    return Just(UIImage(named: "appclipcode_with_logo")!).eraseToAnyPublisher()
+//                }
+//
+//                return Just(img).eraseToAnyPublisher()
+            }
+            .switchToLatest()
+            .receive(on: RunLoop.main)
+            .assign(to: \.appClipCode, on: self)
+    }
+    
+    var customiseCodeView: some View {
+        let size = screenWidth / 8
+        return ZStack(){
+            Form(){
+                Section(header: Text("Color Themes").padding(.top, screenWidth * 0.7 + 16)){
+                        VStack(){
+                            ForEach([0, 3, 6], id: \.self){ row in
+                                HStack(){
+                                    Spacer()
+                                    ForEach(row..<(row + 3), id: \.self) { colIdx in
+                                        let appclipStyle = appClipsStyles[colIdx]
+                                        
+                                        DualColorTokenView(primaryColor: appclipStyle.foregroundColor, secondaryColor: appclipStyle.backgroundColor, width: size)
+                                            .onTapGesture() {
+                                                self.selectedThemeIndex = appclipStyle.index
+                                            }
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(selectedThemeIndex == appclipStyle.index ? Color.primary : Color.tertiaryLabel.opacity(0.7),
+                                                            lineWidth: selectedThemeIndex == appclipStyle.index ? 2 : 1)
+                                                    .frame(width: size + 2.6, height: size + 2.6)
+                                            )
+                                            .animation(.easeInOut)
+                                            .id(appclipStyle.index)
+                                        Spacer()
+                                    }
+                                }
+                            }
+                            Divider().padding(.vertical)
+                            Toggle("Inverted Colors", isOn: $invertThemeColor)//.padding(.horizontal)
+                        }
+                        .padding()
+                }
+                
+                Section(footer: Spacer().padding(.bottom, safeAreaInsets.bottom * 6)){
+                    Toggle("Show Badge", isOn: $showBadge).padding()
+                }
+            }
+            
+            
+            VStack(spacing: .zero){
+                VStack(spacing: .zero){
+                    Image(platformImage: appClipCode)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: screenWidth / 2)
+                        .overlay(
+                            GeometryReader() { proxy in
+                                Text("Preview")
+                                    .fixedSize(horizontal: true, vertical: true)
+                                    .frame(width: proxy.size.width * 1.1, alignment: .center)
+                                    .font(.title.weight(.light))
+                                    .foregroundColor(.fixedWhite)
+                                    .padding()
+                                    .background(Color.fixedGray.opacity(0.98))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .offset(x: proxy.size.width / 2 * -1, y: proxy.size.height / 4)
+                                    .rotationEffect(.degrees(-45), anchor: .leading)
+                            }
+                        )
+                        .animation(.easeInOut)
+                        .clipped()
+                }
+                .frame(width: screenWidth, height: screenWidth * 0.7)
+                .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                Divider()
+                Spacer()
+            }
+        }
+        .onChange(of: selectedThemeIndex) { idx in
+            self.model.index = idx
+        }
+        .onChange(of: showBadge) { badge in
+            self.model.logo = badge ? .badge : .none
+        }
+        .onAppear(){
+            updateSubscriptions()
+        }
+    }
+    
+    @Environment(\.colorScheme) var colorScheme
+    @State var showBadge = true
     
     var confirmAndPayView: some View {
         VStack(){
@@ -338,25 +559,23 @@ public struct CodeDesignerView: JoliView {
             .eraseToAnyView(), 0),
         ]
         
-        if let selectedExperience = selectedExperience {
-            vs.append((
-                customiseExperienceView(selectedExperience)
-                    //.background(Color.green)
-                    .eraseToAnyView(), 1
-            ))
-        }
+        guard let selectedExperience = selectedExperience else { return vs }
         
-        if let selectedExperience = selectedExperience,
-           let expData = experienceData, expData.isValid(for: selectedExperience.allDataKeys) {
-            vs.append((
-                customiseCodeView
-                    //.background(Color.purple)
-                    .eraseToAnyView(), 2
-            ))
-        }
+        vs.append((
+            customiseExperienceView(selectedExperience)
+                //.background(Color.green)
+                .eraseToAnyView(), 1
+        ))
         
-        if let selectedExperience = selectedExperience,
-           let expData = experienceData, expData.isValid(for: selectedExperience.allDataKeys) {
+        //if let expData = experienceData, expData.isValid(for: selectedExperience.allDataKeys) {
+        vs.append((
+            customiseCodeView
+                //.background(Color.purple)
+                .eraseToAnyView(), 2
+        ))
+        //}
+        
+        if let expData = experienceData, expData.isValid(for: selectedExperience.allDataKeys) {
             vs.append((
                 confirmAndPayView
                     //.background(Color.purple)
@@ -364,7 +583,7 @@ public struct CodeDesignerView: JoliView {
             ))
         }
         
-        print("Views count: \(vs.count)")
+        //print("Views count: \(vs.count)")
         return vs
     }
     
@@ -414,6 +633,33 @@ public struct CodeDesignerView: JoliView {
             self.updateBrandName()
         }
         //.navigationBarTitle(Text(tabNames[selectedTab]).multilineTextAlignment(.leading))
+    }
+    
+}
+
+public struct DualColorTokenView: JoliView {
+    
+    @State var primaryColor: Color
+    @State var secondaryColor: Color
+    @State var width: CGFloat? = nil
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
+    
+    public var contentView: some View {
+        let size = CGFloat(width ?? screenWidth / 6)
+        return Circle()
+            .foregroundColor(primaryColor)
+            .overlay(
+                GeometryReader() { proxy in
+                    Rectangle()
+                        .foregroundColor(secondaryColor)
+                        .offset(x: proxy.size.width / 2, y: proxy.size.height / 3.2)
+                        .rotationEffect(.degrees(-45), anchor: .bottomTrailing)
+                }
+            )
+            .frame(width: size, height: size)
+            .clipShape(Circle())
+
     }
     
 }
