@@ -358,17 +358,7 @@ struct ContentView: JoliView {
                         }
                     }
                 )
-                .simultaneousGesture(
-                    TapGesture()
-                        .onEnded() { value in
-                            
-                            guard appCoordinator.keyboardHeight > 0 else {
-                                return
-                            }
-                            
-                            appCoordinator.dismissKeyboard()
-                        }
-                )
+
                 
             }
             .frame(width: screenWidth - 100)
@@ -587,16 +577,16 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
 //                            //.matchedGeometryEffect(id: "intro-video", in: animation)
 //                    }
                 }
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 100)
-                        .onChanged(){ value in
-                            print("dragged: \(value)")
-                        }
-                        .onEnded() { val in
-                            print("ended: \(val)")
-                            self.maximised = false
-                        }
-                )
+//                .simultaneousGesture(
+//                    DragGesture(minimumDistance: 100)
+//                        .onChanged(){ value in
+//                            print("dragged: \(value)")
+//                        }
+//                        .onEnded() { val in
+//                            print("ended: \(val)")
+//                            self.maximised = false
+//                        }
+//                )
                 
             }
         )

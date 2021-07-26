@@ -39,10 +39,27 @@ public class ExperienceData: ObservableObject {
     // sourcery: title = "Instagram", description = "Instagram account username"
     @Published var socialInstagramUsername: String?
     
+    // sourcery: title = "Primary", description = "Primary brand color"
+    @Published var brandColorPrimary: Color = .blue
+    
+    // sourcery: title = "Secondary", description = "Secondary brand color"
+    @Published var brandColorSecondary: Color = .orange
+    
+    // sourcery: title = "Accent", description = "Accent brand color"
+    @Published var brandColorAccent: Color = .yellow
+    
     init(brandName: String? = nil, landingPageText: MultilineString? = nil) {
         self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
         self.landingPageText = landingPageText ?? "Welcome to YOUR brand"
     }
+}
+
+public extension Color {
+    
+    var hexString: String {
+        return UIColor(self).hexString
+    }
+    
 }
 
 public protocol Experience {
@@ -68,6 +85,10 @@ public extension JoliView where Self: Experience {
             \ExperienceData.logoImageUrl,
             \ExperienceData.landingPageText,
             \ExperienceData.socialInstagramUsername,
+            
+            \ExperienceData.brandColorPrimary,
+            \ExperienceData.brandColorSecondary,
+            \ExperienceData.brandColorAccent,
         ]
         
         return paths
