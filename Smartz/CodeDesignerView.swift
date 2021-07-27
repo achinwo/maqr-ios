@@ -371,12 +371,40 @@ public struct CodeDesignerView: JoliView {
             case badge
         }
         
-        public enum CodeType: String {
+        public enum CodeType: Int, Identifiable, CaseIterable {
             case cam
             case nfc
+            
+            var id: Int {
+                rawValue
+            }
+            
+            var label: String {
+                switch self {
+                    case .cam:
+                        return "cam"
+                    case .nfc:
+                        return "nfc"
+                }
+            }
+            
+            var title: String {
+                switch self {
+                    case .cam:
+                        return "Camera"
+                    case .nfc:
+                        return "NFC"
+                }
+            }
         }
         
-        @Published public var requestUrl = URL(string: "/templates/", relativeTo: URL(string: "https://192.168.1.233:8084"))!
+//        let baseUrl: URL
+//
+//        public init(baseUrl: URL){
+//            self.baseUrl = baseUrl
+//        }
+        
+        @Published public var urlPath = URLComponents(string: "/images/preview_appclip_12_cam_badge.svg?format=png")
         
         @Published public var codeType = CodeType.cam {
             didSet {
@@ -397,18 +425,23 @@ public struct CodeDesignerView: JoliView {
         }
         
         private func updateUrl(){
-            let urlString = "https://smartstikr.com/s/shows/iacw"
-            let newComp = URLComponents(string: "https://192.168.1.233:8084/templates/\(index).png?url=\(urlString)&logo=\(logo.rawValue)&type=\(codeType.rawValue)")
+            let fileName = "images/preview_appclip_\(index)_\(codeType.label)_\(logo.rawValue).svg?format=png"
+            //let urlString = URL(string: "https://storage.googleapis.com/joli-app-bucket/images/preview_appclip_\(index)_\(logo.rawValue)_\(codeType.label).svg")
+            //let newComp = URLComponents(string: "https://192.168.1.233:8080/\(fileName)") //templates/\(index).png?url=\(urlString)&logo=\(logo.rawValue)&type=\(codeType.label)")
             
-            guard let newUrl = newComp?.url else { return }
+            //guard let newUrl = newComp?.url else { return }
             
-            self.requestUrl = newUrl
-            print("NEW URL: \(self.requestUrl)")
+            self.urlPath = URLComponents(string: fileName)
+            //print("NEW URL: \(self.requestUrl)")
         }
     }
     
     @StateObject var model = AppClipCodeModel()
     @State var appClipCode: UIImage = UIImage(named: "appclipcode_with_logo")!
+    @State var appClipCodeType: Int = AppClipCodeModel.CodeType.cam.rawValue
+    
+    
+    static let SAMPLE_APPCLIP = UIImage(named: "appclipcode_with_logo")!
     
     private func updateSubscriptions() {
         if let cancel = self.codeFetchCancel {
@@ -416,32 +449,40 @@ public struct CodeDesignerView: JoliView {
             print("[\(Self.self)] cancelled: \(cancel)")
         }
         
-        self.codeFetchCancel = model.$requestUrl
+        self.codeFetchCancel = model.$urlPath
             .removeDuplicates()
             .debounce(for: 0.3, scheduler: DispatchQueue.global(qos: .userInteractive))
-            .map() { url -> AnyPublisher<UIImage, Never> in
-                print("fetching code for: \(url)")
-                let img = UIImage(named: "appclipcode_with_logo")!
+            .map() { urlPath -> AnyPublisher<UIImage, Never> in
+                print("fetching code for: \(String(describing: urlPath))")
                 
                 return Future<UIImage, Never>() { promise in
+                    
+                    guard let urlString = urlPath?.string, let url = URL(string: urlString, relativeTo: api.baseUrlHttp) else {
+                        print("X fetching code for: \(self.api.baseUrlHttp)")
+                        promise(.success(Self.SAMPLE_APPCLIP))
+                        return
+                    }
+                    
+                    print("2. fetching code for: \(url)")
+                    
                     let task = self.api.urlSession.dataTask(with: url) { data, response, error in
                         if let error = error {
                             print("Error fetching: \(error)")
-                            promise(.success(img))
+                            promise(.success(Self.SAMPLE_APPCLIP))
                             return
                         }
                         
                         guard let httpResponse = response as? HTTPURLResponse,
                               (200...299).contains(httpResponse.statusCode) else {
                             print("Error fetching: bad response code \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
-                            promise(.success(img))
+                            promise(.success(Self.SAMPLE_APPCLIP))
                             return
                         }
                         
                         guard let data = data, let realImage = UIImage(data: data) else {
                             
                             print("Error fetching: unable to convert data")
-                            promise(.success(img))
+                            promise(.success(Self.SAMPLE_APPCLIP))
                             return
                         }
                         
@@ -463,11 +504,24 @@ public struct CodeDesignerView: JoliView {
             .assign(to: \.appClipCode, on: self)
     }
     
+    @State var initialImageLoaded = false
+    
     var customiseCodeView: some View {
         let size = screenWidth / 8
         return ZStack(){
             Form(){
-                Section(header: Text("Color Themes").padding(.top, screenWidth * 0.7 + 16)){
+                
+                Section(header: Spacer().padding(.top, screenWidth * 0.7 + 16)){
+                    Toggle("Show Badge", isOn: $showBadge)//.padding()
+                    Picker("Interaction Type", selection: $appClipCodeType) {
+                        ForEach(AppClipCodeModel.CodeType.allCases) { codeType in
+                            Text(codeType.title)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                }
+                
+                Section(header: Text("Color Themes"), footer: Spacer().padding(.bottom, safeAreaInsets.bottom * 6)){
                         VStack(){
                             ForEach([0, 3, 6], id: \.self){ row in
                                 HStack(){
@@ -496,19 +550,35 @@ public struct CodeDesignerView: JoliView {
                         }
                         .padding()
                 }
-                
-                Section(footer: Spacer().padding(.bottom, safeAreaInsets.bottom * 6)){
-                    Toggle("Show Badge", isOn: $showBadge).padding()
-                }
             }
             
             
             VStack(spacing: .zero){
                 VStack(spacing: .zero){
-                    Image(platformImage: appClipCode)
-                        .resizable()
+                    NetworkImage(url: model.urlPath?.url(relativeTo: api.baseUrlHttp)){ img, error in
+                            self.initialImageLoaded = img != nil
+                        } content: {
+                            Group(){
+                                if initialImageLoaded {
+                                    VStack(){
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle())
+                                        Text("Refreshing...")
+                                            .font(.headline.weight(.light))
+                                            .foregroundColor(.secondary)
+                                            .padding()
+                                    }
+                                } else {
+                                    Image(platformImage: Self.SAMPLE_APPCLIP)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                }
+                            }
+                        }
+                        .id(model.urlPath)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: screenWidth / 2)
+                        .frame(minHeight: screenWidth * 0.5)
                         .overlay(
                             GeometryReader() { proxy in
                                 Text("Preview")
@@ -538,8 +608,13 @@ public struct CodeDesignerView: JoliView {
         .onChange(of: showBadge) { badge in
             self.model.logo = badge ? .badge : .none
         }
+        .onChange(of: appClipCodeType) { codeTypeIdx in
+            guard let codeType = AppClipCodeModel.CodeType.init(rawValue: codeTypeIdx) else { return }
+            
+            self.model.codeType = codeType
+        }
         .onAppear(){
-            updateSubscriptions()
+            //updateSubscriptions()
         }
     }
     
@@ -631,6 +706,24 @@ public struct CodeDesignerView: JoliView {
         .onAppear() {
             self.selectedTab = selectedExperience == nil ? 0 : 1
             self.updateBrandName()
+            
+//            var string = "SVG File Name,URL,Background Color,Foreground Color,Type,Logo\n"
+//            let url = "https://smartstikr.com/s/shows/iacw"
+//            for item in appClipsStyles {
+//                string += "preview_appclip_\(item.index)_cam_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,badge\n"
+//                string += "preview_appclip_\(item.index)_cam_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,none\n"
+//                string += "preview_appclip_\(item.index)_nfc_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,badge\n"
+//                string += "preview_appclip_\(item.index)_nfc_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,none\n"
+//
+//                let s2 = AppClipCodeStyle(index: item.index + 1, foregroundColor: item.backgroundColor, backgroundColor: item.foregroundColor)
+//
+//                string += "preview_appclip_\(s2.index)_cam_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,badge\n"
+//                string += "preview_appclip_\(s2.index)_cam_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,none\n"
+//                string += "preview_appclip_\(s2.index)_nfc_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,badge\n"
+//                string += "preview_appclip_\(s2.index)_nfc_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,none\n"
+//            }
+//
+//            print(string)
         }
         //.navigationBarTitle(Text(tabNames[selectedTab]).multilineTextAlignment(.leading))
     }

@@ -203,16 +203,16 @@ public struct ExperienceDataView: JoliView {
                 }
             }
             
-            Section(footer: Text("Note: Enabling logging may slow down the app")) {
-                //                Picker("Select a color", selection: $selectedColor) {
-                //                    ForEach(colors, id: \.self) {
-                //                        Text($0)
-                //                    }
-                //                }
-                //                .pickerStyle(SegmentedPickerStyle())
-                //
-                //                Toggle("Enable Logging", isOn: $enableLogging)
-            }
+//            Section(footer: Text("Note: Enabling logging may slow down the app")) {
+//                //                Picker("Select a color", selection: $selectedColor) {
+//                //                    ForEach(colors, id: \.self) {
+//                //                        Text($0)
+//                //                    }
+//                //                }
+//                //                .pickerStyle(SegmentedPickerStyle())
+//                //
+//                //                Toggle("Enable Logging", isOn: $enableLogging)
+//            }
             
             let onTap: () -> Void = {
                 print("hit continue!")
