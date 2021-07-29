@@ -8,6 +8,7 @@
 
 import SwiftUI
 import JoliPlayground
+import JoliCore
 import Combine
 
 public typealias MultilineString = String
@@ -48,10 +49,20 @@ public class ExperienceData: ObservableObject {
     // sourcery: title = "Accent", description = "Accent brand color"
     @Published var brandColorAccent: Color = .yellow
     
-    init(brandName: String? = nil, landingPageText: MultilineString? = nil) {
+    @Published var uuid: String? = nil
+    
+    required init(_ uuid: String? = nil, brandName: String? = nil, landingPageText: MultilineString? = nil) {
         self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
         self.landingPageText = landingPageText ?? "Welcome to YOUR brand"
+        self.uuid = uuid
     }
+    
+    static func fromExperienceData(_ experienceData: StikrExperienceData) -> Self {
+        let res = Self.init(experienceData.uuid, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+        
+        return res
+    }
+    
 }
 
 public extension Color {

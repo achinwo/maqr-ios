@@ -112,9 +112,12 @@ public struct CodeDesignerView: JoliView {
     @AppStorage("cd-brand-name") var brandName: String = .empty
     @AppStorage("cd-brand-landingpagetext") var landingPageText: MultilineString = .empty
     
-    public init(_ experienceType: Binding<Experience.Type?>, _ data: Binding<ExperienceData?>){
+    let trialActivateCallback: () -> Void
+    
+    public init(_ experienceType: Binding<Experience.Type?>, _ data: Binding<ExperienceData?>, onActiveTrial: @escaping () -> Void){
         self._experienceData = data
         self._selectedExperience = experienceType
+        self.trialActivateCallback = onActiveTrial
     }
     
     static func experienceClasses() -> [Experience.Type] {
@@ -547,15 +550,29 @@ public struct CodeDesignerView: JoliView {
                             }
                             Divider().padding(.vertical)
                             Toggle("Inverted Colors", isOn: $invertThemeColor)//.padding(.horizontal)
+                            
+                            Button(){
+                                self.trialActivateCallback()
+                            } label: {
+                                Label("Try It", systemImage: "arrow.forward")
+                            }
+                            .disabled(brandName.isEmpty || landingPageText.isEmpty)
+                            .padding()
+                            .padding(.top)
                         }
                         .padding()
+                }
+                
+                Section(){
+                    
                 }
             }
             
             
             VStack(spacing: .zero){
                 VStack(spacing: .zero){
-                    NetworkImage(url: model.urlPath?.url(relativeTo: api.baseUrlHttp)){ img, error in
+                    ZStack(){
+                        NetworkImage(url: model.urlPath?.url(relativeTo: api.baseUrlHttp)){ img, error in
                             self.initialImageLoaded = img != nil
                         } content: {
                             Group(){
@@ -577,24 +594,25 @@ public struct CodeDesignerView: JoliView {
                         }
                         .id(model.urlPath)
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: screenWidth / 2)
-                        .frame(minHeight: screenWidth * 0.5)
-                        .overlay(
-                            GeometryReader() { proxy in
-                                Text("Preview")
-                                    .fixedSize(horizontal: true, vertical: true)
-                                    .frame(width: proxy.size.width * 1.1, alignment: .center)
-                                    .font(.title.weight(.light))
-                                    .foregroundColor(.fixedWhite)
-                                    .padding()
-                                    .background(Color.fixedGray.opacity(0.98))
-                                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                                    .offset(x: proxy.size.width / 2 * -1, y: proxy.size.height / 4)
-                                    .rotationEffect(.degrees(-45), anchor: .leading)
-                            }
-                        )
-                        .animation(.easeInOut)
-                        .clipped()
+                    }
+                    .frame(width: screenWidth / 2)
+                    .frame(minHeight: screenWidth * 0.5)
+                    .overlay(
+                        GeometryReader() { proxy in
+                            Text("Preview")
+                                .fixedSize(horizontal: true, vertical: true)
+                                .frame(width: proxy.size.width * 1.1, alignment: .center)
+                                .font(.title.weight(.light))
+                                .foregroundColor(.fixedWhite)
+                                .padding()
+                                .background(Color.fixedGray.opacity(0.98))
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                .offset(x: proxy.size.width / 2 * -1, y: proxy.size.height / 4)
+                                .rotationEffect(.degrees(-45), anchor: .leading)
+                        }
+                    )
+                    .animation(.easeInOut)
+                    .clipped()
                 }
                 .frame(width: screenWidth, height: screenWidth * 0.7)
                 .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))

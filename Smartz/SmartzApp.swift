@@ -86,13 +86,40 @@ struct SmartzApp: AppClip {
     @State var result: Result<MFMailComposeResult, Error>? = nil
     @State var modalView: AppPreview? = nil
     
+    @State var trialData: TrialInfo? = nil
+    
     var contentView: some View {
-        Group(){
-                if [AppLocation.home, AppLocation.unset].contains(currentLocation) {
-                    ContentView()
+        
+        let exitButton = GeometryReader() { proxy in
+            VStack(){
+                HStack(){
+                    Button(){
+                        currentLocation = .home
+                        trialData = nil
+                    } label: {
+                        Image("smartz_logo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 48, height: 48)
+                            .padding(4)
+                            .opacity(0.4)
+                            .grayscale(0.8)
+                            .shadow(color: Color.secondaryLabel, radius: 1, x: 0.2, y: 0.2)
+                    }
+                    .clipShape(Circle())
+                    Spacer()
+                }
+                Spacer()
+            }
+        }
+        
+        return Group(){
+                if let trial = trialData {
+                    trial.trialType.toView(trial.data).overlay(exitButton)
+                } else if [AppLocation.home, AppLocation.unset].contains(currentLocation) {
+                    ContentView($trialData)
                     //RestaurantView()
                 } else {
-                    
                     Group(){
                         if case let AppLocation.product(storeId, _) = currentLocation,
                                storeId.lowercased() == "joey" {
@@ -104,29 +131,7 @@ struct SmartzApp: AppClip {
                             SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                         }
                     }
-                    .overlay(
-                        GeometryReader() { proxy in
-                            VStack(){
-                                HStack(){
-                                    Button(){
-                                        currentLocation = .home
-                                    } label: {
-                                        Image("smartz_logo")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 48, height: 48)
-                                            .padding(4)
-                                            .opacity(0.4)
-                                            .grayscale(0.8)
-                                            .shadow(color: Color.secondaryLabel, radius: 1, x: 0.2, y: 0.2)
-                                    }
-                                    .clipShape(Circle())
-                                    Spacer()
-                                }
-                                Spacer()
-                            }
-                        }
-                    )
+                    .overlay(exitButton)
                 }
             }
             .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
@@ -134,7 +139,10 @@ struct SmartzApp: AppClip {
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true
             }
-            
+            .onReceive(coordinator.globalAlertSubject) { alertInfo in
+                self.alertInfo = alertInfo
+                self.isActionSheetPresented = true
+            }
             .onChange(of: self.mailOptions) { opts in
                 isSheetPresented = self.mailOptions != nil
             }
@@ -186,3 +194,22 @@ struct SmartzApp: AppClip {
             }
     }
 }
+
+public enum ExperienceTrialType {
+    case mealboxPrep
+    case restaurantCheckin
+    case brandPromotion
+    
+    func toView(_ data: ExperienceData) -> some View {
+        switch self {
+            case .mealboxPrep:
+                return MealboxView(data).eraseToAnyView()
+            case .restaurantCheckin:
+                return RestaurantView(data).eraseToAnyView()
+            case .brandPromotion:
+                return TvShowPromoView(data).eraseToAnyView()
+        }
+    }
+}
+
+public typealias TrialInfo = (trialType: ExperienceTrialType, data: ExperienceData)

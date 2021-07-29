@@ -157,6 +157,12 @@ struct ContentView: JoliView {
     @State var players: [String: AVPlayer] = [:]
     @State var maximised: Bool = false
     
+    @Binding var trialInfo: TrialInfo?
+    
+    public init(_ trialInfo: Binding<TrialInfo?>){
+        self._trialInfo = trialInfo
+    }
+    
     let sections: [ProductSection] = [
         ProductSection(asset: .image("sise_box_ofada"),
                        title: "Services",
@@ -293,7 +299,24 @@ struct ContentView: JoliView {
     @State var experienceData: ExperienceData?
     
     var appclipsCodesView: some View {
-        CodeDesignerView($experienceType, $experienceData)
+        CodeDesignerView($experienceType, $experienceData) {
+            
+            guard let data = experienceData else {
+                return
+            }
+            
+            switch experienceType?.title {
+                case MealboxView.title:
+                    self.trialInfo = (.mealboxPrep, data)
+                case RestaurantView.title:
+                    self.trialInfo = (.restaurantCheckin, data)
+                case TvShowPromoView.title:
+                    self.trialInfo = (.brandPromotion, data)
+                default:
+                    print("Unknown")
+            }
+            
+        }
         //.padding()
         //.padding(.top, safeAreaInsets.top)
         //.padding(.bottom, safeAreaInsets.bottom * 4)
@@ -605,8 +628,8 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+//struct ContentView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ContentView()
+//    }
+//}
