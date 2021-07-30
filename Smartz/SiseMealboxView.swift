@@ -156,7 +156,9 @@ public struct MealboxView: Experience, JoliView {
         "Mealbox Prep"
     }
     
-    public var dataModel: ExperienceData
+    @State public var dataModel: ExperienceData?
+    
+    public let dataModelDefault = ExperienceData()
     
     @State public var editMode: EditMode
     
@@ -164,16 +166,14 @@ public struct MealboxView: Experience, JoliView {
         return []
     }
     
-    
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @Environment(\.safeAreaInsets) var safeAreaInsets
-    
     
     public init(_ data: ExperienceData? = nil) {
         self._editMode = State(initialValue: .inactive)
         self.startDate = Date(timeIntervalSinceNow: 0)
         self._deliveryDate = State(initialValue: startDate)
-        self.dataModel = data ?? ExperienceData()
+        self._dataModel = State(initialValue: data)
     }
     
     enum Tab: Int, Identifiable, CaseIterable {

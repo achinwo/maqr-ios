@@ -70,12 +70,13 @@ public struct ReorderNowView: Experience, JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    public var dataModel: ExperienceData
+    @State public var dataModel: ExperienceData?
+    public let dataModelDefault = ExperienceData()
     
     @State public var editMode: EditMode = .inactive
     
     public init(_ data: ExperienceData? = nil) {
-        self.dataModel = data ?? ExperienceData()
+        self._dataModel = State(initialValue: data)
     }
     
     public static var dataKeys: [PartialKeyPath<ExperienceData>] {

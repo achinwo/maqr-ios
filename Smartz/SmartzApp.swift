@@ -88,6 +88,14 @@ struct SmartzApp: AppClip {
     
     @State var trialData: TrialInfo? = nil
     
+    public var screenWidth: CGFloat {
+        UIScreen.main.bounds.width
+    }
+    
+    public var screenHeight: CGFloat {
+        UIScreen.main.bounds.height
+    }
+    
     var contentView: some View {
         
         let exitButton = GeometryReader() { proxy in
@@ -113,27 +121,29 @@ struct SmartzApp: AppClip {
             }
         }
         
-        return Group(){
-                if let trial = trialData {
-                    trial.trialType.toView(trial.data).overlay(exitButton)
-                } else if [AppLocation.home, AppLocation.unset].contains(currentLocation) {
-                    ContentView($trialData)
-                    //RestaurantView()
-                } else {
+        return ContentView($trialData)
+            .overlay(
+                GeometryReader(){ proxy in
                     Group(){
-                        if case let AppLocation.product(storeId, _) = currentLocation,
-                               storeId.lowercased() == "joey" {
-                            JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
-                        } else if case let AppLocation.product(storeId, _) = currentLocation,
-                           storeId.lowercased() == "shows" {
-                            TvShowPromoView()
-                        } else {
-                            SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                        if let trial = trialData {
+                            trial.trialType.toView(trial.data).overlay(exitButton)
+                        } else if ![AppLocation.home, AppLocation.unset].contains(currentLocation) {
+                            Group(){
+                                if case let AppLocation.product(storeId, _) = currentLocation,
+                                   storeId.lowercased() == "joey" {
+                                    JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                                } else if case let AppLocation.product(storeId, _) = currentLocation,
+                                          storeId.lowercased() == "shows" {
+                                    TvShowPromoView()
+                                } else {
+                                    SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                                }
+                            }
+                            .overlay(exitButton)
                         }
                     }
-                    .overlay(exitButton)
                 }
-            }
+            )
             .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
             .onReceive(coordinator.globalAlertSubject) { alertInfo in
                 self.alertInfo = alertInfo

@@ -39,6 +39,27 @@ struct TvShowCastInfo: Codable, Identifiable {
     }
 }
 
+public let crazyworldData: StikrExperienceData = StikrExperienceData(backgroundImage: "bg_dark.jpg",
+                                                              bannerImage: "https://storage.googleapis.com/joli-app-bucket/images/poster_crazy_world_lowres.jpg",
+                                                              bannerVideoUrl: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4",
+                                                              brandColorAccent: "F2AF0D",
+                                                              brandColorPrimary: "FCFC31",
+                                                              brandColorSecondary: "53B1C5",
+                                                              brandName: "It's a crazy world",
+                                                              createdAt: Date(),
+                                                              createdById: -1,
+                                                              deletedAt: nil,
+                                                              deletedById: nil,
+                                                              id: -1,
+                                                              landingPageText: """
+“It’s a crazy world” is a modern-day 30-minute sitcom created by Amanda Ebeye and majorly directed by KC Muel and Amanda Ebeye. It tells the story of a very wealthy man with three women and three kids. It’s a hilarious sitcom that addresses the competition women go through in general trying to outdo themselves and constantly vying for the man’s attention. In this case, these women would use any means available to them, with social media being their number one go-to tool. \n\nThe other two women are constantly trying to win the favorite spot which the first wife already occupies as he constantly reminds them that besides pregnancy and the kids from the other women; he’s a man with a one-man-one-woman personality. So they try every way they can to win that spot, employing social media tools, the last wife and the kids’ area always on Instagram, Snapchat, Facebook, living a lie, making their worlds look perfect when it is not.
+""",
+                                                              logoImage: "logo_crazyworld.png",
+                                                              socialInstagramUsername: "itsacrazyworld_tvseries",
+                                                              updatedAt: Date(),
+                                                              updatedById: -1,
+                                                              uuid: "shows-iacw")
+
 struct TvShowPromoView: Experience, JoliView {
     
     static var title: String {
@@ -58,19 +79,25 @@ struct TvShowPromoView: Experience, JoliView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    let dataModel: ExperienceData
+    let dataModelDefault = ExperienceData()
+    
+    @State var dataModel: ExperienceData?
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Environment(\.colorScheme) var colorScheme
     @State var arrivedAt: Date? = Date()
-    @State var trailerUrl = URL(string: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4")!//"https://drive.google.com/uc?export=download&id=1thleK6efGtQ_hzTinD6jgHryLnkWBnHC")!
+    @State var trailerUrl = URL(string: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4")!
+    //"https://drive.google.com/uc?export=download&id=1thleK6efGtQ_hzTinD6jgHryLnkWBnHC")!
     @State var menu: [TvShowCastInfo] = []
     @AppStorage("isvideomuted-crazyworld") var isVideoMuted = false
     
     public init(_ data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
-        self.dataModel = data ?? ExperienceData()
         self._editMode = editMode
-        
+        self._dataModel = State(initialValue: data)
         self._videoLocalUrl = State(initialValue: FileManager.default.fileExists(atPath: cacheFileUrl.path) ? cacheFileUrl : nil)
+        
+        //let url = appCoordinator.api.baseUrlHttp
+        //.fromExperienceData(crazyworldData, baseUrl: url)
+        //ExperienceData.fromExperienceData(crazyworldData, baseUrl: url)
     }
     
     public init(_ data: ExperienceData? = nil) {

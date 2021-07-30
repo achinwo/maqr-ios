@@ -57,8 +57,10 @@ public class ExperienceData: ObservableObject {
         self.uuid = uuid
     }
     
-    static func fromExperienceData(_ experienceData: StikrExperienceData) -> Self {
-        let res = Self.init(experienceData.uuid, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+    static func fromExperienceData(_ experienceData: StikrExperienceData, baseUrl: URL) -> Self {
+        var res = Self.init(experienceData.uuid, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+        
+        
         
         return res
     }
@@ -75,7 +77,10 @@ public extension Color {
 
 public protocol Experience {
     //associatedtype Model: ExperienceData
-    var dataModel: ExperienceData { get }
+    var dataModel: ExperienceData? { get nonmutating set }
+    var dataModelDefault: ExperienceData { get }
+    var dataModelResolved: ExperienceData { get }
+    
     var editMode: EditMode { get nonmutating set }
     
     static var title: String { get }
@@ -107,12 +112,16 @@ public extension JoliView where Self: Experience {
         return paths
     }
     
+    var dataModelResolved: ExperienceData {
+        return dataModel ?? dataModelDefault
+    }
+    
     var body: some View {
         return self.contentView
             .onReceive(appCoordinator.connectionStateSubject) { state in
                 self.onConnectionStateChange(state.state)
             }
-            .onReceive(dataModel.$editStartedAt) { dt in
+            .onReceive(dataModelResolved.$editStartedAt) { dt in
                 self.editMode = dt != nil ? .active : .inactive
             }
     }
@@ -186,7 +195,10 @@ struct RestaurantView: Experience, JoliView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    let dataModel: ExperienceData
+    @State var dataModel: ExperienceData?
+    
+    let dataModelDefault = ExperienceData()
+    
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Environment(\.colorScheme) var colorScheme
     @State var arrivedAt: Date? = Date()
@@ -194,7 +206,7 @@ struct RestaurantView: Experience, JoliView {
     @State var menu: RestaurantMenu?
     
     public init(_ data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
-        self.dataModel = data ?? ExperienceData()
+        self._dataModel = State(initialValue: data)
         self._editMode = editMode
     }
     
