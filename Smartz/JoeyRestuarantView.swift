@@ -11,7 +11,11 @@ import JoliPlayground
 import Combine
 import AlertToast
 import JoliCore
+
+#if !os(macOS)
 import AVKit
+#endif
+
 import AVFoundation
 
 struct PlayerView: UIViewRepresentable {
@@ -106,6 +110,7 @@ class LoopingPlayerUIView: UIView {
         
         guard !audioSessionSet else { return }
         
+        #if !os(macOS)
         do {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
@@ -114,6 +119,7 @@ class LoopingPlayerUIView: UIView {
         catch {
             print("Setting category to AVAudioSessionCategoryPlayback failed.")
         }
+        #endif
     }
 
     override func layoutSubviews() {

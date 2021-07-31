@@ -141,11 +141,19 @@ struct TvShowPromoView: Experience, JoliView {
         return "Coming\n\(dateFormatter.string(from: releaseDate))"
     }
     
+    let youtube = YouTubeControlState("wbs5ed9I9C0")
+    
     var infoView: some View {
         ScrollViewReader() { proxy in
             ScrollView(showsIndicators: false){
                 VStack(spacing: .zero){
-                    PlayerView(url: videoLocalUrl ?? dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl, isMuted: self.isVideoMuted)
+                    //PlayerView(url: videoLocalUrl ?? dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl, isMuted: self.isVideoMuted)
+                    GeometryReader(){ proxy in
+                            YouTubeView(playerState: youtube, frame: .constant(proxy.size))
+                        }
+                        .onAppear(){
+                            youtube.playVideo()
+                        }
                         .background(
                             VStack(){
                                 NetworkImage(url: dataModelDefault.bannerImageUrl){
@@ -173,31 +181,35 @@ struct TvShowPromoView: Experience, JoliView {
                             .frame(maxHeight: UIScreen.main.bounds.width / 2)
                             .clipped()
                         )
-                        .frame(maxHeight: UIScreen.main.bounds.width / 1.2)
-                        .overlay(
-                            GeometryReader(){ proxy in
-                                VStack(){
-                                    Spacer()
-                                    HStack(){
-                                        Spacer()
-                                        Button(){
-                                            isVideoMuted.toggle()
-                                        } label: {
-                                            Image(systemName: isVideoMuted ? "speaker.slash.circle.fill" : "speaker.wave.2.circle.fill")
-                                                .resizable()
-                                                .frame(width: 32, height: 32)
-                                                .foregroundColor(.primary.opacity(0.5))
-                                                .padding(8)
-                                        }
-                                        .background(
-                                            BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight)
-                                        )
-                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                                        .padding()
-                                    }
-                                }
-                            }
-                        )
+                        .aspectRatio(contentMode: .fill)
+                    .frame(height: screenWidth / 1.2)
+                    .frame(maxWidth: screenWidth)
+                    //, maxHeight: UIScreen.main.bounds.width / 0.9)
+                        .clipped()
+//                        .overlay(
+//                            GeometryReader(){ proxy in
+//                                VStack(){
+//                                    Spacer()
+//                                    HStack(){
+//                                        Spacer()
+//                                        Button(){
+//                                            isVideoMuted.toggle()
+//                                        } label: {
+//                                            Image(systemName: isVideoMuted ? "speaker.slash.circle.fill" : "speaker.wave.2.circle.fill")
+//                                                .resizable()
+//                                                .frame(width: 32, height: 32)
+//                                                .foregroundColor(.primary.opacity(0.5))
+//                                                .padding(8)
+//                                        }
+//                                        .background(
+//                                            BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight)
+//                                        )
+//                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+//                                        .padding()
+//                                    }
+//                                }
+//                            }
+//                        )
                         //.fixedSize()
                     
                     NetworkImage(url: dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl){

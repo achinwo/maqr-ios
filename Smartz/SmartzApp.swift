@@ -147,6 +147,8 @@ struct SmartzApp: AppClip {
         UIScreen.main.bounds.height
     }
     
+    let youtube = YouTubeControlState("fB7keEigXi8")
+    
     var contentView: some View {
         
         let exitButton = GeometryReader() { proxy in
@@ -195,6 +197,16 @@ struct SmartzApp: AppClip {
                     }
                 }
             )
+//            .overlay(
+//                GeometryReader(){ proxy in
+//                    YouTubeView(playerState: youtube)
+//                        .frame(width: proxy.size.width, height: proxy.size.height)
+//                }
+//                .background(Color.blue.opacity(0.6))
+//                .onAppear(){
+//                    youtube.playVideo()
+//                }
+//            )
             .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
             .onReceive(coordinator.globalAlertSubject) { alertInfo in
                 self.alertInfo = alertInfo
