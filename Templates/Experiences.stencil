@@ -43,3 +43,22 @@ public extension PartialKeyPath where Root == ExperienceData {
 
     {{ test }}
 }
+
+public extension ExperienceData {
+
+    public struct Defaults {
+
+        public init(
+{% for variable in type.ExperienceData.storedVariables|annotated: "title" %}
+            {{ variable.name }}: {{variable.unwrappedTypeName}}{#
+            #}{#
+            #}{#
+            #}{% if not forloop.last %},{% endif %}
+{% endfor %}
+        ){
+
+        }
+
+    }
+
+}
