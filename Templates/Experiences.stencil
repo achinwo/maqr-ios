@@ -46,17 +46,37 @@ public extension PartialKeyPath where Root == ExperienceData {
 
 public extension ExperienceData {
 
-    public struct Defaults {
+    static func fromDefaults(_ defaults: Defaults = .init()) -> Self {
+        var data = Self.init()
+    {% for variable in type.ExperienceData.storedVariables|annotated: "default" %}
+        data.{{ variable.name }}{#
+        #} = {#
+        #}defaults.{{ variable.name }}{#
+        #}
+    {% endfor %}
+        return data
+    }
+
+    struct Defaults {
+
+{% for variable in type.ExperienceData.storedVariables|annotated: "default" %}
+        public let {{ variable.name }}: {{variable.unwrappedTypeName}}
+{% endfor %}
 
         public init(
-{% for variable in type.ExperienceData.storedVariables|annotated: "title" %}
+{% for variable in type.ExperienceData.storedVariables|annotated: "default" %}
             {{ variable.name }}: {{variable.unwrappedTypeName}}{#
-            #}{#
-            #}{#
+            #} = {#
+            #}{{ variable.annotations.default }}{#
             #}{% if not forloop.last %},{% endif %}
 {% endfor %}
         ){
-
+        {% for variable in type.ExperienceData.storedVariables|annotated: "default" %}
+            self.{{ variable.name }}{#
+            #} = {#
+            #}{{ variable.name }}{#
+            #}
+        {% endfor %}
         }
 
     }

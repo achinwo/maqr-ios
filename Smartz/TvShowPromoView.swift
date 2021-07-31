@@ -79,13 +79,13 @@ struct TvShowPromoView: Experience, JoliView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    let dataModelDefault = ExperienceData()
+    let dataModelDefault = ExperienceData.Defaults()
     
     @State var dataModel: ExperienceData?
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Environment(\.colorScheme) var colorScheme
     @State var arrivedAt: Date? = Date()
-    @State var trailerUrl = URL(string: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4")!
+//    @State var trailerUrl = URL(string: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4")!
     //"https://drive.google.com/uc?export=download&id=1thleK6efGtQ_hzTinD6jgHryLnkWBnHC")!
     @State var menu: [TvShowCastInfo] = []
     @AppStorage("isvideomuted-crazyworld") var isVideoMuted = false
@@ -98,6 +98,7 @@ struct TvShowPromoView: Experience, JoliView {
         //let url = appCoordinator.api.baseUrlHttp
         //.fromExperienceData(crazyworldData, baseUrl: url)
         //ExperienceData.fromExperienceData(crazyworldData, baseUrl: url)
+        self._dataModel = State(initialValue: data)
     }
     
     public init(_ data: ExperienceData? = nil) {
@@ -125,7 +126,7 @@ struct TvShowPromoView: Experience, JoliView {
         }
         
         DispatchQueue.global(qos: .background).async {
-            guard let data = try? Data(contentsOf: trailerUrl) else {
+            guard let data = try? Data(contentsOf: dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl) else {
                 print("Video fetch failed!")
                 return
             }
@@ -152,7 +153,7 @@ struct TvShowPromoView: Experience, JoliView {
         ScrollViewReader() { proxy in
             ScrollView(showsIndicators: false){
                 VStack(spacing: .zero){
-                    PlayerView(url: videoLocalUrl ?? trailerUrl, isMuted: self.isVideoMuted)
+                    PlayerView(url: videoLocalUrl ?? dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl, isMuted: self.isVideoMuted)
                         .background(
                             VStack(){
                                 Image("poster_crazy_world_lowres")

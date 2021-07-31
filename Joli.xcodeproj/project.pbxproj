@@ -43,6 +43,7 @@
 		921C300F2694B90500527D39 /* show_cast_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 921C300E2694B90500527D39 /* show_cast_data.json */; };
 		921C30102694B90500527D39 /* show_cast_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 921C300E2694B90500527D39 /* show_cast_data.json */; };
 		921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */; };
+		921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */; };
 		922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922223E226A2E368007BD0D3 /* CodeDesignerView.swift */; };
 		922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
 		922260F9265E72F00064BC6F /* SpotifyiOS.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1319,6 +1320,7 @@
 				92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
 				920264CE268FB907005643E1 /* ExperienceView.swift in Sources */,
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
+				921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */,
 				921C300D2694B29400527D39 /* TvShowPromoView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -71,7 +71,7 @@ public struct ReorderNowView: Experience, JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
     @State public var dataModel: ExperienceData?
-    public let dataModelDefault = ExperienceData()
+    public let dataModelDefault = ExperienceData.Defaults()
     
     @State public var editMode: EditMode = .inactive
     

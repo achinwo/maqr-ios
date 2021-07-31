@@ -20,8 +20,8 @@ struct PlayerView: UIViewRepresentable {
     var isMuted = true
     var size: CGSize
     
-    init(url: URL? = nil, isMuted: Bool = true, size: CGSize? = nil){
-        self.url = url ?? URL(string: "https://joeyrestaurants.com/assets/craftAssets/Joey-Restaurants-Welcome-Back-With-Audio.mp4")!
+    init(url: URL, isMuted: Bool = true, size: CGSize? = nil){
+        self.url = url //?? 
         self.isMuted = isMuted
         self.size = size ?? .init(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width / 1.2)
     }

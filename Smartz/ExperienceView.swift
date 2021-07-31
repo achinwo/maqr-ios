@@ -13,40 +13,47 @@ import Combine
 
 public typealias MultilineString = String
 
+public extension URL {
+    
+    init(staticString: StaticString){
+        self.init(string: "\(staticString)")!
+    }
+}
+
 public class ExperienceData: ObservableObject {
     
     static let DEFAULT_BRAND_NAME = "SmartStikr"
     
     @Published var editStartedAt: Date? = nil
     
-    // sourcery: title = "Logo Image", description = "Your brand logo image"
+    // sourcery: title = "Logo Image", description = "Your brand logo image", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/smartz_logo.png")"
     @Published var logoImageUrl: URL?
     
-    // sourcery: title = "Banner Image", description = "Banner image of landing page"
+    // sourcery: title = "Banner Image", description = "Banner image of landing page", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/poster_crazy_world_lowres.jpg")"
     @Published var bannerImageUrl: URL?
     
-    // sourcery: title = "Banner Video", description = "Banner video of landing page"
+    // sourcery: title = "Banner Video", description = "Banner video of landing page", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4")"
     @Published var bannerVideoUrl: URL?
     
-    // sourcery: title = "Background Image", description = "Default background image for your brand"
+    // sourcery: title = "Background Image", description = "Default background image for your brand", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/bg_dark.jpg")"
     @Published var backgroundImageUrl: URL?
     
-    // sourcery: title = "Brand Name", description = "Name of your company or brand"
+    // sourcery: title = "Brand Name", description = "Name of your company or brand", default = ""Your Brand""
     @Published var brandName: String
     
-    // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience"
+    // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience", default = ""Describe \nyour brand \nexperience""
     @Published var landingPageText: MultilineString
     
-    // sourcery: title = "Instagram", description = "Instagram account username"
+    // sourcery: title = "Instagram", description = "Instagram account username", default = ""smartstikr""
     @Published var socialInstagramUsername: String?
     
-    // sourcery: title = "Primary", description = "Primary brand color"
+    // sourcery: title = "Primary", description = "Primary brand color", default = ".blue"
     @Published var brandColorPrimary: Color = .blue
     
-    // sourcery: title = "Secondary", description = "Secondary brand color"
+    // sourcery: title = "Secondary", description = "Secondary brand color", default = ".orange"
     @Published var brandColorSecondary: Color = .orange
     
-    // sourcery: title = "Accent", description = "Accent brand color"
+    // sourcery: title = "Accent", description = "Accent brand color", default = ".yellow"
     @Published var brandColorAccent: Color = .yellow
     
     @Published var uuid: String? = nil
@@ -59,9 +66,6 @@ public class ExperienceData: ObservableObject {
     
     static func fromExperienceData(_ experienceData: StikrExperienceData, baseUrl: URL) -> Self {
         var res = Self.init(experienceData.uuid, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
-        
-        
-        
         return res
     }
     
@@ -78,8 +82,7 @@ public extension Color {
 public protocol Experience {
     //associatedtype Model: ExperienceData
     var dataModel: ExperienceData? { get nonmutating set }
-    var dataModelDefault: ExperienceData { get }
-    var dataModelResolved: ExperienceData { get }
+    var dataModelDefault: ExperienceData.Defaults { get }
     
     var editMode: EditMode { get nonmutating set }
     
@@ -112,17 +115,15 @@ public extension JoliView where Self: Experience {
         return paths
     }
     
-    var dataModelResolved: ExperienceData {
-        return dataModel ?? dataModelDefault
-    }
-    
     var body: some View {
         return self.contentView
             .onReceive(appCoordinator.connectionStateSubject) { state in
                 self.onConnectionStateChange(state.state)
             }
-            .onReceive(dataModelResolved.$editStartedAt) { dt in
-                self.editMode = dt != nil ? .active : .inactive
+            .ifLet(dataModel?.$editStartedAt) { view, editStartedAt in
+                view.onReceive(editStartedAt) { dt in
+                    self.editMode = dt != nil ? .active : .inactive
+                }
             }
     }
 }
@@ -197,7 +198,7 @@ struct RestaurantView: Experience, JoliView {
     
     @State var dataModel: ExperienceData?
     
-    let dataModelDefault = ExperienceData()
+    let dataModelDefault = ExperienceData.Defaults(bannerVideoUrl: URL(staticString: "https://joeyrestaurants.com/assets/craftAssets/Joey-Restaurants-Welcome-Back-With-Audio.mp4"))
     
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Environment(\.colorScheme) var colorScheme
@@ -228,7 +229,7 @@ struct RestaurantView: Experience, JoliView {
                 VStack(spacing: .zero){
                     
                     //VideoPlayer(player: joeyVideo)
-                    PlayerView()
+                    PlayerView(url: dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl)
                         .frame(width: screenWidth, height: screenWidth / 1.6)
                         .clipped()
                         
