@@ -39,27 +39,6 @@ struct TvShowCastInfo: Codable, Identifiable {
     }
 }
 
-public let crazyworldData: StikrExperienceData = StikrExperienceData(backgroundImage: "bg_dark.jpg",
-                                                              bannerImage: "https://storage.googleapis.com/joli-app-bucket/images/poster_crazy_world_lowres.jpg",
-                                                              bannerVideoUrl: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4",
-                                                              brandColorAccent: "F2AF0D",
-                                                              brandColorPrimary: "FCFC31",
-                                                              brandColorSecondary: "53B1C5",
-                                                              brandName: "It's a crazy world",
-                                                              createdAt: Date(),
-                                                              createdById: -1,
-                                                              deletedAt: nil,
-                                                              deletedById: nil,
-                                                              id: -1,
-                                                              landingPageText: """
-“It’s a crazy world” is a modern-day 30-minute sitcom created by Amanda Ebeye and majorly directed by KC Muel and Amanda Ebeye. It tells the story of a very wealthy man with three women and three kids. It’s a hilarious sitcom that addresses the competition women go through in general trying to outdo themselves and constantly vying for the man’s attention. In this case, these women would use any means available to them, with social media being their number one go-to tool. \n\nThe other two women are constantly trying to win the favorite spot which the first wife already occupies as he constantly reminds them that besides pregnancy and the kids from the other women; he’s a man with a one-man-one-woman personality. So they try every way they can to win that spot, employing social media tools, the last wife and the kids’ area always on Instagram, Snapchat, Facebook, living a lie, making their worlds look perfect when it is not.
-""",
-                                                              logoImage: "logo_crazyworld.png",
-                                                              socialInstagramUsername: "itsacrazyworld_tvseries",
-                                                              updatedAt: Date(),
-                                                              updatedById: -1,
-                                                              uuid: "shows-iacw")
-
 struct TvShowPromoView: Experience, JoliView {
     
     static var title: String {
@@ -71,9 +50,9 @@ struct TvShowPromoView: Experience, JoliView {
             \ExperienceData.bannerVideoUrl,
             \ExperienceData.bannerImageUrl,
             \ExperienceData.backgroundImageUrl,
+            \ExperienceData.items,
         ]
     }
-    
     
     @Binding var editMode: EditMode
     
@@ -149,6 +128,19 @@ struct TvShowPromoView: Experience, JoliView {
     
     @State var videoLocalUrl: URL? = nil
     
+    var releaseText: String {
+        let releaseDate = dataModel?.releaseDate ?? dataModelDefault.releaseDate
+        guard releaseDate > Date() else {
+            return "Out Now"
+        }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMMM dd"
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .none
+        return "Coming\n\(dateFormatter.string(from: releaseDate))"
+    }
+    
     var infoView: some View {
         ScrollViewReader() { proxy in
             ScrollView(showsIndicators: false){
@@ -156,8 +148,10 @@ struct TvShowPromoView: Experience, JoliView {
                     PlayerView(url: videoLocalUrl ?? dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl, isMuted: self.isVideoMuted)
                         .background(
                             VStack(){
-                                Image("poster_crazy_world_lowres")
-                                    .resizable()
+                                NetworkImage(url: dataModelDefault.bannerImageUrl){
+                                        EmptyView()
+                                    }
+                                    //.resizable()
                                     .aspectRatio(contentMode: .fill)
                                     .overlay(
                                         VStack(){
@@ -179,6 +173,7 @@ struct TvShowPromoView: Experience, JoliView {
                             .frame(maxHeight: UIScreen.main.bounds.width / 2)
                             .clipped()
                         )
+                        .frame(maxHeight: UIScreen.main.bounds.width / 1.2)
                         .overlay(
                             GeometryReader(){ proxy in
                                 VStack(){
@@ -205,19 +200,24 @@ struct TvShowPromoView: Experience, JoliView {
                         )
                         //.fixedSize()
                     
-                    Image("logo_crazyworld")
-                        .resizable()
+                    NetworkImage(url: dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl){
+                            EmptyView()
+                        }
+                        //.resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: screenWidth * 0.7)
+                        //.frame(width: screenWidth * 0.7)
+                        .frame(maxHeight: screenWidth / 6)
                         .padding()
                         .padding(.vertical)
                         //.offset(x: 0, y: -200)
                         .id("brand")
                     //
-                    Link(destination: URL(string: "https://www.instagram.com/naijaonnetflix/")!) {
+                    Link(destination: URL(string: "https://www.instagram.com/\(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername)/")!) {
                         HStack(alignment: .center, spacing: .zero){
-                            (Text("Coming ").font(.subheadline)
-                                + Text("July 25th").font(.subheadline.weight(.semibold)))
+                            (Text(releaseText).font(.subheadline.weight(.semibold)))
+                                .lineLimit(2)
+                                .multilineTextAlignment(.trailing)
+                                .fixedSize(horizontal: false, vertical: true)
                                 .foregroundColor(.primary)
                                 .padding(.trailing)
                                 .lineLimit(1)
@@ -225,15 +225,20 @@ struct TvShowPromoView: Experience, JoliView {
 
                             RoundedRectangle(cornerRadius: 4).frame(width: 1.5, height: screenWidth / 10).foregroundColor(.primary)
 
-                            Image("logo_netflix").resizable().aspectRatio(contentMode: .fit).frame(height: screenWidth / 8)//.background(Color.pink)
+                            NetworkImage(url: dataModel?.releasePlatformLogoUrl ?? dataModelDefault.releasePlatformLogoUrl){
+                                EmptyView()
+                            }
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: screenWidth / 8)
+                            .padding(4)
+                            //.background(Color.pink)
                         }
                     }
                     .frame(maxHeight: screenWidth / 8)
                     .padding(.bottom)
                     
                     VStack(){
-                        (Text("“It’s a crazy world” ").font(.subheadline.weight(.semibold))
-                            + Text("is a modern-day 30-minute sitcom created by Amanda Ebeye and majorly directed by KC Muel and Amanda Ebeye. It tells the story of a very wealthy man with three women and three kids. It’s a hilarious sitcom that addresses the competition women go through in general trying to outdo themselves and constantly vying for the man’s attention. In this case, these women would use any means available to them, with social media being their number one go-to tool. \n\nThe other two women are constantly trying to win the favorite spot which the first wife already occupies as he constantly reminds them that besides pregnancy and the kids from the other women; he’s a man with a one-man-one-woman personality. So they try every way they can to win that spot, employing social media tools, the last wife and the kids’ area always on Instagram, Snapchat, Facebook, living a lie, making their worlds look perfect when it is not.")
+                        (Text(dataModel?.landingPageText ?? dataModelDefault.landingPageText)
                             .font(.subheadline.weight(.light))
                         )
                         .padding()
@@ -254,20 +259,25 @@ struct TvShowPromoView: Experience, JoliView {
                     .id("body")
                     
                     VStack(){
-                        Link(destination: URL(string: "https://www.instagram.com/naijaonnetflix/")!) {
+                        Link(destination: URL(string: "https://www.instagram.com/\(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername)/")!) {
                             VStack(){
-                                Image("logo_netflix").resizable().aspectRatio(contentMode: .fit).frame(width: screenWidth / 3)
-                                Text("Coming July 25th").font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
-                                Text("@naijaonnetflix").font(.body.weight(.semibold)).foregroundColor(.primary)
-                            }
+                                NetworkImage(url: dataModel?.releasePlatformLogoUrl ?? dataModelDefault.releasePlatformLogoUrl){
+                                    EmptyView()
+                                }
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: screenWidth / 3)
+                                .frame(maxHeight: screenWidth / 6)
+                                Text(releaseText.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "\n", with: " ")).font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
+                                Text("@\(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername)").font(.body.weight(.semibold)).foregroundColor(.primary)
+                            }//@naijaonnetflix itsacrazyworld_tvseries
                         }
                         .padding(.bottom)
                         
-                        Link(destination: URL(string: "https://www.instagram.com/itsacrazyworld_tvseries/")!) {
+                        Link(destination: URL(string: "https://www.instagram.com/\(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername)/")!) {
                             VStack(){
                                 Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
                                 Text("Follow us").font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
-                                Text("@itsacrazyworld_tvseries").font(.body.weight(.semibold)).foregroundColor(.primary)
+                                Text("@\(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername)").font(.body.weight(.semibold)).foregroundColor(.primary)
                             }
                         }
                         .padding(.bottom)
@@ -285,9 +295,12 @@ struct TvShowPromoView: Experience, JoliView {
                 .padding(.bottom, max(100, safeAreaInsets.bottom))
                 //.padding(.top, safeAreaInsets.top)
             }
-            .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
+            .background(
+                NetworkImage(url: dataModel?.backgroundImageUrl ?? dataModelDefault.backgroundImageUrl){
+                    Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+                        .resizable()
+                }
+                .aspectRatio(contentMode: .fill)
             )
             .onAppear(){
                 self.menu = (try? TvShowCastInfo.load()) ?? []

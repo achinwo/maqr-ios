@@ -16,10 +16,6 @@ public struct ExperienceDataView: JoliView {
     @StateObject var data: ExperienceData
     let experienceType: Experience.Type
     let completionCallback: (ExperienceData) -> Void
-    
-    @State private var enableLogging = false
-    @State private var selectedColor = "Red"
-    @State private var colors = ["Red", "Green", "Blue"]
     @State var isUploadingImage = false
     
     init(_ dataType: Experience.Type, _ data: ExperienceData, callback: @escaping (ExperienceData) -> Void) {

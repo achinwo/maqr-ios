@@ -15,6 +15,18 @@ import JoliCore
 import os
 import MessageUI
 
+let crazyworldDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/logo_crazyworld.png"),
+                                                       bannerImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/poster_crazy_world_lowres.jpg"),
+                                                       bannerVideoUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4"),
+                                                       brandName: "It's a Crazy World",
+                                                       landingPageText: "“It’s a crazy world” is a modern-day 30-minute sitcom created by Amanda Ebeye and majorly directed by KC Muel and Amanda Ebeye. It tells the story of a very wealthy man with three women and three kids. It’s a hilarious sitcom that addresses the competition women go through in general trying to outdo themselves and constantly vying for the man’s attention. In this case, these women would use any means available to them, with social media being their number one go-to tool. \n\nThe other two women are constantly trying to win the favorite spot which the first wife already occupies as he constantly reminds them that besides pregnancy and the kids from the other women; he’s a man with a one-man-one-woman personality. So they try every way they can to win that spot, employing social media tools, the last wife and the kids’ area always on Instagram, Snapchat, Facebook, living a lie, making their worlds look perfect when it is not.",
+                                                       socialInstagramUsername: "itsacrazyworld_tvseries",
+                                                       releaseDate: Date(timeIntervalSince1970: 1627171200),
+                                                       releasePlatformName: "Netflix",
+                                                       releasePlatformLogoUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/logo_netflix.png"),
+                                                       releasePlatformInstaUsername: "naijaonnetflix"
+                                                       ))
+
 @main
 struct SmartzApp: AppClip {
     
@@ -134,7 +146,7 @@ struct SmartzApp: AppClip {
                                     JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                                 } else if case let AppLocation.product(storeId, _) = currentLocation,
                                           storeId.lowercased() == "shows" {
-                                    TvShowPromoView()
+                                    TvShowPromoView(crazyworldDemo)
                                 } else {
                                     SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                                 }

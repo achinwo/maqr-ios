@@ -47,6 +47,18 @@ public class ExperienceData: ObservableObject {
     // sourcery: title = "Instagram", description = "Instagram account username", default = ""smartstikr""
     @Published var socialInstagramUsername: String?
     
+    // sourcery: title = "Release Date", description = "Product release date", default = "Date().advanced(by: 604800)"
+    @Published var releaseDate: Date?
+    
+    // sourcery: title = "Release Platform Name", description = "Platform where this product will be made available", default = ""App Store""
+    @Published var releasePlatformName: String?
+    
+    // sourcery: title = "Release Platform Logo", description = "Platform logo image", default = "URL(staticString: "https://www.freepnglogos.com/uploads/app-store-logo-png/file-app-store-ios-custom-size-18.png")"
+    @Published var releasePlatformLogoUrl: URL?
+    
+    // sourcery: title = "Release Platform Instagram", description = "Platform instagram name", default = ""smartstikr""
+    @Published var releasePlatformInstaUsername: String?
+    
     // sourcery: title = "Primary", description = "Primary brand color", default = ".blue"
     @Published var brandColorPrimary: Color = .blue
     
@@ -57,6 +69,9 @@ public class ExperienceData: ObservableObject {
     @Published var brandColorAccent: Color = .yellow
     
     @Published var uuid: String? = nil
+    
+    // sourcery: title = "Items", description = "List brand experience items", default = "[]"
+    @Published var items: [StikrExperienceDataItem] = []
     
     required init(_ uuid: String? = nil, brandName: String? = nil, landingPageText: MultilineString? = nil) {
         self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
