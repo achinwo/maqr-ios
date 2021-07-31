@@ -40,8 +40,6 @@
 		921ADE93265E759E0023DC87 /* SpotifyiOS.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* TvShowPromoView.swift */; };
 		921C300D2694B29400527D39 /* TvShowPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* TvShowPromoView.swift */; };
-		921C300F2694B90500527D39 /* show_cast_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 921C300E2694B90500527D39 /* show_cast_data.json */; };
-		921C30102694B90500527D39 /* show_cast_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 921C300E2694B90500527D39 /* show_cast_data.json */; };
 		921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */; };
 		921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */; };
 		922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922223E226A2E368007BD0D3 /* CodeDesignerView.swift */; };
@@ -366,7 +364,6 @@
 		920958AA25601EE10014626D /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		9209B1E02629E32500786A6A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		921C300B2694B29400527D39 /* TvShowPromoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvShowPromoView.swift; sourceTree = "<group>"; };
-		921C300E2694B90500527D39 /* show_cast_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = show_cast_data.json; sourceTree = "<group>"; };
 		921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceDataView.swift; sourceTree = "<group>"; };
 		922223E226A2E368007BD0D3 /* CodeDesignerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeDesignerView.swift; sourceTree = "<group>"; };
 		922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = SpotifyiOS.xcframework; sourceTree = "<group>"; };
@@ -561,7 +558,6 @@
 				92562E2B266BC162004972E6 /* demo_sise_intro.mov */,
 				92562E29266BC118004972E6 /* demo_sise_appclip.mp4 */,
 				92562E32266D65EC004972E6 /* demo_sise_code_scan.mov */,
-				921C300E2694B90500527D39 /* show_cast_data.json */,
 				9202D4022659B7CD00D5974F /* Smartz.entitlements */,
 				9202D3D42659B6E700D5974F /* SmartzApp.swift */,
 				9202D3D62659B6E700D5974F /* ContentView.swift */,
@@ -1164,7 +1160,6 @@
 				920264DC26924653005643E1 /* joey_sherway_data.json in Resources */,
 				92562E2C266BC162004972E6 /* demo_sise_intro.mov in Resources */,
 				92562E2A266BC118004972E6 /* demo_sise_appclip.mp4 in Resources */,
-				921C300F2694B90500527D39 /* show_cast_data.json in Resources */,
 				9202D3DC2659B6E900D5974F /* Preview Assets.xcassets in Resources */,
 				9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */,
 				92562E2E266C003D004972E6 /* Assets.xcassets in Resources */,
@@ -1179,7 +1174,6 @@
 			files = (
 				920264DD26924653005643E1 /* joey_sherway_data.json in Resources */,
 				9202D4112659BC0E00D5974F /* Preview Assets.xcassets in Resources */,
-				921C30102694B90500527D39 /* show_cast_data.json in Resources */,
 				9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */,
 				92C1A24C26626BF900A11E0F /* env.json in Resources */,
 			);
@@ -1562,7 +1556,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1589,7 +1583,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1614,7 +1608,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1640,7 +1634,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;

@@ -244,11 +244,13 @@ struct TvShowPromoView: Experience, JoliView {
                         .padding()
                         .multilineTextAlignment(.center)
                         
-                        Divider().padding(.vertical)
-                        
-                        TvShowCastButtonView(menu: $menu)
-                            .frame(height: 60)
-                            .padding(.bottom)
+                        if !menu.isEmpty {
+                            Divider().padding(.vertical)
+                            
+                            TvShowCastButtonView(menu: $menu)
+                                .frame(height: 60)
+                                .padding(.bottom)
+                        }
                     }
                     .frame(width: screenWidth - 100)
                     .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
@@ -303,8 +305,31 @@ struct TvShowPromoView: Experience, JoliView {
                 .aspectRatio(contentMode: .fill)
             )
             .onAppear(){
-                self.menu = (try? TvShowCastInfo.load()) ?? []
+                //self.menu = (try? TvShowCastInfo.load()) ?? []
                 
+                var castMembers: [TvShowCastInfo] = []
+                
+                for itm in self.dataModel?.items ?? [] {
+                    
+                    guard let title = itm.title,
+                          let subtitle = itm.subtitle,
+                          let alias = itm.aliasTitle,
+                          let imgName = itm.imageName,
+                          let url = URL(string: imgName) else {
+                        continue
+                    }
+                    
+                    castMembers.append(TvShowCastInfo(name: title, characterName: alias, imageUrl: url, bio: subtitle))
+                }
+                
+                self.menu = castMembers
+                
+//                var str = ""
+//                for cast in self.menu {
+//                    str += "StikrExperienceDataItem.makeCastmember(\"\(cast.name)\", subtitle: \"\(cast.bio)\", alias: \"\(cast.characterName)\", imageUrlString: \"\(cast.imageUrl)\")\n"
+//                }
+//
+//                print(str)
                 guard self.videoLocalUrl == nil else { return }
                 
                 fetchVideo()
