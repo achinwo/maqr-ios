@@ -159,6 +159,15 @@ open class YouTubePlayerView: UIView, WKNavigationDelegate {
     
     // MARK: Load player
     
+    open func loadVideo(_ vId: YouTubeVideoIdentifier){
+        switch vId {
+            case .uid(let uuid):
+                self.loadVideoID(uuid)
+            case .url(let vUrl):
+                self.loadVideoURL(vUrl)
+        }
+    }
+    
     open func loadVideoURL(_ videoURL: URL) {
         if let videoID = videoIDFromYouTubeURL(videoURL) {
             loadVideoID(videoID)
@@ -403,11 +412,27 @@ enum playerCommandToExecute {
     case idle
 }
 
+
+public enum YouTubeVideoIdentifier: Identifiable, Equatable {
+    case uid(String)
+    case url(URL)
+    
+    public var id: String {
+        switch self {
+            case let .uid(uuid):
+                return uuid
+            case let .url(vUrl):
+                return vUrl.absoluteString
+        }
+    }
+}
+
 // 2
-class YouTubeControlState: ObservableObject {
+public class YouTubeControlState: ObservableObject {
+    
     
     // 3
-    @Published var videoID: String? // = "qRC4Vk6kisY"
+    @Published var videoId: YouTubeVideoIdentifier? // = "qRC4Vk6kisY"
     {
         // 4
         didSet {
@@ -415,8 +440,14 @@ class YouTubeControlState: ObservableObject {
         }
     }
     
-    public init(_ videoId: String? = nil){
-        self._videoID = Published(initialValue: videoId)
+    @Published var videoUrl: URL? {
+        didSet {
+            self.executeCommand = .loadNewVideo
+        }
+    }
+    
+    public init(_ videoId: YouTubeVideoIdentifier? = nil){
+        self._videoId = Published(initialValue: videoId)
     }
     
     // 5
@@ -460,11 +491,9 @@ final class YouTubeView: UIViewRepresentable {
     typealias UIViewType = YouTubePlayerView
     
     let playerState: YouTubeControlState
-    @Binding var frame: CGSize
     
-    init(playerState: YouTubeControlState, frame: Binding<CGSize>) {
+    init(playerState: YouTubeControlState) {
         self.playerState = playerState
-        self._frame = frame
     }
     
     func makeCoordinator() -> Coordinator {
@@ -494,7 +523,7 @@ final class YouTubeView: UIViewRepresentable {
     
     func updateUIView(_ uiView: UIViewType, context: Context) {
         
-        guard let videoID = playerState.videoID else {
+        guard let videoId = playerState.videoId else {
             print("[Youtube] updateUIView no video")
             return
         }
@@ -505,7 +534,7 @@ final class YouTubeView: UIViewRepresentable {
             switch playerState.executeCommand {
                 case .loadNewVideo:
                     playerState.executeCommand = .idle
-                    uiView.loadVideoID(videoID)
+                    uiView.loadVideo(videoId)
                 case .play:
                     playerState.executeCommand = .idle
                     uiView.play()
@@ -529,7 +558,7 @@ final class YouTubeView: UIViewRepresentable {
                     print("\(playerState.executeCommand) not yet implemented")
             }
         } else if !uiView.ready {
-            uiView.loadVideoID(videoID)
+            uiView.loadVideo(videoId)
         }
         
     }

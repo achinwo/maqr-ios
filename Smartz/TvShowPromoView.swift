@@ -141,7 +141,7 @@ struct TvShowPromoView: Experience, JoliView {
         return "Coming\n\(dateFormatter.string(from: releaseDate))"
     }
     
-    let youtube = YouTubeControlState("wbs5ed9I9C0")
+    @State var youtube: YouTubeControlState = .init()
     
     var infoView: some View {
         ScrollViewReader() { proxy in
@@ -149,7 +149,7 @@ struct TvShowPromoView: Experience, JoliView {
                 VStack(spacing: .zero){
                     //PlayerView(url: videoLocalUrl ?? dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl, isMuted: self.isVideoMuted)
                     GeometryReader(){ proxy in
-                            YouTubeView(playerState: youtube, frame: .constant(proxy.size))
+                            YouTubeView(playerState: youtube)
                         }
                         .onAppear(){
                             youtube.playVideo()
@@ -318,6 +318,11 @@ struct TvShowPromoView: Experience, JoliView {
             )
             .onAppear(){
                 //self.menu = (try? TvShowCastInfo.load()) ?? []
+                let url = dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl
+                
+                if self.youtube.videoId != .url(url) {
+                    self.youtube = YouTubeControlState(.url(url))
+                }
                 
                 var castMembers: [TvShowCastInfo] = []
                 

@@ -147,7 +147,7 @@ struct SmartzApp: AppClip {
         UIScreen.main.bounds.height
     }
     
-    let youtube = YouTubeControlState("fB7keEigXi8")
+    let youtube = YouTubeControlState(.uid("fB7keEigXi8"))
     
     var contentView: some View {
         

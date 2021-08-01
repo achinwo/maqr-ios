@@ -23,6 +23,7 @@ public struct ExperienceDataView: JoliView {
         self.experienceType = dataType
         self.completionCallback = callback
         self._socialInstagramUsername = State(initialValue: data.socialInstagramUsername ?? .empty)
+        self._bannerVideoUrl = State(initialValue: data.bannerVideoUrl?.absoluteString ?? .empty)
     }
     
     public var allDataKeys: [ExperienceDataKeyPath.Metadata] {
@@ -93,7 +94,11 @@ public struct ExperienceDataView: JoliView {
     }
     
     @State var socialInstagramUsername: String = .empty
-    @State var fieldSize: CGSize = .zero
+    @State var bannerVideoUrl: String = .empty
+    
+    @State var fieldSizeIg: CGSize = .zero
+    @State var fieldSizeYt: CGSize = .zero
+    
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
     @State var helloColor: Color = .green
@@ -167,16 +172,50 @@ public struct ExperienceDataView: JoliView {
                 
             }
             
+            if let bannerVideoMeta = allDataKeys.first(keypath: \ExperienceData.bannerVideoUrl) {
+                Section(header: Text("Banner Video")) {
+                    TextField(bannerVideoMeta.description, text: $bannerVideoUrl, onEditingChanged: {_ in }) {
+                        print("[YT Bannervideo] commited")
+                    }
+                    .padding(.leading, fieldSizeYt.height * 1.5)
+                    .onChange(of: bannerVideoUrl) { urlStr in
+                        let ytUrl = bannerVideoUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+                        
+                        guard let url = URL(string: ytUrl), !ytUrl.isEmpty else { return }
+                        
+                        data.bannerVideoUrl = url
+                    }
+                    .overlay(
+                        GeometryReader(){ proxy in
+                            HStack(){
+                                Image("logo_icon_youtube")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: proxy.size.height, height: proxy.size.height)
+                                Spacer()
+                            }
+                            .frame(height: proxy.size.height)
+                            .onAppear(){
+                                self.fieldSizeYt = proxy.size
+                            }
+                        }
+                    )
+                }
+            }
+            
             Section(header: Text("Social")) {
                 if let instaMeta = allDataKeys.first(keypath: \ExperienceData.socialInstagramUsername) {
                     TextField(instaMeta.description, text: $socialInstagramUsername, onEditingChanged: {_ in }) {
-                        let insta = socialInstagramUsername.trimmingCharacters(in: .whitespacesAndNewlines)
+                        print("[Insta username] commited")
+                    }
+                    .padding(.leading, fieldSizeIg.height * 2.5)
+                    .onChange(of: socialInstagramUsername) { urlStr in
+                        let insta = urlStr.trimmingCharacters(in: .whitespacesAndNewlines)
                         
                         guard !insta.isEmpty else { return }
                         
                         data.socialInstagramUsername = insta
                     }
-                    .padding(.leading, fieldSize.height * 2.5)
                     .overlay(
                         GeometryReader(){ proxy in
                             HStack(){
@@ -190,9 +229,8 @@ public struct ExperienceDataView: JoliView {
                                 Spacer()
                             }
                             .frame(height: proxy.size.height)
-                            //.padding(.leading, -1 * fieldSize.height * 2)
                             .onAppear(){
-                                self.fieldSize = proxy.size
+                                self.fieldSizeIg = proxy.size
                             }
                         }
                     )
