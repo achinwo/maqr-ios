@@ -29,10 +29,10 @@ public class ExperienceData: ObservableObject {
     // sourcery: title = "Logo Image", description = "Your brand logo image", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/smartz_logo.png")"
     @Published var logoImageUrl: URL?
     
-    // sourcery: title = "Banner Image", description = "Banner image of landing page", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/poster_crazy_world_lowres.jpg")"
+    // sourcery: title = "Banner Image", description = "Banner image of landing page", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/austin-chan-ukzHlkoz1IE-unsplash.jpg")"
     @Published var bannerImageUrl: URL?
     
-    // sourcery: title = "Banner Video", description = "Banner video of landing page", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4")"
+    // sourcery: title = "Banner Video", description = "Banner video of landing page", default = "URL(staticString: "https://www.youtu.be/ofFyRI6ROTI")"
     @Published var bannerVideoUrl: URL?
     
     // sourcery: title = "Background Image", description = "Default background image for your brand", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/bg_dark.jpg")"

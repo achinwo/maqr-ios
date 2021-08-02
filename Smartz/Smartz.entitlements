@@ -11,9 +11,27 @@
 		<string>appclips:smartstikr.com</string>
 		<string>applinks:smartstikr.com</string>
 	</array>
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>iCloud.com.smartstickr.Smartz</string>
+	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudDocuments</string>
+	</array>
 	<key>com.apple.developer.in-app-payments</key>
 	<array>
 		<string>merchant.com.smartstickr.Smartz</string>
+	</array>
+	<key>com.apple.developer.ubiquity-container-identifiers</key>
+	<array>
+		<string>iCloud.com.smartstickr.Smartz</string>
+	</array>
+	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
+	<string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.smartstickr.Smartz</string>
 	</array>
 </dict>
 </plist>

@@ -252,6 +252,7 @@ struct TvShowPromoView: Experience, JoliView {
                     VStack(){
                         (Text(dataModel?.landingPageText ?? dataModelDefault.landingPageText)
                             .font(.subheadline.weight(.light))
+                            .foregroundColor(dataModel?.brandColorAccent ?? dataModelDefault.brandColorAccent)
                         )
                         .padding()
                         .multilineTextAlignment(.center)

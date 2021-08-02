@@ -9,6 +9,10 @@
 import SwiftUI
 import AVKit
 import JoliPlayground
+import JoliApi
+import JoliCore
+import AlertToast
+import Combine
 
 enum AssetInfo {
     case video(AVPlayer)
@@ -101,7 +105,7 @@ public let products: [Product] = [
             experienceCls: ReorderNowView.self, iconName: "creditcard.fill")
 ]
 
-struct ContentView: JoliView {
+struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {
     
     enum Tab: Int, Identifiable, CaseIterable {
         case information
@@ -160,8 +164,25 @@ struct ContentView: JoliView {
     
     @Binding var trialInfo: TrialInfo?
     
-    public init(_ trialInfo: Binding<TrialInfo?>){
+    var localPlaybackController: PlaybackControllerType
+    
+    var websocket: Socket
+    
+    @State var websocketCancel: AnyCancellable?
+    
+    @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
+    
+    @Binding var currentUser: User?
+    
+    public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType, trialInfo: Binding<TrialInfo?>){
         self._trialInfo = trialInfo
+        self._currentUser = currentUser
+        self.websocket = websocket
+        self.localPlaybackController = localPlaybackController
+    }
+    
+    public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
+        self.init(currentUser: currentUser, websocket: websocket, localPlaybackController: localPlaybackController, trialInfo: .constant(nil))
     }
     
     let sections: [ProductSection] = [

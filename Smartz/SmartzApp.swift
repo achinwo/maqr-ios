@@ -146,9 +146,7 @@ struct SmartzApp: AppClip {
     public var screenHeight: CGFloat {
         UIScreen.main.bounds.height
     }
-    
-    let youtube = YouTubeControlState(.uid("fB7keEigXi8"))
-    
+        
     var contentView: some View {
         
         let exitButton = GeometryReader() { proxy in
@@ -174,7 +172,7 @@ struct SmartzApp: AppClip {
             }
         }
         
-        return ContentView($trialData)
+        return ContentView(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController, trialInfo: $trialData)
             .overlay(
                 GeometryReader(){ proxy in
                     Group(){
