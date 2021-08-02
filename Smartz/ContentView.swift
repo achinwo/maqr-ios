@@ -97,12 +97,14 @@ public struct ReorderNowView: Experience, JoliView {
 }
 
 public let products: [Product] = [
-    Product(companyName: "Sísè Food", name: "Ofada sauce kit", description: "decribe ofada", location: .product("sise", "ofada"), companyLogoName: "sise_logo", companyDescription: "Meal box delivery", isComingSoon: false, experienceCls: MealboxView.self),
-    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "decribe ofada", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false, experienceCls: RestaurantView.self, iconName: "calendar.circle.fill"),
-    Product(companyName: "Portal", name: "Brand promotion", description: "decribe ofada", location: .product("shows", "iacw"), companyLogoName: nil, companyDescription: "Brand", isComingSoon: false,
+    Product(companyName: "Receipe Instructions", name: "Meal Preparations", description: "Interactive meal preparation guides", location: .product("sise", "ofada"), companyLogoName: nil, companyDescription: "Meal box delivery", isComingSoon: false, experienceCls: MealboxView.self, iconName: "list.bullet.rectangle"),
+    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "Seamless restaurant check-ins and menu browser", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false, experienceCls: RestaurantView.self, iconName: "calendar.circle.fill"),
+    Product(companyName: "Portal", name: "Brand Promotion", description: "Your frontpage for promoting brands such as products, movies and tv shows", location: .product("shows", "iacw"), companyLogoName: nil, companyDescription: "Brand", isComingSoon: false,
             experienceCls: TvShowPromoView.self, iconName: "film.fill"),
-    Product(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "decribe ofada", location: .product("stikr", "sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true,
-            experienceCls: ReorderNowView.self, iconName: "creditcard.fill")
+    Product(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "Household inventory management made effortless", location: .product("stikr", "sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true,
+            experienceCls: ReorderNowView.self, iconName: "creditcard.fill"),
+    Product(companyName: "Playlist Sharing", name: "ꚠoli - Listen Together", description: "Enꚠoy music in groups with real-time voting", location: .product("joli", "joli"), companyLogoName: "logo_joli", companyDescription: "Entertainment", isComingSoon: true,
+            experienceCls: ReorderNowView.self)
 ]
 
 struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {

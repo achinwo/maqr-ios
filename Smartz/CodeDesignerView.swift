@@ -157,76 +157,88 @@ public struct CodeDesignerView: JoliView {
                 }
                 
                 VStack(alignment: .leading, spacing: .zero){
+                
+                HStack(alignment: .top){
                     
-                    HStack(){
-                        Group(){
-                            if let name = product.companyLogoName {
-                                Image(name)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                            } else {
-                                let iconName = product.iconName ?? "calendar.circle.fill"
-                                Image(systemName: iconName)
-                                    .resizable()
-                                    .renderingMode(.original)
-                                    .aspectRatio(contentMode: .fit)
-                                    .font(.title3)
-                                    .if(iconName != "calendar.circle.fill") { view in
-                                        view.padding()
+                        
+                        Button(){
+                            guard !product.isComingSoon else {
+                                return
+                            }
+                            appCoordinator.currentLocation = product.location
+                        } label: {
+                            VStack(){
+                                Group(){
+                                    if let name = product.companyLogoName {
+                                        Image(name)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                    } else {
+                                        let iconName = product.iconName ?? "calendar.circle.fill"
+                                        Image(systemName: iconName)
+                                            .resizable()
+                                            .renderingMode(.original)
+                                            .aspectRatio(contentMode: .fill)
+                                            .font(.title3)
+                                            .if(iconName != "calendar.circle.fill") { view in
+                                                view.padding()
+                                            }
+                                            .if(iconName == "calendar.circle.fill") { view in
+                                                view.padding(-10)
+                                            }
                                     }
-                            }
-                        }
-                        .frame(width: 64, height: 64)
-                        .background(Color.fixedWhite)
-                        .clipShape(Circle())
-                        .padding(.trailing, 2)
-                        
-                        VStack(alignment: .leading){
-                            Text(product.name)
-                                .font(.body)
-                                .foregroundColor(.primary)
-                                .lineLimit(4)
-                                .multilineTextAlignment(.leading)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(.vertical, 2)
-                            
-                            HStack(){
-                                Label(product.companyName, systemImage: "building.2.crop.circle")
-                                    .font(.caption)
-                                    .lineLimit(1)
-                                    .foregroundColor(.secondaryLabel)
-                                    .fixedSize(horizontal: true, vertical: true)
-                                Label(product.companyDescription, systemImage: "tag")
-                                    .font(.caption2)
-                                    .lineLimit(1)
-                                    .foregroundColor(.secondaryLabel)
-                                    .fixedSize(horizontal: true, vertical: true)
-                            }
-                            
-                            
-                            Button(){
-                                guard !product.isComingSoon else {
-                                    return
                                 }
-                                appCoordinator.currentLocation = product.location
-                            } label: {
-                                Text(product.isComingSoon ? "Coming Soon" : "Try It!")
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                    .font(product.isComingSoon ? .caption : .subheadline.weight(.semibold))
-                                    .foregroundColor(product.isComingSoon ? .secondaryLabel : .blue)
-                                    .fixedSize(horizontal: true, vertical: true)
-                                    .padding(.vertical, 4)
-                                //.background(Color.secondarySystemGroupedBackground)
+                                .frame(width: 64, height: 64)
+                                .background(Color.fixedWhite)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                
+                            Text(product.isComingSoon ? "Coming Soon" : "Try It!")
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .font(product.isComingSoon ? .caption2 : .subheadline.weight(.semibold))
+                                .foregroundColor(product.isComingSoon ? .secondaryLabel : .blue)
+                                .fixedSize(horizontal: true, vertical: true)
+                                .padding(.vertical, 4)
+                            //.background(Color.secondarySystemGroupedBackground)
                             }
-                            .disabled(product.isComingSoon)
-                            .clipShape(RoundedRectangle(cornerRadius: 32))
+                            //.clipShape(RoundedRectangle(cornerRadius: 32))
                         }
+                        .disabled(product.isComingSoon)
+                        .padding(.leading, 2)
+                    
+                    
+                    
+                    VStack(alignment: .leading){
+                        Text(product.name)
+                            .font(.body.weight(.semibold))
+                            .foregroundColor(.primary)
+                            .lineLimit(4)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            //.padding(.bottom, 1)
                         
-                        Spacer()
+                        Text(product.description).font(.caption).padding(.top, 1).foregroundColor(.secondaryLabel)
+                        
+                        HStack(){
+                            Label(product.companyName, systemImage: "building.2.crop.circle")
+                                .font(.caption)
+                                .lineLimit(1)
+                                .foregroundColor(.tertiaryLabel)
+                                .fixedSize(horizontal: true, vertical: true)
+                            Label(product.companyDescription, systemImage: "tag")
+                                .font(.caption2)
+                                .lineLimit(1)
+                                .foregroundColor(.tertiaryLabel)
+                                .fixedSize(horizontal: true, vertical: true)
+                        }
+                        .padding(.top, 2)
+                        
                     }
+                    
+                    Spacer()
                 }
-                .padding()
+                }
+                .padding(4)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
@@ -245,7 +257,7 @@ public struct CodeDesignerView: JoliView {
                             } label: {
                                 Image(systemName: isActive ? "checkmark.circle.fill" : "circle.dashed")
                                     .foregroundColor(isActive ? .green : Color.secondaryLabel)
-                                    .padding()
+                                    .padding(.horizontal)
                                     .font(.title.weight(.light))
                                     .scaleEffect(x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1)
                                     .animation(.easeInOut)
@@ -337,6 +349,16 @@ public struct CodeDesignerView: JoliView {
                     .disabled(brandName.isEmpty || landingPageText.isEmpty)
                     .padding()
                     .padding(.top)
+                    
+//                    Button(){
+//                        self.readyToDownload = true
+//                        self.trialActivateCallback()
+//                    } label: {
+//                        Label("Try It", systemImage: "arrow.forward")
+//                    }
+//                    .disabled(brandName.isEmpty || landingPageText.isEmpty)
+//                    .padding()
+//                    .padding(.top)
                 }
                 .padding()
             }
@@ -708,7 +730,7 @@ public struct CodeDesignerView: JoliView {
             
             VStack(){
                 
-                Text("Download Stikrs to iCloud Drive")
+                (Text("Download ") + Text("Stikrs ").italic() + Text("to iCloud Drive"))
                     .font(.title.weight(.light))
                     .foregroundColor(.secondary)
                     .padding()
@@ -844,6 +866,21 @@ public struct CodeDesignerView: JoliView {
                     Text("Step \(selectedTab + 1) of \(tabNames.count)")
                         .font(.subheadline)
                         .foregroundColor(.secondaryLabel)
+                }
+            }
+        }
+        .toolbar(){
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if selectedTab > 0 {
+                    
+                    Button(){
+                        self.readyToDownload = true
+                        self.trialActivateCallback()
+                    } label: {
+                        Text("Try It")
+                        //Label("Try It", systemImage: "arrow.forward")
+                    }
+                    .disabled(brandName.isEmpty || landingPageText.isEmpty)
                 }
             }
         }
