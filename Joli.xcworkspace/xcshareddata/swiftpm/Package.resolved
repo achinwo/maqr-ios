@@ -110,6 +110,15 @@
         }
       },
       {
+        "package": "QRCode",
+        "repositoryURL": "https://github.com/dmrschmidt/QRCode.git",
+        "state": {
+          "branch": null,
+          "revision": "a23c2d2b77483c5ce20ffaf4e68fef2d1a0bbca9",
+          "version": "1.1.0"
+        }
+      },
+      {
         "package": "SFSafeSymbols",
         "repositoryURL": "https://github.com/piknotech/SFSafeSymbols.git",
         "state": {

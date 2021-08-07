@@ -48,6 +48,10 @@
 		921CAFAB26B5F4F10078A394 /* YTPlayer.html in Resources */ = {isa = PBXBuildFile; fileRef = 921CAFAA26B5F4F10078A394 /* YTPlayer.html */; };
 		921CAFAC26B5F4F10078A394 /* YTPlayer.html in Resources */ = {isa = PBXBuildFile; fileRef = 921CAFAA26B5F4F10078A394 /* YTPlayer.html */; };
 		921CAFAD26B5F4F10078A394 /* YTPlayer.html in Resources */ = {isa = PBXBuildFile; fileRef = 921CAFAA26B5F4F10078A394 /* YTPlayer.html */; };
+		921F6C2E26BB28090061D236 /* QRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 921F6C2D26BB28090061D236 /* QRCode */; };
+		921F6C3026BE81C00061D236 /* VisualCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C2F26BE81C00061D236 /* VisualCodeView.swift */; };
+		921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
+		921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
 		922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922223E226A2E368007BD0D3 /* CodeDesignerView.swift */; };
 		922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
 		922260F9265E72F00064BC6F /* SpotifyiOS.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -373,6 +377,8 @@
 		921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceDataView.swift; sourceTree = "<group>"; };
 		921CAFA626B5F4730078A394 /* YouTubePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubePlayer.swift; sourceTree = "<group>"; };
 		921CAFAA26B5F4F10078A394 /* YTPlayer.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = YTPlayer.html; sourceTree = "<group>"; };
+		921F6C2F26BE81C00061D236 /* VisualCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualCodeView.swift; sourceTree = "<group>"; };
+		921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticExperienceData.swift; sourceTree = "<group>"; };
 		922223E226A2E368007BD0D3 /* CodeDesignerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeDesignerView.swift; sourceTree = "<group>"; };
 		922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = SpotifyiOS.xcframework; sourceTree = "<group>"; };
 		9222BE1724CD8A5800F19973 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
@@ -474,6 +480,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				921F6C2E26BB28090061D236 /* QRCode in Frameworks */,
 				9202D3FD2659B72800D5974F /* JoliPlayground.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -580,6 +587,8 @@
 				920264CF2691D4EA005643E1 /* Restaurant.swift */,
 				921C300B2694B29400527D39 /* TvShowPromoView.swift */,
 				922223E226A2E368007BD0D3 /* CodeDesignerView.swift */,
+				921F6C2F26BE81C00061D236 /* VisualCodeView.swift */,
+				921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -900,6 +909,9 @@
 				9202D42B2659BC0E00D5974F /* PBXTargetDependency */,
 			);
 			name = Smartz;
+			packageProductDependencies = (
+				921F6C2D26BB28090061D236 /* QRCode */,
+			);
 			productName = Smartz;
 			productReference = 9202D3D22659B6E700D5974F /* Smartz.app */;
 			productType = "com.apple.product-type.application";
@@ -1144,6 +1156,7 @@
 				92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 				922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */,
 				920CE8BE2662AD90008F9EAB /* XCRemoteSwiftPackageReference "M13Checkbox" */,
+				921F6C2C26BB28090061D236 /* XCRemoteSwiftPackageReference "QRCode" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1304,6 +1317,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				921CAFA826B5F4730078A394 /* YouTubePlayer.swift in Sources */,
+				921F6C3026BE81C00061D236 /* VisualCodeView.swift in Sources */,
 				920264CB268FAE06005643E1 /* ExperienceView.swift in Sources */,
 				920264D02691D4EA005643E1 /* Restaurant.swift in Sources */,
 				92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */,
@@ -1311,6 +1325,7 @@
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */,
 				921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */,
+				921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
 				9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */,
 				92562E30266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
@@ -1327,6 +1342,7 @@
 				9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */,
 				920264D12691D4EA005643E1 /* Restaurant.swift in Sources */,
 				92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
+				921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
 				920264CE268FB907005643E1 /* ExperienceView.swift in Sources */,
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */,
@@ -2335,6 +2351,14 @@
 				revision = ef82b07261dceeedb6e48f1ecd4f4305b5cd10f8;
 			};
 		};
+		921F6C2C26BB28090061D236 /* XCRemoteSwiftPackageReference "QRCode" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dmrschmidt/QRCode.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
 		922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/elai950/AlertToast.git";
@@ -2421,6 +2445,11 @@
 		9203B31824CB079200F465CC /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
+		};
+		921F6C2D26BB28090061D236 /* QRCode */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 921F6C2C26BB28090061D236 /* XCRemoteSwiftPackageReference "QRCode" */;
+			productName = QRCode;
 		};
 		922989AF2649208A00FDD58F /* GradientLoadingBar */ = {
 			isa = XCSwiftPackageProductDependency;

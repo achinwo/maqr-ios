@@ -86,10 +86,41 @@ public class ExperienceData: ObservableObject {
     
 }
 
-public extension Color {
+extension ExperienceData {
     
-    var hexString: String {
-        return UIColor(self).hexString
+    static func unwrap(_ value: Any) -> Any? {
+        let mirror = Mirror(reflecting: value)
+        
+        if mirror.displayStyle != .optional {
+            return value
+        }
+        
+        if let child = mirror.children.first {
+            return child.value
+        } else {
+            return nil
+        }
+    }
+    
+    public func isValid(for dataKeys: [ExperienceDataKeyPath]) -> Bool {
+        var missingValues: [ExperienceDataKeyPath.Metadata] = []
+        
+        for dataKey in Set(dataKeys) {
+            guard let meta = dataKey.meta else {
+                continue
+            }
+            
+            let value = Self.unwrap(self[keyPath: meta.keypath])
+            
+            
+            guard value == nil else { continue }
+            
+            missingValues.append(meta)
+        }
+        
+        print("missingValues: \(missingValues.map(\.name))")
+        
+        return missingValues.isEmpty
     }
     
 }

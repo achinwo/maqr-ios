@@ -36,7 +36,13 @@
 			<string>Any</string>
 		</dict>
 	</dict>
-	<key>UIApplicationSceneManifest</key>
+    
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Photo library access is required for uploading brand assets</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Required to save QR and App Clip code images to Photo libarary</string>
+	
+    <key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>

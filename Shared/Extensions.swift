@@ -51,6 +51,25 @@ public extension EnvironmentValues {
     
 }
 
+public extension View {
+    
+    func snapshot(_ backgroundColor: Color = .clear) -> UIImage {
+        let controller = UIHostingController(rootView: self)
+        let view = controller.view
+        
+        let targetSize = controller.view.intrinsicContentSize
+        view?.bounds = CGRect(origin: .zero, size: targetSize)
+        view?.backgroundColor = UIColor(backgroundColor)
+        
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        
+        return renderer.image { _ in
+            view?.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+        }
+    }
+    
+}
+
 public extension UIImageColors {
     
     var primaryColor: Color {
@@ -94,7 +113,11 @@ extension UIColor {
     
 }
 
-extension Color {
+public extension Color {
+    
+    var hexString: String {
+        return UIColor(self).hexString
+    }
     
     static func rgbaFrom(hex: String) -> (red: Double, green: Double, blue: Double, alpha: Double) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
