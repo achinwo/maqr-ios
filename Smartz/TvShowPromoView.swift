@@ -220,9 +220,11 @@ struct TvShowPromoView: Experience, JoliView {
                         //.frame(width: screenWidth * 0.7)
                         .frame(maxHeight: screenWidth / 6)
                         .padding()
-                        .padding(.vertical)
+                        .padding(.bottom)
                         //.offset(x: 0, y: -200)
-                        .id("brand")
+                        .id(dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl)
+                        //.backgroundColor(.green)
+                    
                     //
                     let instaUsername = dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername
                     Link(destination: URL(social: .instagramUser(instaUsername))) {
@@ -275,7 +277,7 @@ struct TvShowPromoView: Experience, JoliView {
                     .id("body")
                     
                     VStack(){
-                        Link(destination: URL(string: "https://www.instagram.com/\(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername)/")!) {
+                        Link(destination: URL(social: .instagramUser(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername))) {
                             VStack(){
                                 NetworkImage(url: dataModel?.releasePlatformLogoUrl ?? dataModelDefault.releasePlatformLogoUrl){
                                     EmptyView()
@@ -289,7 +291,7 @@ struct TvShowPromoView: Experience, JoliView {
                         }
                         .padding(.bottom)
                         
-                        Link(destination: URL(string: "https://www.instagram.com/\(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername)/")!) {
+                        Link(destination: URL(social: .instagramUser(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername))) {
                             VStack(){
                                 Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
                                 Text("Follow us").font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
@@ -297,8 +299,6 @@ struct TvShowPromoView: Experience, JoliView {
                             }
                         }
                         .padding(.bottom)
-                        //https://www.instagram.com/explore/tags/madewithsise/
-                        
                         
                     }
                     .padding(.bottom)

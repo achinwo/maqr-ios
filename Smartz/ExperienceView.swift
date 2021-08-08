@@ -10,6 +10,7 @@ import SwiftUI
 import JoliPlayground
 import JoliCore
 import Combine
+import Promises
 
 public typealias MultilineString = String
 
@@ -48,6 +49,14 @@ public enum SocialLink {
     }
 }
 
+public extension View {
+    
+    func backgroundColor(_ color: Color) -> some View {
+        return self.background(color)
+    }
+    
+}
+
 public extension URL {
     
     init(staticString: StaticString){
@@ -60,16 +69,43 @@ public extension URL {
     
 }
 
-public class ExperienceData: ObservableObject {
+public class ExperienceData: ObservableObject, Persistable {
+    
+    public typealias PersistedType = StikrExperienceData
+    
+    public var json: Json {
+        let items: [(String, AnyObject)] = []
+        return Dictionary<String, AnyObject>(uniqueKeysWithValues: items)
+    }
+    
+    public func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<PersistedType> {
+        let urlComp = "/api/db/\(PersistedType.className())"
+        let promise = HttpMethod.Fetch.post(url: urlComp,
+                                     dataType: PersistedType.self,
+                                     payload: .json(self.json),
+                                     baseUrl: baseUrl,
+                                     urlSession: urlSession,
+                                     on: on)
+        
+        return promise.then(on: on ?? .main){ object -> Promise<PersistedType> in
+            DispatchQueue.main.async() {
+                self.stored = object
+            }
+            return Promise(object)
+        }
+    }
     
     static let DEFAULT_BRAND_NAME = "SmartStikr"
     
     @Published var editStartedAt: Date? = nil
     
+    @Published var stored: PersistedType? = nil
+    
     // sourcery: title = "Logo Image", description = "Your brand logo image", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/smartz_logo.png")"
     @Published var logoImageUrl: URL?
     
-    // sourcery: title = "Banner Image", description = "Banner image of landing page", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/austin-chan-ukzHlkoz1IE-unsplash.jpg")"
+    // sourcery: title = "Banner Image", description = "Banner image of landing page"
+    // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/austin-chan-ukzHlkoz1IE-unsplash.jpg")"
     @Published var bannerImageUrl: URL?
     
     // sourcery: title = "Banner Video", description = "Banner video of landing page", default = "URL(staticString: "https://www.youtu.be/ofFyRI6ROTI")"
@@ -119,7 +155,7 @@ public class ExperienceData: ObservableObject {
         self.uuid = uuid
     }
     
-    static func fromExperienceData(_ experienceData: StikrExperienceData, baseUrl: URL) -> Self {
+    static func fromExperienceData(_ experienceData: PersistedType, baseUrl: URL) -> Self {
         var res = Self.init(experienceData.uuid, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
         return res
     }

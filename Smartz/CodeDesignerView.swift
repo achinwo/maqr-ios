@@ -283,16 +283,16 @@ public struct CodeDesignerView: JoliView {
                     //                    .padding(.top)
                 }
                 .padding()
-                .simultaneousGesture(
-                    TapGesture()
-                        .onEnded() { value in
-                            guard appCoordinator.keyboardHeight > 0 else {
-                                return
-                            }
-                            
-                            appCoordinator.dismissKeyboard()
-                        }
-                )
+//                .simultaneousGesture(
+//                    TapGesture()
+//                        .onEnded() { value in
+//                            guard appCoordinator.keyboardHeight > 0 else {
+//                                return
+//                            }
+//
+//                            appCoordinator.dismissKeyboard()
+//                        }
+//                )
             }
             Spacer()
         }
@@ -463,13 +463,54 @@ public struct CodeDesignerView: JoliView {
         return vs
     }
     
+    @State public var scrollProxy: ScrollViewProxy? = nil
+    
+    public var historyView: some View {
+        Text("View History")
+    }
+    
     public var contentView: some View {
         //return //ZStack(alignment: .top){
         return TabView(selection: $selectedTab) {
             ForEach(self.views, id: \.index){ item in
-                item.view
-                    .tag(item.index)
-                    .id("code-designer-tabview-\(item.index)")
+                
+                Group(){
+                    if item.index == 0 {
+                        ScrollView(.vertical, showsIndicators: true) {
+                            ScrollViewReader() { proxy in
+                                //creator
+                                VStack(){
+                                    historyView.frame(height: screenHeight)
+                                    
+                                    VStack(){
+                                        Divider()
+                                            .padding(.bottom)
+                                        VStack(){
+                                            Text(tabNames[selectedTab])
+                                                .font(.largeTitle.weight(.light))
+                                            Text("Step \(selectedTab + 1) of \(tabNames.count)")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondaryLabel)
+                                                //.padding()
+                                            item.view
+                                        }
+                                    }
+                                    .id("section-creator")
+                                    Spacer()
+                                }
+                                .frame(minHeight: screenHeight * 2.2)
+                                .onAppear(){
+                                    self.scrollProxy = proxy
+                                }
+                            }
+                        }
+                    } else {
+                        item.view
+                    }
+                }
+                .frame(maxWidth: screenWidth)
+                .tag(item.index)
+                .id("code-designer-tabview-\(item.index)")
 //                    .overlay(
 //                        VStack(){
 //                            Spacer()
@@ -488,23 +529,36 @@ public struct CodeDesignerView: JoliView {
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
         .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .interactive))
         .frame(idealHeight: screenHeight)
-        .id("code-designer-tabview")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar { // <2>
-            ToolbarItem(placement: .navigationBarLeading) { // <3>
-                VStack(alignment: .leading) {
-                    Text(tabNames[selectedTab])
-                        .font(.headline)
-                    Text("Step \(selectedTab + 1) of \(tabNames.count)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondaryLabel)
+        .toolbar() {
+            ToolbarItem(placement: .navigationBarLeading) {
+                if selectedTab > 0 {
+                    VStack(alignment: .leading) {
+                        Text(tabNames[selectedTab])
+                            .font(.headline)
+                        Text("Step \(selectedTab + 1) of \(tabNames.count)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondaryLabel)
+                    }
+                } else {
+                    EmptyView()
                 }
             }
-        }
-        .toolbar(){
+            
+            ToolbarItem(placement: .principal) {
+                VStack(alignment: .center) {
+                    if selectedTab == 0 {
+                        Text("Code Designer")
+                            .font(.headline)
+                        Text("Create custom QR and App Clip codes")
+                            .font(.subheadline)
+                            .foregroundColor(.secondaryLabel)
+                    }
+                }
+            }
+            
             ToolbarItem(placement: .navigationBarTrailing) {
                 if selectedTab > 0 {
-                    
                     Button(){
                         self.readyToDownload = true
                         self.trialActivateCallback()
@@ -513,9 +567,18 @@ public struct CodeDesignerView: JoliView {
                         //Label("Try It", systemImage: "arrow.forward")
                     }
                     .disabled(brandName.isEmpty || landingPageText.isEmpty)
+                } else {
+                    Button(){
+                        withAnimation(){
+                            self.scrollProxy?.scrollTo("section-creator", anchor: .top)
+                        }
+                    } label: {
+                        Image(systemName: "plus")
+                    }
                 }
             }
         }
+        .id("code-designer-tabview")
         .onAppear() {
             self.selectedTab = selectedExperience == nil ? 0 : 1
             self.updateBrandName()
