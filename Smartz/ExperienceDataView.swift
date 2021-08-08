@@ -31,7 +31,7 @@ public struct ExperienceDataView: JoliView {
     }
     
     func imagePickerFrom(meta: ExperienceDataKeyPath.Metadata) -> some View {
-        print("test: \(meta)")
+        //print("[imagePickerFrom] \(meta.name) - \(data[keyPath: meta.keypath] as? URL)")
         
         let imageCallback = { (img: UIImage?, error: Error?) in
             print("image: \(String(describing: img)), error: \(String(describing: error))")
@@ -148,7 +148,7 @@ public struct ExperienceDataView: JoliView {
                     Spacer()
                     if let primaryMeta = allDataKeys.first(keypath: \ExperienceData.brandColorPrimary) {
                         VStack(){
-                            ColorPicker(primaryMeta.description.capitalized, selection: $helloColor)
+                            ColorPicker(primaryMeta.description.capitalized, selection: $data.brandColorPrimary)
                                 .labelsHidden()
                                 .font(.largeTitle)
                                 .id(primaryMeta.id)

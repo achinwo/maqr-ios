@@ -86,13 +86,63 @@ extension Color: Decodable {
     
 }
 
-public protocol ExperienceDataItem: Codable {
+public protocol ExperienceDataItem: Encodable & Decodable {
+    var aliasTitle: String? { get set }
+    var caution: String? { get set }
+    var defaultPrice: Int? { get set }
+    var duration: Int? { get set }
+    var imageName: String? { get set }
+    var isOptional: Bool? { get set }
+    var itemGrouping: String? { get set }
+    var itemSubgrouping: String? { get set }
+    var itemType: ItemType { get set }
+    var spicy: Spicy? { get set }
+    var subtitle: String? { get set }
+    var title: String? { get set }
+}
+
+extension StikrExperienceDataItem: ExperienceDataItem {
     
 }
 
-public class ExperienceData: ObservableObject, Persistable, Decodable {
+public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable {
+    
+    lazy var jsonEncoder: JSONEncoder = {
+        var encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        return encoder
+    }()
+    
+    public static func == (lhs: ExperienceData, rhs: ExperienceData) -> Bool {
+        let encoder = lhs.jsonEncoder
+        
+        guard let lhsData = try? encoder.encode(lhs),
+              let rhsData = try? encoder.encode(rhs),
+              let lhsString = String(data: lhsData, encoding: .utf8),
+              let rhsString = String(data: rhsData, encoding: .utf8)
+              else {
+            return false
+        }
+        
+        return lhsString == rhsString
+    }
     
     public typealias PersistedType = StikrExperienceData
+    
+    public struct Item: ExperienceDataItem {
+        public var itemType: ItemType
+        public var aliasTitle: String?
+        public var caution: String?
+        public var defaultPrice: Int?
+        public var duration: Int?
+        public var imageName: String?
+        public var isOptional: Bool?
+        public var itemGrouping: String?
+        public var itemSubgrouping: String?
+        public var spicy: Spicy?
+        public var subtitle: String?
+        public var title: String?
+    }
     
     public var json: Json {
         let items: [(String, AnyObject)] = []
@@ -168,39 +218,37 @@ public class ExperienceData: ObservableObject, Persistable, Decodable {
     @Published var uuid: String? = nil
     
     // sourcery: title = "Items", description = "List brand experience items", default = "[]"
-    @Published var items: [StikrExperienceDataItem] = []
+    @Published var items: [ExperienceData.Item] = []
     
-    required init(_ uuid: String? = nil, brandName: String? = nil, landingPageText: MultilineString? = nil) {
+    required init(brandName: String? = nil, landingPageText: MultilineString? = nil) {
         self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
         self.landingPageText = landingPageText ?? "Welcome to YOUR brand"
-        self.uuid = uuid
     }
     
     static func fromExperienceData(_ experienceData: PersistedType, baseUrl: URL) -> Self {
-        var res = Self.init(experienceData.uuid, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+        var res = Self.init(brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
         return res
     }
-    
 
 // sourcery:inline:auto:ExperienceData.Experiences
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        logoImageUrl = try container.decode(URL?.self, forKey: .logoImageUrl)
-        bannerImageUrl = try container.decode(URL?.self, forKey: .bannerImageUrl)
-        bannerVideoUrl = try container.decode(URL?.self, forKey: .bannerVideoUrl)
-        backgroundImageUrl = try container.decode(URL?.self, forKey: .backgroundImageUrl)
-        brandName = try container.decode(String.self, forKey: .brandName)
-        landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
-        socialInstagramUsername = try container.decode(String?.self, forKey: .socialInstagramUsername)
-        releaseDate = try container.decode(Date?.self, forKey: .releaseDate)
-        releasePlatformName = try container.decode(String?.self, forKey: .releasePlatformName)
-        releasePlatformLogoUrl = try container.decode(URL?.self, forKey: .releasePlatformLogoUrl)
-        releasePlatformInstaUsername = try container.decode(String?.self, forKey: .releasePlatformInstaUsername)
-        brandColorPrimary = try container.decode(Color.self, forKey: .brandColorPrimary)
-        brandColorSecondary = try container.decode(Color.self, forKey: .brandColorSecondary)
-        brandColorAccent = try container.decode(Color.self, forKey: .brandColorAccent)
-        items = try container.decode([StikrExperienceDataItem].self, forKey: .items)
+    logoImageUrl = try container.decode(URL?.self, forKey: .logoImageUrl)
+    bannerImageUrl = try container.decode(URL?.self, forKey: .bannerImageUrl)
+    bannerVideoUrl = try container.decode(URL?.self, forKey: .bannerVideoUrl)
+    backgroundImageUrl = try container.decode(URL?.self, forKey: .backgroundImageUrl)
+    brandName = try container.decode(String.self, forKey: .brandName)
+    landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
+    socialInstagramUsername = try container.decode(String?.self, forKey: .socialInstagramUsername)
+    releaseDate = try container.decode(Date?.self, forKey: .releaseDate)
+    releasePlatformName = try container.decode(String?.self, forKey: .releasePlatformName)
+    releasePlatformLogoUrl = try container.decode(URL?.self, forKey: .releasePlatformLogoUrl)
+    releasePlatformInstaUsername = try container.decode(String?.self, forKey: .releasePlatformInstaUsername)
+    brandColorPrimary = try container.decode(Color.self, forKey: .brandColorPrimary)
+    brandColorSecondary = try container.decode(Color.self, forKey: .brandColorSecondary)
+    brandColorAccent = try container.decode(Color.self, forKey: .brandColorAccent)
+    items = try container.decode([ExperienceData.Item].self, forKey: .items)
     }
 // sourcery:end
 }
@@ -237,7 +285,7 @@ extension ExperienceData {
             missingValues.append(meta)
         }
         
-        print("missingValues: \(missingValues.map(\.name))")
+        //print("missingValues: \(missingValues.map(\.name))")
         
         return missingValues.isEmpty
     }

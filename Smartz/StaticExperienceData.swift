@@ -9,29 +9,21 @@
 import Foundation
 import JoliCore
 
-public extension StikrExperienceDataItem {
+public extension ExperienceData.Item {
     
     static func makeCastmember(_ title: String, subtitle: String, alias: String, imageUrlString: String) -> Self {
-        return StikrExperienceDataItem(aliasTitle: alias,
-                                       caution: nil,
-                                       createdAt: Date(),
-                                       createdById: -1,
-                                       defaultPrice: nil,
-                                       deletedAt: nil,
-                                       deletedById: nil,
-                                       duration: nil,
-                                       experienceId: -2,
-                                       id: -3,
-                                       imageName: imageUrlString,
-                                       isOptional: nil,
-                                       itemGrouping: nil,
-                                       itemSubgrouping: nil,
-                                       itemType: .castMember,
-                                       spicy: nil,
-                                       subtitle: subtitle,
-                                       title: title,
-                                       updatedAt: Date(),
-                                       updatedById: -1)
+        return ExperienceData.Item(itemType: .castMember,
+                                   aliasTitle: alias,
+                                   caution: nil,
+                                   defaultPrice: nil,
+                                   duration: nil,
+                                   imageName: imageUrlString,
+                                   isOptional: nil,
+                                   itemGrouping: nil,
+                                   itemSubgrouping: nil,
+                                   spicy: nil,
+                                   subtitle: subtitle,
+                                   title: title)
     }
     
 }
@@ -47,15 +39,15 @@ let crazyworldDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(staticS
                                                        releasePlatformLogoUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/logo_netflix.png"),
                                                        releasePlatformInstaUsername: "naijaonnetflix",
                                                        items: [
-                                                        StikrExperienceDataItem.makeCastmember("Bob Manuel Udokwu", subtitle: "Husband to Adaeze Okpalla, a smooth talker that knows how to get his way with women. He presently has two other women living with him too because once a woman gets pregnant for him, he brings her in because he wants all his children under one roof but he never marries them eventually.", alias: "Don Chukwunma Okpalla", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.58-1.png"),
-                                                        StikrExperienceDataItem.makeCastmember("Kunle Coker", subtitle: "A Yoruba businessman, and Don’s friend and confidant. The wives don’t like him because they feel he’s a bad influence on Don, after all, rumor has it he has a wife in all 36 states in Nigeria.", alias: "Chief Balogun", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.38.png"),
-                                                        StikrExperienceDataItem.makeCastmember("Tunbosun Aiyedehin", subtitle: "Don’s only legitimate wife. She’s what you would typically call “the good wife”. She believes that someday what was used on her husband would expire and she would once again have him all to herself.", alias: "Adaeze", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.19.22.png"),
-                                                        StikrExperienceDataItem.makeCastmember("Grace Ama", subtitle: "One of Don’s mistresses, Kemi is a teacher who hails from the Yoruba speaking part of Nigeria. She has an eleven-year-old son for Don. Who has refused to match her intelligence? Kiddo played by Etochi Asiegbu is the direct opposite of his mother. His mother a very intelligent and successful teacher but Kiddo wants something else and is not able to assimilate. His mother feels he suffers some form of dyslexia.", alias: "Kemi", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/IMG_4034-scaled.jpg"),
-                                                        StikrExperienceDataItem.makeCastmember("Amanda Ebeye", subtitle: "Who happens to be one of Mr. Okpalla’s lovers. A busy body who has her nose in every body’s business and hardly has time for even her own business. Don has refused to take her to the altar, and she’s permanently fighting for it. Meks is the slay queen, always-on social media searching for clout through her celebrity friends.", alias: "Meks", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.21.46.png"),
-                                                        StikrExperienceDataItem.makeCastmember("Treasure Obasi", subtitle: "She is the second child of Don and Adaeze and the only daughter in the family. She’s 19 years old, just finished secondary school and is awaiting entry into University. She’s young, beautiful, very exceeded, and loves taking and posting photos on Facebook, and Instagram. She’s also the one that constantly helps her mom with posting pictures and videos on Instagram and other social media platforms. ", alias: "Anita", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/anita-scaled.jpg"),
-                                                        StikrExperienceDataItem.makeCastmember("Francis Odega", subtitle: "A security man “China”. He nicknamed himself China and lies to people that he used to be in China but chose to come back home to Nigeria because of how loyal he is to his country. He refuses to be called a gateman and is always fast to correct them that he is the “chief security officer”.", alias: "China", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.46.png"),
-                                                        StikrExperienceDataItem.makeCastmember("Adekunle Salawu", subtitle: "Kunle is one of the scriptwriters on “It’s a crazy world”. His character is hilarious, he speaks with a Calabar accent and feels his food is the best in Africa. Most of the time he is torn between the wives and doesn’t know who to please, they also try to get information from him about their husbands.", alias: "Bassey, the chef", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.22.png"),
-                                                        StikrExperienceDataItem.makeCastmember("Aret Edet", subtitle: "Don’s younger sister who frowns at his polygamous ways. She considers the first wife Adaeze the only wife and says the others are illegitimate. She is always at logger heads with Meks and Kemi", alias: "Aunty Frances", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.21.38.png"),
-                                                        StikrExperienceDataItem.makeCastmember("John Owotorufa", subtitle: "Sammy is the first son of Adaeze, and in the university. He is very flirtatious like his father and doesn’t have issues with his father’s mistresses.", alias: "Sammy", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.21.57.png"),
+                                                        ExperienceData.Item.makeCastmember("Bob Manuel Udokwu", subtitle: "Husband to Adaeze Okpalla, a smooth talker that knows how to get his way with women. He presently has two other women living with him too because once a woman gets pregnant for him, he brings her in because he wants all his children under one roof but he never marries them eventually.", alias: "Don Chukwunma Okpalla", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.58-1.png"),
+                                                        ExperienceData.Item.makeCastmember("Kunle Coker", subtitle: "A Yoruba businessman, and Don’s friend and confidant. The wives don’t like him because they feel he’s a bad influence on Don, after all, rumor has it he has a wife in all 36 states in Nigeria.", alias: "Chief Balogun", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.38.png"),
+                                                        ExperienceData.Item.makeCastmember("Tunbosun Aiyedehin", subtitle: "Don’s only legitimate wife. She’s what you would typically call “the good wife”. She believes that someday what was used on her husband would expire and she would once again have him all to herself.", alias: "Adaeze", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.19.22.png"),
+                                                        ExperienceData.Item.makeCastmember("Grace Ama", subtitle: "One of Don’s mistresses, Kemi is a teacher who hails from the Yoruba speaking part of Nigeria. She has an eleven-year-old son for Don. Who has refused to match her intelligence? Kiddo played by Etochi Asiegbu is the direct opposite of his mother. His mother a very intelligent and successful teacher but Kiddo wants something else and is not able to assimilate. His mother feels he suffers some form of dyslexia.", alias: "Kemi", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/IMG_4034-scaled.jpg"),
+                                                        ExperienceData.Item.makeCastmember("Amanda Ebeye", subtitle: "Who happens to be one of Mr. Okpalla’s lovers. A busy body who has her nose in every body’s business and hardly has time for even her own business. Don has refused to take her to the altar, and she’s permanently fighting for it. Meks is the slay queen, always-on social media searching for clout through her celebrity friends.", alias: "Meks", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.21.46.png"),
+                                                        ExperienceData.Item.makeCastmember("Treasure Obasi", subtitle: "She is the second child of Don and Adaeze and the only daughter in the family. She’s 19 years old, just finished secondary school and is awaiting entry into University. She’s young, beautiful, very exceeded, and loves taking and posting photos on Facebook, and Instagram. She’s also the one that constantly helps her mom with posting pictures and videos on Instagram and other social media platforms. ", alias: "Anita", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/anita-scaled.jpg"),
+                                                        ExperienceData.Item.makeCastmember("Francis Odega", subtitle: "A security man “China”. He nicknamed himself China and lies to people that he used to be in China but chose to come back home to Nigeria because of how loyal he is to his country. He refuses to be called a gateman and is always fast to correct them that he is the “chief security officer”.", alias: "China", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.46.png"),
+                                                        ExperienceData.Item.makeCastmember("Adekunle Salawu", subtitle: "Kunle is one of the scriptwriters on “It’s a crazy world”. His character is hilarious, he speaks with a Calabar accent and feels his food is the best in Africa. Most of the time he is torn between the wives and doesn’t know who to please, they also try to get information from him about their husbands.", alias: "Bassey, the chef", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.22.png"),
+                                                        ExperienceData.Item.makeCastmember("Aret Edet", subtitle: "Don’s younger sister who frowns at his polygamous ways. She considers the first wife Adaeze the only wife and says the others are illegitimate. She is always at logger heads with Meks and Kemi", alias: "Aunty Frances", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.21.38.png"),
+                                                        ExperienceData.Item.makeCastmember("John Owotorufa", subtitle: "Sammy is the first son of Adaeze, and in the university. He is very flirtatious like his father and doesn’t have issues with his father’s mistresses.", alias: "Sammy", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.21.57.png"),
                                                        ]
 ))

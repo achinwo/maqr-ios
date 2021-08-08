@@ -21,10 +21,18 @@ extension Array where Element == ExperienceDataKeyPath.Metadata {
     
 }
 
+public struct LocalExperienceData: Codable {
+    let appVersion: String
+    let experienceTypeName: String
+    let experienceData: ExperienceData
+}
+
 public struct CodeDesignerView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var selectedTab = 0
+    
+    @AppStorage("experience-data-cache") public var storedData: Data = .empty
     
     @Binding var selectedExperience: Experience.Type? {
         didSet {
@@ -205,7 +213,7 @@ public struct CodeDesignerView: JoliView {
         let brandName = brandName.trimmingCharacters(in: .whitespacesAndNewlines)
         let landingPageText = landingPageText.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard !brandName.isEmpty && !landingPageText.isEmpty else { return }
+        guard !brandName.isEmpty && !landingPageText.isEmpty, self.experienceData == nil else { return }
         
         self.experienceData = ExperienceData(brandName: brandName, landingPageText: landingPageText)
     }
@@ -284,16 +292,16 @@ public struct CodeDesignerView: JoliView {
                     //                    .padding(.top)
                 }
                 .padding()
-//                .simultaneousGesture(
-//                    TapGesture()
-//                        .onEnded() { value in
-//                            guard appCoordinator.keyboardHeight > 0 else {
-//                                return
-//                            }
-//
-//                            appCoordinator.dismissKeyboard()
-//                        }
-//                )
+                //                .simultaneousGesture(
+                //                    TapGesture()
+                //                        .onEnded() { value in
+                //                            guard appCoordinator.keyboardHeight > 0 else {
+                //                                return
+                //                            }
+                //
+                //                            appCoordinator.dismissKeyboard()
+                //                        }
+                //                )
             }
             Spacer()
         }
@@ -472,9 +480,8 @@ public struct CodeDesignerView: JoliView {
             .padding(.top)
     }
     
-    public var contentView: some View {
-        //return //ZStack(alignment: .top){
-        return TabView(selection: $selectedTab) {
+    public var tabView: some View {
+        TabView(selection: $selectedTab) {
             ForEach(self.views, id: \.index){ item in
                 
                 Group(){
@@ -494,7 +501,7 @@ public struct CodeDesignerView: JoliView {
                                             Text("Step \(selectedTab + 1) of \(tabNames.count)")
                                                 .font(.subheadline)
                                                 .foregroundColor(.secondaryLabel)
-                                                //.padding()
+                                            //.padding()
                                             item.view
                                         }
                                     }
@@ -514,97 +521,180 @@ public struct CodeDesignerView: JoliView {
                 .frame(maxWidth: screenWidth)
                 .tag(item.index)
                 .id("code-designer-tabview-\(item.index)")
-//                    .overlay(
-//                        VStack(){
-//                            Spacer()
-//
-//                            Button("Save to image") {
-//                                let image = item.view.environmentObject(appCoordinator).snapshot(.systemBackground)
-//
-//                                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-//                            }
-//                            Spacer()
-//                        }
-//                        .environmentObject(appCoordinator)
-//                    )
+                //                    .overlay(
+                //                        VStack(){
+                //                            Spacer()
+                //
+                //                            Button("Save to image") {
+                //                                let image = item.view.environmentObject(appCoordinator).snapshot(.systemBackground)
+                //
+                //                                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                //                            }
+                //                            Spacer()
+                //                        }
+                //                        .environmentObject(appCoordinator)
+                //                    )
             }
         }
-        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-        .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .interactive))
-        .frame(idealHeight: screenHeight)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar() {
-            ToolbarItem(placement: .navigationBarLeading) {
-                if selectedTab > 0 {
-                    VStack(alignment: .leading) {
-                        Text(tabNames[selectedTab])
-                            .font(.headline)
-                        Text("Step \(selectedTab + 1) of \(tabNames.count)")
-                            .font(.subheadline)
-                            .foregroundColor(.secondaryLabel)
-                    }
-                } else {
-                    EmptyView()
-                }
-            }
-            
-            ToolbarItem(placement: .principal) {
-                VStack(alignment: .center) {
-                    if selectedTab == 0 {
-                        Text("Code Designer")
-                            .font(.headline)
-                        Text("Create custom QR and App Clip codes")
-                            .font(.subheadline)
-                            .foregroundColor(.secondaryLabel)
-                    }
-                }
-            }
-            
-            ToolbarItem(placement: .navigationBarTrailing) {
-                if selectedTab > 0 {
-                    Button(){
-                        self.readyToDownload = true
-                        self.trialActivateCallback()
-                    } label: {
-                        Text("Try It")
-                        //Label("Try It", systemImage: "arrow.forward")
-                    }
-                    .disabled(brandName.isEmpty || landingPageText.isEmpty)
-                } else {
-                    Button(){
-                        withAnimation(){
-                            self.scrollProxy?.scrollTo("section-creator", anchor: .top)
+    }
+    
+    public var contentView: some View {
+        //return //ZStack(alignment: .top){
+        return self.tabView
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+            .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .interactive))
+            .frame(idealHeight: screenHeight)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar() {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if selectedTab > 0 {
+                        VStack(alignment: .leading) {
+                            Text(tabNames[selectedTab])
+                                .font(.headline)
+                            Text("Step \(selectedTab + 1) of \(tabNames.count)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondaryLabel)
                         }
-                    } label: {
-                        Image(systemName: "plus")
+                    } else {
+                        EmptyView()
+                    }
+                }
+                
+                ToolbarItem(placement: .principal) {
+                    VStack(alignment: .center) {
+                        if selectedTab == 0 {
+                            Text("Code Designer")
+                                .font(.headline)
+                            Text("Create custom QR and App Clip codes")
+                                .font(.subheadline)
+                                .foregroundColor(.secondaryLabel)
+                        }
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if selectedTab > 0 {
+                        Button(){
+                            self.readyToDownload = true
+                            self.trialActivateCallback()
+                        } label: {
+                            Text("Try It")
+                            //Label("Try It", systemImage: "arrow.forward")
+                        }
+                        .disabled(brandName.isEmpty || landingPageText.isEmpty)
+                    } else {
+                        Button(){
+                            print("scroll: section-creator - \(String(describing: self.scrollProxy))")
+                            withAnimation(){
+                                self.scrollProxy?.scrollTo("section-creator", anchor: .top)
+                            }
+                        } label: {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
             }
-        }
-        .id("code-designer-tabview")
-        .onAppear() {
-            self.selectedTab = selectedExperience == nil ? 0 : 1
-            self.updateBrandName()
-            
-            //            var string = "SVG File Name,URL,Background Color,Foreground Color,Type,Logo\n"
-            //            let url = "https://smartstikr.com/s/shows/iacw"
-            //            for item in appClipsStyles {
-            //                string += "preview_appclip_\(item.index)_cam_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,badge\n"
-            //                string += "preview_appclip_\(item.index)_cam_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,none\n"
-            //                string += "preview_appclip_\(item.index)_nfc_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,badge\n"
-            //                string += "preview_appclip_\(item.index)_nfc_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,none\n"
-            //
-            //                let s2 = AppClipCodeStyle(index: item.index + 1, foregroundColor: item.backgroundColor, backgroundColor: item.foregroundColor)
-            //
-            //                string += "preview_appclip_\(s2.index)_cam_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,badge\n"
-            //                string += "preview_appclip_\(s2.index)_cam_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,none\n"
-            //                string += "preview_appclip_\(s2.index)_nfc_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,badge\n"
-            //                string += "preview_appclip_\(s2.index)_nfc_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,none\n"
-            //            }
-            //
-            //            print(string)
-        }
+            .id("code-designer-tabview")
+            .onChange(of: self.experienceData) { value in
+                self.updateStoredExperience()
+                print("[Experience#onChange] \(value)")
+            }
+            .ifLet(self.experienceData) { view, experience in
+                view.onReceive(experience.objectWillChange) { value in
+                    DispatchQueue.main.async {
+                        self.updateStoredExperience()
+                        print("[Experience#objectWillChange] updated stored experience")
+                    }
+                }
+            }
+            .onAppear() {
+                
+                //            let fileManager = FileManager.default
+                //            let documentsURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+                //            do {
+                //                let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
+                //                // process files
+                //                for u in fileURLs {
+                //                    print("file: \(u)")
+                //                }
+                //            } catch {
+                //                print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
+                //            }
+                
+                defer {
+                    self.selectedTab = selectedExperience == nil ? 0 : 1
+                    self.updateBrandName()
+                }
+                
+                let decoder = Musicroom.jsonDecoder()
+                guard let exp = try? decoder.decode(LocalExperienceData.self, from: storedData), storedData != .empty else {
+                    print("[Experience Changed] unable to load stored experience")
+                    return
+                }
+                
+                self.selectedExperience = Self.experienceClasses().first() { String(describing: $0) == exp.experienceTypeName }
+                
+                let expData = exp.experienceData
+                expData.logoImageUrl = rewriteCachesUrl(exp.experienceData.logoImageUrl)
+                expData.bannerImageUrl = rewriteCachesUrl(exp.experienceData.bannerImageUrl)
+                expData.bannerVideoUrl = rewriteCachesUrl(exp.experienceData.bannerVideoUrl)
+                
+                self.experienceData = expData
+                
+                let encode = exp.experienceData.jsonEncoder
+                let data = try! encode.encode(exp.experienceData)
+                print("[Experience Changed] loaded experience data: \(String(data: data, encoding: .utf8)!)")
+                
+                //            var string = "SVG File Name,URL,Background Color,Foreground Color,Type,Logo\n"
+                //            let url = "https://smartstikr.com/s/shows/iacw"
+                //            for item in appClipsStyles {
+                //                string += "preview_appclip_\(item.index)_cam_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,badge\n"
+                //                string += "preview_appclip_\(item.index)_cam_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,none\n"
+                //                string += "preview_appclip_\(item.index)_nfc_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,badge\n"
+                //                string += "preview_appclip_\(item.index)_nfc_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,none\n"
+                //
+                //                let s2 = AppClipCodeStyle(index: item.index + 1, foregroundColor: item.backgroundColor, backgroundColor: item.foregroundColor)
+                //
+                //                string += "preview_appclip_\(s2.index)_cam_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,badge\n"
+                //                string += "preview_appclip_\(s2.index)_cam_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,none\n"
+                //                string += "preview_appclip_\(s2.index)_nfc_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,badge\n"
+                //                string += "preview_appclip_\(s2.index)_nfc_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,none\n"
+                //            }
+                //
+                //            print(string)
+            }
         //.navigationBarTitle(Text(tabNames[selectedTab]).multilineTextAlignment(.leading))
+    }
+    
+    private func rewriteCachesUrl(_ url: URL?) -> URL? {
+        
+        guard let url = url,
+              let cachesDirUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first, url.isFileURL else {
+            return url
+        }
+        
+        let newUrl = cachesDirUrl.appendingPathComponent(url.lastPathComponent)
+        //print("[Test] \(url) --> \(newUrl)")
+        return newUrl
+    }
+    
+    func updateStoredExperience() {
+        
+        guard let experience = self.experienceData, let expCls = selectedExperience else { return }
+        
+        let localData = LocalExperienceData(appVersion: AppCoordinator.version.description,
+                                            experienceTypeName: String(describing: expCls),
+                                            experienceData: experience)
+        
+        let encoder = experience.jsonEncoder
+        guard let val = try? encoder.encode(localData) else {
+            print("[Experience Changed] unable to encode experience")
+            return
+        }
+        
+        self.storedData = val
+        
+        print("[Experience#updateStoredExperience] updated stored experience")
     }
     
 }
