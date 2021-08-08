@@ -36,32 +36,58 @@ public struct ExperienceDataView: JoliView {
         let imageCallback = { (img: UIImage?, error: Error?) in
             print("image: \(String(describing: img)), error: \(String(describing: error))")
             
-            guard let image = img?.resizeImage(CGSize(width: 640, height: 640)), error == nil else {
+            guard let keyPath = meta.keypath as? ReferenceWritableKeyPath<ExperienceData, URL?> else {
+                print("Unable to produce writeable keypath for: \(meta)")
                 return
             }
             
-            isUploadingImage = true
+            guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+                
+                return
+            }
             
-            self.api.upload(image)
-                .then() { (res: URL) in
-                    print("Result: \(res.absoluteString)")
-                    
-                    let imageUrl = URL(string: "/images/\(res.lastPathComponent)", relativeTo: appCoordinator.api.baseUrlHttp)
-                    
-                    guard let keyPath = meta.keypath as? ReferenceWritableKeyPath<ExperienceData, URL?> else {
-                        print("Unable to produce writeable keypath for: \(meta)")
-                        return
-                    }
-                    
-                    self.data[keyPath: keyPath] = imageUrl
-                    //print("Updated \(meta.name): \(self.data[keyPath: keyPath])")
-                }
-                .catch { error in
-                    print("uploadImage: \(error)")
-                }
-                .always() {
-                    isUploadingImage = false
-                }
+            let cacheFilename = "\(UUID().uuidString).jpg"
+            //let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+            let cacheUrl = cachesDirectory.appendingPathComponent(cacheFilename)
+            
+//            guard let image = img?.resizeImage(CGSize(width: 640, height: 640)), error == nil else {
+//                return
+//            }
+            
+            guard let imgageData = img?.jpegData(compressionQuality: 0.8), error == nil else {
+                return
+            }
+            
+            try? imgageData.write(to: cacheUrl)
+            
+            print("Wrote image to caches dir: \(cacheUrl) [isLocal=\(cacheUrl.isFileURL)]")
+            
+            DispatchQueue.main.async {
+                self.data[keyPath: keyPath] = cacheUrl
+            }
+            
+//            isUploadingImage = true
+//
+//            self.api.upload(image)
+//                .then() { (res: URL) in
+//                    print("Result: \(res.absoluteString)")
+//
+//                    let imageUrl = URL(string: "/images/\(res.lastPathComponent)", relativeTo: appCoordinator.api.baseUrlHttp)
+//
+//                    guard let keyPath = meta.keypath as? ReferenceWritableKeyPath<ExperienceData, URL?> else {
+//                        print("Unable to produce writeable keypath for: \(meta)")
+//                        return
+//                    }
+//
+//                    self.data[keyPath: keyPath] = imageUrl
+//                    //print("Updated \(meta.name): \(self.data[keyPath: keyPath])")
+//                }
+//                .catch { error in
+//                    print("uploadImage: \(error)")
+//                }
+//                .always() {
+//                    isUploadingImage = false
+//                }
         }
         
         return HStack(){

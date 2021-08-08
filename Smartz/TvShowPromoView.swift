@@ -224,7 +224,8 @@ struct TvShowPromoView: Experience, JoliView {
                         //.offset(x: 0, y: -200)
                         .id("brand")
                     //
-                    Link(destination: URL(string: "https://www.instagram.com/\(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername)/")!) {
+                    let instaUsername = dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername
+                    Link(destination: URL(social: .instagramUser(instaUsername))) {
                         HStack(alignment: .center, spacing: .zero){
                             (Text(releaseText).font(.subheadline.weight(.semibold)))
                                 .lineLimit(2)

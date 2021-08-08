@@ -13,11 +13,51 @@ import Combine
 
 public typealias MultilineString = String
 
+public enum SocialLink {
+    
+    case instagramUser(String)
+    case instagramHashtag(String)
+    case youtubeChannel(String)
+    case youtubeUser(String)
+    
+    var url: URL {
+        switch self {
+        case .instagramUser(let username):
+            return baseUrl.appendingPathComponent(username, isDirectory: true)
+        case .instagramHashtag(let hashtag):
+            return baseUrl.appendingPathComponent("/explore/tags/\(hashtag)", isDirectory: true)
+        case .youtubeChannel(let channel):
+            return baseUrl.appendingPathComponent("/channel/\(channel)")
+        case .youtubeUser(let username):
+            return baseUrl.appendingPathComponent("/user/\(username)")
+        }
+    }
+    
+    public static var urls: (instagram: URL, youtube: URL) {
+        return (instagram: URL(staticString: "https://www.instagram.com"),
+                youtube: URL(staticString: "https://www.youtube.com"))
+    }
+    
+    var baseUrl: URL {
+        switch self {
+        case .instagramUser(_), .instagramHashtag(_):
+            return Self.urls.instagram
+        case .youtubeChannel(_), .youtubeUser(_):
+            return Self.urls.youtube
+        }
+    }
+}
+
 public extension URL {
     
     init(staticString: StaticString){
         self.init(string: "\(staticString)")!
     }
+    
+    init(social: SocialLink){
+        self = social.url
+    }
+    
 }
 
 public class ExperienceData: ObservableObject {
