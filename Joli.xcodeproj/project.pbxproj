@@ -56,6 +56,8 @@
 		922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
 		922260F9265E72F00064BC6F /* SpotifyiOS.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
+		9228F86C26C07A310053DC04 /* ExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9228F86B26C07A310053DC04 /* ExperienceData.swift */; };
+		9228F86D26C07A310053DC04 /* ExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9228F86B26C07A310053DC04 /* ExperienceData.swift */; };
 		922989A72641FCA800FDD58F /* GridChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989A62641FCA800FDD58F /* GridChooserView.swift */; };
 		922989A82641FCA800FDD58F /* GridChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989A62641FCA800FDD58F /* GridChooserView.swift */; };
 		922989A92641FCA800FDD58F /* GridChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989A62641FCA800FDD58F /* GridChooserView.swift */; };
@@ -383,6 +385,7 @@
 		922223E226A2E368007BD0D3 /* CodeDesignerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeDesignerView.swift; sourceTree = "<group>"; };
 		922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = SpotifyiOS.xcframework; sourceTree = "<group>"; };
 		9222BE1724CD8A5800F19973 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
+		9228F86B26C07A310053DC04 /* ExperienceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceData.swift; sourceTree = "<group>"; };
 		922989A62641FCA800FDD58F /* GridChooserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridChooserView.swift; sourceTree = "<group>"; };
 		922989AB26491F0D00FDD58F /* MailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailView.swift; sourceTree = "<group>"; };
 		922DEAC6264BAFED00D91D99 /* JoliTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoliTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -592,6 +595,7 @@
 				921F6C2F26BE81C00061D236 /* VisualCodeView.swift */,
 				921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */,
 				92ECCEDC26C0543F009A2B75 /* MyExperiencesView.swift */,
+				9228F86B26C07A310053DC04 /* ExperienceData.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -1320,6 +1324,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				921CAFA826B5F4730078A394 /* YouTubePlayer.swift in Sources */,
+				9228F86C26C07A310053DC04 /* ExperienceData.swift in Sources */,
 				921F6C3026BE81C00061D236 /* VisualCodeView.swift in Sources */,
 				920264CB268FAE06005643E1 /* ExperienceView.swift in Sources */,
 				920264D02691D4EA005643E1 /* Restaurant.swift in Sources */,
@@ -1351,6 +1356,7 @@
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */,
 				921C300D2694B29400527D39 /* TvShowPromoView.swift in Sources */,
+				9228F86D26C07A310053DC04 /* ExperienceData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
