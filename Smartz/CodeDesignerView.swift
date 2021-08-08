@@ -11,6 +11,7 @@ import JoliPlayground
 import Combine
 import os
 import Foundation
+import JoliCore
 
 extension Array where Element == ExperienceDataKeyPath.Metadata {
     
@@ -464,9 +465,11 @@ public struct CodeDesignerView: JoliView {
     }
     
     @State public var scrollProxy: ScrollViewProxy? = nil
+    @State public var storedExperiences: [StikrExperienceData] = []
     
     public var historyView: some View {
-        Text("View History")
+        MyExperiencesView(experiences: $storedExperiences)
+            .padding(.top)
     }
     
     public var contentView: some View {

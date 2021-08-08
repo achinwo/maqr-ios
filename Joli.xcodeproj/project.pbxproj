@@ -211,6 +211,7 @@
 		92DD6554267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
 		92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
+		92ECCEDD26C0543F009A2B75 /* MyExperiencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92ECCEDC26C0543F009A2B75 /* MyExperiencesView.swift */; };
 		92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE3CD2619394000688802 /* SFSafeSymbols */; };
 		92EDE41026193AD500688802 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE40F26193AD500688802 /* Kingfisher */; };
 		92EDE41226193AE000688802 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE41126193AE000688802 /* PartialSheet */; };
@@ -470,6 +471,7 @@
 		92A7120C24D85EC500AD6729 /* NetworkImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageView.swift; sourceTree = "<group>"; };
 		92C1A24D26626D5B00A11E0F /* Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playback.swift; sourceTree = "<group>"; };
 		92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeyRestuarantView.swift; sourceTree = "<group>"; };
+		92ECCEDC26C0543F009A2B75 /* MyExperiencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyExperiencesView.swift; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92FBFC8C26AB33560068DDA5 /* Templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Templates; sourceTree = "<group>"; };
 		92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Experiences.generated.swift; sourceTree = "<group>"; };
@@ -589,6 +591,7 @@
 				922223E226A2E368007BD0D3 /* CodeDesignerView.swift */,
 				921F6C2F26BE81C00061D236 /* VisualCodeView.swift */,
 				921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */,
+				92ECCEDC26C0543F009A2B75 /* MyExperiencesView.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -1327,6 +1330,7 @@
 				921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */,
 				921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
+				92ECCEDD26C0543F009A2B75 /* MyExperiencesView.swift in Sources */,
 				9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */,
 				92562E30266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				92DD6554267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
