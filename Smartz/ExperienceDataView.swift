@@ -33,7 +33,7 @@ public struct ExperienceDataView: JoliView {
     func imagePickerFrom(meta: ExperienceDataKeyPath.Metadata) -> some View {
         //print("[imagePickerFrom] \(meta.name) - \(data[keyPath: meta.keypath] as? URL)")
         
-        let imageCallback = { (img: UIImage?, error: Error?) in
+        let imageCallback = { (img: UIImage?, imgName: String?, error: Error?) in
             print("image: \(String(describing: img)), error: \(String(describing: error))")
             
             guard let keyPath = meta.keypath as? ReferenceWritableKeyPath<ExperienceData, URL?> else {
@@ -46,7 +46,8 @@ public struct ExperienceDataView: JoliView {
                 return
             }
             
-            let cacheFilename = "\(UUID().uuidString).jpg"
+            let ext = URL(fileURLWithPath: imgName ?? "image.jpg").pathExtension.lowercased()
+            let cacheFilename = "\(UUID().uuidString).\(ext)"
             //let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
             let cacheUrl = cachesDirectory.appendingPathComponent(cacheFilename)
             
@@ -54,7 +55,10 @@ public struct ExperienceDataView: JoliView {
 //                return
 //            }
             
-            guard let imgageData = img?.jpegData(compressionQuality: 0.8), error == nil else {
+            let data = ext == "png" ? img?.pngData() : img?.jpegData(compressionQuality: 0.8)
+            print("[imageCallback] name: \(imgName), ext: \(ext)")
+            
+            guard let imgageData = data, error == nil else {
                 return
             }
             
@@ -98,7 +102,7 @@ public struct ExperienceDataView: JoliView {
             
             Spacer()
             
-            ImageView(url: data[keyPath: meta.keypath] as? URL, isCircular: false, onSelected: imageCallback) { (image, error) in
+            ImageView(url: data[keyPath: meta.keypath] as? URL, isCircular: false, onSelected: imageCallback) { (image, imgName, error) in
                 
             } content: {
                 EmptyView()

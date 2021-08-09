@@ -10,7 +10,7 @@ import SwiftUI
 
 public struct ImageView<Content: View>: View {
     
-    public typealias Callback = (UIImage?, Error?) -> Void
+    public typealias Callback = (UIImage?, String?, Error?) -> Void
     
     #if !os(macOS)
     var buttons: [ActionSheet.Button] {
@@ -102,21 +102,21 @@ public struct ImageView<Content: View>: View {
     
     var imageView: some View {
         
-        let onSelectedCb: (UIImage?, Error?) -> Void = { (img: UIImage?, error: Error?) in
+        let onSelectedCb: (UIImage?, String?, Error?) -> Void = { (img: UIImage?, assetName: String?, error: Error?) in
             self.imageChooserPresented.toggle()
             
             if let error = error {
-                self.onSelected?(nil, error)
+                self.onSelected?(nil, nil, error)
                 return
             }
             
             guard let image = img else {
-                self.onSelected?(nil, error)
+                self.onSelected?(nil, nil, error)
                 return
             }
             
             self.uiImage = image
-            self.onSelected?(image, error)
+            self.onSelected?(image, assetName, error)
         }
         
         let img: AnyView
@@ -131,7 +131,7 @@ public struct ImageView<Content: View>: View {
         } else {
             let network = NetworkImage(url: imageURL) { (image, error) in
                 uiImage = image
-                self.onLoaded?(image, error)
+                self.onLoaded?(image, imageURL?.lastPathComponent, error)
             } content: {
                 return placeholderContent
             }

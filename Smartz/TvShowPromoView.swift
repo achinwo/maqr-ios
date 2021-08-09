@@ -351,7 +351,7 @@ struct TvShowPromoView: Experience, JoliView {
 //                print(str)
                 guard self.videoLocalUrl == nil else { return }
                 
-                fetchVideo()
+                //fetchVideo()
             }
         }
     }

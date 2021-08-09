@@ -24,6 +24,10 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Capture images for customised brand experience creation</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Required to save QR and App Clip code images to Photo libarary</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is required for uploading brand assets</string>
 	<key>NSUbiquitousContainers</key>
 	<dict>
 		<key>iCloud.com.smartstickr.Smartz</key>
@@ -36,13 +40,7 @@
 			<string>Any</string>
 		</dict>
 	</dict>
-    
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>Photo library access is required for uploading brand assets</string>
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>Required to save QR and App Clip code images to Photo libarary</string>
-	
-    <key>UIApplicationSceneManifest</key>
+	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>

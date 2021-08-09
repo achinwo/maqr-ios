@@ -18,33 +18,44 @@ import PhotosUI
 
 public class ImagePickerCoordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate, PHPickerViewControllerDelegate {
     
-    var callback: (UIImage?, Error?) -> Void
+    var callback: (UIImage?, String?, Error?) -> Void
     
-    public init(callback: @escaping (UIImage?, Error?) -> Void) {
+    public init(callback: @escaping (UIImage?, String?, Error?) -> Void) {
         self.callback = callback
     }
     
     public func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         // The client is responsible for presentation and dismissal
         
-        guard let itemProvider = results.first?.itemProvider, itemProvider.canLoadObject(ofClass: UIImage.self) else {
-            self.callback(nil, nil)
+        guard let result = results.first, result.itemProvider.canLoadObject(ofClass: UIImage.self) else {
+            self.callback(nil, nil, nil)
             return
         }
         
-        itemProvider.loadObject(ofClass: UIImage.self) { (image: NSItemProviderReading?, error) in
-            self.callback((image as? UIImage)?.squared(), error)
+        
+        
+        result.itemProvider.loadObject(ofClass: UIImage.self) { (image: NSItemProviderReading?, error) in
+            
+            guard error == nil else {
+                self.callback(image as? UIImage, result.assetIdentifier, error)
+                return
+            }
+            
+            result.itemProvider.loadFileRepresentation(forTypeIdentifier: "public.item"){ imgUrl, _ in
+                self.callback(image as? UIImage, imgUrl?.lastPathComponent ?? result.assetIdentifier, error)
+            }
         }
         
     }
     
     public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage
-        self.callback(image?.squared(), nil)
+        let imageUrl = info[UIImagePickerController.InfoKey.imageURL] as? URL
+        self.callback(image, imageUrl?.lastPathComponent, nil)
     }
     
     public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        callback(nil, nil)
+        callback(nil, nil, nil)
     }
     
 }
@@ -52,7 +63,7 @@ public class ImagePickerCoordinator: NSObject, UINavigationControllerDelegate, U
 public protocol ImagePickerRepresentable: UIViewControllerRepresentable {
     associatedtype ImagePickerViewController: UIViewController
     
-    var callback: (UIImage?, Error?) -> Void { get set }
+    var callback: (UIImage?, String?, Error?) -> Void { get set }
     func makeUIViewController(context: UIViewControllerRepresentableContext<Self>) -> ImagePickerViewController
 }
 
@@ -68,7 +79,7 @@ extension ImagePickerRepresentable {
 
 public struct SingleImagePicker: ImagePickerRepresentable {
     
-    public var callback: (UIImage?, Error?) -> Void
+    public var callback: (UIImage?, String?, Error?) -> Void
     
     public func makeUIViewController(context: UIViewControllerRepresentableContext<SingleImagePicker>) -> PHPickerViewController {
         var configuration = PHPickerConfiguration()
@@ -83,7 +94,7 @@ public struct SingleImagePicker: ImagePickerRepresentable {
 
 public struct CameraImagePicker: ImagePickerRepresentable {
     
-    public var callback: (UIImage?, Error?) -> Void
+    public var callback: (UIImage?, String?, Error?) -> Void
     
     public func makeUIViewController(context: UIViewControllerRepresentableContext<CameraImagePicker>) -> UIImagePickerController {
         let picker = UIImagePickerController()

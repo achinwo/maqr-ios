@@ -94,7 +94,7 @@ public struct UserProfileView2: JoliView {
     
     var formView: some View {
         
-        let imageCallback = { (img: UIImage?, error: Error?) in
+        let imageCallback = { (img: UIImage?, imgName: String?, error: Error?) in
             print("image: \(String(describing: img)), error: \(String(describing: error))")
             
             guard var user = user as? User,
