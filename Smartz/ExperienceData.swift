@@ -95,13 +95,18 @@ public protocol ExperienceDataItem: Encodable & Decodable {
     var isOptional: Bool? { get set }
     var itemGrouping: String? { get set }
     var itemSubgrouping: String? { get set }
-    var itemType: ItemType { get set }
+    var experienceItemType: ExperienceItemType { get set }
     var spicy: Spicy? { get set }
     var subtitle: String? { get set }
     var title: String? { get set }
+    var identifier: Int? { get }
 }
 
 extension StikrExperienceDataItem: ExperienceDataItem {
+    
+    public var identifier: Int? {
+        return id
+    }
     
 }
 
@@ -130,7 +135,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     public typealias PersistedType = StikrExperienceData
     
     public struct Item: ExperienceDataItem {
-        public var itemType: ItemType
+        public var experienceItemType: ExperienceItemType
         public var aliasTitle: String?
         public var caution: String?
         public var defaultPrice: Int?
@@ -142,6 +147,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         public var spicy: Spicy?
         public var subtitle: String?
         public var title: String?
+        public var identifier: Int?
     }
     
     public var json: Json {
@@ -212,8 +218,8 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Secondary", description = "Secondary brand color", default = ".orange"
     @Published var brandColorSecondary: Color = .orange
     
-    // sourcery: title = "Accent", description = "Accent brand color", default = ".yellow"
-    @Published var brandColorAccent: Color = .yellow
+    // sourcery: title = "Accent", description = "Accent brand color", default = ".white"
+    @Published var brandColorAccent: Color = .white
     
     @Published var uuid: String? = nil
     

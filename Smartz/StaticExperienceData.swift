@@ -12,27 +12,18 @@ import JoliCore
 public extension ExperienceData.Item {
     
     static func makeCastmember(_ title: String, subtitle: String, alias: String, imageUrlString: String) -> Self {
-        return StikrExperienceDataItem(aliasTitle: alias,
-                                       caution: nil,
-                                       createdAt: Date(),
-                                       createdById: -1,
-                                       defaultPrice: nil,
-                                       deletedAt: nil,
-                                       deletedById: nil,
-                                       duration: nil,
-                                       experienceId: -2,
-                                       experienceItemType: .person,
-                                       id: -3,
-                                       imageName: imageUrlString,
-                                       isOptional: nil,
-                                       itemGrouping: nil,
-                                       itemSubgrouping: nil,
-                                       parentExperienceItemId: nil,
-                                       spicy: nil,
-                                       subtitle: subtitle,
-                                       title: title,
-                                       updatedAt: Date(),
-                                       updatedById: -1)
+        return ExperienceData.Item(experienceItemType: .person,
+                                   aliasTitle: alias,
+                                   caution: nil,
+                                   defaultPrice: nil,
+                                   duration: nil,
+                                   imageName: imageUrlString,
+                                   isOptional: nil,
+                                   itemGrouping: nil,
+                                   itemSubgrouping: nil,
+                                   spicy: nil,
+                                   subtitle: subtitle,
+                                   title: title)
     }
     
 }
