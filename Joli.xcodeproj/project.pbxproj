@@ -16,7 +16,6 @@
 		9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D3D42659B6E700D5974F /* SmartzApp.swift */; };
 		9202D3D72659B6E700D5974F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D3D62659B6E700D5974F /* ContentView.swift */; };
 		9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D3D82659B6E900D5974F /* Assets.xcassets */; };
-		9202D3DC2659B6E900D5974F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D3DB2659B6E900D5974F /* Preview Assets.xcassets */; };
 		9202D3FD2659B72800D5974F /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		9202D3FE2659B72800D5974F /* JoliPlayground.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D4092659BC0B00D5974F /* SmartzClipApp.swift */; };
@@ -52,6 +51,14 @@
 		921F6C3026BE81C00061D236 /* VisualCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C2F26BE81C00061D236 /* VisualCodeView.swift */; };
 		921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
 		921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
+		921F6C3626BE9CCD0061D236 /* DeepLabV3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3526BE9CCD0061D236 /* DeepLabV3.mlmodel */; };
+		921F6C3926BE9DF80061D236 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 921F6C3826BE9DF80061D236 /* Preview Assets.xcassets */; };
+		921F6C4126BEA05C0061D236 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3E26BEA05C0061D236 /* UIImage+Extensions.swift */; };
+		921F6C4226BEA05C0061D236 /* CGImage+CVPixelBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3F26BEA05C0061D236 /* CGImage+CVPixelBuffer.swift */; };
+		921F6C4326BEA05C0061D236 /* MLMultiArray+Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4026BEA05C0061D236 /* MLMultiArray+Image.swift */; };
+		921F6C4526BEA1110061D236 /* CGImage+RawBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4426BEA1110061D236 /* CGImage+RawBytes.swift */; };
+		921F6C4726BEA1610061D236 /* UIImage+CVPixelBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4626BEA1610061D236 /* UIImage+CVPixelBuffer.swift */; };
+		921F6C4926BEA1C00061D236 /* Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4826BEA1C00061D236 /* Math.swift */; };
 		922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922223E226A2E368007BD0D3 /* CodeDesignerView.swift */; };
 		922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
 		922260F9265E72F00064BC6F /* SpotifyiOS.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -361,7 +368,6 @@
 		9202D3D42659B6E700D5974F /* SmartzApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartzApp.swift; sourceTree = "<group>"; };
 		9202D3D62659B6E700D5974F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9202D3D82659B6E900D5974F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		9202D3DB2659B6E900D5974F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9202D3DD2659B6E900D5974F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9202D4022659B7CD00D5974F /* Smartz.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Smartz.entitlements; sourceTree = "<group>"; };
 		9202D4072659BC0B00D5974F /* SmartzClip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartzClip.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -382,6 +388,14 @@
 		921CAFAA26B5F4F10078A394 /* YTPlayer.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = YTPlayer.html; sourceTree = "<group>"; };
 		921F6C2F26BE81C00061D236 /* VisualCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualCodeView.swift; sourceTree = "<group>"; };
 		921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticExperienceData.swift; sourceTree = "<group>"; };
+		921F6C3526BE9CCD0061D236 /* DeepLabV3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = DeepLabV3.mlmodel; sourceTree = "<group>"; };
+		921F6C3826BE9DF80061D236 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		921F6C3E26BEA05C0061D236 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
+		921F6C3F26BEA05C0061D236 /* CGImage+CVPixelBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGImage+CVPixelBuffer.swift"; sourceTree = "<group>"; };
+		921F6C4026BEA05C0061D236 /* MLMultiArray+Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MLMultiArray+Image.swift"; sourceTree = "<group>"; };
+		921F6C4426BEA1110061D236 /* CGImage+RawBytes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGImage+RawBytes.swift"; sourceTree = "<group>"; };
+		921F6C4626BEA1610061D236 /* UIImage+CVPixelBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+CVPixelBuffer.swift"; sourceTree = "<group>"; };
+		921F6C4826BEA1C00061D236 /* Math.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Math.swift; sourceTree = "<group>"; };
 		922223E226A2E368007BD0D3 /* CodeDesignerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeDesignerView.swift; sourceTree = "<group>"; };
 		922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = SpotifyiOS.xcframework; sourceTree = "<group>"; };
 		9222BE1724CD8A5800F19973 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
@@ -574,6 +588,9 @@
 		9202D3D32659B6E700D5974F /* Smartz */ = {
 			isa = PBXGroup;
 			children = (
+				921F6C3D26BE9F880061D236 /* CoreMlHelpers */,
+				921F6C3726BE9DF80061D236 /* Preview Content */,
+				921F6C3526BE9CCD0061D236 /* DeepLabV3.mlmodel */,
 				920264DB26924653005643E1 /* joey_sherway_data.json */,
 				92562E2B266BC162004972E6 /* demo_sise_intro.mov */,
 				92562E29266BC118004972E6 /* demo_sise_appclip.mp4 */,
@@ -583,7 +600,6 @@
 				9202D3D62659B6E700D5974F /* ContentView.swift */,
 				9202D3D82659B6E900D5974F /* Assets.xcassets */,
 				9202D3DD2659B6E900D5974F /* Info.plist */,
-				9202D3DA2659B6E900D5974F /* Preview Content */,
 				92C1A24D26626D5B00A11E0F /* Playback.swift */,
 				92562E2F266D3C38004972E6 /* SiseMealboxView.swift */,
 				92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */,
@@ -598,14 +614,6 @@
 				9228F86B26C07A310053DC04 /* ExperienceData.swift */,
 			);
 			path = Smartz;
-			sourceTree = "<group>";
-		};
-		9202D3DA2659B6E900D5974F /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				9202D3DB2659B6E900D5974F /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		9202D4082659BC0B00D5974F /* SmartzClip */ = {
@@ -635,6 +643,27 @@
 				9203B31224CB06C900F465CC /* Info.plist */,
 			);
 			path = JoliPlayground;
+			sourceTree = "<group>";
+		};
+		921F6C3726BE9DF80061D236 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				921F6C3826BE9DF80061D236 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		921F6C3D26BE9F880061D236 /* CoreMlHelpers */ = {
+			isa = PBXGroup;
+			children = (
+				921F6C4826BEA1C00061D236 /* Math.swift */,
+				921F6C4626BEA1610061D236 /* UIImage+CVPixelBuffer.swift */,
+				921F6C4426BEA1110061D236 /* CGImage+RawBytes.swift */,
+				921F6C3F26BEA05C0061D236 /* CGImage+CVPixelBuffer.swift */,
+				921F6C4026BEA05C0061D236 /* MLMultiArray+Image.swift */,
+				921F6C3E26BEA05C0061D236 /* UIImage+Extensions.swift */,
+			);
+			name = CoreMlHelpers;
 			sourceTree = "<group>";
 		};
 		922DEAC7264BAFED00D91D99 /* JoliTV */ = {
@@ -1188,9 +1217,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				920264DC26924653005643E1 /* joey_sherway_data.json in Resources */,
+				921F6C3926BE9DF80061D236 /* Preview Assets.xcassets in Resources */,
 				92562E2C266BC162004972E6 /* demo_sise_intro.mov in Resources */,
 				92562E2A266BC118004972E6 /* demo_sise_appclip.mp4 in Resources */,
-				9202D3DC2659B6E900D5974F /* Preview Assets.xcassets in Resources */,
 				9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */,
 				92562E2E266C003D004972E6 /* Assets.xcassets in Resources */,
 				92562E33266D65EC004972E6 /* demo_sise_code_scan.mov in Resources */,
@@ -1327,9 +1356,14 @@
 				9228F86C26C07A310053DC04 /* ExperienceData.swift in Sources */,
 				921F6C3026BE81C00061D236 /* VisualCodeView.swift in Sources */,
 				920264CB268FAE06005643E1 /* ExperienceView.swift in Sources */,
+				921F6C4326BEA05C0061D236 /* MLMultiArray+Image.swift in Sources */,
+				921F6C4226BEA05C0061D236 /* CGImage+CVPixelBuffer.swift in Sources */,
+				921F6C3626BE9CCD0061D236 /* DeepLabV3.mlmodel in Sources */,
 				920264D02691D4EA005643E1 /* Restaurant.swift in Sources */,
+				921F6C4726BEA1610061D236 /* UIImage+CVPixelBuffer.swift in Sources */,
 				92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */,
 				922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */,
+				921F6C4526BEA1110061D236 /* CGImage+RawBytes.swift in Sources */,
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */,
 				921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */,
@@ -1337,6 +1371,8 @@
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
 				92ECCEDD26C0543F009A2B75 /* MyExperiencesView.swift in Sources */,
 				9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */,
+				921F6C4926BEA1C00061D236 /* Math.swift in Sources */,
+				921F6C4126BEA05C0061D236 /* UIImage+Extensions.swift in Sources */,
 				92562E30266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				92DD6554267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
 			);

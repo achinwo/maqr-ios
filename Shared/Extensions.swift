@@ -51,6 +51,15 @@ public extension EnvironmentValues {
     
 }
 
+public typealias MultilineString = String
+
+public extension URL {
+    
+    init(staticString: StaticString){
+        self.init(string: "\(staticString)")!
+    }
+}
+
 public extension View {
     
     func snapshot(_ backgroundColor: Color = .clear) -> UIImage {
