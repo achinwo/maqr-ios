@@ -166,6 +166,10 @@ public struct MealboxView: Experience, JoliView {
         return []
     }
     
+    public static var supportedItemTypes: Set<ExperienceItemType> {
+        return [.mealPrepStep, .mealPrepIngredient]
+    }
+    
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @Environment(\.safeAreaInsets) var safeAreaInsets
     

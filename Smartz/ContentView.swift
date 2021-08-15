@@ -87,12 +87,15 @@ public struct ReorderNowView: Experience, JoliView {
         return []
     }
     
+    public static var supportedItemTypes: Set<ExperienceItemType> {
+        return []
+    }
+    
     public var contentView: some View {
         VStack(){
             Text("ReorderNow")
         }
     }
-    
     
 }
 

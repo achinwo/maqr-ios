@@ -232,7 +232,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     }
     
     static func fromExperienceData(_ experienceData: PersistedType, baseUrl: URL) -> Self {
-        var res = Self.init(brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+        let res = Self.init(brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
         return res
     }
 
@@ -240,21 +240,21 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-    logoImageUrl = try container.decode(URL?.self, forKey: .logoImageUrl)
-    bannerImageUrl = try container.decode(URL?.self, forKey: .bannerImageUrl)
-    bannerVideoUrl = try container.decode(URL?.self, forKey: .bannerVideoUrl)
-    backgroundImageUrl = try container.decode(URL?.self, forKey: .backgroundImageUrl)
-    brandName = try container.decode(String.self, forKey: .brandName)
-    landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
-    socialInstagramUsername = try container.decode(String?.self, forKey: .socialInstagramUsername)
-    releaseDate = try container.decode(Date?.self, forKey: .releaseDate)
-    releasePlatformName = try container.decode(String?.self, forKey: .releasePlatformName)
-    releasePlatformLogoUrl = try container.decode(URL?.self, forKey: .releasePlatformLogoUrl)
-    releasePlatformInstaUsername = try container.decode(String?.self, forKey: .releasePlatformInstaUsername)
-    brandColorPrimary = try container.decode(Color.self, forKey: .brandColorPrimary)
-    brandColorSecondary = try container.decode(Color.self, forKey: .brandColorSecondary)
-    brandColorAccent = try container.decode(Color.self, forKey: .brandColorAccent)
-    items = try container.decode([ExperienceData.Item].self, forKey: .items)
+        logoImageUrl = try container.decode(URL?.self, forKey: .logoImageUrl)
+        bannerImageUrl = try container.decode(URL?.self, forKey: .bannerImageUrl)
+        bannerVideoUrl = try container.decode(URL?.self, forKey: .bannerVideoUrl)
+        backgroundImageUrl = try container.decode(URL?.self, forKey: .backgroundImageUrl)
+        brandName = try container.decode(String.self, forKey: .brandName)
+        landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
+        socialInstagramUsername = try container.decode(String?.self, forKey: .socialInstagramUsername)
+        releaseDate = try container.decode(Date?.self, forKey: .releaseDate)
+        releasePlatformName = try container.decode(String?.self, forKey: .releasePlatformName)
+        releasePlatformLogoUrl = try container.decode(URL?.self, forKey: .releasePlatformLogoUrl)
+        releasePlatformInstaUsername = try container.decode(String?.self, forKey: .releasePlatformInstaUsername)
+        brandColorPrimary = try container.decode(Color.self, forKey: .brandColorPrimary)
+        brandColorSecondary = try container.decode(Color.self, forKey: .brandColorSecondary)
+        brandColorAccent = try container.decode(Color.self, forKey: .brandColorAccent)
+        items = try container.decode([ExperienceData.Item].self, forKey: .items)
     }
 // sourcery:end
 }

@@ -108,7 +108,7 @@ extension ExperienceData: Encodable {
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-    {% for variable in type.ExperienceData.storedVariables|annotated: "default" %}{#
+    {% for variable in type.ExperienceData.storedVariables|annotated: "default" %}    {#
         #}{{ variable.name }} = try container.decode({{ variable.typeName }}.self, forKey: .{{ variable.name }})
     {% endfor %}
     }

@@ -23,11 +23,16 @@ public protocol Experience {
     
     static var dataKeys: [PartialKeyPath<ExperienceData>] { get }
     static var allDataKeys: [PartialKeyPath<ExperienceData>] { get }
+    static var supportedItemTypes: Set<ExperienceItemType> { get }
     
     init(_ data: ExperienceData?)
 }
 
 public extension JoliView where Self: Experience {
+    
+    static var supportedItemTypes: Set<ExperienceItemType> {
+        return []
+    }
     
     static var allDataKeys: [PartialKeyPath<ExperienceData>] {
         return Self.primaryDataKeys + Self.dataKeys
@@ -146,6 +151,10 @@ struct RestaurantView: Experience, JoliView {
     
     init(_ data: ExperienceData?) {
         self.init(data, editMode: .constant(.inactive))
+    }
+    
+    static var supportedItemTypes: Set<ExperienceItemType> {
+        return [.menuDrinkItem, .menuFoodItem, .menuFoodNutrition]
     }
     
     static var dataKeys: [PartialKeyPath<ExperienceData>] {

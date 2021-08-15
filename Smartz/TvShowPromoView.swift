@@ -54,6 +54,10 @@ struct TvShowPromoView: Experience, JoliView {
         ]
     }
     
+    static var supportedItemTypes: Set<ExperienceItemType> {
+        return [.person]
+    }
+    
     @Binding var editMode: EditMode
     
     @EnvironmentObject var appCoordinator: AppCoordinator
