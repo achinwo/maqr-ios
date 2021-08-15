@@ -9,6 +9,7 @@
 import SwiftUI
 import JoliPlayground
 import Combine
+import JoliCore
 
 public struct AppClipCodeStyle: Identifiable {
     public let index: Int
@@ -109,6 +110,8 @@ public struct VisualCodeView: JoliView {
             }
         }
         
+        @Published public var lastUpdatedAt = Date()
+        
         public var index: Int = 12 {
             didSet {
                 self.updateUrl()
@@ -124,8 +127,41 @@ public struct VisualCodeView: JoliView {
             
             self.urlPath = URLComponents(string: fileName)
             //print("NEW URL: \(self.requestUrl)")
+            self.lastUpdatedAt = Date()
         }
+        
+        lazy var allCodeStyles: [AppClipCodeStyle] = {
+            var appClipsStyles: [AppClipCodeStyle] = []
+            
+            for item in appClipsTypes {
+                let inv = AppClipCodeStyle(index: item.index + 1, foregroundColor: item.backgroundColor, backgroundColor: item.foregroundColor)
+                appClipsStyles.append(contentsOf: [item, inv])
+            }
+            
+            return appClipsStyles
+        }()
+        
+        var visualCode: VisualCodeRecord? {
+            
+            guard let style = allCodeStyles.first(where: { $0.index == index }) else { return nil }
+            
+            var code = VisualCodeRecord()
+            code.backgroundColor = style.backgroundColor.hexString
+            code.foregroundColor = style.foregroundColor.hexString
+            code.index = style.index
+            code.interactionType = codeType.label
+            code.logo = logo.rawValue
+            
+            return code
+        }
+        
     }
+    
+    @Binding var code: VisualCodeRecord
+    @Binding var submitEnabled: Bool
+    let onSubmit: (VisualCodeRecord) -> Void
+    
+    
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -155,7 +191,7 @@ public struct VisualCodeView: JoliView {
                     
                 }
                 
-                Section(header: Text("Color Themes"), footer: Spacer().padding(.bottom, safeAreaInsets.bottom * 6)){
+                Section(header: Text("Color Themes")){
                     VStack(){
                         ForEach([0, 3, 6], id: \.self){ row in
                             HStack(){
@@ -182,21 +218,30 @@ public struct VisualCodeView: JoliView {
                         Divider().padding(.vertical)
                         Toggle("Inverted Colors", isOn: $invertThemeColor)//.padding(.horizontal)
                         
-//                        Button(){
-//                            self.readyToDownload = true
-//                            //self.trialActivateCallback()
-//                        } label: {
-//                            Label("Try It", systemImage: "arrow.forward")
-//                        }
-//                        //.disabled(brandName.isEmpty || landingPageText.isEmpty)
-//                        .padding()
-//                        .padding(.top)
                     }
                     .padding()
                 }
                 
-                Section(){
-                    
+                Section(footer: Spacer().padding(.bottom, safeAreaInsets.bottom * 6)){
+                    HStack(){
+                        Spacer()
+                        Button(){
+                            //self.readyToDownload = true
+                            //self.trialActivateCallback()
+                            
+                            guard let vizCode = model.visualCode, submitEnabled else { return }
+                            
+                            self.code = vizCode
+                            onSubmit(self.code)
+                        } label: {
+                            Label("Submit", systemImage: "arrow.up")
+                                .font(.headline)
+                        }
+                        .disabled(!submitEnabled)
+                        .padding()
+                        //.padding(.top)
+                        Spacer()
+                    }
                 }
             }
             
@@ -263,14 +308,21 @@ public struct VisualCodeView: JoliView {
             
             self.model.codeType = codeType
         }
+        .onReceive(model.$lastUpdatedAt){ _ in
+            self.code = model.visualCode ?? code
+            print("[\(Self.self)] Code updated!!")
+        }
         .onAppear(){
             //updateSubscriptions()
+            self.code = model.visualCode ?? code
         }
     }
     
     
     @StateObject var model = AppClipCodeModel()
+    
     @State var appClipCode: UIImage = UIImage(named: "appclipcode_with_logo")!
+    
     @State var appClipCodeType: Int = AppClipCodeModel.CodeType.cam.rawValue
     
     @State var codeFetchCancel: AnyCancellable? = nil
@@ -328,13 +380,6 @@ public struct VisualCodeView: JoliView {
                     task.resume()
                 }
                 .eraseToAnyPublisher()
-                
-                //                guard let imageData = try? Data(contentsOf: url), let img = UIImage(data: imageData) else {
-                //                    print("Unable to fetch: \(url)")
-                //                    return Just(UIImage(named: "appclipcode_with_logo")!).eraseToAnyPublisher()
-                //                }
-                //
-                //                return Just(img).eraseToAnyPublisher()
             }
             .switchToLatest()
             .receive(on: RunLoop.main)

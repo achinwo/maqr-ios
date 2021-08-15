@@ -150,16 +150,23 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         public var identifier: Int?
     }
     
-    public var json: Json {
-        let items: [(String, AnyObject)] = []
-        return Dictionary<String, AnyObject>(uniqueKeysWithValues: items)
-    }
+//    public var json: Json {
+//        let items: [(String, AnyObject)] = []
+//        return Dictionary<String, AnyObject>(uniqueKeysWithValues: items)
+//    }
     
     public func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<PersistedType> {
-        let urlComp = "/api/db/\(PersistedType.className())"
+        
+        let encoder = self.jsonEncoder
+        
+        guard let data = try? encoder.encode(self) else {
+            return Promise.init(NetworkError.badRequest("Unable to serialize \(Self.self) instance"))
+        }
+        
+        let urlComp = "/api/db/experiences"
         let promise = HttpMethod.Fetch.post(url: urlComp,
                                      dataType: PersistedType.self,
-                                     payload: .json(self.json),
+                                     payload: .data(data),
                                      baseUrl: baseUrl,
                                      urlSession: urlSession,
                                      on: on)
@@ -188,7 +195,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Banner Video", description = "Banner video of landing page", default = "URL(staticString: "https://www.youtu.be/ofFyRI6ROTI")"
     @Published var bannerVideoUrl: URL?
     
-    // sourcery: title = "Background Image", description = "Default background image for your brand", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/bg_dark.jpg")"
+    // sourcery: title = "Background Image", description = "Default background image for your brand", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/bg_light.jpg")"
     @Published var backgroundImageUrl: URL?
     
     // sourcery: title = "Brand Name", description = "Name of your company or brand", default = ""Your Brand""
@@ -218,8 +225,8 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Secondary", description = "Secondary brand color", default = ".orange"
     @Published var brandColorSecondary: Color = .orange
     
-    // sourcery: title = "Accent", description = "Accent brand color", default = ".white"
-    @Published var brandColorAccent: Color = .white
+    // sourcery: title = "Accent", description = "Accent brand color", default = ".primary"
+    @Published var brandColorAccent: Color = .primary
     
     @Published var uuid: String? = nil
     

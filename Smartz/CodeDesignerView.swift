@@ -46,6 +46,12 @@ public struct CodeDesignerView: JoliView {
     @AppStorage("cd-brand-name") var brandName: String = .empty
     @AppStorage("cd-brand-landingpagetext") var landingPageText: MultilineString = .empty
     
+    @State var isLandingPageTapped = false
+    
+    @Environment(\.colorScheme) var colorScheme
+    @State var showBadge = true
+    @State var readyToDownload = true
+    
     let trialActivateCallback: () -> Void
     
     public init(_ experienceType: Binding<Experience.Type?>, _ data: Binding<ExperienceData?>, onActiveTrial: @escaping () -> Void){
@@ -72,7 +78,7 @@ public struct CodeDesignerView: JoliView {
             names.append("Customise Experience")
         }
         
-        names.append(contentsOf: ["Customise Code", "Get Your Assets"])
+        names.append("Customise Code") //, "Get Your Assets"])
         return names
     }
     
@@ -207,8 +213,6 @@ public struct CodeDesignerView: JoliView {
         .padding(.top, safeAreaInsets.top)
     }
     
-    @State var isLandingPageTapped = false
-    
     private func updateBrandName() {
         let brandName = brandName.trimmingCharacters(in: .whitespacesAndNewlines)
         let landingPageText = landingPageText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -307,135 +311,11 @@ public struct CodeDesignerView: JoliView {
         }
     }
     
-    @Environment(\.colorScheme) var colorScheme
-    @State var showBadge = true
-    @State var readyToDownload = true
-    
-    func iCloudDirectoryCreate(_ completionHanlder: (() -> Void)? = nil) {
-        //let line = "Hello World"
-        let url = api.baseUrlHttp.appendingPathComponent("/downloads/codes.zip")
-        let fileName = "codes-\(UUID().uuidString).zip"
-        let localDocsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last!
-        
-        let localFile = localDocsURL.appendingPathComponent(fileName)
-        ///downloads/code.zip
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        
-        let task = api.urlSession.dataTask(with: req) { data, response, error in
-            
-            guard error == nil else {
-                print("[code fetch] error: \(String(describing: error))")
-                return
-            }
-            
-            guard let data = data else {
-                print("[code fetch] no data returned")
-                return
-            }
-            
-            do {
-                //try line.write(to: localFile, atomically: true, encoding: .utf8)
-                //let data = try Data(contentsOf: URL(staticString: "https://192.168.1.233:8080/downloads/codes.zip"))
-                try data.write(to: localFile)
-            } catch {
-                os_log("Failed to export...", log: OSLog.default, type: .error)
-            }
-            
-            guard let iCloudDocsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
-                print("Unable to obtain documents path url")
-                return
-            }
-            
-            let iCloudFile = iCloudDocsURL.appendingPathComponent(fileName)
-            
-            if !FileManager.default.fileExists(atPath: iCloudDocsURL.path, isDirectory: nil) {
-                try? FileManager.default.createDirectory(at: iCloudDocsURL, withIntermediateDirectories: true, attributes: nil)
-            }
-            
-            do {
-                try FileManager.default.copyItem(at: localFile, to: iCloudFile)
-            } catch {
-                os_log("Failed to move to iCloud...", log: OSLog.default, type: .error)
-            }
-            
-            
-            print("saved: \(iCloudFile)")
-            completionHanlder?()
-        }
-        
-        task.resume()
-    }
-    
-    @State var downloaded = false
-    
     var confirmAndPayView: some View {
-        VStack(){
-            
-            VStack(){
-                
-                (Text("Download ") + Text("Stikrs ").italic() + Text("to iCloud Drive"))
-                    .font(.title.weight(.light))
-                    .foregroundColor(.secondary)
-                    .padding()
-                    .padding(.horizontal)
-                    .multilineTextAlignment(.center)
-                
-                
-                Divider().padding(.bottom)
-                
-                Image(systemName: "externaldrive.fill.badge.icloud")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: screenWidth / 2.4)
-                    .padding([.bottom, .horizontal])
-                    .padding(.vertical)
-                
-                Button(){
-                    
-                    guard !downloaded else {
-                        appCoordinator.share(text: "Your file", url: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/austin-chan-ukzHlkoz1IE-unsplash.jpg"))
-                        return
-                    }
-                    
-                    self.iCloudDirectoryCreate() {
-                        self.presentToast("Done", subTitle: "Saved to iCloud Drive", type: .complete(.green)) { _ in
-                            self.downloaded = true
-                        }
-                    }
-                } label: {
-                    HStack(){
-                        Spacer()
-                        Label(downloaded ? "Share .zip File" : "Save .zip to iCloud", systemImage: downloaded ? "square.and.arrow.up" : "icloud.and.arrow.down")
-                            .font(.title3)
-                            .foregroundColor(downloaded ? .white : .secondarySystemGroupedBackground)
-                        Spacer()
-                    }
-                }
-                .background(downloaded ? .systemIndigo : Color.white)
-                .clipShape(RoundedRectangle(
-                    cornerRadius: 16,
-                    style: .continuous
-                ))
-                .frame(width: screenWidth - 100, height: 60)
-                .accentColor(downloaded ? .systemIndigo.opacity(0.6) : .secondary)
-                .buttonStyle(OutlineButton())
-            }
-            .frame(width: screenWidth - 100)
-            .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
-            .fixedSize(horizontal: false, vertical: true)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .padding(.bottom)
-            .padding(.top, safeAreaInsets.top * 2)
-            (Text("Note: ") + Text("Code Designer ").fontWeight(.semibold) + Text("is in beta and subject to change with future updates"))
-                .frame(width: screenWidth - 100)
-                .multilineTextAlignment(.center)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .padding()
-            Spacer()
-        }
+        VisualCodeDownloadView()
     }
+    
+    @State var submitEnabled = true
     
     var views: [(view: AnyView, index: Int)] {
         var vs: [(view: AnyView, index: Int)] = [
@@ -452,21 +332,35 @@ public struct CodeDesignerView: JoliView {
                 .eraseToAnyView(), 1
         ))
         
-        //if let expData = experienceData, expData.isValid(for: selectedExperience.allDataKeys) {
-        vs.append((
-            VisualCodeView()
-                //.background(Color.purple)
-                .eraseToAnyView(), 2
-        ))
+        guard let expData = experienceData else { return vs } //, expData.isValid(for: selectedExperience.allDataKeys) {
+        
+        let codeView = VisualCodeView(code: $visualCode, submitEnabled: $submitEnabled){ visualCode in
+            print("Submitting: \(visualCode.properties)")
+            self.submitting = true
+            
+            expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                .then(){ saved in
+                    print("SAVE experience: \(saved)")
+                }
+                .catch() { error in
+                    print("Save error: \(error)")
+                }
+                .always {
+                    self.submitting = false
+                }
+        }
+        
+        vs.append((codeView.eraseToAnyView(), 2))
+        
         //}
         
-        if readyToDownload {
-            vs.append((
-                confirmAndPayView
-                    //.background(Color.purple)
-                    .eraseToAnyView(), 3
-            ))
-        }
+//        if readyToDownload {
+//            vs.append((
+//                confirmAndPayView
+//                    //.background(Color.purple)
+//                    .eraseToAnyView(), 3
+//            ))
+//        }
         //UIImageWriteToSavedPhotosAlbum
         //print("Views count: \(vs.count)")
         return vs
@@ -474,6 +368,13 @@ public struct CodeDesignerView: JoliView {
     
     @State public var scrollProxy: ScrollViewProxy? = nil
     @State public var storedExperiences: [StikrExperienceData] = []
+    @State public var submitting = false {
+        didSet {
+            self.submitEnabled = !submitting
+        }
+    }
+    
+    @State public var visualCode = VisualCodeRecord()
     
     public var historyView: some View {
         MyExperiencesView(experiences: $storedExperiences)
@@ -490,7 +391,7 @@ public struct CodeDesignerView: JoliView {
                             ScrollViewReader() { proxy in
                                 //creator
                                 VStack(){
-                                    historyView.frame(height: screenHeight)
+                                    historyView.frame(idealHeight: screenHeight / 2)
                                     
                                     VStack(){
                                         Divider()
@@ -498,7 +399,7 @@ public struct CodeDesignerView: JoliView {
                                         VStack(){
                                             Text(tabNames[selectedTab])
                                                 .font(.largeTitle.weight(.light))
-                                            Text("Step \(selectedTab + 1) of \(tabNames.count)")
+                                            Text("Design an engaging branded experience in \(tabNames.count) easy steps")
                                                 .font(.subheadline)
                                                 .foregroundColor(.secondaryLabel)
                                             //.padding()
@@ -508,7 +409,7 @@ public struct CodeDesignerView: JoliView {
                                     .id("section-creator")
                                     Spacer()
                                 }
-                                .frame(minHeight: screenHeight * 2.2)
+                                .frame(minHeight: screenHeight * 2)
                                 .onAppear(){
                                     self.scrollProxy = proxy
                                 }
@@ -574,14 +475,30 @@ public struct CodeDesignerView: JoliView {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if selectedTab > 0 {
+                        
+                        let isLastTab = selectedTab == tabNames.count - 1
+                        
                         Button(){
-                            self.readyToDownload = true
-                            self.trialActivateCallback()
+                            if isLastTab {
+                                print("Submit experience!")
+                                self.submitting.toggle()
+                            } else {
+                                self.readyToDownload = true
+                                self.trialActivateCallback()
+                            }
                         } label: {
-                            Text("Try It")
+                            
+                            if isLastTab && submitting {
+                                ProgressView().progressViewStyle(CircularProgressViewStyle())
+                            } else if isLastTab {
+                                Text("Submit")
+                            } else {
+                                Text("Try It")
+                            }
+                            
                             //Label("Try It", systemImage: "arrow.forward")
                         }
-                        .disabled(brandName.isEmpty || landingPageText.isEmpty)
+                        .disabled(brandName.isEmpty || landingPageText.isEmpty || submitting)
                     } else {
                         Button(){
                             print("scroll: section-creator - \(String(describing: self.scrollProxy))")

@@ -663,6 +663,13 @@ public protocol AppClip: App {
     func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) -> Promise<Auth?>
 }
 
+extension Bundle {
+    // Name of the app - title under the icon.
+    var displayName: String? {
+        return object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? object(forInfoDictionaryKey: "CFBundleName") as? String
+    }
+}
+
 public extension AppClip {
     
     static var debug: Bool {
@@ -796,7 +803,7 @@ public extension AppClip {
         let name: String = UIDevice.current.name
         #endif
         
-        return [
+        var headers = [
             "X-PLATFORM": "ios",
             "X-DEVICE-UUID": uuid ?? "",
             "X-DEVICE-MODEL": model,
@@ -805,6 +812,12 @@ public extension AppClip {
             "X-APP-SKU": Self.isAppclip ? "APPCLIP" : "FULL",
             //"X-SESSION-ID": activeSessionId,
         ]
+        
+        if let displayName = Bundle.main.displayName {
+            headers["X-APP-NAME"] = displayName
+        }
+        
+        return headers
     }
     
     var env: JoliApi.Environment {
