@@ -126,7 +126,7 @@ public struct UserProfileView2: JoliView {
         
         let onSelectedCallback = user.isOwnDevice ? imageCallback : nil
         
-        #if os(macOS)
+        #if !canImport(LetterAvatarKit)
         let platformImage = UIImage(systemName: "person")!
         #else
         let platformImage = UIImage.makeLetterAvatar(withUsername: self.userName)!

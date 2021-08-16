@@ -10,7 +10,7 @@ import SwiftUI
 import JoliCore
 import AVFoundation
 
-#if !os(macOS)
+#if canImport(LetterAvatarKit)
 import LetterAvatarKit
 #endif
 
@@ -313,7 +313,7 @@ public struct UserAvatarView: JoliView {
                     URL(string: "images/\(user.imageLarge!)", relativeTo: api.baseUrlHttp)
                     : nil)
         
-        #if os(macOS)
+        #if !canImport(LetterAvatarKit)
         let dummyImage = UIImage(systemName: "person")!
         #else
         let dummyImage = UIImage.makeLetterAvatar(withUsername: user.displayName.name ?? "Anonymous")!

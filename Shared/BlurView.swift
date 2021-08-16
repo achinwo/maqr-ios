@@ -16,7 +16,7 @@ import AppKit
 
 public typealias UIVisualEffectView = NSVisualEffectView
 #else
-import LetterAvatarKit
+//import LetterAvatarKit
 #endif
 
 //protocol User {
