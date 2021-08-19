@@ -316,6 +316,7 @@ public struct CodeDesignerView: JoliView {
     }
     
     @State var submitEnabled = true
+    //@State private var isShowingMessages = false
     
     var views: [(view: AnyView, index: Int)] {
         var vs: [(view: AnyView, index: Int)] = [
@@ -349,6 +350,15 @@ public struct CodeDesignerView: JoliView {
                     self.submitting = false
                 }
         }
+//        .sheet(isPresented: self.$isShowingMessages) {
+//            MessageView(recipient: "+447884873600")
+//                .ignoresSafeArea()
+//        }
+//        .overlay(
+//            Button("Show Messages") {
+//                self.isShowingMessages = true
+//            }
+//        )
         
         vs.append((codeView.eraseToAnyView(), 2))
         
