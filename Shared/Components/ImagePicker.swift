@@ -49,7 +49,7 @@ public class ImagePickerCoordinator: NSObject, UINavigationControllerDelegate, U
     }
     
     public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-        let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage
+        let image = info[UIImagePickerController.InfoKey.editedImage] as? UIImage ?? info[UIImagePickerController.InfoKey.originalImage] as? UIImage
         let imageUrl = info[UIImagePickerController.InfoKey.imageURL] as? URL
         self.callback(image, imageUrl?.lastPathComponent, nil)
     }
@@ -86,6 +86,7 @@ public struct SingleImagePicker: ImagePickerRepresentable {
         configuration.filter = .any(of: [.images, .livePhotos])
         
         let picker = PHPickerViewController(configuration: configuration)
+        //picker.allowsEditing = true
         picker.delegate = context.coordinator
         return picker
     }
@@ -100,6 +101,9 @@ public struct CameraImagePicker: ImagePickerRepresentable {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         picker.sourceType = .camera
+        picker.allowsEditing = true
+        picker.cameraCaptureMode = .photo
+        
         return picker
     }
     

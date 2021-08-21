@@ -437,6 +437,61 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
 """
     }
     
+    @Namespace var namespace
+    
+    var tabView: some View {
+        let keyboardHidden = keyboardHeight == 0
+        return HStack(){
+            if keyboardHidden {
+                ForEach(Tab.allCases) { tab in
+                    Button() {
+                        self.selectedTab = tab
+                    } label: {
+                        HStack(){
+                            Image(systemName: selectedTab == tab ? tab.emoji.active : tab.emoji.default)
+                            Text(tab.label).lineLimit(1).fixedSize(horizontal: true, vertical: true)
+                        }
+                        .foregroundColor(selectedTab == tab ? tab.color : .primary)
+                        .padding()
+                    }
+                    .if(selectedTab == tab){ view in
+                        view.background(BlurView(colorScheme == .dark ? .systemThickMaterialDark : .systemThickMaterialLight))
+                            .matchedGeometryEffect(id: "tab-title", in: namespace)
+                    } else: { view in
+                        view.background(Color.clear)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 25.0))
+                    .font(.subheadline.weight(selectedTab == tab ? .semibold : .light))
+                    .onTapGesture {
+                        self.selectedTab = tab
+                    }
+                }
+                .opacity(keyboardHidden ? 1 : 0)
+                
+            } else {
+                Spacer()
+                Button() {
+                    appCoordinator.dismissKeyboard()
+                } label: {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                        .padding()
+                        .foregroundColor(.primary)
+                        .font(.headline.weight(.light))
+                }
+                .matchedGeometryEffect(id: "tab-title", in: namespace)
+                .opacity(keyboardHeight < 100 ? 0 : 1)
+            }
+        }
+        .padding(keyboardHidden ? 4 : .zero)
+        .frame(maxWidth: keyboardHidden ? screenWidth - 50 : nil, alignment: .center)
+        .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+        .clipShape(RoundedRectangle(cornerRadius: keyboardHeight < 100 ? 25.0 : 0))
+//        .if(keyboardHidden){ view in
+//            view.clipShape(RoundedRectangle(cornerRadius: 25.0))
+//        }
+        .animation(.easeInOut)
+    }
+    
     var contentView: some View {
         NavigationView(){
             
@@ -567,35 +622,7 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                     VStack(){
                         Spacer()
                         //                Picker(selection: self.$selectedTab, label: Text("Users")) {
-                        HStack(){
-                            ForEach(Tab.allCases) { tab in
-                                Button() {
-                                    self.selectedTab = tab
-                                } label: {
-                                    HStack(){
-                                        Image(systemName: selectedTab == tab ? tab.emoji.active : tab.emoji.default)
-                                        Text(tab.label).lineLimit(1).fixedSize(horizontal: true, vertical: true)
-                                    }
-                                    .foregroundColor(selectedTab == tab ? tab.color : .primary)
-                                    .padding()
-                                }
-                                .if(selectedTab == tab){ view in
-                                    view.background(BlurView(colorScheme == .dark ? .systemThickMaterialDark : .systemThickMaterialLight))
-                                } else: { view in
-                                    view.background(Color.clear)
-                                }
-                                .clipShape(RoundedRectangle(cornerRadius: 25.0))
-                                .font(.subheadline.weight(selectedTab == tab ? .semibold : .light))
-                                .onTapGesture {
-                                    self.selectedTab = tab
-                                }
-                            }
-                        }
-                        .padding(4)
-                        .frame(maxWidth: screenWidth - 50, alignment: .center)
-                        .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
-                        .clipShape(RoundedRectangle(cornerRadius: 25.0))
-                        .animation(.easeInOut)
+                        self.tabView
                     }
                     .frame(maxHeight: screenHeight - safeAreaInsets.top)
                     //.padding(.bottom, safeAreaInsets.bottom)
@@ -610,6 +637,7 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                    // .navigationBarTitle(Text("Welcome to Smart Stikr"), displayMode: .large)
         }
         .edgesIgnoringSafeArea(.bottom)
+        .onReceive(appCoordinator.$keyboardHeight, assign: \.keyboardHeight, target: self)
         .frame(minWidth: screenWidth, idealHeight: screenHeight - safeAreaInsets.top)
         .background(
             Group(){
@@ -653,6 +681,8 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
             //self.player = AVPlayer(url: url)
         }
     }
+    
+    @State var keyboardHeight: CGFloat = 0
 }
 
 //struct ContentView_Previews: PreviewProvider {
