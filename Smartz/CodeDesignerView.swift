@@ -103,6 +103,8 @@ public struct CodeDesignerView: JoliView {
                             guard !product.isComingSoon else {
                                 return
                             }
+                            
+                            appCoordinator.dismissKeyboard()
                             appCoordinator.currentLocation = product.location
                         } label: {
                             VStack(){
@@ -421,6 +423,7 @@ public struct CodeDesignerView: JoliView {
                                 }
                                 .frame(minHeight: screenHeight * 2)
                                 .onAppear(){
+                                    guard scrollProxy == nil else { return }
                                     self.scrollProxy = proxy
                                 }
                             }
@@ -494,6 +497,7 @@ public struct CodeDesignerView: JoliView {
                                 self.submitting.toggle()
                             } else {
                                 self.readyToDownload = true
+                                self.appCoordinator.dismissKeyboard()
                                 self.trialActivateCallback()
                             }
                         } label: {
@@ -553,9 +557,18 @@ public struct CodeDesignerView: JoliView {
                     self.updateBrandName()
                 }
                 
+                guard storedData != .empty else {
+                    return
+                }
+                
                 let decoder = Musicroom.jsonDecoder()
-                guard let exp = try? decoder.decode(LocalExperienceData.self, from: storedData), storedData != .empty else {
-                    print("[Experience Changed] unable to load stored experience")
+                let exp: LocalExperienceData
+                
+                do {
+                    exp = try decoder.decode(LocalExperienceData.self, from: storedData)
+                } catch {
+                    print("[CodeDesignerView] unable to load stored experience: \(error)")
+                    self.appCoordinator.globalErrorHandler()(error)
                     return
                 }
                 
@@ -601,7 +614,7 @@ public struct CodeDesignerView: JoliView {
         }
         
         let newUrl = cachesDirUrl.appendingPathComponent(url.lastPathComponent)
-        //print("[Test] \(url) --> \(newUrl)")
+        print("[Test] \(url) --> \(newUrl) [\(Bundle.main.bundlePath)]")
         return newUrl
     }
     

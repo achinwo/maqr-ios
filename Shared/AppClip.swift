@@ -805,6 +805,7 @@ public extension AppClip {
         
         var headers = [
             "X-PLATFORM": "ios",
+            "X-PLATFORM-VERSION": UIDevice.current.systemVersion,
             "X-DEVICE-UUID": uuid ?? "",
             "X-DEVICE-MODEL": model,
             "X-DEVICE-NAME": name,
