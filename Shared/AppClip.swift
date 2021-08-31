@@ -69,13 +69,45 @@ public enum SpotifyError: Error {
 
 
 public enum ImageExtension: String, CaseIterable {
+    
     case jpeg = "jpg"
     case png = "png"
+    
+    public init?(rawValue: String) {
+        switch rawValue.lowercased() {
+            case Self.png.rawValue:
+                self = .png
+            case Self.jpeg.rawValue, "jpeg":
+                self = .jpeg
+            default:
+                return nil
+        }
+    }
+    
+}
+
+public extension Data {
+    
+    var countMb: Double {
+        return Double(count) / (1024 * 1024)
+    }
+    
+    var sizeFormatted: String {
+        return self.sizeFormatted([.useMB])
+    }
+    
+    func sizeFormatted(_ allowedUnits: ByteCountFormatter.Units = [.useMB], countStyle: ByteCountFormatter.CountStyle = .file) -> String {
+        let bcf = ByteCountFormatter()
+        bcf.allowedUnits = allowedUnits // optional: restricts the units to MB only
+        bcf.countStyle = countStyle
+        return bcf.string(fromByteCount: Int64(count))
+    }
+    
 }
 
 public extension JoliApi {
     
-    func createMultipartBody(data: Data, boundary: String, file: String) -> Data {
+    static func createMultipartBody(data: Data, boundary: String, file: String) -> Data {
         var body = Data()
         let ln = "\r\n"
         let boundaryPrefix = "--\(boundary)\(ln)"
@@ -89,35 +121,40 @@ public extension JoliApi {
     }
     
     @available(iOS 14.0, *)
-    func upload(_ image: UIImage, fileName: String? = nil, ext: ImageExtension = .jpeg, timeout: TimeInterval = 60.0) -> Promise<URL> {
+    static func upload(_ image: UIImage, fileName: String? = nil, ext: ImageExtension = .jpeg, timeout: TimeInterval = 60.0, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<URL> {
         
         let fileName = fileName ?? "\(ShortCodeGenerator.getCode().lowercased()).\(ext.rawValue)"
         
         let fileExt = URL(fileURLWithPath: fileName).pathExtension
         guard let extResolved = ImageExtension(rawValue: fileExt), extResolved == ext else {
+            print("[upload] Unable to resolve extension: \(fileExt)")
             return Promise(NetworkError.badRequest("Invalid file extension \"\(fileExt)\""))
         }
         
         
-        guard let imageData = (ext == .jpeg ? image.pngData() : image.jpegData(compressionQuality: 0.5)) else {
+        guard let imageData = (ext == .jpeg ? image.jpegData(compressionQuality: 0.2) : image.pngData()) else {
             return Promise(NetworkError.badRequest("Unable to convert image to data"))
         }
         
         let boundary = "Boundary-562F49C8-26CD-4D87-9C8F-DEA380DE4BF007"
-        let url = URL(string: "/images", relativeTo: baseUrl.http)!
+        let url = URL(string: "/images", relativeTo: baseUrl)!
         
         var urlRequest: URLRequest = URLRequest(url: url)
         urlRequest.httpMethod = HttpMethod.post.rawValue
         
-        let data = createMultipartBody(data: imageData, boundary: boundary, file: fileName)
+        let data = Self.createMultipartBody(data: imageData, boundary: boundary, file: fileName)
         urlRequest.httpBody = data
         urlRequest.timeoutInterval = timeout
         
         urlRequest.addValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         urlRequest.addValue(data.count.description, forHTTPHeaderField: "Content-Length")
         
+        let session = urlSession ?? URLSession.shared
+        
+        print("actual size of image in Mb: \(imageData.sizeFormatted)")
+        
         return Promise() { (resolve, reject) in
-            let task = self.urlSession.dataTask(with: urlRequest) { (data: Data?, response: URLResponse?, error: Error?) in
+            let task = session.dataTask(with: urlRequest) { (data: Data?, response: URLResponse?, error: Error?) in
                 
                 guard error == nil else {
                     reject(NetworkError.badResponse(error!.localizedDescription))
@@ -127,8 +164,8 @@ public extension JoliApi {
                 guard let data = data,
                       let json = try? JSONSerialization.jsonObject(with: data, options: []) as? Json,
                       let fileName = json["fileName"] as? String,
-                      let url = URL(string: fileName, relativeTo: self.baseUrl.http) else {
-                    reject(NetworkError.badResponse("Deserialization error"))
+                      let url = URL(string: fileName, relativeTo: baseUrl) else {
+                    reject(NetworkError.badResponse("Deserialization error - image upload \(ext) \(String(data: data ?? .empty, encoding: .utf8))"))
                     return
                 }
                 

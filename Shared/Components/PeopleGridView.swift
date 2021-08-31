@@ -313,10 +313,10 @@ public struct UserAvatarView: JoliView {
                     URL(string: "images/\(user.imageLarge!)", relativeTo: api.baseUrlHttp)
                     : nil)
         
-        #if !canImport(LetterAvatarKit)
-        let dummyImage = UIImage(systemName: "person")!
-        #else
+        #if canImport(LetterAvatarKit)
         let dummyImage = UIImage.makeLetterAvatar(withUsername: user.displayName.name ?? "Anonymous")!
+        #else
+        let dummyImage = UIImage(systemName: "person")!
         #endif
         
         return NetworkImage(url: url) {

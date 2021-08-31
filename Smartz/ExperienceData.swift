@@ -10,6 +10,8 @@ import Foundation
 import JoliCore
 import Promises
 import SwiftUI
+import JoliPlayground
+import JoliApi
 
 public typealias MultilineString = String
 
@@ -155,28 +157,87 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
 //        return Dictionary<String, AnyObject>(uniqueKeysWithValues: items)
 //    }
     
+    static func imageAttributes() -> [ReferenceWritableKeyPath<ExperienceData, URL?>] {
+        return [
+            \.logoImageUrl,
+            \.bannerImageUrl,
+            \.backgroundImageUrl,
+        ]
+    }
+    
     public func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<PersistedType> {
         
-        let encoder = self.jsonEncoder
-        
-        guard let data = try? encoder.encode(self) else {
-            return Promise.init(NetworkError.badRequest("Unable to serialize \(Self.self) instance"))
-        }
-        
-        let urlComp = "/api/db/experiences"
-        let promise = HttpMethod.Fetch.post(url: urlComp,
-                                     dataType: PersistedType.self,
-                                     payload: .data(data),
-                                     baseUrl: baseUrl,
-                                     urlSession: urlSession,
-                                     on: on)
-        
-        return promise.then(on: on ?? .main){ object -> Promise<PersistedType> in
-            DispatchQueue.main.async() {
-                self.stored = object
+        return self.uploadImages(baseUrl: baseUrl, urlSession: urlSession, on: on)
+            .then(on: .main) { urls -> Promise<PersistedType> in
+                
+                print("[uploadImages] URLs: \(urls)")
+                
+                for keyPath in Self.imageAttributes() {
+                    guard let currentValue = self[keyPath: keyPath],
+                          let newUrl = urls.first(where: { $0.original == currentValue })?.saved else { continue }
+                    
+                    self[keyPath: keyPath] = baseUrl?.appendingPathComponent("images").appendingPathComponent(newUrl.lastPathComponent)
+                    print("[uploadImages] updated url: \(currentValue) -> \(self[keyPath: keyPath])")
+                }
+                
+                guard let data = try? self.jsonEncoder.encode(self) else {
+                    return Promise.init(NetworkError.badRequest("Unable to serialize \(Self.self) instance"))
+                }
+                
+                let urlComp = "/api/db/experiences"
+                let promise = HttpMethod.Fetch.post(url: urlComp,
+                                                    dataType: PersistedType.self,
+                                                    payload: .data(data),
+                                                    baseUrl: baseUrl,
+                                                    urlSession: urlSession,
+                                                    on: on)
+                
+                return promise.then(on: on ?? .main){ object -> PersistedType in
+                    DispatchQueue.main.async() {
+                        self.stored = object
+                    }
+                    return object
+                }
             }
-            return Promise(object)
+    }
+    
+    func uploadImages(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[(original: URL, saved: URL)]> {
+        var promises: [Promise<(original: URL, saved: URL)>] = []
+        
+        let imageUrls: [URL] = [
+            self.logoImageUrl,
+            self.bannerImageUrl,
+            self.backgroundImageUrl,
+        ].compactMap({ $0 })
+        
+        for imgUrl in Set(imageUrls) {
+            
+            guard imgUrl.isFileURL else {
+                print("[uploadImages] skipping \(imgUrl)")
+                continue
+            }
+            
+            do {
+                let data = try Data(contentsOf: imgUrl)
+                guard let image = UIImage(data: data) else {
+                    print("[uploadImages] unable to convert to UIImage: \(imgUrl)")
+                    continue
+                }
+                
+                let ext: ImageExtension = imgUrl.pathExtension.lowercased() == "png" ? .png : .jpeg
+                let uploadPromise = JoliApi.upload(image, fileName: imgUrl.lastPathComponent, ext: ext, baseUrl: baseUrl, urlSession: urlSession, on: on)
+                    .then(on: on ?? .promises) { (original: imgUrl, saved: $0) }
+                
+                promises.append(uploadPromise)
+                
+            } catch {
+                print("[uploadImages] error uploading \(imgUrl): \(error)")
+            }
+            
+            
         }
+        
+        return Promises.all(promises)
     }
     
     static let DEFAULT_BRAND_NAME = "SmartStikr"

@@ -105,7 +105,7 @@ public struct UserProfileView2: JoliView {
             
             isUploadingImage = true
             
-            self.api.upload(image)
+            JoliApi.upload(image, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
                 .then() { (res: URL) -> Promise<User> in
                     print("Result: \(res.absoluteString) - \(user)")
                     

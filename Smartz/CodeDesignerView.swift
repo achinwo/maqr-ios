@@ -540,17 +540,17 @@ public struct CodeDesignerView: JoliView {
             }
             .onAppear() {
                 
-                //            let fileManager = FileManager.default
-                //            let documentsURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-                //            do {
-                //                let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
-                //                // process files
-                //                for u in fileURLs {
-                //                    print("file: \(u)")
-                //                }
-                //            } catch {
-                //                print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
-                //            }
+                let fileManager = FileManager.default
+                let documentsURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+                do {
+                    let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
+                    // process files
+                    for u in fileURLs {
+                        print("file: \(u)")
+                    }
+                } catch {
+                    print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
+                }
                 
                 defer {
                     self.selectedTab = selectedExperience == nil ? 0 : 1
@@ -578,6 +578,7 @@ public struct CodeDesignerView: JoliView {
                 expData.logoImageUrl = rewriteCachesUrl(exp.experienceData.logoImageUrl)
                 expData.bannerImageUrl = rewriteCachesUrl(exp.experienceData.bannerImageUrl)
                 expData.bannerVideoUrl = rewriteCachesUrl(exp.experienceData.bannerVideoUrl)
+                expData.backgroundImageUrl = rewriteCachesUrl(exp.experienceData.backgroundImageUrl)
                 
                 self.experienceData = expData
                 
