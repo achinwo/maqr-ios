@@ -88,7 +88,7 @@ extension Color: Decodable {
     
 }
 
-public protocol ExperienceDataItem: Encodable & Decodable {
+public protocol ExperienceDataItem: Codable {
     var aliasTitle: String? { get set }
     var caution: String? { get set }
     var defaultPrice: Int? { get set }
@@ -177,7 +177,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
                           let newUrl = urls.first(where: { $0.original == currentValue })?.saved else { continue }
                     
                     self[keyPath: keyPath] = baseUrl?.appendingPathComponent("images").appendingPathComponent(newUrl.lastPathComponent)
-                    print("[uploadImages] updated url: \(currentValue) -> \(self[keyPath: keyPath])")
+                    //print("[uploadImages] updated url: \(currentValue) -> \(self[keyPath: keyPath])")
                 }
                 
                 guard let data = try? self.jsonEncoder.encode(self) else {
@@ -195,6 +195,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
                 return promise.then(on: on ?? .main){ object -> PersistedType in
                     DispatchQueue.main.async() {
                         self.stored = object
+                        self.uuid = object.uuid
                     }
                     return object
                 }
@@ -204,11 +205,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     func uploadImages(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[(original: URL, saved: URL)]> {
         var promises: [Promise<(original: URL, saved: URL)>] = []
         
-        let imageUrls: [URL] = [
-            self.logoImageUrl,
-            self.bannerImageUrl,
-            self.backgroundImageUrl,
-        ].compactMap({ $0 })
+        let imageUrls: [URL] = Self.imageAttributes().compactMap() { self[keyPath: $0] }
         
         for imgUrl in Set(imageUrls) {
             
@@ -308,6 +305,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
+        uuid = try container.decode(String?.self, forKey: .uuid)
         logoImageUrl = try container.decode(URL?.self, forKey: .logoImageUrl)
         bannerImageUrl = try container.decode(URL?.self, forKey: .bannerImageUrl)
         bannerVideoUrl = try container.decode(URL?.self, forKey: .bannerVideoUrl)

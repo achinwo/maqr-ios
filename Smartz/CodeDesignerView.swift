@@ -423,7 +423,7 @@ public struct CodeDesignerView: JoliView {
                                 }
                                 .frame(minHeight: screenHeight * 2)
                                 .onAppear(){
-                                    guard scrollProxy == nil else { return }
+                                    //guard scrollProxy == nil else { return }
                                     self.scrollProxy = proxy
                                 }
                             }
@@ -540,17 +540,17 @@ public struct CodeDesignerView: JoliView {
             }
             .onAppear() {
                 
-                let fileManager = FileManager.default
-                let documentsURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-                do {
-                    let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
-                    // process files
-                    for u in fileURLs {
-                        print("file: \(u)")
-                    }
-                } catch {
-                    print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
-                }
+                //            let fileManager = FileManager.default
+                //            let documentsURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+                //            do {
+                //                let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
+                //                // process files
+                //                for u in fileURLs {
+                //                    print("file: \(u)")
+                //                }
+                //            } catch {
+                //                print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
+                //            }
                 
                 defer {
                     self.selectedTab = selectedExperience == nil ? 0 : 1
