@@ -10,7 +10,7 @@ import Foundation
 import JoliCore
 import Promises
 import SwiftUI
-import JoliPlayground
+import SharedUI
 import JoliApi
 
 public typealias MultilineString = String

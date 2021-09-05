@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import JoliPlayground
+import SharedUI
 import Combine
 import AlertToast
 import JoliCore

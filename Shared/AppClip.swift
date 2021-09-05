@@ -165,7 +165,7 @@ public extension JoliApi {
                       let json = try? JSONSerialization.jsonObject(with: data, options: []) as? Json,
                       let fileName = json["fileName"] as? String,
                       let url = URL(string: fileName, relativeTo: baseUrl) else {
-                    reject(NetworkError.badResponse("Deserialization error - image upload \(ext) \(String(data: data ?? .empty, encoding: .utf8))"))
+                    reject(NetworkError.badResponse("Deserialization error - image upload \(ext) \(String(data: data ?? Data(), encoding: .utf8))"))
                     return
                 }
                 

@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import JoliPlayground
+import SharedUI
 import os
 
 struct VisualCodeDownloadView: JoliView {

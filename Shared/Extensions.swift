@@ -29,29 +29,16 @@ import UIImageColors
 public typealias Color = SwiftUI.Color
 public typealias View = SwiftUI.View
 
-public enum PlaybackControllerMetadataKey: EnvironmentKey {
-    
-    public static var defaultValue: PlaybackControllerMetadata? {
-        return nil
-    }
-    
-}
-
-public extension EnvironmentValues {
-    
-    var playbackControllerMetadata: PlaybackControllerMetadata? {
-        get {
-            self[PlaybackControllerMetadataKey.self]
-        }
-        
-        set {
-            self[PlaybackControllerMetadataKey.self] = newValue
-        }
-    }
-    
-}
-
 public typealias MultilineString = String
+
+
+public extension String {
+    func count(of needle: Character) -> Int {
+        return reduce(0) {
+            $1 == needle ? $0 + 1 : $0
+        }
+    }
+}
 
 public extension URL {
     
@@ -279,21 +266,7 @@ public extension Image {
 }
 
 
-public extension Search.Engine {
-    
-    typealias SearchMethod = (String, Set<Search.Category>, Int) -> AnyPublisher<[SearchResult], Never>
-    
-    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod) -> AnyPublisher<[SearchResult], Never> {
-        let supported = categories.filter(){ supportedCategories.contains($0) }
-        
-        guard !supported.isEmpty else {
-            return Just([]).eraseToAnyPublisher()
-        }
-        
-        return searchFn(q, supported, limit)
-    }
-    
-}
+
 
 public extension Array where Element == Spotify.Image {
     

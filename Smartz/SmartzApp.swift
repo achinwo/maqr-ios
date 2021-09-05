@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import JoliPlayground
+import SharedUI
 import KeychainAccess
 import Version
 import JoliApi

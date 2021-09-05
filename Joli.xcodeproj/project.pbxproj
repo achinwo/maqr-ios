@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		920250BF26E5650800725A80 /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 920250BE26E5650800725A80 /* Promises */; };
+		920250C026E565C900725A80 /* SharedUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; };
+		920250C126E565C900725A80 /* SharedUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		920250C526E5665F00725A80 /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
 		920264CB268FAE06005643E1 /* ExperienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CA268FAE06005643E1 /* ExperienceView.swift */; };
 		920264CE268FB907005643E1 /* ExperienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CA268FAE06005643E1 /* ExperienceView.swift */; };
 		920264D02691D4EA005643E1 /* Restaurant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CF2691D4EA005643E1 /* Restaurant.swift */; };
@@ -16,8 +20,6 @@
 		9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D3D42659B6E700D5974F /* SmartzApp.swift */; };
 		9202D3D72659B6E700D5974F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D3D62659B6E700D5974F /* ContentView.swift */; };
 		9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D3D82659B6E900D5974F /* Assets.xcassets */; };
-		9202D3FD2659B72800D5974F /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
-		9202D3FE2659B72800D5974F /* JoliPlayground.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D4092659BC0B00D5974F /* SmartzClipApp.swift */; };
 		9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D40D2659BC0E00D5974F /* Assets.xcassets */; };
 		9202D4112659BC0E00D5974F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D4102659BC0E00D5974F /* Preview Assets.xcassets */; };
@@ -96,6 +98,34 @@
 		923D0E3926207656008BB6EA /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929FFE1B24FAF096000BDCF0 /* User.swift */; };
 		9246B820263090C6004D2ADF /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
 		9246B821263090C6004D2ADF /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
+		924E96FA26E55D8800FF41E3 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 924E96F926E55D8800FF41E3 /* KeychainAccess */; };
+		924E96FC26E55DC100FF41E3 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 924E96FB26E55DC100FF41E3 /* AlertToast */; };
+		924E96FE26E55DD700FF41E3 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 924E96FD26E55DD700FF41E3 /* PartialSheet */; };
+		924E96FF26E55E5400FF41E3 /* Publishers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* Publishers.swift */; };
+		924E970026E55E7900FF41E3 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
+		924E970126E55E7D00FF41E3 /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
+		924E970226E55E8000FF41E3 /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926DB4C32638B83C00D62912 /* BlurView.swift */; };
+		924E970326E55E8300FF41E3 /* ActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926DB4C72638BDD000D62912 /* ActivityIndicator.swift */; };
+		924E970426E55E8600FF41E3 /* YouTubePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921CAFA626B5F4730078A394 /* YouTubePlayer.swift */; };
+		924E970526E55EA600FF41E3 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929FFE1B24FAF096000BDCF0 /* User.swift */; };
+		924E970626E55EB400FF41E3 /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989AB26491F0D00FDD58F /* MailView.swift */; };
+		924E970726E55EB700FF41E3 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
+		924E970826E55ECD00FF41E3 /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
+		924E970926E55ED000FF41E3 /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3924E9AFFF00C8257D /* Preview.swift */; };
+		924E970A26E55EEB00FF41E3 /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD424C79C07007C960E /* ImageView.swift */; };
+		924E970B26E55EEF00FF41E3 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
+		924E970C26E5607600FF41E3 /* GridChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989A62641FCA800FDD58F /* GridChooserView.swift */; };
+		924E970D26E560A700FF41E3 /* JoyMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A392324E9E2FA00A029A1 /* JoyMeterView.swift */; };
+		924E970E26E560BB00FF41E3 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
+		924E971026E560D400FF41E3 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 924E970F26E560D400FF41E3 /* Kingfisher */; };
+		924E971126E5611E00FF41E3 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDA24C79C07007C960E /* ProfileView.swift */; };
+		924E971226E5613500FF41E3 /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
+		924E971326E5614000FF41E3 /* PlayroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E2E23260F40E9007F62E0 /* PlayroomCreateView.swift */; };
+		924E971426E561A200FF41E3 /* SkipVoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9257430626304BA400B518EA /* SkipVoteView.swift */; };
+		924E971626E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
+		924E971726E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
+		924E971826E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
+		924E971926E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
 		9251F1C525CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		9251F1C625CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		9252603C261B376F00316AE1 /* SpotifyConnectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */; };
@@ -214,12 +244,19 @@
 		92BD11CF24CB0BCF00AAB7DE /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD424C79C07007C960E /* ImageView.swift */; };
 		92BD11D024CB0BD200AAB7DE /* PeopleGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC424C79C06007C960E /* PeopleGridView.swift */; };
 		92BD11D124CB0BD800AAB7DE /* TrackList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD124C79C06007C960E /* TrackList.swift */; };
-		92C1A2462662677700A11E0F /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
-		92C1A2472662677700A11E0F /* JoliPlayground.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		92C1A24B26626BF800A11E0F /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92C1A24C26626BF900A11E0F /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C1A24D26626D5B00A11E0F /* Playback.swift */; };
 		92C1A24F26626D5B00A11E0F /* Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C1A24D26626D5B00A11E0F /* Playback.swift */; };
+		92CC32A726E55B3200178465 /* SharedUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 92CC32A526E55B3200178465 /* SharedUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		92CC32AA26E55B3200178465 /* SharedUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; };
+		92CC32AB26E55B3200178465 /* SharedUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		92CC32B026E55B6200178465 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92CC32AF26E55B6200178465 /* JoliApi */; };
+		92CC32B326E55CD200178465 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD024C79C06007C960E /* Extensions.swift */; };
+		92CC32B426E55CDC00178465 /* AppClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3524E9ADC000C8257D /* AppClip.swift */; };
+		92CC32B526E55CDF00178465 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
+		92CC32B626E55CE300178465 /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
+		92CC32B726E55CE800178465 /* YTPlayer.html in Resources */ = {isa = PBXBuildFile; fileRef = 921CAFAA26B5F4F10078A394 /* YTPlayer.html */; };
 		92DD6554267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
 		92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
@@ -234,12 +271,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		9202D3FF2659B72800D5974F /* PBXContainerItemProxy */ = {
+		920250C226E565C900725A80 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 9203B30E24CB06C900F465CC;
-			remoteInfo = JoliPlayground;
+			remoteGlobalIDString = 92CC32A226E55B3100178465;
+			remoteInfo = SharedUI;
 		};
 		9202D42A2659BC0E00D5974F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -283,23 +320,34 @@
 			remoteGlobalIDString = 92A32D5924C799B8007C960E;
 			remoteInfo = "Joli (macOS)";
 		};
-		92C1A2482662677700A11E0F /* PBXContainerItemProxy */ = {
+		92CC32A826E55B3200178465 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 9203B30E24CB06C900F465CC;
-			remoteInfo = JoliPlayground;
+			remoteGlobalIDString = 92CC32A226E55B3100178465;
+			remoteInfo = SharedUI;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		920250C426E565C900725A80 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				920250C126E565C900725A80 /* SharedUI.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9202D4012659B72800D5974F /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				9202D3FE2659B72800D5974F /* JoliPlayground.framework in Embed Frameworks */,
+				92CC32AB26E55B3200178465 /* SharedUI.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -334,17 +382,6 @@
 			files = (
 				921ADE93265E759E0023DC87 /* SpotifyiOS.xcframework in Embed Frameworks */,
 				9274A81524CDB41500B45EDF /* JoliPlayground.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		92C1A24A2662677700A11E0F /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				92C1A2472662677700A11E0F /* JoliPlayground.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -417,6 +454,7 @@
 		923BD58D25E16D63003863AB /* SignInWithApple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApple.swift; sourceTree = "<group>"; };
 		923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publishers+Playback.swift"; sourceTree = "<group>"; };
 		9246B81F263090C6004D2ADF /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
+		924E971526E5620800FF41E3 /* TrackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
 		9251F1C425CE190200906D9D /* RefreshableScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableScrollView.swift; sourceTree = "<group>"; };
 		9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyConnectButton.swift; sourceTree = "<group>"; };
 		92562E29266BC118004972E6 /* demo_sise_appclip.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = demo_sise_appclip.mp4; sourceTree = "<group>"; };
@@ -492,6 +530,9 @@
 		92A32E3024CA22FA007C960E /* Publishers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Publishers.swift; sourceTree = "<group>"; };
 		92A7120C24D85EC500AD6729 /* NetworkImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageView.swift; sourceTree = "<group>"; };
 		92C1A24D26626D5B00A11E0F /* Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playback.swift; sourceTree = "<group>"; };
+		92CC32A326E55B3100178465 /* SharedUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SharedUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		92CC32A526E55B3200178465 /* SharedUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SharedUI.h; sourceTree = "<group>"; };
+		92CC32A626E55B3200178465 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeyRestuarantView.swift; sourceTree = "<group>"; };
 		92ECCEDC26C0543F009A2B75 /* MyExperiencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyExperiencesView.swift; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -504,8 +545,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92CC32AA26E55B3200178465 /* SharedUI.framework in Frameworks */,
 				921F6C2E26BB28090061D236 /* QRCode in Frameworks */,
-				9202D3FD2659B72800D5974F /* JoliPlayground.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -513,7 +554,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				92C1A2462662677700A11E0F /* JoliPlayground.framework in Frameworks */,
+				920250C026E565C900725A80 /* SharedUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -585,6 +626,19 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92CC32A026E55B3100178465 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				924E971026E560D400FF41E3 /* Kingfisher in Frameworks */,
+				92CC32B026E55B6200178465 /* JoliApi in Frameworks */,
+				920250BF26E5650800725A80 /* Promises in Frameworks */,
+				924E96FC26E55DC100FF41E3 /* AlertToast in Frameworks */,
+				924E96FA26E55D8800FF41E3 /* KeychainAccess in Frameworks */,
+				924E96FE26E55DD700FF41E3 /* PartialSheet in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -832,6 +886,15 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		92CC32A426E55B3200178465 /* SharedUI */ = {
+			isa = PBXGroup;
+			children = (
+				92CC32A526E55B3200178465 /* SharedUI.h */,
+				92CC32A626E55B3200178465 /* Info.plist */,
+			);
+			path = SharedUI;
+			sourceTree = "<group>";
+		};
 		92DBFB31250393500039FF4E /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -859,6 +922,7 @@
 				9246B81F263090C6004D2ADF /* WebView.swift */,
 				922989A62641FCA800FDD58F /* GridChooserView.swift */,
 				922989AB26491F0D00FDD58F /* MailView.swift */,
+				924E971526E5620800FF41E3 /* TrackView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -882,6 +946,7 @@
 				922DEAC7264BAFED00D91D99 /* JoliTV */,
 				9202D3D32659B6E700D5974F /* Smartz */,
 				9202D4082659BC0B00D5974F /* SmartzClip */,
+				92CC32A426E55B3200178465 /* SharedUI */,
 				92F379E02363534D005FE2AB /* Products */,
 				92F37A18236458F2005FE2AB /* Frameworks */,
 			);
@@ -899,6 +964,7 @@
 				922DEAC6264BAFED00D91D99 /* JoliTV.app */,
 				9202D3D22659B6E700D5974F /* Smartz.app */,
 				9202D4072659BC0B00D5974F /* SmartzClip.app */,
+				92CC32A326E55B3100178465 /* SharedUI.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -932,6 +998,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		92CC329E26E55B3100178465 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92CC32A726E55B3200178465 /* SharedUI.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -949,8 +1023,8 @@
 			buildRules = (
 			);
 			dependencies = (
-				9202D4002659B72800D5974F /* PBXTargetDependency */,
 				9202D42B2659BC0E00D5974F /* PBXTargetDependency */,
+				92CC32A926E55B3200178465 /* PBXTargetDependency */,
 			);
 			name = Smartz;
 			packageProductDependencies = (
@@ -967,12 +1041,12 @@
 				9202D4032659BC0B00D5974F /* Sources */,
 				9202D4042659BC0B00D5974F /* Frameworks */,
 				9202D4052659BC0B00D5974F /* Resources */,
-				92C1A24A2662677700A11E0F /* Embed Frameworks */,
+				920250C426E565C900725A80 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				92C1A2492662677700A11E0F /* PBXTargetDependency */,
+				920250C326E565C900725A80 /* PBXTargetDependency */,
 			);
 			name = SmartzClip;
 			packageProductDependencies = (
@@ -1136,6 +1210,32 @@
 			productReference = 92A32D6D24C799B8007C960E /* Tests macOS.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		92CC32A226E55B3100178465 /* SharedUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92CC32AE26E55B3200178465 /* Build configuration list for PBXNativeTarget "SharedUI" */;
+			buildPhases = (
+				92CC329E26E55B3100178465 /* Headers */,
+				92CC329F26E55B3100178465 /* Sources */,
+				92CC32A026E55B3100178465 /* Frameworks */,
+				92CC32A126E55B3100178465 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SharedUI;
+			packageProductDependencies = (
+				92CC32AF26E55B6200178465 /* JoliApi */,
+				924E96F926E55D8800FF41E3 /* KeychainAccess */,
+				924E96FB26E55DC100FF41E3 /* AlertToast */,
+				924E96FD26E55DD700FF41E3 /* PartialSheet */,
+				924E970F26E560D400FF41E3 /* Kingfisher */,
+				920250BE26E5650800725A80 /* Promises */,
+			);
+			productName = SharedUI;
+			productReference = 92CC32A326E55B3100178465 /* SharedUI.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1178,6 +1278,9 @@
 						CreatedOnToolsVersion = 12.0;
 						TestTargetID = 92A32D5924C799B8007C960E;
 					};
+					92CC32A226E55B3100178465 = {
+						CreatedOnToolsVersion = 12.5;
+					};
 				};
 			};
 			buildConfigurationList = 92F379DA2363534D005FE2AB /* Build configuration list for PBXProject "Joli" */;
@@ -1210,6 +1313,7 @@
 			projectRoot = "";
 			targets = (
 				9203B30E24CB06C900F465CC /* JoliPlayground */,
+				92CC32A226E55B3100178465 /* SharedUI */,
 				9274A7E324CDB29200B45EDF /* JoliClip */,
 				92A32D5224C799B8007C960E /* Joli (iOS) */,
 				92A32D5924C799B8007C960E /* Joli (macOS) */,
@@ -1313,6 +1417,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92CC32A126E55B3100178465 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92CC32B726E55CE800178465 /* YTPlayer.html in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1439,6 +1551,7 @@
 				926DB4C42638B83C00D62912 /* BlurView.swift in Sources */,
 				92BD11D024CB0BD200AAB7DE /* PeopleGridView.swift in Sources */,
 				922989A72641FCA800FDD58F /* GridChooserView.swift in Sources */,
+				924E971626E5620800FF41E3 /* TrackView.swift in Sources */,
 				92BD11CF24CB0BCF00AAB7DE /* ImageView.swift in Sources */,
 				9257430726304BA400B518EA /* SkipVoteView.swift in Sources */,
 				9203B32824CB07F200F465CC /* Extensions.swift in Sources */,
@@ -1485,6 +1598,7 @@
 				92A32DE624C79C07007C960E /* ServiceAlert.swift in Sources */,
 				92870E4A259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */,
 				92A7120F24D85EC600AD6729 /* NetworkImageView.swift in Sources */,
+				924E971826E5620800FF41E3 /* TrackView.swift in Sources */,
 				9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */,
 				92A32DBB24C79B59007C960E /* AppState+Methods.swift in Sources */,
 				928F75F524F7B13400CF708B /* SearchView.swift in Sources */,
@@ -1537,6 +1651,7 @@
 				922989A92641FCA800FDD58F /* GridChooserView.swift in Sources */,
 				926DB4C22638B30600D62912 /* SignInWithApple.swift in Sources */,
 				926DB4B526389E1F00D62912 /* ProfileView.swift in Sources */,
+				924E971926E5620800FF41E3 /* TrackView.swift in Sources */,
 				926DB4B126389E1300D62912 /* NetworkImageView.swift in Sources */,
 				926DB4CA2638BDD000D62912 /* ActivityIndicator.swift in Sources */,
 				926DB4A926389DF500D62912 /* LogOnView.swift in Sources */,
@@ -1581,13 +1696,46 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		92CC329F26E55B3100178465 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92CC32B526E55CDF00178465 /* AppCoordinator.swift in Sources */,
+				924E970E26E560BB00FF41E3 /* NetworkImageView.swift in Sources */,
+				924E970226E55E8000FF41E3 /* BlurView.swift in Sources */,
+				924E970726E55EB700FF41E3 /* WebView.swift in Sources */,
+				924E970B26E55EEF00FF41E3 /* ImagePicker.swift in Sources */,
+				920250C526E5665F00725A80 /* Publishers+Playback.swift in Sources */,
+				924E970026E55E7900FF41E3 /* Logging.swift in Sources */,
+				924E970D26E560A700FF41E3 /* JoyMeterView.swift in Sources */,
+				92CC32B626E55CE300178465 /* Consts.swift in Sources */,
+				924E970826E55ECD00FF41E3 /* RefreshableScrollView.swift in Sources */,
+				92CC32B326E55CD200178465 /* Extensions.swift in Sources */,
+				924E970C26E5607600FF41E3 /* GridChooserView.swift in Sources */,
+				924E971226E5613500FF41E3 /* Styles.swift in Sources */,
+				924E970926E55ED000FF41E3 /* Preview.swift in Sources */,
+				924E970A26E55EEB00FF41E3 /* ImageView.swift in Sources */,
+				924E96FF26E55E5400FF41E3 /* Publishers.swift in Sources */,
+				924E970426E55E8600FF41E3 /* YouTubePlayer.swift in Sources */,
+				924E970626E55EB400FF41E3 /* MailView.swift in Sources */,
+				924E971726E5620800FF41E3 /* TrackView.swift in Sources */,
+				924E971326E5614000FF41E3 /* PlayroomCreateView.swift in Sources */,
+				92CC32B426E55CDC00178465 /* AppClip.swift in Sources */,
+				924E970326E55E8300FF41E3 /* ActivityIndicator.swift in Sources */,
+				924E970126E55E7D00FF41E3 /* SignInWithApple.swift in Sources */,
+				924E971426E561A200FF41E3 /* SkipVoteView.swift in Sources */,
+				924E971126E5611E00FF41E3 /* ProfileView.swift in Sources */,
+				924E970526E55EA600FF41E3 /* User.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		9202D4002659B72800D5974F /* PBXTargetDependency */ = {
+		920250C326E565C900725A80 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 9203B30E24CB06C900F465CC /* JoliPlayground */;
-			targetProxy = 9202D3FF2659B72800D5974F /* PBXContainerItemProxy */;
+			target = 92CC32A226E55B3100178465 /* SharedUI */;
+			targetProxy = 920250C226E565C900725A80 /* PBXContainerItemProxy */;
 		};
 		9202D42B2659BC0E00D5974F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1619,10 +1767,10 @@
 			target = 92A32D5924C799B8007C960E /* Joli (macOS) */;
 			targetProxy = 92A32D6E24C799B8007C960E /* PBXContainerItemProxy */;
 		};
-		92C1A2492662677700A11E0F /* PBXTargetDependency */ = {
+		92CC32A926E55B3200178465 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 9203B30E24CB06C900F465CC /* JoliPlayground */;
-			targetProxy = 92C1A2482662677700A11E0F /* PBXContainerItemProxy */;
+			target = 92CC32A226E55B3100178465 /* SharedUI */;
+			targetProxy = 92CC32A826E55B3200178465 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1647,7 +1795,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1674,7 +1822,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1699,7 +1847,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1725,7 +1873,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2176,6 +2324,63 @@
 			};
 			name = Release;
 		};
+		92CC32AC26E55B3200178465 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2L26ZMA265;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = SharedUI/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartstikr.SharedUI;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		92CC32AD26E55B3200178465 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2L26ZMA265;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = SharedUI/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartstikr.SharedUI;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		92F37A072363534F005FE2AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 92A32D9024C79B3D007C960E /* Development.xcconfig */;
@@ -2382,6 +2587,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		92CC32AE26E55B3200178465 /* Build configuration list for PBXNativeTarget "SharedUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92CC32AC26E55B3200178465 /* Debug */,
+				92CC32AD26E55B3200178465 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		92F379DA2363534D005FE2AB /* Build configuration list for PBXProject "Joli" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -2501,6 +2715,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		920250BE26E5650800725A80 /* Promises */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
+			productName = Promises;
+		};
 		9203B31824CB079200F465CC /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
@@ -2534,6 +2753,26 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
 		};
+		924E96F926E55D8800FF41E3 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
+		};
+		924E96FB26E55DC100FF41E3 /* AlertToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */;
+			productName = AlertToast;
+		};
+		924E96FD26E55DD700FF41E3 /* PartialSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 923C2B0224CC7506009E2380 /* XCRemoteSwiftPackageReference "PartialSheet" */;
+			productName = PartialSheet;
+		};
+		924E970F26E560D400FF41E3 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92E518CE248EEF3E00722A83 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
 		925C6FF224CB722A0016963F /* FBLPromises */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
@@ -2562,6 +2801,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */;
 			productName = AlertToast;
+		};
+		92CC32AF26E55B6200178465 /* JoliApi */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = JoliApi;
 		};
 		92EDE3CD2619394000688802 /* SFSafeSymbols */ = {
 			isa = XCSwiftPackageProductDependency;

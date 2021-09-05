@@ -8,7 +8,7 @@
 
 import SwiftUI
 import AVKit
-import JoliPlayground
+import SharedUI
 import JoliApi
 import JoliCore
 import AlertToast

@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import JoliPlayground
+import SharedUI
 import JoliCore
 
 public struct MyExperiencesView: JoliView {

@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import JoliPlayground
+import SharedUI
 import JoliCore
 import Combine
 import Promises

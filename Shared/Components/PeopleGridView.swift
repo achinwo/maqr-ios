@@ -22,20 +22,7 @@ import LetterAvatarKit
 //    
 //}
 
-public struct PersonGenericImage: View {
-    public var body: some View {
-        return GeometryReader() { proxy in
-            Image(systemName: "person.fill")
-            .resizable()
-                //.frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
-            .foregroundColor(.gray)
-            .background(Colors.lightGray.opacity(0.7))
-                .offset(x: 0, y: proxy.size.height * 0.2)
-            .background(Colors.lightGray.opacity(0.7))
-        }
-        .clipShape(Circle())
-    }
-}
+
 
 enum CodeType: Int {
     case appClip = 1

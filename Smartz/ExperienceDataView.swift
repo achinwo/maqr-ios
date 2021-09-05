@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import JoliPlayground
+import SharedUI
 import CoreML
 // Don't forget to add to the project:
 // 1. DeepLabV3 - https://developer.apple.com/machine-learning/models/

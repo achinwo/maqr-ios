@@ -8,7 +8,7 @@
 
 import Foundation
 import SwiftUI
-import JoliPlayground
+import SharedUI
 import Combine
 import JoliApi
 import JoliCore
