@@ -14,6 +14,7 @@ public struct MyExperiencesView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @Binding public var experiences: [StikrExperienceData]
+    public var onSelect: (StikrExperienceData) -> Void
     
     public var contentView: some View {
         VStack(){
@@ -29,9 +30,35 @@ public struct MyExperiencesView: JoliView {
                 
                 Spacer()
             }
+            .padding()
             
             Section(header: headerMyExperiences) {
-                
+                ForEach(experiences){ exp in
+                    HStack(){
+                        NetworkImage(string: exp.logoImage){
+                            ProgressView().progressViewStyle(CircularProgressViewStyle())
+                        }
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 64, height: 64, alignment: .center)
+                        .padding()
+                        
+                        VStack(alignment: .leading){
+                            
+                            Text(exp.brandName).font(.headline)
+                            
+                            if let txt = exp.landingPageText {
+                                Text(txt)
+                                    .lineLimit(3)
+                                    .truncationMode(.tail)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .onTapGesture() {
+                        self.onSelect(exp)
+                    }
+                }
+                .padding(.horizontal)
             }
             Spacer()
         }

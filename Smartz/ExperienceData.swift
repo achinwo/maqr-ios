@@ -288,16 +288,47 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     @Published var uuid: String? = nil
     
+    var experienceTypeName: String? = nil
+    
     // sourcery: title = "Items", description = "List brand experience items", default = "[]"
     @Published var items: [ExperienceData.Item] = []
     
-    required init(brandName: String? = nil, landingPageText: MultilineString? = nil) {
+    convenience init<ExpCls: Experience>(_ typeCls: ExpCls.Type? = nil, brandName: String? = nil, landingPageText: MultilineString? = nil) {
+        if let cls =  typeCls {
+            self.init(String(describing: cls), brandName: brandName, landingPageText: landingPageText)
+        } else {
+            
+            self.init(nil, brandName: brandName, landingPageText: landingPageText)
+        }
+    }
+    
+    required init(_ typeName: String? = nil, brandName: String? = nil, landingPageText: MultilineString? = nil) {
+        self.experienceTypeName = typeName
         self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
         self.landingPageText = landingPageText ?? "Welcome to YOUR brand"
     }
     
-    static func fromExperienceData(_ experienceData: PersistedType, baseUrl: URL) -> Self {
-        let res = Self.init(brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+    static func fromExperienceData(_ experienceData: PersistedType, baseUrl: URL) -> ExperienceData {
+        let res = ExperienceData.init(TvShowPromoView.self, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+        res.uuid = experienceData.uuid
+        
+        res.logoImageUrl = URL.fromString(experienceData.logoImage)
+        res.bannerImageUrl = URL.fromString(experienceData.bannerImage)
+        res.bannerVideoUrl = URL.fromString(experienceData.bannerVideoUrl)
+        res.backgroundImageUrl = URL.fromString(experienceData.backgroundImage)
+        
+        res.brandName = experienceData.uuid
+        res.landingPageText = experienceData.uuid
+        res.socialInstagramUsername = experienceData.uuid
+        //res.releaseDate = experienceData.r
+        //res.releasePlatformName = experienceData.
+        //res.releasePlatformLogoUrl = experienceData.rel
+        res.releasePlatformInstaUsername = experienceData.socialInstagramUsername
+        res.brandColorPrimary = Color.init(hex: experienceData.brandColorPrimary ?? res.brandColorPrimary.hexString)
+        res.brandColorSecondary = Color.init(hex: experienceData.brandColorSecondary ?? res.brandColorSecondary.hexString)
+        res.brandColorAccent = Color.init(hex: experienceData.brandColorAccent ?? res.brandColorAccent.hexString)
+        
+        res.stored = experienceData
         return res
     }
 
@@ -323,6 +354,15 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         items = try container.decode([ExperienceData.Item].self, forKey: .items)
     }
 // sourcery:end
+}
+
+extension URL {
+    
+    static func fromString(_ string:  String?) -> URL? {
+        guard let string = string else { return nil }
+        return Self.init(string: string)
+    }
+    
 }
 
 extension ExperienceData {

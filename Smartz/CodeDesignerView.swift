@@ -339,18 +339,7 @@ public struct CodeDesignerView: JoliView {
         
         let codeView = VisualCodeView(code: $visualCode, submitEnabled: $submitEnabled){ visualCode in
             print("Submitting: \(visualCode.properties)")
-            self.submitting = true
-            
-            expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-                .then(){ saved in
-                    print("SAVE experience: \(saved)")
-                }
-                .catch() { error in
-                    print("Save error: \(error)")
-                }
-                .always {
-                    self.submitting = false
-                }
+            self.submitExperience(expData)
         }
 //        .sheet(isPresented: self.$isShowingMessages) {
 //            MessageView(recipient: "+447884873600")
@@ -378,6 +367,22 @@ public struct CodeDesignerView: JoliView {
         return vs
     }
     
+    func submitExperience(_ expData: ExperienceData){
+        self.submitting = true
+        
+        expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then(){ saved in
+                print("SAVE experience: \(saved)")
+            }
+            .catch() { error in
+                print("Save error: \(error)")
+            }
+            .always {
+                self.submitting = false
+                self.updateStoredExperiences()
+            }
+    }
+    
     @State public var scrollProxy: ScrollViewProxy? = nil
     @State public var storedExperiences: [StikrExperienceData] = []
     @State public var submitting = false {
@@ -388,9 +393,23 @@ public struct CodeDesignerView: JoliView {
     
     @State public var visualCode = VisualCodeRecord()
     
+    func updateStoredExperiences(){
+        StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then(on: .main){ exps in
+                self.storedExperiences = exps
+            }
+            .catch(){ error in
+                print("Unable to fetch exps: \(error)")
+            }
+    }
+    
     public var historyView: some View {
-        MyExperiencesView(experiences: $storedExperiences)
+        MyExperiencesView(experiences: $storedExperiences){ stikrExp in
+                self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
+            
+            }
             .padding(.top)
+            .onAppear(perform: self.updateStoredExperiences)
     }
     
     public var tabView: some View {
@@ -493,8 +512,8 @@ public struct CodeDesignerView: JoliView {
                         
                         Button(){
                             if isLastTab {
-                                print("Submit experience!")
-                                self.submitting.toggle()
+                                guard let expData = experienceData else { return }
+                                self.submitExperience(expData)
                             } else {
                                 self.readyToDownload = true
                                 self.appCoordinator.dismissKeyboard()
