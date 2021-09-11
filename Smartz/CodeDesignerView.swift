@@ -12,6 +12,7 @@ import Combine
 import os
 import Foundation
 import JoliCore
+import Promises
 
 extension Array where Element == ExperienceDataKeyPath.Metadata {
     
@@ -339,8 +340,10 @@ public struct CodeDesignerView: JoliView {
         
         let codeView = VisualCodeView(code: $visualCode, submitEnabled: $submitEnabled){ visualCode in
             print("Submitting: \(visualCode.properties)")
-            self.submitExperience(expData)
+            self.submitExperience(expData, codes: [visualCode])
         }
+        .id(expData.uuid)
+        
 //        .sheet(isPresented: self.$isShowingMessages) {
 //            MessageView(recipient: "+447884873600")
 //                .ignoresSafeArea()
@@ -367,12 +370,30 @@ public struct CodeDesignerView: JoliView {
         return vs
     }
     
-    func submitExperience(_ expData: ExperienceData){
+    func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []){
         self.submitting = true
         expData.experienceTypeName = String(describing: self.selectedExperience ?? TvShowPromoView.self)
         expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(){ saved in
                 print("SAVE experience: \(saved)")
+                
+                let promises = codes.map(){ code -> Promise<VisualCode.PersistedType> in
+                    var code = code
+                    
+                    // temporarily hardcoding user id until sign in is implemented
+                    code.createdById = 17
+                    code.updatedById = 17
+                    
+                    code.url = api.baseUrlHttp.appendingPathComponent("e/\(saved.uuid)").absoluteString
+                    code.experienceId = saved.id
+                    return code.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                }
+                
+                Promises.all(promises)
+                    .then(){ savedCodes in
+                        print("SAVED Code: \(savedCodes)")
+                    }
+                
             }
             .catch() { error in
                 print("Save error: \(error)")
@@ -396,10 +417,16 @@ public struct CodeDesignerView: JoliView {
     func updateStoredExperiences(){
         StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(on: .main){ exps in
+                for e in exps {
+                    print("Experience: \(e)")
+                }
                 self.storedExperiences = exps
             }
             .catch(){ error in
                 print("Unable to fetch exps: \(error)")
+            }
+            .always(){
+                isRefreshingHistory = false
             }
     }
     
@@ -412,13 +439,15 @@ public struct CodeDesignerView: JoliView {
             .onAppear(perform: self.updateStoredExperiences)
     }
     
+    @State var isRefreshingHistory = false
+    
     public var tabView: some View {
         TabView(selection: $selectedTab) {
             ForEach(self.views, id: \.index){ item in
                 
                 Group(){
                     if item.index == 0 {
-                        ScrollView(.vertical, showsIndicators: true) {
+                        RefreshableScrollView(refreshing: $isRefreshingHistory){
                             ScrollViewReader() { proxy in
                                 //creator
                                 VStack(){
@@ -438,15 +467,20 @@ public struct CodeDesignerView: JoliView {
                                         }
                                     }
                                     .id("section-creator")
+                                    .padding(.bottom, 250)
+                                    
                                     Spacer()
                                 }
-                                .frame(minHeight: screenHeight * 2)
+                                .frame(minHeight: screenHeight)
                                 .onAppear(){
                                     //guard scrollProxy == nil else { return }
                                     self.scrollProxy = proxy
                                 }
                             }
                         }
+//                        ScrollView(.vertical, showsIndicators: true) {
+//
+//                        }
                     } else {
                         item.view
                     }
@@ -454,6 +488,12 @@ public struct CodeDesignerView: JoliView {
                 .frame(maxWidth: screenWidth)
                 .tag(item.index)
                 .id("code-designer-tabview-\(item.index)")
+                .onChange(of: self.isRefreshingHistory) { refreshing in
+                    guard refreshing else {return }
+                    print("REFRESHING: \(refreshing)")
+                    self.updateStoredExperiences()
+                }
+                
                 //                    .overlay(
                 //                        VStack(){
                 //                            Spacer()
@@ -469,6 +509,10 @@ public struct CodeDesignerView: JoliView {
                 //                    )
             }
         }
+    }
+    
+    public static func experienceClsByName(_ typeName: String) -> Experience.Type? {
+        return Self.experienceClasses().first() { String(describing: $0) == typeName }
     }
     
     public var contentView: some View {
@@ -548,6 +592,10 @@ public struct CodeDesignerView: JoliView {
             .onChange(of: self.experienceData) { value in
                 self.updateStoredExperience()
                 print("[Experience#onChange] \(value)")
+                
+                guard let expTypeName = value?.experienceTypeName else { return }
+                
+                self.selectedExperience = Self.experienceClsByName(expTypeName)
             }
             .ifLet(self.experienceData) { view, experience in
                 view.onReceive(experience.objectWillChange) { value in
@@ -591,7 +639,7 @@ public struct CodeDesignerView: JoliView {
                     return
                 }
                 
-                self.selectedExperience = Self.experienceClasses().first() { String(describing: $0) == exp.experienceTypeName }
+                self.selectedExperience = Self.experienceClsByName(exp.experienceTypeName)
                 
                 let expData = exp.experienceData
                 expData.logoImageUrl = rewriteCachesUrl(exp.experienceData.logoImageUrl)

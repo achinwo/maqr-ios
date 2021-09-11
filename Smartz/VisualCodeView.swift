@@ -232,6 +232,8 @@ public struct VisualCodeView: JoliView {
                             guard let vizCode = model.visualCode, submitEnabled else { return }
                             
                             self.code = vizCode
+                            self.code.style = "appclip"
+                            
                             onSubmit(self.code)
                         } label: {
                             Label("Submit", systemImage: "arrow.up")

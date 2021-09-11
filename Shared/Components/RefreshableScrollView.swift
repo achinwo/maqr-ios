@@ -13,7 +13,7 @@ import SwiftUI
 import AppKit
 #endif
 
-struct RefreshableScrollView<Content: View>: View {
+public struct RefreshableScrollView<Content: View>: View {
     @State private var previousScrollOffset: CGFloat = 0
     @State private var scrollOffset: CGFloat = 0
     @State private var frozen: Bool = false
@@ -24,14 +24,14 @@ struct RefreshableScrollView<Content: View>: View {
     let content: Content
     let showsIndicators: Bool
 
-    init(height: CGFloat = 80, refreshing: Binding<Bool>, showsIndicators: Bool = true, @ViewBuilder content: () -> Content) {
+    public init(height: CGFloat = 80, refreshing: Binding<Bool>, showsIndicators: Bool = true, @ViewBuilder content: () -> Content) {
         self.threshold = height
         self._refreshing = refreshing
         self.content = content()
         self.showsIndicators = showsIndicators
     }
     
-    var body: some View {
+    public var body: some View {
         return VStack {
             ScrollView(.vertical, showsIndicators: self.showsIndicators) {
                 ZStack(alignment: .top) {
