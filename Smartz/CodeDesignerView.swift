@@ -440,6 +440,9 @@ public struct CodeDesignerView: JoliView {
     func updateStoredExperiences(){
         StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(on: .main){ exps in
+                for e in exps {
+                    print("Experience: \(e)")
+                }
                 self.storedExperiences = exps
                 print("[updateStoredExperiences] fetched experiences: \(exps)")
             }
@@ -522,6 +525,11 @@ public struct CodeDesignerView: JoliView {
                 .frame(width: screenWidth)
                 .tag(item.index)
                 .id("code-designer-tabview-\(item.index)")
+                .onChange(of: self.isRefreshingHistory) { refreshing in
+                    guard refreshing else {return }
+                    print("REFRESHING: \(refreshing)")
+                    self.updateStoredExperiences()
+                }
                 
                 //                    .overlay(
                 //                        VStack(){
@@ -563,6 +571,10 @@ public struct CodeDesignerView: JoliView {
         
         print("[Experience#onChange] EXP: \(self.selectedExperience)")
     }
+    
+//    public static func experienceClsByName(_ typeName: String) -> Experience.Type? {
+//        return Self.experienceClasses().first() { String(describing: $0) == typeName }
+//    }
     
     public var contentView: some View {
         //return //ZStack(alignment: .top){
@@ -642,7 +654,9 @@ public struct CodeDesignerView: JoliView {
                 self.updateStoredExperience()
                 print("[Experience#onChange] \(value)")
                 
-                //guard value?.experienceTypeName
+                guard let expTypeName = value?.experienceTypeName else { return }
+                
+                self.selectedExperience = Self.experienceClsByName(expTypeName)
             }
             .ifLet(self.experienceData) { view, experience in
                 view.onReceive(experience.objectWillChange) { value in

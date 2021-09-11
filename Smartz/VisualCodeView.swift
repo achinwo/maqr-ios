@@ -232,6 +232,7 @@ public struct VisualCodeView<Label: View>: JoliView {
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                             .offset(x: proxy.size.width / 2 * -1, y: proxy.size.height / 4)
                             .rotationEffect(.degrees(-45), anchor: .leading)
+
                     }
                 )
                 .animation(.easeInOut)
