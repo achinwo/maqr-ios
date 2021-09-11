@@ -80,11 +80,6 @@
 		922989AE26491F0E00FDD58F /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989AB26491F0D00FDD58F /* MailView.swift */; };
 		922989B02649208A00FDD58F /* GradientLoadingBar in Frameworks */ = {isa = PBXBuildFile; productRef = 922989AF2649208A00FDD58F /* GradientLoadingBar */; };
 		922BFD33263757F8007CAF36 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 922BFD32263757F8007CAF36 /* AlertToast */; };
-		922DEAC9264BAFED00D91D99 /* JoliTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922DEAC8264BAFED00D91D99 /* JoliTVApp.swift */; };
-		922DEACB264BAFED00D91D99 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922DEACA264BAFED00D91D99 /* ContentView.swift */; };
-		922DEACD264BAFF300D91D99 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 922DEACC264BAFF300D91D99 /* Assets.xcassets */; };
-		922DEAD0264BAFF300D91D99 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 922DEACF264BAFF300D91D99 /* Preview Assets.xcassets */; };
-		922DEAF7264BE1BB00D91D99 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 922DEAF6264BE1BB00D91D99 /* JoliApi */; };
 		923BD58E25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
 		923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
 		923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
@@ -202,6 +197,7 @@
 		928F75F524F7B13400CF708B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F75F324F7B13400CF708B /* SearchView.swift */; };
 		929FFE1C24FAF096000BDCF0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929FFE1B24FAF096000BDCF0 /* User.swift */; };
 		929FFE1D24FAF096000BDCF0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929FFE1B24FAF096000BDCF0 /* User.swift */; };
+		92A0713926ECB9D7006AAED1 /* LetterAvatarKit in Frameworks */ = {isa = PBXBuildFile; productRef = 92A0713826ECB9D7006AAED1 /* LetterAvatarKit */; };
 		92A2B9352638919B00F59C37 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD024C79C06007C960E /* Extensions.swift */; };
 		92A2B9372638921A00F59C37 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92A2B9362638921A00F59C37 /* Kingfisher */; };
 		92A2B93F2638923100F59C37 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92A2B93E2638923100F59C37 /* KeychainAccess */; };
@@ -444,12 +440,6 @@
 		9228F86B26C07A310053DC04 /* ExperienceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceData.swift; sourceTree = "<group>"; };
 		922989A62641FCA800FDD58F /* GridChooserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridChooserView.swift; sourceTree = "<group>"; };
 		922989AB26491F0D00FDD58F /* MailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailView.swift; sourceTree = "<group>"; };
-		922DEAC6264BAFED00D91D99 /* JoliTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoliTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		922DEAC8264BAFED00D91D99 /* JoliTVApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoliTVApp.swift; sourceTree = "<group>"; };
-		922DEACA264BAFED00D91D99 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		922DEACC264BAFF300D91D99 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		922DEACF264BAFF300D91D99 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		922DEAD1264BAFF300D91D99 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		923BD58D25E16D63003863AB /* SignInWithApple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApple.swift; sourceTree = "<group>"; };
 		923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publishers+Playback.swift"; sourceTree = "<group>"; };
@@ -569,15 +559,8 @@
 				92EDE41226193AE000688802 /* PartialSheet in Frameworks */,
 				92EDE41026193AD500688802 /* Kingfisher in Frameworks */,
 				925C6FF324CB722A0016963F /* FBLPromises in Frameworks */,
+				92A0713926ECB9D7006AAED1 /* LetterAvatarKit in Frameworks */,
 				9203B31924CB079200F465CC /* JoliApi in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		922DEAC3264BAFED00D91D99 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				922DEAF7264BE1BB00D91D99 /* JoliApi in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -726,26 +709,6 @@
 				921F6C3E26BEA05C0061D236 /* UIImage+Extensions.swift */,
 			);
 			name = CoreMlHelpers;
-			sourceTree = "<group>";
-		};
-		922DEAC7264BAFED00D91D99 /* JoliTV */ = {
-			isa = PBXGroup;
-			children = (
-				922DEAC8264BAFED00D91D99 /* JoliTVApp.swift */,
-				922DEACA264BAFED00D91D99 /* ContentView.swift */,
-				922DEACC264BAFF300D91D99 /* Assets.xcassets */,
-				922DEAD1264BAFF300D91D99 /* Info.plist */,
-				922DEACE264BAFF300D91D99 /* Preview Content */,
-			);
-			path = JoliTV;
-			sourceTree = "<group>";
-		};
-		922DEACE264BAFF300D91D99 /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				922DEACF264BAFF300D91D99 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		9274A7E524CDB29200B45EDF /* JoliClip */ = {
@@ -943,7 +906,6 @@
 				92A32D7024C799B8007C960E /* Tests macOS */,
 				9203B31024CB06C900F465CC /* JoliPlayground */,
 				9274A7E524CDB29200B45EDF /* JoliClip */,
-				922DEAC7264BAFED00D91D99 /* JoliTV */,
 				9202D3D32659B6E700D5974F /* Smartz */,
 				9202D4082659BC0B00D5974F /* SmartzClip */,
 				92CC32A426E55B3200178465 /* SharedUI */,
@@ -961,7 +923,6 @@
 				92A32D6D24C799B8007C960E /* Tests macOS.xctest */,
 				9203B30F24CB06C900F465CC /* JoliPlayground.framework */,
 				9274A7E424CDB29200B45EDF /* JoliClip.app */,
-				922DEAC6264BAFED00D91D99 /* JoliTV.app */,
 				9202D3D22659B6E700D5974F /* Smartz.app */,
 				9202D4072659BC0B00D5974F /* SmartzClip.app */,
 				92CC32A326E55B3100178465 /* SharedUI.framework */,
@@ -1076,30 +1037,11 @@
 				92EDE41126193AE000688802 /* PartialSheet */,
 				92EDE43926193DFA00688802 /* KeychainAccess */,
 				922BFD32263757F8007CAF36 /* AlertToast */,
+				92A0713826ECB9D7006AAED1 /* LetterAvatarKit */,
 			);
 			productName = JoliPlayground;
 			productReference = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */;
 			productType = "com.apple.product-type.framework";
-		};
-		922DEAC5264BAFED00D91D99 /* JoliTV */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 922DEAEE264BAFF300D91D99 /* Build configuration list for PBXNativeTarget "JoliTV" */;
-			buildPhases = (
-				922DEAC2264BAFED00D91D99 /* Sources */,
-				922DEAC3264BAFED00D91D99 /* Frameworks */,
-				922DEAC4264BAFED00D91D99 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = JoliTV;
-			packageProductDependencies = (
-				922DEAF6264BE1BB00D91D99 /* JoliApi */,
-			);
-			productName = JoliTV;
-			productReference = 922DEAC6264BAFED00D91D99 /* JoliTV.app */;
-			productType = "com.apple.product-type.application";
 		};
 		9274A7E324CDB29200B45EDF /* JoliClip */ = {
 			isa = PBXNativeTarget;
@@ -1258,9 +1200,6 @@
 					9203B30E24CB06C900F465CC = {
 						CreatedOnToolsVersion = 12.0;
 					};
-					922DEAC5264BAFED00D91D99 = {
-						CreatedOnToolsVersion = 12.5;
-					};
 					9274A7E324CDB29200B45EDF = {
 						CreatedOnToolsVersion = 12.0;
 					};
@@ -1319,7 +1258,6 @@
 				92A32D5924C799B8007C960E /* Joli (macOS) */,
 				92A32D6124C799B8007C960E /* Tests iOS */,
 				92A32D6C24C799B8007C960E /* Tests macOS */,
-				922DEAC5264BAFED00D91D99 /* JoliTV */,
 				9202D3D12659B6E700D5974F /* Smartz */,
 				9202D4062659BC0B00D5974F /* SmartzClip */,
 			);
@@ -1362,15 +1300,6 @@
 				92FBFC8D26AB33560068DDA5 /* Templates in Resources */,
 				9203B32724CB07EE00F465CC /* Localizable.strings in Resources */,
 				921CAFAB26B5F4F10078A394 /* YTPlayer.html in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		922DEAC4264BAFED00D91D99 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				922DEAD0264BAFF300D91D99 /* Preview Assets.xcassets in Resources */,
-				922DEACD264BAFF300D91D99 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1557,15 +1486,6 @@
 				9203B32824CB07F200F465CC /* Extensions.swift in Sources */,
 				922989AA26491DB800FDD58F /* ProfileView.swift in Sources */,
 				929FFE1C24FAF096000BDCF0 /* User.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		922DEAC2264BAFED00D91D99 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				922DEACB264BAFED00D91D99 /* ContentView.swift in Sources */,
-				922DEAC9264BAFED00D91D99 /* JoliTVApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1961,53 +1881,6 @@
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
-		922DEAE8264BAFF300D91D99 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_ASSET_PATHS = "\"JoliTV/Preview Content\"";
-				DEVELOPMENT_TEAM = 2L26ZMA265;
-				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = JoliTV/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliTV;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = appletvos;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 14.5;
-			};
-			name = Debug;
-		};
-		922DEAE9264BAFF300D91D99 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"JoliTV/Preview Content\"";
-				DEVELOPMENT_TEAM = 2L26ZMA265;
-				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = JoliTV/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jolimc.JoliTV;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = appletvos;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 14.5;
 			};
 			name = Release;
 		};
@@ -2533,15 +2406,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		922DEAEE264BAFF300D91D99 /* Build configuration list for PBXNativeTarget "JoliTV" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				922DEAE8264BAFF300D91D99 /* Debug */,
-				922DEAE9264BAFF300D91D99 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		9274A80A24CDB29900B45EDF /* Build configuration list for PBXNativeTarget "JoliClip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -2749,10 +2613,6 @@
 			package = 922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */;
 			productName = AlertToast;
 		};
-		922DEAF6264BE1BB00D91D99 /* JoliApi */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = JoliApi;
-		};
 		924E96F926E55D8800FF41E3 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */;
@@ -2786,6 +2646,11 @@
 		9270C228252CAA3B0030E6AD /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
+		};
+		92A0713826ECB9D7006AAED1 /* LetterAvatarKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */;
+			productName = LetterAvatarKit;
 		};
 		92A2B9362638921A00F59C37 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
