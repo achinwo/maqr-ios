@@ -26,8 +26,17 @@ public protocol Experience {
     static var supportedItemTypes: Set<ExperienceItemType> { get }
     
     static var basePath: String { get }
+    static var className: String { get }
     
     init(_ data: ExperienceData?)
+}
+
+public extension Experience {
+    
+    static var className: String {
+        return String(describing: Self.self)
+    }
+    
 }
 
 public extension JoliView where Self: Experience {

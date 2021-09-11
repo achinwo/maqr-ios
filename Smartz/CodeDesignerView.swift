@@ -638,7 +638,12 @@ public struct CodeDesignerView: JoliView {
                 }
             }
             .id("code-designer-tabview")
-            .onChange(of: self.experienceData, perform: onExperinceDataChanged)
+            .onChange(of: self.experienceData) { value in
+                self.updateStoredExperience()
+                print("[Experience#onChange] \(value)")
+                
+                //guard value?.experienceTypeName
+            }
             .ifLet(self.experienceData) { view, experience in
                 view.onReceive(experience.objectWillChange) { value in
                     DispatchQueue.main.async {
@@ -745,10 +750,11 @@ public struct CodeDesignerView: JoliView {
     
     func updateStoredExperience() {
         
-        guard let experience = self.experienceData, let expCls = selectedExperience else { return }
+        guard let experience = self.experienceData else { return }
         
+        let expClsName = selectedExperience?.className ?? TvShowPromoView.className
         let localData = LocalExperienceData(appVersion: AppCoordinator.version.description,
-                                            experienceTypeName: String(describing: expCls),
+                                            experienceTypeName: expClsName,
                                             experienceData: experience)
         
         let encoder = experience.jsonEncoder
@@ -763,5 +769,3 @@ public struct CodeDesignerView: JoliView {
     }
     
 }
-
-
