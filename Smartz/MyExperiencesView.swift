@@ -35,7 +35,7 @@ public struct MyExperiencesView: JoliView {
             Section(header: headerMyExperiences) {
                 ForEach(experiences){ exp in
                     HStack(){
-                        NetworkImage(string: exp.logoImage){
+                        NetworkImage(string: exp.logoImageUrl){
                             ProgressView().progressViewStyle(CircularProgressViewStyle())
                         }
                         .aspectRatio(contentMode: .fit)

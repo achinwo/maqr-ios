@@ -309,21 +309,23 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     }
     
     static func fromExperienceData(_ experienceData: PersistedType, baseUrl: URL) -> ExperienceData {
-        let res = ExperienceData.init(TvShowPromoView.self, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+        let res = ExperienceData.init(experienceData.experienceTypeName, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
         res.uuid = experienceData.uuid
         
-        res.logoImageUrl = URL.fromString(experienceData.logoImage)
-        res.bannerImageUrl = URL.fromString(experienceData.bannerImage)
+        res.logoImageUrl = URL.fromString(experienceData.logoImageUrl)
+        res.bannerImageUrl = URL.fromString(experienceData.bannerImageUrl)
         res.bannerVideoUrl = URL.fromString(experienceData.bannerVideoUrl)
-        res.backgroundImageUrl = URL.fromString(experienceData.backgroundImage)
+        res.backgroundImageUrl = URL.fromString(experienceData.backgroundImageUrl)
         
-        res.brandName = experienceData.uuid
-        res.landingPageText = experienceData.uuid
-        res.socialInstagramUsername = experienceData.uuid
-        //res.releaseDate = experienceData.r
-        //res.releasePlatformName = experienceData.
-        //res.releasePlatformLogoUrl = experienceData.rel
-        res.releasePlatformInstaUsername = experienceData.socialInstagramUsername
+        res.brandName = experienceData.brandName
+        res.landingPageText = experienceData.landingPageText ?? res.landingPageText
+        res.socialInstagramUsername = experienceData.socialInstagramUsername
+        
+        res.releaseDate = experienceData.releaseDate
+        res.releasePlatformName = experienceData.releasePlatformName
+        res.releasePlatformLogoUrl = URL.fromString(experienceData.releasePlatformLogoUrl)
+        res.releasePlatformInstaUsername = experienceData.releasePlatformInstaUsername
+        
         res.brandColorPrimary = Color.init(hex: experienceData.brandColorPrimary ?? res.brandColorPrimary.hexString)
         res.brandColorSecondary = Color.init(hex: experienceData.brandColorSecondary ?? res.brandColorSecondary.hexString)
         res.brandColorAccent = Color.init(hex: experienceData.brandColorAccent ?? res.brandColorAccent.hexString)
@@ -337,6 +339,8 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         uuid = try container.decode(String?.self, forKey: .uuid)
+        experienceTypeName = try container.decode(String?.self, forKey: .experienceTypeName)
+
         logoImageUrl = try container.decode(URL?.self, forKey: .logoImageUrl)
         bannerImageUrl = try container.decode(URL?.self, forKey: .bannerImageUrl)
         bannerVideoUrl = try container.decode(URL?.self, forKey: .bannerVideoUrl)

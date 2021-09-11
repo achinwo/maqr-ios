@@ -369,7 +369,7 @@ public struct CodeDesignerView: JoliView {
     
     func submitExperience(_ expData: ExperienceData){
         self.submitting = true
-        
+        expData.experienceTypeName = String(describing: self.selectedExperience ?? TvShowPromoView.self)
         expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(){ saved in
                 print("SAVE experience: \(saved)")
