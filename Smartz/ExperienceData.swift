@@ -115,8 +115,7 @@ extension StikrExperienceDataItem: ExperienceDataItem {
 public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable {
     
     lazy var jsonEncoder: JSONEncoder = {
-        var encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
+        var encoder = Musicroom.jsonEncoder(outputFormatting: .prettyPrinted)
         return encoder
     }()
     
@@ -180,7 +179,8 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
                     //print("[uploadImages] updated url: \(currentValue) -> \(self[keyPath: keyPath])")
                 }
                 
-                guard let data = try? self.jsonEncoder.encode(self) else {
+                let enc = Musicroom.jsonEncoder()
+                guard let data = try? enc.encode(self) else {
                     return Promise.init(NetworkError.badRequest("Unable to serialize \(Self.self) instance"))
                 }
                 

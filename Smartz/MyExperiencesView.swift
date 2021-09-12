@@ -9,6 +9,7 @@
 import SwiftUI
 import SharedUI
 import JoliCore
+import QRCode
 
 public struct MyExperiencesView: JoliView {
     
@@ -16,6 +17,82 @@ public struct MyExperiencesView: JoliView {
     @Binding public var experiences: [StikrExperienceData]
     @Binding public var selectedExperienceUuid: String?
     public var onSelect: (StikrExperienceData) -> Void
+    
+    private func makeQrCode(_ data: StikrExperienceData) -> UIImage? {
+
+        guard let vizCode = data.visualcodes?.last,
+              let url = URL(string: vizCode.url),
+              let img = try? QRCode(url: url, color: UIColor(hex: "#29304B"), backgroundColor: UIColor(hex: "#E1E5EE"), size: CGSize(width: screenWidth - 100, height: screenWidth - 100))?.image() else {
+            return nil
+        }
+        return img
+    }
+    
+    private func experienceView(_ exp: StikrExperienceData) -> some View {
+        HStack(){
+            NetworkImage(string: exp.logoImageUrl){
+                ProgressView().progressViewStyle(CircularProgressViewStyle())
+            }
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 64, height: 64, alignment: .center)
+            .padding()
+            
+            VStack(alignment: .leading){
+                
+                Text(exp.brandName).font(.headline)
+                
+                if let txt = exp.landingPageText {
+                    Text(txt)
+                        .lineLimit(3)
+                        .truncationMode(.tail)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack(){
+                    Spacer()
+                    if let img = self.makeQrCode(exp) {
+                        
+                        Button(){
+                            let preview: AppPreview = .view2(){
+                                NavigationView(){
+                                    ScrollView(){
+                                        VStack(){
+                                            Image(uiImage: img).padding()
+                                            if let txt = exp.landingPageText {
+                                                Text(txt).multilineTextAlignment(.center)
+                                                    .foregroundColor(.secondary)
+                                                    .lineLimit(10)
+                                                    .font(.body.weight(.light))
+                                                    .padding()
+                                            }
+                                            Spacer()
+                                        }
+                                    }
+                                    .navigationTitle(exp.brandName)
+                                }
+                                .frame(width: screenWidth)
+                                .eraseToAnyView()
+                            }
+                            
+                            appCoordinator.globalModalSubject.send(preview)
+                        } label: {
+                            Label("View Code", systemImage: "qrcode").padding([.horizontal, .bottom]).padding(.top, 2)
+                        }
+                    }
+                }
+                
+            }
+            Spacer()
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.green.opacity(exp.uuid == self.selectedExperienceUuid ? 0.6 : 0), lineWidth: 1)
+        )
+        .onTapGesture() {
+            self.onSelect(exp)
+        }
+    }
     
     public var contentView: some View {
         VStack(){
@@ -35,33 +112,7 @@ public struct MyExperiencesView: JoliView {
             
             Section(header: headerMyExperiences) {
                 ForEach(experiences){ exp in
-                    HStack(){
-                        NetworkImage(string: exp.logoImageUrl){
-                            ProgressView().progressViewStyle(CircularProgressViewStyle())
-                        }
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 64, height: 64, alignment: .center)
-                        .padding()
-                        
-                        VStack(alignment: .leading){
-                            
-                            Text(exp.brandName).font(.headline)
-                            
-                            if let txt = exp.landingPageText {
-                                Text(txt)
-                                    .lineLimit(3)
-                                    .truncationMode(.tail)
-                            }
-                        }
-                        Spacer()
-                    }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.green.opacity(exp.uuid == self.selectedExperienceUuid ? 0.6 : 0), lineWidth: 1)
-                    )
-                    .onTapGesture() {
-                        self.onSelect(exp)
-                    }
+                    self.experienceView(exp)
                 }
                 .padding(.horizontal)
             }

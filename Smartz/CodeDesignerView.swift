@@ -684,10 +684,11 @@ public struct CodeDesignerView: JoliView {
                 expData.backgroundImageUrl = rewriteCachesUrl(exp.experienceData.backgroundImageUrl)
                 
                 self.experienceData = expData
+                self.onExperinceDataChanged(expData)
                 
-                let encode = exp.experienceData.jsonEncoder
-                let data = try! encode.encode(exp.experienceData)
-                print("[Experience Changed] loaded experience data: \(String(data: data, encoding: .utf8)!)")
+                //let encode = exp.experienceData.jsonEncoder
+                //let data = try! encode.encode(exp.experienceData)
+                //print("[Experience Changed] loaded experience data") //: \(String(data: data, encoding: .utf8)!)")
                 
                 //            var string = "SVG File Name,URL,Background Color,Foreground Color,Type,Logo\n"
                 //            let url = "https://smartstikr.com/s/shows/iacw"
