@@ -340,6 +340,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
 
         uuid = try container.decode(String?.self, forKey: .uuid)
         experienceTypeName = try container.decode(String?.self, forKey: .experienceTypeName)
+        stored = try container.decode(PersistedType?.self, forKey: .stored)
 
         logoImageUrl = try container.decode(URL?.self, forKey: .logoImageUrl)
         bannerImageUrl = try container.decode(URL?.self, forKey: .bannerImageUrl)

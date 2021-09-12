@@ -14,6 +14,7 @@ public struct MyExperiencesView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @Binding public var experiences: [StikrExperienceData]
+    @Binding public var selectedExperienceUuid: String?
     public var onSelect: (StikrExperienceData) -> Void
     
     public var contentView: some View {
@@ -54,6 +55,10 @@ public struct MyExperiencesView: JoliView {
                         }
                         Spacer()
                     }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.green.opacity(exp.uuid == self.selectedExperienceUuid ? 0.6 : 0), lineWidth: 1)
+                    )
                     .onTapGesture() {
                         self.onSelect(exp)
                     }

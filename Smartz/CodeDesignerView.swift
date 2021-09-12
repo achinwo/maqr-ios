@@ -73,13 +73,15 @@ public struct CodeDesignerView: JoliView {
     var tabNames: [String] {
         var names = ["Pick a Brand Experience"]
         
+        let verb = self.experienceData?.uuid == nil ? "Customise" : "Edit"
+        
         if let expCls = self.selectedExperience {
-            names.append("Customise \(expCls.title) Experience")
+            names.append("\(verb) \(expCls.title) Experience")
         } else {
-            names.append("Customise Experience")
+            names.append("\(verb) Experience")
         }
         
-        names.append("Customise Code") //, "Get Your Assets"])
+        names.append("\(verb) Code") //, "Get Your Assets"])
         return names
     }
     
@@ -93,6 +95,11 @@ public struct CodeDesignerView: JoliView {
                     }
                     
                     self.selectedExperience = product.experienceCls
+                    
+                    guard let expData = experienceData else { return }
+                    
+                    expData.uuid = nil
+                    expData.stored = nil
                 }
                 
                 VStack(alignment: .leading, spacing: .zero){
@@ -183,7 +190,7 @@ public struct CodeDesignerView: JoliView {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.green.opacity(product.experienceCls == selectedExperience ? 0.6 : 0), lineWidth: 1)
+                        .stroke(Color.green.opacity(product.experienceCls == selectedExperience && experienceData?.uuid == nil ? 0.6 : 0), lineWidth: 1)
                 )
                 .onTapGesture(perform: onTap)
                 .overlay(
@@ -191,7 +198,7 @@ public struct CodeDesignerView: JoliView {
                         Spacer()
                         
                         VStack(){
-                            let isActive = product.experienceCls == selectedExperience
+                            let isActive = product.experienceCls == selectedExperience && experienceData?.uuid == nil
                             
                             Button() {
                                 onTap()
@@ -203,6 +210,7 @@ public struct CodeDesignerView: JoliView {
                                     .scaleEffect(x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1)
                                     .animation(.easeInOut)
                             }
+                            .disabled(!isActive)
                             
                             Spacer()
                         }
@@ -341,8 +349,14 @@ public struct CodeDesignerView: JoliView {
         let codeView = VisualCodeView(code: $visualCode, submitEnabled: $submitEnabled){ visualCode in
             print("Submitting: \(visualCode.properties)")
             self.submitExperience(expData, codes: [visualCode])
+        } label: {
+            if expData.uuid == nil {
+                Label("Submit", systemImage: "arrow.up")
+            } else {
+                Text("Save Changes")
+            }
         }
-        .id(expData.uuid)
+        .id("\(String(describing: expData.uuid))-\(String(describing: expData.stored?.updatedAt))-\(String(describing: expData.stored?.visualcodes?.last?.updatedAt))")
         
 //        .sheet(isPresented: self.$isShowingMessages) {
 //            MessageView(recipient: "+447884873600")
@@ -393,6 +407,9 @@ public struct CodeDesignerView: JoliView {
                     .then(){ savedCodes in
                         print("SAVED Code: \(savedCodes)")
                     }
+                    .catch(){ error in
+                        print("error saving code: \(error)")
+                    }
                 
             }
             .catch() { error in
@@ -417,9 +434,6 @@ public struct CodeDesignerView: JoliView {
     func updateStoredExperiences(){
         StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(on: .main){ exps in
-                for e in exps {
-                    print("Experience: \(e)")
-                }
                 self.storedExperiences = exps
             }
             .catch(){ error in
@@ -431,12 +445,26 @@ public struct CodeDesignerView: JoliView {
     }
     
     public var historyView: some View {
-        MyExperiencesView(experiences: $storedExperiences){ stikrExp in
-                self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
+        
+        let binding = Binding<String?>() {
+            return self.experienceData?.uuid
+        } set: { newValue in
+            print("[historyView] ignoring set: \(String(describing: newValue))")
+        }
+        
+        return MyExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: binding){ stikrExp in
+            self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
             
+            DispatchQueue.main.async(){
+                onExperinceDataChanged(self.experienceData)
             }
-            .padding(.top)
-            .onAppear(perform: self.updateStoredExperiences)
+            
+            guard let visualCode = stikrExp.visualcodes?.last else { return }
+            
+            self.visualCode = visualCode.builder()
+        }
+        .padding(.top)
+        .onAppear(perform: self.updateStoredExperiences)
     }
     
     @State var isRefreshingHistory = false
@@ -515,6 +543,21 @@ public struct CodeDesignerView: JoliView {
         return Self.experienceClasses().first() { String(describing: $0) == typeName }
     }
     
+    private func onExperinceDataChanged(_ value: ExperienceData?) {
+        self.updateStoredExperience()
+        self.brandName = value?.brandName ?? self.brandName
+        self.landingPageText = value?.landingPageText ?? self.landingPageText
+        
+        print("[Experience#onChange] \(value)")
+        
+        guard let expTypeName = value?.experienceTypeName else { return }
+        
+        self.selectedExperience = Self.experienceClsByName(expTypeName)
+        self.visualCode = value?.stored?.visualcodes?.last?.builder() ?? self.visualCode
+        
+        print("[Experience#onChange] EXP: \(self.selectedExperience)")
+    }
+    
     public var contentView: some View {
         //return //ZStack(alignment: .top){
         return self.tabView
@@ -557,7 +600,7 @@ public struct CodeDesignerView: JoliView {
                         Button(){
                             if isLastTab {
                                 guard let expData = experienceData else { return }
-                                self.submitExperience(expData)
+                                self.submitExperience(expData, codes: [visualCode])
                             } else {
                                 self.readyToDownload = true
                                 self.appCoordinator.dismissKeyboard()
@@ -568,7 +611,7 @@ public struct CodeDesignerView: JoliView {
                             if isLastTab && submitting {
                                 ProgressView().progressViewStyle(CircularProgressViewStyle())
                             } else if isLastTab {
-                                Text("Submit")
+                                Text(experienceData?.uuid == nil ? "Submit" : "Save Changes")
                             } else {
                                 Text("Try It")
                             }
@@ -589,14 +632,7 @@ public struct CodeDesignerView: JoliView {
                 }
             }
             .id("code-designer-tabview")
-            .onChange(of: self.experienceData) { value in
-                self.updateStoredExperience()
-                print("[Experience#onChange] \(value)")
-                
-                guard let expTypeName = value?.experienceTypeName else { return }
-                
-                self.selectedExperience = Self.experienceClsByName(expTypeName)
-            }
+            .onChange(of: self.experienceData, perform: onExperinceDataChanged)
             .ifLet(self.experienceData) { view, experience in
                 view.onReceive(experience.objectWillChange) { value in
                     DispatchQueue.main.async {

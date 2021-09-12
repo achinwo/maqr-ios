@@ -93,12 +93,14 @@ extension ExperienceData: Encodable {
 {% endfor %}
         case uuid
         case experienceTypeName
+        case stored
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(uuid, forKey: .uuid)
         try container.encode(experienceTypeName, forKey: .experienceTypeName)
+        try container.encode(stored, forKey: .stored)
 {% for variable in type.ExperienceData.storedVariables|annotated: "default" %}
         try container.encode({{ variable.name }}, forKey: .{{ variable.name }})
 {% endfor %}
@@ -113,6 +115,7 @@ extension ExperienceData: Encodable {
 
         uuid = try container.decode(String?.self, forKey: .uuid)
         experienceTypeName = try container.decode(String?.self, forKey: .experienceTypeName)
+        stored = try container.decode(PersistedType?.self, forKey: .stored)
 
     {% for variable in type.ExperienceData.storedVariables|annotated: "default" %}    {#
         #}{{ variable.name }} = try container.decode({{ variable.typeName }}.self, forKey: .{{ variable.name }})

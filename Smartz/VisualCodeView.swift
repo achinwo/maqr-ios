@@ -60,7 +60,10 @@ public struct DualColorTokenView: JoliView {
     
 }
 
-public struct VisualCodeView: JoliView {
+
+let SAMPLE_APPCLIP = UIImage(named: "appclipcode_with_logo")!
+
+public struct VisualCodeView<Label: View>: JoliView {
     
     public class AppClipCodeModel: ObservableObject {
         
@@ -110,7 +113,7 @@ public struct VisualCodeView: JoliView {
             }
         }
         
-        @Published public var lastUpdatedAt = Date()
+        @Published public var lastUpdatedAt: Date? = nil
         
         public var index: Int = 12 {
             didSet {
@@ -118,7 +121,7 @@ public struct VisualCodeView: JoliView {
             }
         }
         
-        private func updateUrl(){
+        public func updateUrl(){
             let fileName = "images/preview_appclip_\(index)_\(codeType.label)_\(logo.rawValue).svg?format=png"
             //let urlString = URL(string: "https://storage.googleapis.com/joli-app-bucket/images/preview_appclip_\(index)_\(logo.rawValue)_\(codeType.label).svg")
             //let newComp = URLComponents(string: "https://192.168.1.233:8080/\(fileName)") //templates/\(index).png?url=\(urlString)&logo=\(logo.rawValue)&type=\(codeType.label)")
@@ -160,8 +163,7 @@ public struct VisualCodeView: JoliView {
     @Binding var code: VisualCodeRecord
     @Binding var submitEnabled: Bool
     let onSubmit: (VisualCodeRecord) -> Void
-    
-    
+    @ViewBuilder let label: () -> Label
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -174,130 +176,152 @@ public struct VisualCodeView: JoliView {
     
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
-    public var contentView: some View {
-        let size = screenWidth / 8
-        return ZStack(){
-            Form(){
-                
-                Section(header: Spacer().padding(.top, screenWidth * 0.7 + 16)){
-                    Picker("Interaction Type", selection: $appClipCodeType) {
-                        ForEach(AppClipCodeModel.CodeType.allCases) { codeType in
-                            Text(codeType.title)
+    public init(code: Binding<VisualCodeRecord>, submitEnabled: Binding<Bool>, onSubmit: @escaping (VisualCodeRecord) -> Void, @ViewBuilder label: @escaping () -> Label){
+        self._code = code
+        self._submitEnabled = submitEnabled
+        self.onSubmit = onSubmit
+        self.label = label
+        
+        
+//        self._selectedThemeIndex = State(initialValue: self.code.index ?? 12)
+//        self._showBadge = State(initialValue: self.code.logo == AppClipCodeModel.Logo.badge.rawValue)
+//        self._appClipCodeType = State(initialValue: self.code.interactionType == AppClipCodeModel.CodeType.cam.label ? AppClipCodeModel.CodeType.cam.rawValue : AppClipCodeModel.CodeType.nfc.rawValue)
+//        self._invertThemeColor = State(initialValue: appClipsTypes.first(where: { $0.index == self.selectedThemeIndex }) == nil)
+        
+    }
+    
+    public var previewView: some View {
+        
+        VStack(spacing: .zero){
+            VStack(spacing: .zero){
+                ZStack(){
+                    NetworkImage(url: model.urlPath?.url(relativeTo: api.baseUrlHttp)){ img, error in
+                        self.initialImageLoaded = img != nil
+                    } content: {
+                        Group(){
+                            if initialImageLoaded {
+                                VStack(){
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle())
+                                    Text("Refreshing...")
+                                        .font(.headline.weight(.light))
+                                        .foregroundColor(.secondary)
+                                        .padding()
+                                }
+                            } else {
+                                Image(platformImage: SAMPLE_APPCLIP)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                            }
                         }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
-                    Toggle("Show Badge", isOn: $showBadge).padding()
+                    .id(model.urlPath)
+                    .aspectRatio(contentMode: .fit)
+                }
+                .frame(width: screenWidth / 2)
+                .frame(minHeight: screenWidth * 0.5)
+                .overlay(
+                    GeometryReader() { proxy in
+                        Text("Preview")
+                            .fixedSize(horizontal: true, vertical: true)
+                            .frame(width: proxy.size.width * 1.1, alignment: .center)
+                            .font(.title.weight(.light))
+                            .foregroundColor(.fixedWhite)
+                            .padding()
+                            .background(Color.fixedGray.opacity(0.98))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .offset(x: proxy.size.width / 2 * -1, y: proxy.size.height / 4)
+                            .rotationEffect(.degrees(-45), anchor: .leading)
+                    }
+                )
+                .animation(.easeInOut)
+                .clipped()
+            }
+            .frame(width: screenWidth, height: screenWidth * 0.7)
+            .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+            Divider()
+            Spacer()
+        }
+        
+    }
+    
+    public var formView: some View {
+        let size = screenWidth / 8
+        
+        return Form(){
+            
+            Section(header: Spacer().padding(.top, screenWidth * 0.7 + 16).backgroundColor(.clear)){
+                Picker("Interaction Type", selection: $appClipCodeType) {
+                    ForEach(AppClipCodeModel.CodeType.allCases) { codeType in
+                        Text(codeType.title)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
+                Toggle("Show Badge", isOn: $showBadge).padding()
+                
+            }
+            
+            Section(header: Text("Color Themes")){
+                VStack(){
+                    ForEach([0, 3, 6], id: \.self){ row in
+                        HStack(){
+                            Spacer()
+                            ForEach(row..<(row + 3), id: \.self) { colIdx in
+                                let appclipStyle = appClipsStyles[colIdx]
+                                
+                                DualColorTokenView(primaryColor: appclipStyle.foregroundColor, secondaryColor: appclipStyle.backgroundColor, width: size)
+                                    .onTapGesture() {
+                                        self.selectedThemeIndex = appclipStyle.index
+                                    }
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedThemeIndex == appclipStyle.index ? Color.primary : Color.tertiaryLabel.opacity(0.7),
+                                                    lineWidth: selectedThemeIndex == appclipStyle.index ? 2 : 1)
+                                            .frame(width: size + 2.6, height: size + 2.6)
+                                    )
+                                    .animation(.easeInOut)
+                                    .id(appclipStyle.index)
+                                Spacer()
+                            }
+                        }
+                    }
+                    Divider().padding(.vertical)
+                    Toggle("Inverted Colors", isOn: $invertThemeColor)//.padding(.horizontal)
                     
                 }
-                
-                Section(header: Text("Color Themes")){
-                    VStack(){
-                        ForEach([0, 3, 6], id: \.self){ row in
-                            HStack(){
-                                Spacer()
-                                ForEach(row..<(row + 3), id: \.self) { colIdx in
-                                    let appclipStyle = appClipsStyles[colIdx]
-                                    
-                                    DualColorTokenView(primaryColor: appclipStyle.foregroundColor, secondaryColor: appclipStyle.backgroundColor, width: size)
-                                        .onTapGesture() {
-                                            self.selectedThemeIndex = appclipStyle.index
-                                        }
-                                        .overlay(
-                                            Circle()
-                                                .stroke(selectedThemeIndex == appclipStyle.index ? Color.primary : Color.tertiaryLabel.opacity(0.7),
-                                                        lineWidth: selectedThemeIndex == appclipStyle.index ? 2 : 1)
-                                                .frame(width: size + 2.6, height: size + 2.6)
-                                        )
-                                        .animation(.easeInOut)
-                                        .id(appclipStyle.index)
-                                    Spacer()
-                                }
-                            }
-                        }
-                        Divider().padding(.vertical)
-                        Toggle("Inverted Colors", isOn: $invertThemeColor)//.padding(.horizontal)
+                .padding()
+            }
+            
+            Section(footer: Spacer().padding(.bottom, safeAreaInsets.bottom * 6)){
+                HStack(){
+                    Spacer()
+                    Button(){
+                        //self.readyToDownload = true
+                        //self.trialActivateCallback()
                         
+                        guard let vizCode = model.visualCode, submitEnabled else { return }
+                        
+                        self.code = vizCode
+                        self.code.style = "appclip"
+                        
+                        onSubmit(self.code)
+                    } label: {
+                        self.label()
                     }
+                    .disabled(!submitEnabled)
                     .padding()
-                }
-                
-                Section(footer: Spacer().padding(.bottom, safeAreaInsets.bottom * 6)){
-                    HStack(){
-                        Spacer()
-                        Button(){
-                            //self.readyToDownload = true
-                            //self.trialActivateCallback()
-                            
-                            guard let vizCode = model.visualCode, submitEnabled else { return }
-                            
-                            self.code = vizCode
-                            self.code.style = "appclip"
-                            
-                            onSubmit(self.code)
-                        } label: {
-                            Label("Submit", systemImage: "arrow.up")
-                                .font(.headline)
-                        }
-                        .disabled(!submitEnabled)
-                        .padding()
-                        //.padding(.top)
-                        Spacer()
-                    }
+                    //.padding(.top)
+                    Spacer()
                 }
             }
-            
-            
-            VStack(spacing: .zero){
-                VStack(spacing: .zero){
-                    ZStack(){
-                        NetworkImage(url: model.urlPath?.url(relativeTo: api.baseUrlHttp)){ img, error in
-                            self.initialImageLoaded = img != nil
-                        } content: {
-                            Group(){
-                                if initialImageLoaded {
-                                    VStack(){
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle())
-                                        Text("Refreshing...")
-                                            .font(.headline.weight(.light))
-                                            .foregroundColor(.secondary)
-                                            .padding()
-                                    }
-                                } else {
-                                    Image(platformImage: Self.SAMPLE_APPCLIP)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                }
-                            }
-                        }
-                        .id(model.urlPath)
-                        .aspectRatio(contentMode: .fit)
-                    }
-                    .frame(width: screenWidth / 2)
-                    .frame(minHeight: screenWidth * 0.5)
-                    .overlay(
-                        GeometryReader() { proxy in
-                            Text("Preview")
-                                .fixedSize(horizontal: true, vertical: true)
-                                .frame(width: proxy.size.width * 1.1, alignment: .center)
-                                .font(.title.weight(.light))
-                                .foregroundColor(.fixedWhite)
-                                .padding()
-                                .background(Color.fixedGray.opacity(0.98))
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                                .offset(x: proxy.size.width / 2 * -1, y: proxy.size.height / 4)
-                                .rotationEffect(.degrees(-45), anchor: .leading)
-                        }
-                    )
-                    .animation(.easeInOut)
-                    .clipped()
-                }
-                .frame(width: screenWidth, height: screenWidth * 0.7)
-                .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
-                Divider()
-                Spacer()
-            }
+        }
+    }
+    
+    public var contentView: some View {
+        return ZStack(){
+            self.formView
+            self.previewView
         }
         .onChange(of: selectedThemeIndex) { idx in
             self.model.index = idx
@@ -310,13 +334,25 @@ public struct VisualCodeView: JoliView {
             
             self.model.codeType = codeType
         }
-        .onReceive(model.$lastUpdatedAt){ _ in
+        .onReceive(model.$lastUpdatedAt){ lastUpdatedAt in
+            guard lastUpdatedAt != nil else { return }
+            
             self.code = model.visualCode ?? code
             print("[\(Self.self)] Code updated!!")
         }
         .onAppear(){
-            //updateSubscriptions()
-            self.code = model.visualCode ?? code
+            
+            self.selectedThemeIndex = self.code.index ?? 12
+            self.showBadge = self.code.logo == AppClipCodeModel.Logo.badge.rawValue
+            self.appClipCodeType = self.code.interactionType == AppClipCodeModel.CodeType.cam.label ? AppClipCodeModel.CodeType.cam.rawValue : AppClipCodeModel.CodeType.nfc.rawValue
+            self.invertThemeColor = appClipsTypes.first(where: { $0.index == self.selectedThemeIndex }) == nil
+            
+            
+            self.model.index = selectedThemeIndex
+            self.model.logo = showBadge ? .badge : .none
+            self.model.codeType = AppClipCodeModel.CodeType.init(rawValue: appClipCodeType) ?? self.model.codeType
+            
+            self.model.updateUrl()
         }
     }
     
@@ -332,7 +368,6 @@ public struct VisualCodeView: JoliView {
     @State var initialImageLoaded = false
     
     
-    static let SAMPLE_APPCLIP = UIImage(named: "appclipcode_with_logo")!
     
     private func updateSubscriptions() {
         if let cancel = self.codeFetchCancel {
@@ -350,7 +385,7 @@ public struct VisualCodeView: JoliView {
                     
                     guard let urlString = urlPath?.string, let url = URL(string: urlString, relativeTo: api.baseUrlHttp) else {
                         print("X fetching code for: \(self.api.baseUrlHttp)")
-                        promise(.success(Self.SAMPLE_APPCLIP))
+                        promise(.success(SAMPLE_APPCLIP))
                         return
                     }
                     
@@ -359,21 +394,21 @@ public struct VisualCodeView: JoliView {
                     let task = self.api.urlSession.dataTask(with: url) { data, response, error in
                         if let error = error {
                             print("Error fetching: \(error)")
-                            promise(.success(Self.SAMPLE_APPCLIP))
+                            promise(.success(SAMPLE_APPCLIP))
                             return
                         }
                         
                         guard let httpResponse = response as? HTTPURLResponse,
                               (200...299).contains(httpResponse.statusCode) else {
                             print("Error fetching: bad response code \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
-                            promise(.success(Self.SAMPLE_APPCLIP))
+                            promise(.success(SAMPLE_APPCLIP))
                             return
                         }
                         
                         guard let data = data, let realImage = UIImage(data: data) else {
                             
                             print("Error fetching: unable to convert data")
-                            promise(.success(Self.SAMPLE_APPCLIP))
+                            promise(.success(SAMPLE_APPCLIP))
                             return
                         }
                         
