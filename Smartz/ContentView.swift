@@ -68,9 +68,8 @@ public struct Product: Identifiable {
 
 public struct ReorderNowView: Experience, JoliView {
     
-    public static var title: String {
-        "Re-order Now"
-    }
+    public static var title: String = "Re-order Now"
+    public static var basePath: String = "p"
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     

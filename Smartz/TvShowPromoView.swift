@@ -39,13 +39,12 @@ struct TvShowCastInfo: Codable, Identifiable {
     }
 }
 
-struct TvShowPromoView: Experience, JoliView {
+public struct TvShowPromoView: Experience, JoliView {
     
-    static var title: String {
-        "Trailer"
-    }
+    public static var title: String = "Trailer"
+    public static var basePath = "ebrand"
     
-    static var dataKeys: [PartialKeyPath<ExperienceData>] {
+    public static var dataKeys: [PartialKeyPath<ExperienceData>] {
         return [
             \ExperienceData.bannerVideoUrl,
             \ExperienceData.bannerImageUrl,
@@ -54,17 +53,17 @@ struct TvShowPromoView: Experience, JoliView {
         ]
     }
     
-    static var supportedItemTypes: Set<ExperienceItemType> {
+    public static var supportedItemTypes: Set<ExperienceItemType> {
         return [.person]
     }
     
-    @Binding var editMode: EditMode
+    @Binding public var editMode: EditMode
     
-    @EnvironmentObject var appCoordinator: AppCoordinator
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     
-    let dataModelDefault = ExperienceData.Defaults()
+    public let dataModelDefault = ExperienceData.Defaults()
     
-    @State var dataModel: ExperienceData?
+    @State public var dataModel: ExperienceData?
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Environment(\.colorScheme) var colorScheme
     @State var arrivedAt: Date? = Date()
@@ -360,7 +359,7 @@ struct TvShowPromoView: Experience, JoliView {
         }
     }
     
-    var contentView: some View {
+    public var contentView: some View {
         NavigationView(){
             ZStack(){
                 infoView

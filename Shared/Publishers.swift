@@ -14,6 +14,7 @@ import Combine
 import Starscream
 import Promises
 import CommonCrypto
+import SwiftUI
 
 extension Data {
     
@@ -951,4 +952,53 @@ public final class AutoResetSubject<Output, Failure, S>: Subject where Failure :
         passthrough.receive(subscriber: subscriber)
     }
     
+}
+
+@propertyWrapper
+public final class Debounced<T: Hashable> {
+    
+    public let delay: Double
+    
+    private let publisher: CurrentValueSubject<T, Never>
+    private var _value: T
+    public var latestValue = PassthroughSubject<T, Never>()
+    
+    public var wrappedValue: T {
+        get {
+            return _value
+        }
+        set(newValue) {
+            print("Timer called on main: \(Thread.isMainThread) - \(newValue)")
+            latestValue.send(newValue)
+        }
+    }
+    
+    public var projectedValue: AnyPublisher<T, Never> {
+        return publisher.eraseToAnyPublisher()
+    }
+    
+    private var cancel: AnyCancellable?
+    
+    deinit {
+        self.cancel?.cancel()
+        self.cancel = nil
+    }
+    
+    public init(wrappedValue: T, delay debounceDelay: Double) {
+        
+        self.delay = debounceDelay
+        self._value = wrappedValue
+        self.publisher = CurrentValueSubject<T, Never>(wrappedValue)
+        
+        self.cancel = latestValue
+            .removeDuplicates()
+            .debounce(for: .seconds(debounceDelay), scheduler: DispatchQueue.main)
+            .receive(on: DispatchQueue.main)
+            .sink(){ [weak self] value in
+                print("[Debounced] sending value: \(value) - \(self)")
+                self?._value = value
+                self?.publisher.send(value)
+            }
+        
+    }
 }

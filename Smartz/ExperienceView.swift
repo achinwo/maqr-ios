@@ -25,6 +25,8 @@ public protocol Experience {
     static var allDataKeys: [PartialKeyPath<ExperienceData>] { get }
     static var supportedItemTypes: Set<ExperienceItemType> { get }
     
+    static var basePath: String { get }
+    
     init(_ data: ExperienceData?)
 }
 
@@ -126,9 +128,8 @@ enum ViewDisplayMode {
 
 struct RestaurantView: Experience, JoliView {
     
-    static var title: String {
-        "Restaurant"
-    }
+    static var title: String = "Restaurant"
+    static var basePath = "emeal"
     
     @Binding var editMode: EditMode
     

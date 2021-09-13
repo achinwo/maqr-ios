@@ -37,7 +37,9 @@ public struct CodeDesignerView: JoliView {
     
     @Binding var selectedExperience: Experience.Type? {
         didSet {
-            self.selectedTab = 1
+            DispatchQueue.main.async {
+                self.selectedTab = 1
+            }
         }
     }
     
@@ -417,12 +419,16 @@ public struct CodeDesignerView: JoliView {
             }
             .always {
                 self.submitting = false
-                self.updateStoredExperiences()
+                self.requestStoredExperienceRefreshAt = Date()
             }
     }
     
     @State public var scrollProxy: ScrollViewProxy? = nil
     @State public var storedExperiences: [StikrExperienceData] = []
+    
+    @Debounced(delay: 0.3) public var requestStoredExperienceRefreshAt: Date? = nil
+    @Debounced(delay: 1.3) public var requestExperiencePersistAt: Date? = nil
+    
     @State public var submitting = false {
         didSet {
             self.submitEnabled = !submitting
@@ -435,6 +441,7 @@ public struct CodeDesignerView: JoliView {
         StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(on: .main){ exps in
                 self.storedExperiences = exps
+                print("[updateStoredExperiences] fetched experiences: \(exps)")
             }
             .catch(){ error in
                 print("Unable to fetch exps: \(error)")
@@ -464,7 +471,6 @@ public struct CodeDesignerView: JoliView {
             self.visualCode = visualCode.builder()
         }
         .padding(.top)
-        .onAppear(perform: self.updateStoredExperiences)
     }
     
     @State var isRefreshingHistory = false
@@ -479,7 +485,7 @@ public struct CodeDesignerView: JoliView {
                             ScrollViewReader() { proxy in
                                 //creator
                                 VStack(){
-                                    historyView.frame(idealHeight: screenHeight / 2)
+                                    historyView.frame(minHeight: screenHeight / 2)
                                     
                                     VStack(){
                                         Divider()
@@ -513,14 +519,9 @@ public struct CodeDesignerView: JoliView {
                         item.view
                     }
                 }
-                .frame(maxWidth: screenWidth)
+                .frame(width: screenWidth)
                 .tag(item.index)
                 .id("code-designer-tabview-\(item.index)")
-                .onChange(of: self.isRefreshingHistory) { refreshing in
-                    guard refreshing else {return }
-                    print("REFRESHING: \(refreshing)")
-                    self.updateStoredExperiences()
-                }
                 
                 //                    .overlay(
                 //                        VStack(){
@@ -537,6 +538,11 @@ public struct CodeDesignerView: JoliView {
                 //                    )
             }
         }
+        .onChange(of: self.isRefreshingHistory) { refreshing in
+            print("REFRESHING: \(refreshing)")
+            guard refreshing else { return }
+            self.requestStoredExperienceRefreshAt = Date()
+        }
     }
     
     public static func experienceClsByName(_ typeName: String) -> Experience.Type? {
@@ -544,7 +550,7 @@ public struct CodeDesignerView: JoliView {
     }
     
     private func onExperinceDataChanged(_ value: ExperienceData?) {
-        self.updateStoredExperience()
+        self.requestExperiencePersistAt = Date()
         self.brandName = value?.brandName ?? self.brandName
         self.landingPageText = value?.landingPageText ?? self.landingPageText
         
@@ -636,10 +642,23 @@ public struct CodeDesignerView: JoliView {
             .ifLet(self.experienceData) { view, experience in
                 view.onReceive(experience.objectWillChange) { value in
                     DispatchQueue.main.async {
-                        self.updateStoredExperience()
-                        print("[Experience#objectWillChange] updated stored experience")
+                        requestExperiencePersistAt = Date()
+                        //
                     }
                 }
+            }
+            .onReceive(self.$requestExperiencePersistAt) { persistRequestedAt in
+                guard persistRequestedAt != nil else { return }
+                self.updateStoredExperience()
+                self.requestExperiencePersistAt = nil
+            }
+            .onReceive(self.$requestStoredExperienceRefreshAt){ requestedAt in
+                print("Requested refresh: \(requestedAt)")
+                
+                guard requestedAt != nil else { return }
+                
+                self.updateStoredExperiences()
+                self.requestStoredExperienceRefreshAt = nil
             }
             .onAppear() {
                 
@@ -654,6 +673,7 @@ public struct CodeDesignerView: JoliView {
                 //            } catch {
                 //                print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
                 //            }
+                self.requestStoredExperienceRefreshAt = Date()
                 
                 defer {
                     self.selectedTab = selectedExperience == nil ? 0 : 1

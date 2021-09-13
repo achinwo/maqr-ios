@@ -152,9 +152,8 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
     
 public struct MealboxView: Experience, JoliView {
     
-    public static var title: String {
-        "Mealbox Prep"
-    }
+    public static var title: String = "Mealbox Prep"
+    public static var basePath = "ecook"
     
     @State public var dataModel: ExperienceData?
     

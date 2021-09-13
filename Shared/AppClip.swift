@@ -1001,6 +1001,7 @@ public extension AppClip {
     func onOpenUrl(url: URL){
         let prevLoc = self.coordinator.currentLocation
         self.coordinator.currentLocation = AppLocation(url) ?? self.coordinator.currentLocation
+        print("[\(Self.self)#onOpenUrl] url: \(url), previousLocation: \(prevLoc), currentLocation: \(self.coordinator.currentLocation)")
         logger.debug("[\(Self.self)#onOpenUrl] url: \(url), previousLocation: \(prevLoc), currentLocation: \(self.coordinator.currentLocation)")
     }
     
