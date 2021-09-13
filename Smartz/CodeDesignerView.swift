@@ -525,11 +525,6 @@ public struct CodeDesignerView: JoliView {
                 .frame(width: screenWidth)
                 .tag(item.index)
                 .id("code-designer-tabview-\(item.index)")
-                .onChange(of: self.isRefreshingHistory) { refreshing in
-                    guard refreshing else {return }
-                    print("REFRESHING: \(refreshing)")
-                    self.updateStoredExperiences()
-                }
                 
                 //                    .overlay(
                 //                        VStack(){
