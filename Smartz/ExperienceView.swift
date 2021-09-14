@@ -27,7 +27,6 @@ public protocol Experience {
     
     static var basePath: String { get }
     static var className: String { get }
-    static var basePath: String { get }
     
     init(_ data: ExperienceData?)
 }
