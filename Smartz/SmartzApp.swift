@@ -61,6 +61,9 @@ struct SmartzApp: AppClip {
     let videoController: VideoPlaybackController
     
     init() {
+        JoliApi.BaseUrl.defaultDevUrl = URL(staticString: "https://smartstikr.com")
+        JoliApi.BaseUrl.defaultProdUrl = URL(staticString: "https://smartstikr.com")
+        
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
         
         apnTokenPublisher = NotificationCenter.default.publisher(for: Notifications.apnToken)

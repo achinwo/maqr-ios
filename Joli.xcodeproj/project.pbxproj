@@ -723,22 +723,14 @@
 			path = JoliClip;
 			sourceTree = "<group>";
 		};
-		927E0E3424E9AD5300C8257D /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				92A32DD024C79C06007C960E /* Extensions.swift */,
-			);
-			name = Extensions;
-			sourceTree = "<group>";
-		};
 		92A32D4B24C799B7007C960E /* Shared */ = {
 			isa = PBXGroup;
 			children = (
 				92DBFB31250393500039FF4E /* Components */,
-				927E0E3424E9AD5300C8257D /* Extensions */,
 				92A32D8D24C79B3D007C960E /* Resources */,
 				92A32DAF24C79B59007C960E /* State */,
 				927E0E3524E9ADC000C8257D /* AppClip.swift */,
+				92A32DD024C79C06007C960E /* Extensions.swift */,
 				921CAFAA26B5F4F10078A394 /* YTPlayer.html */,
 				92595B4C253A1AD200609558 /* AppCoordinator.swift */,
 				92A32E2B24C7BB53007C960E /* Consts.swift */,
@@ -1715,7 +1707,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1726,7 +1718,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1742,7 +1734,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1752,7 +1744,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1767,7 +1759,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1778,7 +1770,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1793,7 +1785,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1803,7 +1795,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

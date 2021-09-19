@@ -64,6 +64,9 @@ struct SmartzClipApp: AppClip {
     @State var result: Result<MFMailComposeResult, Error>? = nil
     
     init() {
+        JoliApi.BaseUrl.defaultDevUrl = URL(staticString: "https://smartstikr.com")
+        JoliApi.BaseUrl.defaultProdUrl = URL(staticString: "https://smartstikr.com")
+        
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
         
         let coordinator = AppCoordinator()
@@ -75,6 +78,8 @@ struct SmartzClipApp: AppClip {
         let baseUrls = JoliApi.Environment.current.baseUrl
         
         self.api = JoliApi(baseUrl: baseUrls, headers: request.allHTTPHeaderFields ?? [:])
+        print("[\(Self.self)] baseUrls: \(baseUrls) - \(JoliApi.Environment.current)")
+        
         self.coordinator.api = api
     }
     
@@ -87,7 +92,7 @@ struct SmartzClipApp: AppClip {
                     JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                 } else if case let AppLocation.product(storeId, _) = currentLocation,
                           storeId.lowercased() == "shows" {
-                    TvShowPromoView()
+                    TvShowPromoView(crazyworldDemo)
                 } else {
                     SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                 }

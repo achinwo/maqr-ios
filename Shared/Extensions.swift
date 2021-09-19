@@ -29,24 +29,6 @@ import UIImageColors
 public typealias Color = SwiftUI.Color
 public typealias View = SwiftUI.View
 
-public typealias MultilineString = String
-
-
-public extension String {
-    func count(of needle: Character) -> Int {
-        return reduce(0) {
-            $1 == needle ? $0 + 1 : $0
-        }
-    }
-}
-
-public extension URL {
-    
-    init(staticString: StaticString){
-        self.init(string: "\(staticString)")!
-    }
-}
-
 public extension View {
     
     func snapshot(_ backgroundColor: Color = .clear) -> UIImage {
