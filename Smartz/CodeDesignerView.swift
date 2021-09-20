@@ -603,6 +603,7 @@ public struct CodeDesignerView: JoliView {
                                 .foregroundColor(.secondaryLabel)
                         }
                     }
+                    .id(selectedTab)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {

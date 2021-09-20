@@ -162,7 +162,11 @@ public struct MealboxView: Experience, JoliView {
     @State public var editMode: EditMode
     
     public static var dataKeys: [PartialKeyPath<ExperienceData>] {
-        return []
+        return [
+            \ExperienceData.bannerImageUrl,
+            \ExperienceData.socialInstagramUsername,
+            \ExperienceData.productImageUrl,
+        ]
     }
     
     public static var supportedItemTypes: Set<ExperienceItemType> {

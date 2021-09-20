@@ -256,6 +256,9 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Background Image", description = "Default background image for your brand", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/bg_light.jpg")"
     @Published var backgroundImageUrl: URL?
     
+    // sourcery: title = "Product Image", description = "Your product image", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/devialet_phantom.png")"
+    @Published var productImageUrl: URL?
+    
     // sourcery: title = "Brand Name", description = "Name of your company or brand", default = ""Your Brand""
     @Published var brandName: String
     
@@ -346,6 +349,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         bannerImageUrl = try container.decode(URL?.self, forKey: .bannerImageUrl)
         bannerVideoUrl = try container.decode(URL?.self, forKey: .bannerVideoUrl)
         backgroundImageUrl = try container.decode(URL?.self, forKey: .backgroundImageUrl)
+        productImageUrl = try container.decode(URL?.self, forKey: .productImageUrl)
         brandName = try container.decode(String.self, forKey: .brandName)
         landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
         socialInstagramUsername = try container.decode(String?.self, forKey: .socialInstagramUsername)
