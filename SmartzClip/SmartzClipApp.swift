@@ -64,6 +64,7 @@ struct SmartzClipApp: AppClip {
     @State var result: Result<MFMailComposeResult, Error>? = nil
     
     init() {
+        //let a = AttributedString()
         JoliApi.BaseUrl.defaultDevUrl = URL(staticString: "https://smartstikr.com")
         JoliApi.BaseUrl.defaultProdUrl = URL(staticString: "https://smartstikr.com")
         
@@ -78,7 +79,7 @@ struct SmartzClipApp: AppClip {
         let baseUrls = JoliApi.Environment.current.baseUrl
         
         self.api = JoliApi(baseUrl: baseUrls, headers: request.allHTTPHeaderFields ?? [:])
-        print("[\(Self.self)] baseUrls: \(baseUrls) - \(JoliApi.Environment.current)")
+        print("[\(Self.self)] isAppClip: \(Self.isAppclip)")
         
         self.coordinator.api = api
     }

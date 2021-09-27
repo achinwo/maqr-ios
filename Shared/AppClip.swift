@@ -368,7 +368,7 @@ public protocol JoliView: View {
 public extension JoliView {
     
     func presentToast(_ title: String, subTitle: String? = nil,
-                      custom: AlertToast.AlertCustom? = nil,
+                      //custom: AlertCustom? = nil,
                       type: AlertToast.AlertType,
                       displayMode: AlertToast.DisplayMode = .alert,
                       duration: Double = 2,
@@ -378,8 +378,9 @@ public extension JoliView {
         let alertToast = AlertToast(displayMode: displayMode,
                                     type: type,
                                     title: title,
-                                    subTitle: subTitle,
-                                    custom: custom)
+                                    subTitle: subTitle
+        //                            custom: custom
+        )
         appCoordinator.globalToastInfo.send((alertToast, onDismiss))
     }
     

@@ -78,7 +78,6 @@
 		922989AC26491F0D00FDD58F /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989AB26491F0D00FDD58F /* MailView.swift */; };
 		922989AD26491F0E00FDD58F /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989AB26491F0D00FDD58F /* MailView.swift */; };
 		922989AE26491F0E00FDD58F /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989AB26491F0D00FDD58F /* MailView.swift */; };
-		922989B02649208A00FDD58F /* GradientLoadingBar in Frameworks */ = {isa = PBXBuildFile; productRef = 922989AF2649208A00FDD58F /* GradientLoadingBar */; };
 		922BFD33263757F8007CAF36 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 922BFD32263757F8007CAF36 /* AlertToast */; };
 		923BD58E25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
 		923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
@@ -256,6 +255,7 @@
 		92DD6554267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
 		92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
+		92E62CFF2701D169002008A0 /* GradientLoadingBar in Frameworks */ = {isa = PBXBuildFile; productRef = 92E62CFE2701D169002008A0 /* GradientLoadingBar */; };
 		92ECCEDD26C0543F009A2B75 /* MyExperiencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92ECCEDC26C0543F009A2B75 /* MyExperiencesView.swift */; };
 		92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE3CD2619394000688802 /* SFSafeSymbols */; };
 		92EDE41026193AD500688802 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE40F26193AD500688802 /* Kingfisher */; };
@@ -581,8 +581,8 @@
 				92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */,
 				923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */,
 				922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */,
-				922989B02649208A00FDD58F /* GradientLoadingBar in Frameworks */,
 				9217905226C9A3B2009FC4CE /* LetterAvatarKit in Frameworks */,
+				92E62CFF2701D169002008A0 /* GradientLoadingBar in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1077,8 +1077,8 @@
 			name = "Joli (iOS)";
 			packageProductDependencies = (
 				92EDE3CD2619394000688802 /* SFSafeSymbols */,
-				922989AF2649208A00FDD58F /* GradientLoadingBar */,
 				9217905126C9A3B2009FC4CE /* LetterAvatarKit */,
+				92E62CFE2701D169002008A0 /* GradientLoadingBar */,
 			);
 			productName = "Joli (iOS)";
 			productReference = 92A32D5324C799B8007C960E /* Joli.app */;
@@ -1232,12 +1232,12 @@
 				925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */,
 				923C2B0224CC7506009E2380 /* XCRemoteSwiftPackageReference "PartialSheet" */,
 				9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */,
-				927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */,
 				921BA25B253E03B4007C2FE0 /* XCRemoteSwiftPackageReference "Sourceful" */,
 				92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 				922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */,
 				920CE8BE2662AD90008F9EAB /* XCRemoteSwiftPackageReference "M13Checkbox" */,
 				921F6C2C26BB28090061D236 /* XCRemoteSwiftPackageReference "QRCode" */,
+				92E62CFD2701D169002008A0 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1713,7 +1713,7 @@
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Smartz/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1739,7 +1739,7 @@
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Smartz/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1765,7 +1765,7 @@
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SmartzClip/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1773,6 +1773,7 @@
 				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG APPCLIP";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -1790,7 +1791,7 @@
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SmartzClip/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1798,6 +1799,7 @@
 				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APPCLIP;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -2202,7 +2204,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = SharedUI/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2230,7 +2232,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = SharedUI/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2520,14 +2522,6 @@
 				minimumVersion = 1.2.0;
 			};
 		};
-		927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/fxm90/GradientLoadingBar.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.1.0;
-			};
-		};
 		929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vpeschenkov/LetterAvatarKit.git";
@@ -2558,6 +2552,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.14.0;
+			};
+		};
+		92E62CFD2701D169002008A0 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/fxm90/GradientLoadingBar";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.1;
 			};
 		};
 		92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
@@ -2594,11 +2596,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 921F6C2C26BB28090061D236 /* XCRemoteSwiftPackageReference "QRCode" */;
 			productName = QRCode;
-		};
-		922989AF2649208A00FDD58F /* GradientLoadingBar */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 927DD09725263C92005BAAF7 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */;
-			productName = GradientLoadingBar;
 		};
 		922BFD32263757F8007CAF36 /* AlertToast */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -2662,6 +2659,11 @@
 		92CC32AF26E55B6200178465 /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
+		};
+		92E62CFE2701D169002008A0 /* GradientLoadingBar */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92E62CFD2701D169002008A0 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */;
+			productName = GradientLoadingBar;
 		};
 		92EDE3CD2619394000688802 /* SFSafeSymbols */ = {
 			isa = XCSwiftPackageProductDependency;
