@@ -9,7 +9,7 @@
 import SwiftUI
 import Combine
 import struct NetworkImage.NetworkImageLoader
-
+import enum NetworkImage.NetworkImageError
 
 #if os(macOS)
 extension UIImage {
@@ -85,9 +85,30 @@ public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
     
     @State public var imageSubscription: AnyCancellable? = nil
     
+//    private func loadFile(_ url: URL) -> AnyPublisher<UIImage, Error> {
+//        Deferred(){
+//            return Future<UIImage, Error>{ promise in
+//                DispatchQueue.global(qos: .background).async() {
+//                    do {
+//                        let imageData = try Data(contentsOf: url)
+//
+//                        guard let img = UIImage(data: imageData) else {
+//                            promise(.failure(NetworkImageError.invalidData(imageData)))
+//                            return
+//                        }
+//
+//                        promise(.success(img))
+//                    } catch {
+//                        promise(.failure(error))
+//                    }
+//                }
+//            }
+//        }.eraseToAnyPublisher()
+//    }
+    
     private func loadImage() {
         guard let imageURL = imageURL, image == nil else { return }
-        
+        //(imageURL.isFileURL ? self.loadFile(imageURL) :
         self.imageSubscription = appCoordinator.imageLoader.image(for: imageURL)
             .receive(on: DispatchQueue.main)
             .sink(){ completion in

@@ -722,6 +722,17 @@ public struct CodeDesignerView: JoliView {
                 expData.bannerImageUrl = rewriteCachesUrl(exp.experienceData.bannerImageUrl)
                 expData.bannerVideoUrl = rewriteCachesUrl(exp.experienceData.bannerVideoUrl)
                 expData.backgroundImageUrl = rewriteCachesUrl(exp.experienceData.backgroundImageUrl)
+                expData.productImageUrl = rewriteCachesUrl(exp.experienceData.productImageUrl)
+                
+                expData.items = expData.items.map() { item -> ExperienceData.Item in
+                    guard let imageUrl = item.imageName, let url = URL(string: imageUrl) else {
+                        return item
+                    }
+                    
+                    var newItem = item
+                    newItem.imageName = rewriteCachesUrl(url)?.absoluteString
+                    return newItem
+                }
                 
                 self.experienceData = expData
                 self.onExperinceDataChanged(expData)

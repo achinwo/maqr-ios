@@ -163,21 +163,10 @@ public struct ExperienceDataView: JoliView {
         return experienceType.allDataKeys.compactMap() { $0.meta }
     }
     
-    //@State var image: UIImage? = nil
-    
-    func imagePickerFrom(meta: ExperienceDataKeyPath.Metadata) -> some View {
-        //print("[imagePickerFrom] \(meta.name) - \(data[keyPath: meta.keypath] as? URL)")
-        
-        let imageCallback = { (img: UIImage?, imgName: String?, error: Error?) in
-            print("image: \(String(describing: img)), error: \(String(describing: error))")
-            
-            guard let keyPath = meta.keypath as? ReferenceWritableKeyPath<ExperienceData, URL?> else {
-                print("Unable to produce writeable keypath for: \(meta)")
-                return
-            }
+    public func createImageCb(_ setter: @escaping (URL) -> Void) -> (UIImage?, String?, Error?) -> Void {
+        return { (img: UIImage?, imgName: String?, error: Error?) in
             
             guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
-                
                 return
             }
             
@@ -196,8 +185,16 @@ public struct ExperienceDataView: JoliView {
             print("Wrote image to caches dir: \(cacheUrl) [isLocal=\(cacheUrl.isFileURL)]")
             
             DispatchQueue.main.async {
-                self.data[keyPath: keyPath] = cacheUrl
+                setter(cacheUrl)
             }
+        }
+    }
+    
+    func imagePickerFrom(meta: ExperienceDataKeyPath.Metadata) -> some View {
+        
+        let imageCallback = self.createImageCb() { url in
+            guard let keyPath = meta.keypath as? ReferenceWritableKeyPath<ExperienceData, URL?> else { return }
+            self.data[keyPath: keyPath] = url
         }
         
         return HStack(){
@@ -239,14 +236,22 @@ public struct ExperienceDataView: JoliView {
     
     public func itemTypeSectionItemView(_ element: ExperienceData.Item, index: Int) -> some View {
         
+        let setter = { (newValue: String, keyPath: WritableKeyPath<ExperienceData.Item, String?>) in
+            var element = element
+            element[keyPath: keyPath] = newValue
+            data.items = data.items.filter({ $0.id != element.id }) + [element]
+        }
+        
         let makeBinding = { (item: ExperienceData.Item, keyPath: WritableKeyPath<ExperienceData.Item, String?>) -> Binding<String> in
-            var item = item
             return Binding<String>(){
-                return item[keyPath: keyPath] ?? .empty
+                return element[keyPath: keyPath] ?? .empty
             } set: { newValue in
-                item[keyPath: keyPath] = newValue
-                data.items = data.items.filter({ $0.id != item.id }) + [item]
+                setter(newValue, keyPath)
             }
+        }
+        
+        let onSelected = self.createImageCb() { url in
+            setter(url.absoluteString, \ExperienceData.Item.imageName)
         }
         
         return HStack(){
@@ -259,23 +264,12 @@ public struct ExperienceDataView: JoliView {
                     Spacer()
                 }
             } else {
-                ImageView(urlString: element.imageName, isCircular: false, onSelected: nil) { (image, imgName, error) in
+                ImageView(urlString: element.imageName, isCircular: false, onSelected: onSelected) { (image, imgName, error) in
                     
                 } content: {
                     EmptyView()
                 }
                 .frame(width: screenWidth / 5, height: screenWidth / 5)
-                .overlay(
-                    Group() {
-                        if isUploadingImage {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .foregroundColor(.primary)
-                        } else {
-                            EmptyView()
-                        }
-                    }
-                )
             }
             
             VStack(alignment: .leading){
