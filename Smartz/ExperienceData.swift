@@ -170,7 +170,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     public struct Item: ExperienceDataItem, Identifiable, Comparable, Equatable {
         
         public static func < (lhs: ExperienceData.Item, rhs: ExperienceData.Item) -> Bool {
-            lhs.id.hashValue < rhs.id.hashValue
+            lhs.id.hashValue > rhs.id.hashValue
         }
         
         public var experienceItemType: ExperienceItemType

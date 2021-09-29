@@ -586,11 +586,11 @@ public struct CodeDesignerView: JoliView {
                     if selectedTab > 0 {
                         VStack(alignment: .leading) {
                             Text(tabNames[selectedTab])
-                                .font(.headline).fixedSize(horizontal: true, vertical: false)
+                                .font(.headline)
                             Text("Step \(selectedTab + 1) of \(tabNames.count)")
                                 .font(.subheadline)
                                 .foregroundColor(.secondaryLabel)
-                                .font(.headline).fixedSize(horizontal: true, vertical: false)
+                                .font(.headline)
                         }
                     } else {
                         EmptyView()
@@ -607,6 +607,7 @@ public struct CodeDesignerView: JoliView {
                                 .foregroundColor(.secondaryLabel)
                         }
                     }
+                    .frame(minWidth: screenWidth / 1.5)
                     .id(selectedTab)
                 }
                 
