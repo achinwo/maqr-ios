@@ -147,6 +147,9 @@ struct SmartzApp: AppClip {
                         }
                     }
                 }
+                .ifLet(self.alertInfo) { view, alert in
+                    view.alert(isPresented: self.$isActionSheetPresented) { return alert }
+                }
             )
 //            .overlay(
 //                GeometryReader(){ proxy in
@@ -159,10 +162,6 @@ struct SmartzApp: AppClip {
 //                }
 //            )
             .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
-            .onReceive(coordinator.globalAlertSubject) { alertInfo in
-                self.alertInfo = alertInfo
-                self.isActionSheetPresented = true
-            }
             .onReceive(coordinator.globalAlertSubject) { alertInfo in
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true

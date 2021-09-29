@@ -9,6 +9,8 @@
 import SwiftUI
 import SharedUI
 import CoreML
+import JoliCore
+
 // Don't forget to add to the project:
 // 1. DeepLabV3 - https://developer.apple.com/machine-learning/models/
 // 2. CoreMLHelpers - https://github.com/hollance/CoreMLHelpers
@@ -181,15 +183,9 @@ public struct ExperienceDataView: JoliView {
             
             let ext = URL(fileURLWithPath: imgName ?? "image.jpg").pathExtension.lowercased()
             let cacheFilename = "\(UUID().uuidString).\(ext)"
-            //let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
             let cacheUrl = cachesDirectory.appendingPathComponent(cacheFilename)
             
-//            guard let image = img?.resizeImage(CGSize(width: 640, height: 640)), error == nil else {
-//                return
-//            }
-            
             let data = ext == "png" ? img?.pngData() : img?.jpegData(compressionQuality: 0.8)
-            print("[imageCallback] name: \(imgName), ext: \(ext)")
             
             guard let imgageData = data, error == nil else {
                 return
@@ -202,29 +198,6 @@ public struct ExperienceDataView: JoliView {
             DispatchQueue.main.async {
                 self.data[keyPath: keyPath] = cacheUrl
             }
-            
-//            isUploadingImage = true
-//
-//            self.api.upload(image)
-//                .then() { (res: URL) in
-//                    print("Result: \(res.absoluteString)")
-//
-//                    let imageUrl = URL(string: "/images/\(res.lastPathComponent)", relativeTo: appCoordinator.api.baseUrlHttp)
-//
-//                    guard let keyPath = meta.keypath as? ReferenceWritableKeyPath<ExperienceData, URL?> else {
-//                        print("Unable to produce writeable keypath for: \(meta)")
-//                        return
-//                    }
-//
-//                    self.data[keyPath: keyPath] = imageUrl
-//                    //print("Updated \(meta.name): \(self.data[keyPath: keyPath])")
-//                }
-//                .catch { error in
-//                    print("uploadImage: \(error)")
-//                }
-//                .always() {
-//                    isUploadingImage = false
-//                }
         }
         
         return HStack(){
@@ -263,6 +236,101 @@ public struct ExperienceDataView: JoliView {
     @State var fieldSizeYt: CGSize = .zero
     
     @Environment(\.safeAreaInsets) var safeAreaInsets
+    
+    public func itemTypeSectionItemView(_ element: ExperienceData.Item, index: Int) -> some View {
+        
+        let makeBinding = { (item: ExperienceData.Item, keyPath: WritableKeyPath<ExperienceData.Item, String?>) -> Binding<String> in
+            var item = item
+            return Binding<String>(){
+                return item[keyPath: keyPath] ?? .empty
+            } set: { newValue in
+                item[keyPath: keyPath] = newValue
+                data.items = data.items.filter({ $0.id != item.id }) + [item]
+            }
+        }
+        
+        return HStack(){
+            
+            if element.experienceItemType.isNumbered {
+                VStack(alignment: .leading){
+                    Text("\(index + 1).")
+                        .font(.headline.weight(.light))
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+            } else {
+                ImageView(urlString: element.imageName, isCircular: false, onSelected: nil) { (image, imgName, error) in
+                    
+                } content: {
+                    EmptyView()
+                }
+                .frame(width: screenWidth / 5, height: screenWidth / 5)
+                .overlay(
+                    Group() {
+                        if isUploadingImage {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .foregroundColor(.primary)
+                        } else {
+                            EmptyView()
+                        }
+                    }
+                )
+            }
+            
+            VStack(alignment: .leading){
+                TextField("Title", text: makeBinding(element, \.title))
+                TextField("Subtitle", text: makeBinding(element, \.subtitle))
+                Spacer()
+            }
+        }
+        .overlay(HStack(){
+            Spacer()
+            Button(){
+                self.appCoordinator.withAlert("Remove \(element.experienceItemType.label) Item?", message: "Permanent delete this item", destructive: true, label: "Remove") {
+                    self.data.items = self.data.items.filter() { $0.id != element.id }
+                }
+            } label: {
+                Image(systemName: "minus")
+            }
+            .frame(width: 24, height: 24)
+            .backgroundColor(.red.opacity(0.7))
+            .foregroundColor(.fixedWhite)
+            .font(.body.weight(.bold))
+            .clipShape(Circle())
+        })
+        .id(element.id)
+    }
+    
+    public func itemTypeSectionView(_ expItemType: ExperienceItemType) -> some View {
+        
+        let header = HStack(){
+            Text(expItemType.label)
+            Spacer()
+            
+        }
+        
+        let items = Array(data.items.filter({ $0.experienceItemType == expItemType }))
+        
+        return Section(header: header) {
+            
+            ForEach(Array(items.sorted().enumerated()), id: \.element.id){ itm in
+                self.itemTypeSectionItemView(itm.element, index: itm.offset)
+            }
+            
+            Button(){
+                print("Adding Item...")
+                let itm: ExperienceData.Item = ExperienceData.Item(experienceItemType: expItemType, identifier: nil)
+                self.data.items.append(itm)
+            } label: {
+                HStack(){
+                    Spacer()
+                    Label("Add \(expItemType.label.capitalized)", systemImage: "plus")
+                    Spacer()
+                }
+            }
+        }
+    }
     
     public var contentView: some View {
         Form() {
@@ -331,6 +399,10 @@ public struct ExperienceDataView: JoliView {
                     self.imagePickerFrom(meta: bgMeta)
                 }
                 
+                if let prodctMeta = allDataKeys.first(keypath: \ExperienceData.productImageUrl) {
+                    self.imagePickerFrom(meta: prodctMeta)
+                }
+                
             }
             
             if let bannerVideoMeta = allDataKeys.first(keypath: \ExperienceData.bannerVideoUrl) {
@@ -396,6 +468,11 @@ public struct ExperienceDataView: JoliView {
                         }
                     )
                 }
+            }
+            
+            let items = Array(experienceType.supportedItemTypes).sorted(by: { $0.rawValue < $1.rawValue }).filter({ $0 != ExperienceItemType.menuFoodNutrition })
+            ForEach(items) { expItemType in
+                self.itemTypeSectionView(expItemType)
             }
             
 //            Section(footer: Text("Note: Enabling logging may slow down the app")) {

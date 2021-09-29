@@ -156,8 +156,8 @@ public final class AppCoordinator: ObservableObject {
         }
     }
     
-    public func withAlert(_ title: String, message: String? = nil, dismissLabel: String? = nil,
-                          dismissAction: (() -> Void)? = nil, label: String? = nil, destructive: Bool = false, action: @escaping () -> Void = {}) {
+    public func withAlert(_ title: String, message: String? = nil, destructive: Bool = false, dismissLabel: String? = nil, label: String? = nil,
+                          dismissAction: (() -> Void)? = nil, action: @escaping () -> Void = {}) {
         
         var messageTxt: Text? = nil
         
@@ -194,8 +194,12 @@ public final class AppCoordinator: ObservableObject {
         self.globalAlertSubject.send(alert)
     }
     
+    public func withAlert(_ title: String, message: String? = nil, destructive: Bool = false, dismissLabel: String? = nil, label: String? = nil, action: @escaping () -> Void = {}) {
+        self.withAlert(title, message: message, destructive: destructive, dismissLabel: dismissLabel, label: label, dismissAction: nil, action: action)
+    }
+    
     public func withAlert(_ title: String, message: String? = nil, dismissLabel: String, action: @escaping () -> Void) {
-        self.withAlert(title, message: message, dismissLabel: dismissLabel, dismissAction: action, label: nil)
+        self.withAlert(title, message: message, dismissLabel: dismissLabel, label: nil, dismissAction: action)
     }
     
     public func authorizeSpotify(){

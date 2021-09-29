@@ -12,6 +12,12 @@ import JoliCore
 import Combine
 import Promises
 
+extension ExperienceItemType: Identifiable {
+    public var id: String {
+        return self.rawValue
+    }
+}
+
 public protocol Experience {
     //associatedtype Model: ExperienceData
     var dataModel: ExperienceData? { get nonmutating set }

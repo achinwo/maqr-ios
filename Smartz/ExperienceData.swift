@@ -112,6 +112,38 @@ extension StikrExperienceDataItem: ExperienceDataItem {
     
 }
 
+extension ExperienceItemType {
+    
+    var label: String {
+        switch self {
+            case .mealPrepStep:
+                return "Preparation Step"
+            case .menuFoodNutrition:
+                return "Nutritional Info"
+            case .mealPrepIngredient:
+                return "Ingredient"
+            case .menuDrinkItem:
+                return "Drink"
+            case .person:
+                return "Person"
+            case .profileSkill:
+                return "Skill"
+            case .menuFoodItem:
+                return "Food Item"
+        }
+    }
+    
+    var isNumbered: Bool {
+        switch self {
+            case .mealPrepStep:
+                return true
+            default:
+                return false
+        }
+    }
+    
+}
+
 public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable {
     
     lazy var jsonEncoder: JSONEncoder = {
@@ -135,7 +167,12 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     public typealias PersistedType = StikrExperienceData
     
-    public struct Item: ExperienceDataItem {
+    public struct Item: ExperienceDataItem, Identifiable, Comparable, Equatable {
+        
+        public static func < (lhs: ExperienceData.Item, rhs: ExperienceData.Item) -> Bool {
+            lhs.id.hashValue < rhs.id.hashValue
+        }
+        
         public var experienceItemType: ExperienceItemType
         public var aliasTitle: String?
         public var caution: String?
@@ -149,6 +186,8 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         public var subtitle: String?
         public var title: String?
         public var identifier: Int?
+        
+        public var id: UUID = UUID()
     }
     
 //    public var json: Json {
