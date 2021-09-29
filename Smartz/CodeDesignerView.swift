@@ -87,138 +87,141 @@ public struct CodeDesignerView: JoliView {
         return names
     }
     
-    var pickExperienceView: some View {
-        VStack(){
-            ForEach(products) { product in
+    func productView(_ product: Product) -> some View {
+        let onTap: () -> Void = {
+            guard !product.isComingSoon else {
+                return
+            }
+            
+            self.selectedExperience = product.experienceCls
+            
+            guard let expData = experienceData else { return }
+            
+            expData.uuid = nil
+            expData.stored = nil
+        }
+        
+        let productBody = VStack(alignment: .leading){
+            Text(product.name)
+                .font(.body.weight(.semibold))
+                .foregroundColor(.primary)
+                .lineLimit(4)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                //.padding(.bottom, 1)
+            
+            Text(product.description).font(.caption).padding(.top, 1).foregroundColor(.secondaryLabel)
+            
+            HStack(){
+                Label(product.companyName, systemImage: "building.2.crop.circle")
+                    .font(.caption)
+                    .lineLimit(1)
+                    .foregroundColor(.tertiaryLabel)
+                    .fixedSize(horizontal: true, vertical: true)
+                Label(product.companyDescription, systemImage: "tag")
+                    .font(.caption2)
+                    .lineLimit(1)
+                    .foregroundColor(.tertiaryLabel)
+                    .fixedSize(horizontal: true, vertical: true)
+            }
+            .padding(.top, 2)
+            
+        }
+         
+        return VStack(alignment: .leading, spacing: .zero){
+            
+            HStack(alignment: .top){
                 
-                let onTap: () -> Void = {
+                
+                Button(){
                     guard !product.isComingSoon else {
                         return
                     }
                     
-                    self.selectedExperience = product.experienceCls
-                    
-                    guard let expData = experienceData else { return }
-                    
-                    expData.uuid = nil
-                    expData.stored = nil
-                }
-                
-                VStack(alignment: .leading, spacing: .zero){
-                    
-                    HStack(alignment: .top){
-                        
-                        
-                        Button(){
-                            guard !product.isComingSoon else {
-                                return
-                            }
-                            
-                            appCoordinator.dismissKeyboard()
-                            appCoordinator.currentLocation = product.location
-                        } label: {
-                            VStack(){
-                                Group(){
-                                    if let name = product.companyLogoName {
-                                        Image(name)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                    } else {
-                                        let iconName = product.iconName ?? "calendar.circle.fill"
-                                        Image(systemName: iconName)
-                                            .resizable()
-                                            .renderingMode(.original)
-                                            .aspectRatio(contentMode: .fill)
-                                            .font(.title3)
-                                            .if(iconName != "calendar.circle.fill") { view in
-                                                view.padding()
-                                            }
-                                            .if(iconName == "calendar.circle.fill") { view in
-                                                view.padding(-10)
-                                            }
+                    appCoordinator.dismissKeyboard()
+                    appCoordinator.currentLocation = product.location
+                } label: {
+                    VStack(){
+                        Group(){
+                            if let name = product.companyLogoName {
+                                Image(name)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                            } else {
+                                let iconName = product.iconName ?? "calendar.circle.fill"
+                                Image(systemName: iconName)
+                                    .resizable()
+                                    .renderingMode(.original)
+                                    .aspectRatio(contentMode: .fill)
+                                    .font(.title3)
+                                    .if(iconName != "calendar.circle.fill") { view in
+                                        view.padding()
                                     }
-                                }
-                                .frame(width: 64, height: 64)
-                                .background(Color.fixedWhite)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                
-                                Text(product.isComingSoon ? "Coming Soon" : "Try It!")
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                    .font(product.isComingSoon ? .caption2 : .subheadline.weight(.semibold))
-                                    .foregroundColor(product.isComingSoon ? .secondaryLabel : .blue)
-                                    .fixedSize(horizontal: true, vertical: true)
-                                    .padding(.vertical, 4)
-                                //.background(Color.secondarySystemGroupedBackground)
+                                    .if(iconName == "calendar.circle.fill") { view in
+                                        view.padding(-10)
+                                    }
                             }
-                            //.clipShape(RoundedRectangle(cornerRadius: 32))
                         }
-                        .disabled(product.isComingSoon)
-                        .padding(.leading, 2)
+                        .frame(width: 64, height: 64)
+                        .background(Color.fixedWhite)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                         
-                        
-                        
-                        VStack(alignment: .leading){
-                            Text(product.name)
-                                .font(.body.weight(.semibold))
-                                .foregroundColor(.primary)
-                                .lineLimit(4)
-                                .multilineTextAlignment(.leading)
-                                .fixedSize(horizontal: false, vertical: true)
-                            //.padding(.bottom, 1)
-                            
-                            Text(product.description).font(.caption).padding(.top, 1).foregroundColor(.secondaryLabel)
-                            
-                            HStack(){
-                                Label(product.companyName, systemImage: "building.2.crop.circle")
-                                    .font(.caption)
-                                    .lineLimit(1)
-                                    .foregroundColor(.tertiaryLabel)
-                                    .fixedSize(horizontal: true, vertical: true)
-                                Label(product.companyDescription, systemImage: "tag")
-                                    .font(.caption2)
-                                    .lineLimit(1)
-                                    .foregroundColor(.tertiaryLabel)
-                                    .fixedSize(horizontal: true, vertical: true)
-                            }
-                            .padding(.top, 2)
-                            
-                        }
-                        
-                        Spacer()
+                        Text(product.isComingSoon ? "Coming Soon" : "Try It!")
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .font(product.isComingSoon ? .caption2 : .subheadline.weight(.semibold))
+                            .foregroundColor(product.isComingSoon ? .secondaryLabel : .blue)
+                            .fixedSize(horizontal: true, vertical: true)
+                            .padding(.vertical, 4)
+                            //.background(Color.secondarySystemGroupedBackground)
                     }
+                        //.clipShape(RoundedRectangle(cornerRadius: 32))
                 }
-                .padding(4)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.green.opacity(product.experienceCls == selectedExperience && experienceData?.uuid == nil ? 0.6 : 0), lineWidth: 1)
-                )
-                .onTapGesture(perform: onTap)
-                .overlay(
-                    HStack(){
-                        Spacer()
-                        
-                        VStack(){
-                            let isActive = product.experienceCls == selectedExperience && experienceData?.uuid == nil
-                            
-                            Button() {
-                                onTap()
-                            } label: {
-                                Image(systemName: isActive ? "checkmark.circle.fill" : "circle.dashed")
-                                    .foregroundColor(isActive ? .green : Color.secondaryLabel)
-                                    .padding(.horizontal)
-                                    .font(.title.weight(.light))
-                                    .scaleEffect(x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1)
-                                    .animation(.easeInOut)
-                            }
-                            .disabled(!isActive)
-                            
-                            Spacer()
-                        }
+                .disabled(product.isComingSoon)
+                .padding(.leading, 2)
+                
+                productBody
+                
+                Spacer()
+            }
+        }
+        .padding(4)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.green.opacity(product.experienceCls == selectedExperience && experienceData?.uuid == nil ? 0.6 : 0), lineWidth: 1)
+        )
+        .onTapGesture(perform: onTap)
+        .overlay(
+            HStack(){
+                Spacer()
+                
+                VStack(){
+                    let isActive = product.experienceCls == selectedExperience && experienceData?.uuid == nil
+                    
+                    Button() {
+                        onTap()
+                    } label: {
+                        Image(systemName: isActive ? "checkmark.circle.fill" : "circle.dashed")
+                            .foregroundColor(isActive ? .green : Color.secondaryLabel)
+                            .padding(.horizontal)
+                            .font(.title.weight(.light))
+                            .scaleEffect(x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1)
+                            .animation(.easeInOut)
                     }
-                    .opacity(product.isComingSoon ? 0 : 1)
-                )
+                    .disabled(!isActive)
+                    
+                    Spacer()
+                }
+            }
+            .opacity(product.isComingSoon ? 0 : 1)
+        )
+    }
+    
+    var pickExperienceView: some View {
+        VStack(){
+            ForEach(products) { product in
+                self.productView(product)
             }
             Spacer()
         }
@@ -583,10 +586,11 @@ public struct CodeDesignerView: JoliView {
                     if selectedTab > 0 {
                         VStack(alignment: .leading) {
                             Text(tabNames[selectedTab])
-                                .font(.headline)
+                                .font(.headline).fixedSize(horizontal: true, vertical: false)
                             Text("Step \(selectedTab + 1) of \(tabNames.count)")
                                 .font(.subheadline)
                                 .foregroundColor(.secondaryLabel)
+                                .font(.headline).fixedSize(horizontal: true, vertical: false)
                         }
                     } else {
                         EmptyView()

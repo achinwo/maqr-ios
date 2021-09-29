@@ -14,6 +14,8 @@ import SwiftUI
 import Promises
 import Version
 import AlertToast
+import struct NetworkImage.NetworkImageLoader
+import struct NetworkImage.NetworkImageCache
 
 #if !os(macOS)
 import PartialSheet
@@ -37,6 +39,19 @@ public final class AppCoordinator: ObservableObject {
     public var api: JoliApi!
     public var serverLogDestination: ServerDestination? = nil
     private var cancellableSet: Set<AnyCancellable> = []
+    
+    lazy var imageLoader: NetworkImageLoader = {
+        let memoryCapacity = 10 * 1024 * 1024
+        let diskCapacity = 100 * 1024 * 1024
+        
+        let configuration = api.urlSession.configuration
+        
+        configuration.requestCachePolicy = .returnCacheDataElseLoad
+        configuration.urlCache = URLCache(memoryCapacity: memoryCapacity, diskCapacity: diskCapacity)
+        configuration.httpAdditionalHeaders = ["Accept": "image/*"]
+        
+        return NetworkImageLoader(urlSession: URLSession(configuration: configuration), imageCache: NetworkImageCache())
+    }()
     
     @Published public var isSearching: Search.Category = []
     @Published public var isSharePresented = false
@@ -98,6 +113,9 @@ public final class AppCoordinator: ObservableObject {
     
     public let pendingSpotifyAuthCallback = CurrentValueSubject<((Bool) -> Void)?, Never>(nil)
     
+    @Published public var localPlayRequested: (track: Playable, positionMs: Int?, contentOffset: ContentOffset?)? = nil
+    @Published public var connectionStateSubject: CurrentValueSubject<(state: ConnectionState, changedAt: Date?), Never> = CurrentValueSubject((.stopped, nil))
+    
     @Published public var activeSessionToken: String? = nil {
         didSet {
             self.authSubject.send(activeAuth)
@@ -118,6 +136,11 @@ public final class AppCoordinator: ObservableObject {
     @Published public var pendingTrackChoice: (category: Search.Category, callback: (Playable) -> Void)? = nil
     
     public var appViewScrollPosition = PassthroughSubject<ScrollPosition, Never>()
+    
+    @Published public var mailOptions: MailView.Options? = nil
+    @Published var refreshingDevices = false
+    
+    private var localPlaybackConnect: (deferred: Deferred<Future<ConnectionState, Error>>, createdAt: Date)? = nil
     
     //public let playRequestedSubject = CurrentValueSubject([:] as [AppPreview: ])
     
@@ -220,8 +243,6 @@ public final class AppCoordinator: ObservableObject {
             }
     }
     
-    private var localPlaybackConnect: (deferred: Deferred<Future<ConnectionState, Error>>, createdAt: Date)? = nil
-    
     @Published var localPlaybackConnectRequest: Future<ConnectionState, Error>.Promise? = nil {
         didSet {
             guard localPlaybackConnectRequest == nil else { return }
@@ -246,9 +267,6 @@ public final class AppCoordinator: ObservableObject {
         
         return deferred.deferred
     }
-    
-    @Published public var mailOptions: MailView.Options? = nil
-    @Published var refreshingDevices = false
     
     public static var version: Version {
         
@@ -370,9 +388,6 @@ public final class AppCoordinator: ObservableObject {
             }
         
     }
-    
-    @Published public var localPlayRequested: (track: Playable, positionMs: Int?, contentOffset: ContentOffset?)? = nil
-    @Published public var connectionStateSubject: CurrentValueSubject<(state: ConnectionState, changedAt: Date?), Never> = CurrentValueSubject((.stopped, nil))
     
     public func play(_ track: Playable, positionMs: Int? = nil, contentOffset: ContentOffset? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
         self.playRequestedSubject.send(track.uri)

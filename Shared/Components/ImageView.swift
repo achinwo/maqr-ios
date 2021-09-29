@@ -163,17 +163,13 @@ public struct ImageView<Content: View>: View {
                     }
                     #endif
                 }
-                .if(!isMacOs){ view in
-                    #if os(macOS)
-                    view
-                    #else
-                    view.actionSheet(isPresented: self.$sheetPresented) {
-                        ActionSheet(title: Text(self.title),
-                                    message: Text(self.message),
-                                    buttons: buttons)
-                    }
-                    #endif
+                #if !os(macOS)
+                .actionSheet(isPresented: self.$sheetPresented) {
+                    ActionSheet(title: Text(self.title),
+                                message: Text(self.message),
+                                buttons: buttons)
                 }
+                #endif
                 
         )
     }

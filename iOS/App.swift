@@ -14,7 +14,6 @@ import JoliApi
 import Promises
 import Foundation
 import Combine
-import SwiftyBeaver
 import AuthenticationServices
 import Version
 import KeychainAccess

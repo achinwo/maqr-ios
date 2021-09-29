@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import SwiftyBeaver
 import Promises
 import Combine
 

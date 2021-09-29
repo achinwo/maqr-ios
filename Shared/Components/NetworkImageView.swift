@@ -7,7 +7,9 @@
 //
 
 import SwiftUI
-import Kingfisher
+import Combine
+import struct NetworkImage.NetworkImageLoader
+
 
 #if os(macOS)
 extension UIImage {
@@ -81,26 +83,30 @@ public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
             .id(image)
     }
     
+    @State public var imageSubscription: AnyCancellable? = nil
+    
     private func loadImage() {
         guard let imageURL = imageURL, image == nil else { return }
         
-        if appCoordinator.api != nil, let host = appCoordinator.api.baseUrlHttp.host {
-            KingfisherManager.shared.downloader.trustedHosts = Set([host])
-        }
-        
-        KingfisherManager.shared.retrieveImage(with: imageURL) { result in
-            switch result {
-                case .success(let imageResult):
-                    withAnimation(self.animation) {
-                        DispatchQueue.main.async {
-                            self.image = imageResult.image
-                            self.callback?(self.image, nil)
-                        }
-                    }
-                case .failure(let error):
-                    self.callback?(nil, error)
+        self.imageSubscription = appCoordinator.imageLoader.image(for: imageURL)
+            .receive(on: DispatchQueue.main)
+            .sink(){ completion in
+                switch completion {
+                    case .failure(let error):
+                        self.callback?(nil, error)
+                    case .finished:
+                        self.imageSubscription = nil
+                }
+            } receiveValue: { image in
+                withAnimation(self.animation) {
+                    self.image = image
+                    self.callback?(self.image, nil)
+                }
             }
-        }
+        
+            //.retrieveImage(with: imageURL) { result in
+
+//        }
     }
 }
 

@@ -40,6 +40,7 @@ public extension UIWindow {
 #else
 import UIKit
 import PartialSheet
+//import SwiftyBeaver
 
 public typealias FeedbackStyle = UIImpactFeedbackGenerator.FeedbackStyle
 #endif

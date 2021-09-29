@@ -251,7 +251,7 @@ public struct VisualCodeView<Label: View>: JoliView {
         
         return Form(){
             
-            Section(header: Spacer().padding(.top, screenWidth * 0.7 + 16).backgroundColor(.clear)){
+            Section(header: Color.clear.padding(.top, screenWidth * 0.7 + 16).backgroundColor(.clear)){
                 Picker("Interaction Type", selection: $appClipCodeType) {
                     ForEach(AppClipCodeModel.CodeType.allCases) { codeType in
                         Text(codeType.title)
@@ -259,8 +259,8 @@ public struct VisualCodeView<Label: View>: JoliView {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding()
-                Toggle("Show Badge", isOn: $showBadge).padding()
                 
+                Toggle("Show Badge", isOn: $showBadge).padding()
             }
             
             Section(header: Text("Color Themes")){
@@ -287,6 +287,7 @@ public struct VisualCodeView<Label: View>: JoliView {
                             }
                         }
                     }
+                    .frame(minWidth: size * 3)
                     Divider().padding(.vertical)
                     Toggle("Inverted Colors", isOn: $invertThemeColor)//.padding(.horizontal)
                     

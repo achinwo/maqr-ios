@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "combine-schedulers",
+        "repositoryURL": "https://github.com/pointfreeco/combine-schedulers",
+        "state": {
+          "branch": null,
+          "revision": "4cf088c29a20f52be0f2ca54992b492c54e0076b",
+          "version": "0.5.3"
+        }
+      },
+      {
         "package": "Commander",
         "repositoryURL": "https://github.com/kylef/Commander.git",
         "state": {
@@ -47,15 +56,6 @@
         }
       },
       {
-        "package": "Kingfisher",
-        "repositoryURL": "https://github.com/onevcat/Kingfisher.git",
-        "state": {
-          "branch": null,
-          "revision": "1a0c2df04b31ed7aa318354f3583faea24f006fc",
-          "version": "5.15.8"
-        }
-      },
-      {
         "package": "LetterAvatarKit",
         "repositoryURL": "https://github.com/vpeschenkov/LetterAvatarKit.git",
         "state": {
@@ -74,12 +74,12 @@
         }
       },
       {
-        "package": "M13Checkbox",
-        "repositoryURL": "https://github.com/Marxon13/M13Checkbox.git",
+        "package": "NetworkImage",
+        "repositoryURL": "https://github.com/gonzalezreal/NetworkImage.git",
         "state": {
           "branch": null,
-          "revision": "96ff6c8862db87095315480a56dcebe51e15dac8",
-          "version": "3.4.1"
+          "revision": "d45f014daf5c54ef73a7d8db87ac94b9bd3d31bd",
+          "version": "3.1.1"
         }
       },
       {
@@ -128,15 +128,6 @@
         }
       },
       {
-        "package": "Sourceful",
-        "repositoryURL": "https://github.com/twostraws/Sourceful.git",
-        "state": {
-          "branch": null,
-          "revision": "ef82b07261dceeedb6e48f1ecd4f4305b5cd10f8",
-          "version": null
-        }
-      },
-      {
         "package": "Spectre",
         "repositoryURL": "https://github.com/kylef/Spectre.git",
         "state": {
@@ -155,30 +146,12 @@
         }
       },
       {
-        "package": "CancellationToken",
-        "repositoryURL": "https://github.com/tomlokhorst/swift-cancellationtoken.git",
-        "state": {
-          "branch": null,
-          "revision": "5356a8c2c1dffd202878d724ddbfbc42d31e0be7",
-          "version": "3.2.0"
-        }
-      },
-      {
         "package": "SwiftSyntax",
         "repositoryURL": "https://github.com/apple/swift-syntax.git",
         "state": {
           "branch": null,
           "revision": "75e60475d9d8fd5bbc16a12e0eaa2cb01b0c322e",
           "version": "0.50500.0"
-        }
-      },
-      {
-        "package": "SwiftyBeaver",
-        "repositoryURL": "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
-        "state": {
-          "branch": null,
-          "revision": "2c039501d6eeb4d4cd4aec4a8d884ad28862e044",
-          "version": "1.9.5"
         }
       },
       {
@@ -197,6 +170,15 @@
           "branch": null,
           "revision": "1fe824b80d89201652e7eca7c9252269a1d85e25",
           "version": "2.0.1"
+        }
+      },
+      {
+        "package": "xctest-dynamic-overlay",
+        "repositoryURL": "https://github.com/pointfreeco/xctest-dynamic-overlay",
+        "state": {
+          "branch": null,
+          "revision": "50a70a9d3583fe228ce672e8923010c8df2deddd",
+          "version": "0.2.1"
         }
       }
     ]

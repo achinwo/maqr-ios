@@ -230,88 +230,92 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     @Namespace var animation
     
-    var mainView: some View {
+    func sectionView(_ section: ProductSection) -> some View {
+        let groupView = Group(){
+            if case let .video(player) = section.asset {
+                VideoPlayer(player: player)
+                    .frame(height: screenWidth - 100)
+                    //                                        .onTapGesture {
+                    //                                            print("Tapped Video")
+                    //                                            maximised.toggle()
+                    //
+                    //                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    //                                                if maximised {
+                    //                                                    player.play()
+                    //                                                } else {
+                    //                                                    player.pause()
+                    //                                                }
+                    //                                            }
+                    //                                        }
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
+            } else if case let .image(imageName) = section.asset {
+                Image(imageName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: screenWidth - 100)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+            } else if case let .symbol(systemName) = section.asset {
+                Image(systemName: systemName)
+                    .resizable()
+                    .renderingMode(.original)
+                    .aspectRatio(contentMode: .fit)
+                    .font(.largeTitle)
+                    .frame(maxWidth: screenWidth / 2)
+            }
+        }
+        .padding(.vertical)
+        
+        return Section(header: Text(section.title).font(.title2)){
             VStack(){
-                ForEach(sections){ section in
-                    Section(header: Text(section.title).font(.title2)){
-                        VStack(){
-                            Text(section.subtitle)
-                                .multilineTextAlignment(.center)
-                                .font(.subheadline.weight(.light))
-                                .foregroundColor(.secondaryLabel)
-                                .lineLimit(nil)
-                                //.fixedSize(horizontal: false, vertical: true)
-                            
-                            if let learnMore = section.learnMore {
-                                Link("Learn More...", destination: learnMore).padding()
-                            }
-                            
-                            if let bullets = section.bulletpoints {
-                                VStack(alignment: .leading) {
-                                    ForEach(bullets, id: \.self) { bulletpoint in
-                                        HStack(){
-                                            Image(systemName: "circlebadge.fill").renderingMode(.original)
-                                            Text(bulletpoint)
-                                        }
-                                        .font(Font.subheadline)
-                                        .padding(.vertical, 2)
-                                        .padding(.leading, Sizing.small)
-                                    }
-                                }
-                                .padding(.vertical)
-                            }
-                            
-                            Group(){
-                                if case let .video(player) = section.asset {
-                                    VideoPlayer(player: player)
-                                        .frame(height: screenWidth - 100)
-//                                        .onTapGesture {
-//                                            print("Tapped Video")
-//                                            maximised.toggle()
-//
-//                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-//                                                if maximised {
-//                                                    player.play()
-//                                                } else {
-//                                                    player.pause()
-//                                                }
-//                                            }
-//                                        }
-                                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
-                                } else if case let .image(imageName) = section.asset {
-                                    Image(imageName)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(height: screenWidth - 100)
-                                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                                } else if case let .symbol(systemName) = section.asset {
-                                    Image(systemName: systemName)
-                                        .resizable()
-                                        .renderingMode(.original)
-                                        .aspectRatio(contentMode: .fit)
-                                        .font(.largeTitle)
-                                        .frame(maxWidth: screenWidth / 2)
-                                }
-                            }
-                            .padding(.vertical)
-                            
-                            if let subtitle2 = section.subtitle2 {
-                                Text(subtitle2)
-                                    .multilineTextAlignment(.center)
-                                    .font(.subheadline.weight(.light))
-                                    .foregroundColor(.secondaryLabel)
-                                    .lineLimit(nil)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                    }
-                    .padding([.bottom, .horizontal])
-                    
+                Text(section.subtitle)
+                    .multilineTextAlignment(.center)
+                    .font(.subheadline.weight(.light))
+                    .foregroundColor(.secondaryLabel)
+                    .lineLimit(nil)
+                    //.fixedSize(horizontal: false, vertical: true)
+                
+                if let learnMore = section.learnMore {
+                    Link("Learn More...", destination: learnMore).padding()
                 }
                 
-
+                if let bullets = section.bulletpoints {
+                    VStack(alignment: .leading) {
+                        ForEach(bullets, id: \.self) { bulletpoint in
+                            HStack(){
+                                Image(systemName: "circlebadge.fill").renderingMode(.original)
+                                Text(bulletpoint)
+                            }
+                            .font(Font.subheadline)
+                            .padding(.vertical, 2)
+                            .padding(.leading, Sizing.small)
+                        }
+                    }
+                    .padding(.vertical)
+                }
+                
+                groupView
+                
+                if let subtitle2 = section.subtitle2 {
+                    Text(subtitle2)
+                        .multilineTextAlignment(.center)
+                        .font(.subheadline.weight(.light))
+                        .foregroundColor(.secondaryLabel)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
+        }
+    }
+    
+    var mainView: some View {
+        VStack(){
+            ForEach(sections){ section in
+                self.sectionView(section)
+                .padding([.bottom, .horizontal])
+                
+            }
+        }
     }
     
     @Environment(\.colorScheme) var colorScheme

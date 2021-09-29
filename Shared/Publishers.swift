@@ -6,15 +6,14 @@
 //  Copyright © 2020 Anthony Chinwo. All rights reserved.
 //
 
-import Foundation
 import JoliCore
 import JoliApi
-import CancellationToken
 import Combine
 import Starscream
 import Promises
 import CommonCrypto
 import SwiftUI
+import Foundation
 
 extension Data {
     
@@ -664,7 +663,7 @@ public extension Publishers {
             return "Smooth<\(C.self), \(Id.self)>(\(id))"
         }
         
-        private var timer: Timer.TimerPublisher
+        private var timer: Foundation.Timer.TimerPublisher
         public var smoothingOn: Bool = false
         var path: ValueKeyPath
         let duration: TimeInterval?
@@ -685,7 +684,7 @@ public extension Publishers {
         
         public init(_ target: C, path: ValueKeyPath, unit: Int = 1000, duration: TimeInterval? = nil, interval: TimeInterval = 1, tolerance: TimeInterval? = nil, runLoop: RunLoop = .current, mode: RunLoop.Mode = .common, options:  RunLoop.SchedulerOptions? = nil, resolver: @escaping StateGetter){
             self.duration = duration
-            timer = Timer.TimerPublisher(interval: interval,
+            timer = Foundation.Timer.TimerPublisher(interval: interval,
                                          tolerance: tolerance,
                                          runLoop: runLoop,
                                          mode: mode,
