@@ -634,6 +634,7 @@
 		9202D3D32659B6E700D5974F /* Smartz */ = {
 			isa = PBXGroup;
 			children = (
+				92ED526F27067D84008073F3 /* Experiences */,
 				921F6C3D26BE9F880061D236 /* CoreMlHelpers */,
 				921F6C3726BE9DF80061D236 /* Preview Content */,
 				921F6C3526BE9CCD0061D236 /* DeepLabV3.mlmodel */,
@@ -647,12 +648,8 @@
 				9202D3D82659B6E900D5974F /* Assets.xcassets */,
 				9202D3DD2659B6E900D5974F /* Info.plist */,
 				92C1A24D26626D5B00A11E0F /* Playback.swift */,
-				92562E2F266D3C38004972E6 /* SiseMealboxView.swift */,
-				92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */,
 				920264CA268FAE06005643E1 /* ExperienceView.swift */,
 				921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */,
-				920264CF2691D4EA005643E1 /* Restaurant.swift */,
-				921C300B2694B29400527D39 /* TvShowPromoView.swift */,
 				922223E226A2E368007BD0D3 /* CodeDesignerView.swift */,
 				921F6C2F26BE81C00061D236 /* VisualCodeView.swift */,
 				921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */,
@@ -884,6 +881,17 @@
 				924E971526E5620800FF41E3 /* TrackView.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		92ED526F27067D84008073F3 /* Experiences */ = {
+			isa = PBXGroup;
+			children = (
+				92562E2F266D3C38004972E6 /* SiseMealboxView.swift */,
+				92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */,
+				920264CF2691D4EA005643E1 /* Restaurant.swift */,
+				921C300B2694B29400527D39 /* TvShowPromoView.swift */,
+			);
+			path = Experiences;
 			sourceTree = "<group>";
 		};
 		92F379D62363534D005FE2AB = {

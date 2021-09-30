@@ -182,11 +182,11 @@ struct SmartzApp: AppClip {
                 } else {
                     GeometryReader() { proxy in
                         AppPreviewView(preview: self.$modalView, currentUser: self.$currentUser, animation: namespace)
-                            .frame(width: proxy.size.width, height: proxy.size.height + proxy.safeAreaInsets.bottom)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
                             .animation(.spring())
-                            .edgesIgnoringSafeArea([.bottom])
                         //.background(Color.yellow)
                     }
+                    .edgesIgnoringSafeArea(.all)
                     .environmentObject(coordinator)
                 }
             }

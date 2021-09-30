@@ -443,9 +443,6 @@ public struct CodeDesignerView: JoliView {
     func updateStoredExperiences(){
         StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(on: .main){ exps in
-                for e in exps {
-                    print("Experience: \(e)")
-                }
                 self.storedExperiences = exps
                 print("[updateStoredExperiences] fetched experiences: \(exps)")
             }
