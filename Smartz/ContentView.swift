@@ -114,7 +114,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     enum Tab: Int, Identifiable, CaseIterable {
         case information
         case appClipCreator
-//        case gallery
+        //        case gallery
         case feedback
         
         var id: Int {
@@ -123,40 +123,40 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         
         var label: String {
             switch self {
-//                case .gallery:
-//                    return "Gallery"
-                case .feedback:
-                    return "Feedback"
-                case .appClipCreator:
-                    return "Codes"
-                case .information:
-                    return "Welcome"
+                //                case .gallery:
+                //                    return "Gallery"
+            case .feedback:
+                return "Feedback"
+            case .appClipCreator:
+                return "Codes"
+            case .information:
+                return "Welcome"
             }
         }
         
         var color: Color {
             switch self {
-//                case .gallery:
-//                    return .orange
-                case .feedback:
-                    return Color.systemIndigo
-                case .appClipCreator:
-                    return .pink
-                case .information:
-                    return .green
+                //                case .gallery:
+                //                    return .orange
+            case .feedback:
+                return Color.systemIndigo
+            case .appClipCreator:
+                return .pink
+            case .information:
+                return .green
             }
         }
         
         var emoji: (default: String, active: String) {
             switch self {
-//                case .gallery:
-//                    return (default: "photo.on.rectangle", active: "photo.on.rectangle.angled")
-                case .feedback:
-                    return (default: "envelope", active: "envelope.fill")
-                case .appClipCreator:
-                    return (default: "qrcode", active: "qrcode.viewfinder")
-                case .information:
-                    return (default: "info", active: "info")
+                //                case .gallery:
+                //                    return (default: "photo.on.rectangle", active: "photo.on.rectangle.angled")
+            case .feedback:
+                return (default: "envelope", active: "envelope.fill")
+            case .appClipCreator:
+                return (default: "qrcode", active: "qrcode.viewfinder")
+            case .information:
+                return (default: "info", active: "info")
             }
         }
     }
@@ -202,13 +202,13 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         "Easy & Quick “jump-to” opportunities for specific product categories that can be tailored to different groups",
                         "AirBnB Check-in and Check out processes",
                        ]
-                       ),
+                      ),
         
         ProductSection(asset: .image("app_clip_choices"),
                        title: "The Technology - Automatically Downloading Codes",
                        subtitle: "Apple’s App Clips technology was introduced to the world in May 2020. The technology behind these scannable codes give them a notable advantage over traditional QR codes. Whereas QR Codes redirect customers to the App Store to download the app, App Clip codes take customers directly to the experience by automating the download step on the customers behalf, significantly improving convenience, driving engagement and reducing session abandonment.",
                        learnMore: URL(string: "https://developer.apple.com/app-clips/")!
-                       ),
+                      ),
         
         ProductSection(asset: .video(AVPlayer(url: Bundle.main.url(forResource: "demo_sise_appclip", withExtension: "mp4")!)),
                        title: "Rich Customer Experience",
@@ -235,18 +235,18 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             if case let .video(player) = section.asset {
                 VideoPlayer(player: player)
                     .frame(height: screenWidth - 100)
-                    //                                        .onTapGesture {
-                    //                                            print("Tapped Video")
-                    //                                            maximised.toggle()
-                    //
-                    //                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    //                                                if maximised {
-                    //                                                    player.play()
-                    //                                                } else {
-                    //                                                    player.pause()
-                    //                                                }
-                    //                                            }
-                    //                                        }
+                //                                        .onTapGesture {
+                //                                            print("Tapped Video")
+                //                                            maximised.toggle()
+                //
+                //                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                //                                                if maximised {
+                //                                                    player.play()
+                //                                                } else {
+                //                                                    player.pause()
+                //                                                }
+                //                                            }
+                //                                        }
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
             } else if case let .image(imageName) = section.asset {
@@ -264,7 +264,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     .frame(maxWidth: screenWidth / 2)
             }
         }
-        .padding(.vertical)
+            .padding(.vertical)
         
         return Section(header: Text(section.title).font(.title2)){
             VStack(){
@@ -273,7 +273,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     .font(.subheadline.weight(.light))
                     .foregroundColor(.secondaryLabel)
                     .lineLimit(nil)
-                    //.fixedSize(horizontal: false, vertical: true)
+                //.fixedSize(horizontal: false, vertical: true)
                 
                 if let learnMore = section.learnMore {
                     Link("Learn More...", destination: learnMore).padding()
@@ -312,7 +312,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         VStack(){
             ForEach(sections){ section in
                 self.sectionView(section)
-                .padding([.bottom, .horizontal])
+                    .padding([.bottom, .horizontal])
                 
             }
         }
@@ -336,14 +336,14 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             }
             
             switch experienceType?.title {
-                case MealboxView.title:
-                    self.trialInfo = (.mealboxPrep, data)
-                case RestaurantView.title:
-                    self.trialInfo = (.restaurantCheckin, data)
-                case TvShowPromoView.title:
-                    self.trialInfo = (.brandPromotion, data)
-                default:
-                    print("Unknown")
+            case MealboxView.title:
+                self.trialInfo = (.mealboxPrep, data)
+            case RestaurantView.title:
+                self.trialInfo = (.restaurantCheckin, data)
+            case TvShowPromoView.title:
+                self.trialInfo = (.brandPromotion, data)
+            default:
+                print("Unknown")
             }
             
         }
@@ -415,7 +415,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         }
                     }
                 )
-
+                
                 
             }
             .frame(width: screenWidth - 100)
@@ -425,14 +425,14 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         
     }
     
-//    var whoWeAreText: String {
-//        """
-//Ditch all that paper & give your customers a more customised and streamlined experience for their meal prep boxes by digitizing through Smart Stikr App clip. The experience will be completely customised to your company style and offerings and your customers will have options to reorder or just browse your menu for other ideas and seamlessly place the order from you directly with one click through apple pay.
-//
-//By simply attaching one or few of the below app clips on the box delivered to the clients, you take away the need for paper instructions and
-//give your customers a more involved experience to Meal Prep with you and your company.
-//"""
-//    }
+    //    var whoWeAreText: String {
+    //        """
+    //Ditch all that paper & give your customers a more customised and streamlined experience for their meal prep boxes by digitizing through Smart Stikr App clip. The experience will be completely customised to your company style and offerings and your customers will have options to reorder or just browse your menu for other ideas and seamlessly place the order from you directly with one click through apple pay.
+    //
+    //By simply attaching one or few of the below app clips on the box delivered to the clients, you take away the need for paper instructions and
+    //give your customers a more involved experience to Meal Prep with you and your company.
+    //"""
+    //    }
     
     var whoWeAreText: String {
         """
@@ -489,155 +489,143 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
         .frame(maxWidth: keyboardHidden ? screenWidth - 50 : nil, alignment: .center)
         .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
         .clipShape(RoundedRectangle(cornerRadius: keyboardHeight < 100 ? 25.0 : 0))
-//        .if(keyboardHidden){ view in
-//            view.clipShape(RoundedRectangle(cornerRadius: 25.0))
-//        }
+        //        .if(keyboardHidden){ view in
+        //            view.clipShape(RoundedRectangle(cornerRadius: 25.0))
+        //        }
         .animation(.easeInOut)
+    }
+    
+    var infoView: some View {
+        VStack(){
+            Image("smartz_logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: screenWidth / 3, maxHeight: screenWidth / 3)
+            Text("Smart Stikr").font(.headline.weight(.light)).foregroundColor(.tertiaryLabel).padding([.bottom])
+            (Text("Welcome to the ").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)
+             + Text("Paperless ").font(.title.weight(.light)).foregroundColor(.secondaryLabel)
+             + Text("Future").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)).multilineTextAlignment(.center)
+            Text(whoWeAreText)
+                .multilineTextAlignment(.center)
+                .font(.subheadline)
+                .foregroundColor(.primary)
+                .padding()
+            
+            VideoPlayer(player: AVPlayer(url: Bundle.main.url(forResource: "demo_sise_code_scan", withExtension: "mov")!))
+                .frame(height: screenWidth - 100)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
+                .padding()
+            
+            Divider().padding()
+            self.mainView
+            Divider().padding()
+            
+            Button(){
+                self.selectedTab = .appClipCreator
+            } label: {
+                HStack(){
+                    Spacer()
+                    HStack(){
+                        Text("Create & Download Codes")
+                        Image(systemName: "qrcode")
+                    }
+                    .font(.title3)
+                    .foregroundColor(.label)
+                    Spacer()
+                }
+            }
+            .background(Color.pink)
+            .clipShape(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+            )
+            .overlay(
+                GeometryReader() { proxy in
+                    HStack(){
+                        Spacer()
+                        Text("Coming Soon")
+                            .fixedSize(horizontal: true, vertical: true)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.fixedWhite)
+                            .padding(2)
+                            .background(Color.fixedGray)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .offset(x: proxy.size.height / 4, y: proxy.size.height / 12 * -1)
+                            .rotationEffect(.degrees(15))
+                        //.rotationEffect(.degres(15))
+                    }
+                }
+            )
+            .frame(width: screenWidth - 100, height: 60)
+            .accentColor(.orange)
+            .buttonStyle(OutlineButton())
+            .padding(.top, safeAreaInsets.top)
+            
+            HStack(){
+                Spacer()
+                
+                Link(destination: URL(string: "https://www.instagram.com/smartstikr/")!) {
+                    VStack(){
+                        Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                        Text("Follow Us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
+                        Text("@smartstikr").font(.body.weight(.semibold)).foregroundColor(.primary)
+                    }
+                    .padding()
+                }
+                
+                //                                        VStack(){
+                //                                            Image("fbk_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                //                                            Text("Share us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
+                //                                            Text("#madewithsise").font(.body.weight(.semibold)).foregroundColor(.primary)
+                //                                        }
+                //                                        .padding()
+                
+                Spacer()
+            }
+            .padding(.top, safeAreaInsets.top)
+            .padding(.bottom, safeAreaInsets.bottom * 4)
+            .animation(.easeInOut)
+        }
     }
     
     var contentView: some View {
         NavigationView(){
             
-                ZStack(){
-                    
-                        VStack(){
-                            if self.selectedTab == .information {
-                                ScrollView(.vertical){
-                                    Image("smartz_logo")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(maxWidth: screenWidth / 3, maxHeight: screenWidth / 3)
-                                    Text("Smart Stikr").font(.headline.weight(.light)).foregroundColor(.tertiaryLabel).padding([.bottom])
-                                    (Text("Welcome to the ").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)
-                                        + Text("Paperless ").font(.title.weight(.light)).foregroundColor(.secondaryLabel)
-                                        + Text("Future").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)).multilineTextAlignment(.center)
-                                    Text(whoWeAreText)
-                                        .multilineTextAlignment(.center)
-                                        .font(.subheadline)
-                                        .foregroundColor(.primary)
-                                        .padding()
-                                    
-                                    VideoPlayer(player: AVPlayer(url: Bundle.main.url(forResource: "demo_sise_code_scan", withExtension: "mov")!))
-                                        .frame(height: screenWidth - 100)
-                                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
-                                        .padding()
-                                    
-                                    Divider().padding()
-                                    self.mainView
-                                    Divider().padding()
-                                    
-                                    Button(){
-                                        self.selectedTab = .appClipCreator
-                                    } label: {
-                                        HStack(){
-                                            Spacer()
-                                            HStack(){
-                                                Text("Create & Download Codes")
-                                                Image(systemName: "qrcode")
-                                            }
-                                            .font(.title3)
-                                            .foregroundColor(.label)
-                                            Spacer()
-                                        }
-                                    }
-                                    .background(Color.pink)
-                                    .clipShape(
-                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                    )
-                                    .overlay(
-                                        GeometryReader() { proxy in
-                                            HStack(){
-                                                Spacer()
-                                                Text("Coming Soon")
-                                                    .fixedSize(horizontal: true, vertical: true)
-                                                    .font(.subheadline.weight(.semibold))
-                                                    .foregroundColor(.fixedWhite)
-                                                    .padding(2)
-                                                    .background(Color.fixedGray)
-                                                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                                                    .offset(x: proxy.size.height / 4, y: proxy.size.height / 12 * -1)
-                                                    .rotationEffect(.degrees(15))
-                                                //.rotationEffect(.degres(15))
-                                            }
-                                        }
-                                    )
-                                    .frame(width: screenWidth - 100, height: 60)
-                                    .accentColor(.orange)
-                                    .buttonStyle(OutlineButton())
-                                    .padding(.top, safeAreaInsets.top)
-                                    
-                                    HStack(){
-                                        Spacer()
-                                        
-                                        Link(destination: URL(string: "https://www.instagram.com/smartstikr/")!) {
-                                            VStack(){
-                                                Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
-                                                Text("Follow Us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-                                                Text("@smartstikr").font(.body.weight(.semibold)).foregroundColor(.primary)
-                                            }
-                                            .padding()
-                                        }
-                                        
-//                                        VStack(){
-//                                            Image("fbk_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
-//                                            Text("Share us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-//                                            Text("#madewithsise").font(.body.weight(.semibold)).foregroundColor(.primary)
-//                                        }
-//                                        .padding()
-                                        
-                                        Spacer()
-                                    }
-                                    .padding(.top, safeAreaInsets.top)
-                                    .padding(.bottom, safeAreaInsets.bottom * 4)
-                                    .animation(.easeInOut)
-                                }
-                                .navigationBarTitleDisplayMode(.inline)
-                                //.navigationBarTitle(Text(String.empty))
-                                .navigationBarHidden(true)
-                                .toolbar() {
-                                    EmptyView()
-                                }
-                            } else if self.selectedTab == .feedback {
-                                ScrollView(.vertical){
-                                    feedbackView
-                                }
-                                .navigationBarHidden(true)
-                                .toolbar() {
-                                    EmptyView()
-                                }
-                            } else if self.selectedTab == .appClipCreator {
-                                ScrollView(.vertical){
-                                    appclipsCodesView
-                                }
-                            }
-                            
-                            //                        } else if self.selectedTab == .gallery {
-                            //                            galleryView
-                            //                        } else if self.selectedTab == .information {
-                            //                            infoView
-                            //                        } else if self.selectedTab == .help {
-                            //                            helpView
-                            //                        }
-                            
+            ZStack(){
+                
+                VStack(){
+                    if self.selectedTab == .information {
+                        ScrollView(.vertical){
+                            infoView
+                        }
+                        .navigationBarTitleDisplayMode(.inline)
+                        //.navigationBarTitle(Text(String.empty))
+                        .navigationBarHidden(true)
+                        .toolbar() {
+                            EmptyView()
+                        }
+                    } else if self.selectedTab == .feedback {
+                        ScrollView(.vertical){
+                            feedbackView
+                        }
+                        .navigationBarHidden(true)
+                        .toolbar() {
+                            EmptyView()
+                        }
+                    } else if self.selectedTab == .appClipCreator {
+                        ScrollView(.vertical){
+                            appclipsCodesView
+                        }
                     }
-                    
-                    VStack(){
-                        Spacer()
-                        //                Picker(selection: self.$selectedTab, label: Text("Users")) {
-                        self.tabView
-                    }
-                    .frame(maxHeight: screenHeight - safeAreaInsets.top)
-                    //.padding(.bottom, safeAreaInsets.bottom)
-                    
-                    
-                    //            HStack(){
-                    //                Button() {
-                    //
-                    //                }
-                    //            }
                 }
-                   // .navigationBarTitle(Text("Welcome to Smart Stikr"), displayMode: .large)
+                
+                VStack(){
+                    Spacer()
+                    //                Picker(selection: self.$selectedTab, label: Text("Users")) {
+                    self.tabView
+                }
+                .frame(maxHeight: screenHeight - safeAreaInsets.top)
+            }
         }
         .edgesIgnoringSafeArea(.bottom)
         .onReceive(appCoordinator.$keyboardHeight, assign: \.keyboardHeight, target: self)
@@ -653,29 +641,6 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                 }
             }
         )
-        .overlay(
-            GeometryReader(){ proxy in
-                Group(){
-//                    if let player = player, maximised {
-//                        VideoPlayer(player: player)
-//                            .frame(width: proxy.size.width, height: proxy.size.height - proxy.safeAreaInsets.bottom - proxy.safeAreaInsets.top)
-//                            //.matchedGeometryEffect(id: "intro-video", in: animation)
-//                    }
-                }
-//                .simultaneousGesture(
-//                    DragGesture(minimumDistance: 100)
-//                        .onChanged(){ value in
-//                            print("dragged: \(value)")
-//                        }
-//                        .onEnded() { val in
-//                            print("ended: \(val)")
-//                            self.maximised = false
-//                        }
-//                )
-                
-            }
-        )
-        .animation(.spring())
         .onAppear(){
             self.videoUrl = Bundle.main.url(forResource: "demo_sise_intro", withExtension: "mov")
             
