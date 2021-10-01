@@ -686,19 +686,19 @@ public struct AppPreviewView: JoliView {
                 VStack(alignment: .trailing){
                     HStack(){
                         Spacer()
-                        Image(systemName: "xmark")
-                            .font(Font.title.weight(.light))
-                            .foregroundColor(.gray)
-                            .opacity(0.9)
-                            .background(Circle()
-                                            .frame(width: largeTitleSize * 1.4, height: largeTitleSize * 1.6)
-                                            .foregroundColor(Colors.lightGray.opacity(0.8)))
-                            
-                            .padding([.top, .trailing], Sizing.medium)
-                    }
-                    .padding()
-                    .onTapGesture() {
-                        self.preview = nil
+                        Button(){
+                            self.preview = nil
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(Font.title.weight(.light))
+                                .foregroundColor(.gray)
+                        }
+                        .opacity(0.9)
+                        .background(Circle()
+                                        .frame(width: largeTitleSize * 1.4, height: largeTitleSize * 1.6)
+                                        .foregroundColor(Colors.lightGray.opacity(0.8)))
+                        
+                        .padding([.top, .trailing], Sizing.medium)
                     }
                     //.frame(maxWidth: Sizing.large, maxHeight: Sizing.large)
                     Spacer()

@@ -388,7 +388,6 @@ struct TvShowCastButtonView: JoliView {
             let preview: AppPreview = .view2(){
                 TvShowCastView(menu: menu)
                     .frame(width: screenWidth)
-                    .backgroundColor(.pink)
                     //.frame(minHeight: screenHeight - safeAreaInsets.top)
                     .eraseToAnyView()
             }

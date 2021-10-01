@@ -337,7 +337,6 @@ struct RestaurantMenuButtonView: JoliView {
             let preview: AppPreview = .view2(){
                 RestaurantMenuView(menu: menu)
                     .frame(width: screenWidth)
-                    .frame(minHeight: screenHeight - safeAreaInsets.top)
                     .eraseToAnyView()
             }
             
@@ -582,8 +581,7 @@ struct RestaurantMenuView: View {
     
     func drinkView(_ category: RestaurantDrink.Category) -> some View {
         
-        return ScrollView(.vertical){
-            VStack(alignment: .leading){
+        return VStack(alignment: .leading){
                 Text("Drink - \(category.rawValue)".uppercased())
                     .lineLimit(2)
                     .font(.largeTitle.weight(.ultraLight))
@@ -616,7 +614,6 @@ struct RestaurantMenuView: View {
                 }
             }
             .padding(.horizontal)
-        }
     }
     
     func drinkView(_ itm: RestaurantDrink) -> some View {
@@ -674,7 +671,6 @@ struct RestaurantMenuView: View {
     }
     
     var foodView: some View {
-        ScrollView(.vertical){
             VStack(alignment: .leading){
                 ForEach(menu.foods, id: \.id) { foodGroup in
                     
@@ -700,29 +696,38 @@ struct RestaurantMenuView: View {
                 }
                 
             }
-        }
     }
     
     var body: some View {
-        //NavigationView(){
         ZStack(){
-            
             TabView(selection: $selectedTab) {
                 
-                foodView
-                    .frame(maxWidth: screenWidth)
-                    .tag(0)
+                ScrollView(.vertical){
+                    foodView
+                }
+                .frame(maxWidth: screenWidth)
+                .tag(0)
                 
                 ForEach(Array(RestaurantDrink.Category.allCases.enumerated()), id: \.offset) { item in
-                    self.drinkView(item.element)
-                        .frame(maxWidth: screenWidth)
-                        .tag(item.offset + 1)
+                    
+                    ScrollView(.vertical){
+                        self.drinkView(item.element)
+                    }
+                    .frame(maxWidth: screenWidth)
+                    .tag(item.offset + 1)
                 }
             }
+            .navigationBarHidden(true)
             .navigationTitle(Text(tabNames.count > selectedTab ? tabNames[selectedTab] : ""))
             .tabViewStyle(PageTabViewStyle())
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+            
+            VStack(){
+                Color.white.opacity(0.2).frame(width: screenWidth, height: 50)
+                Spacer()
+            }
         }
+        .frame(width: screenWidth)
             
         //}
     }
