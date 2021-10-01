@@ -11,7 +11,7 @@ import SharedUI
 import JoliCore
 import QRCode
 
-public struct MyExperiencesView: JoliView {
+public struct LiveExperiencesView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @Binding public var experiences: [StikrExperienceData]
@@ -96,18 +96,17 @@ public struct MyExperiencesView: JoliView {
     
     public var contentView: some View {
         VStack(){
-            let headerMyExperiences = HStack(){
-                Label(){
-                    Text("My Experiences")
-                } icon: {
-                    Image(systemName: "infinity")
-                        .font(Font.title.weight(.thin))
+            let headerMyExperiences = HStack(alignment: .center){
+                Image(systemName: "bookmark")
+                    .font(Font.title.weight(.thin))
+                VStack(alignment: .leading){
+                    Text("Live Experiences").font(.title)
+                    Text("Your active brand experiences.").font(.caption) + Text("Pull down to refresh.").font(.caption.weight(.semibold))
                 }
-                .foregroundColor(.secondary)
-                .font(Font.largeTitle.weight(.thin))
-                
                 Spacer()
             }
+            .foregroundColor(.secondary)
+            .font(Font.largeTitle.weight(.thin))
             .padding()
             
             Section(header: headerMyExperiences) {

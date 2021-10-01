@@ -281,7 +281,7 @@ public struct ExperienceDataView: JoliView {
         .overlay(HStack(){
             Spacer()
             Button(){
-                self.appCoordinator.withAlert("Remove \(element.experienceItemType.label) Item?", message: "Permanent delete this item", destructive: true, label: "Remove") {
+                self.appCoordinator.withAlert("Remove \(element.experienceItemType.label)?", message: "Permanent delete this item", destructive: true, label: "Remove") {
                     self.data.items = self.data.items.filter() { $0.id != element.id }
                 }
             } label: {
@@ -468,17 +468,7 @@ public struct ExperienceDataView: JoliView {
             ForEach(items) { expItemType in
                 self.itemTypeSectionView(expItemType)
             }
-            
-//            Section(footer: Text("Note: Enabling logging may slow down the app")) {
-//                //                Picker("Select a color", selection: $selectedColor) {
-//                //                    ForEach(colors, id: \.self) {
-//                //                        Text($0)
-//                //                    }
-//                //                }
-//                //                .pickerStyle(SegmentedPickerStyle())
-//                //
-//                //                Toggle("Enable Logging", isOn: $enableLogging)
-//            }
+            .animation(.easeInOut)
             
             let onTap: () -> Void = {
                 print("hit continue!")

@@ -462,7 +462,7 @@ public struct CodeDesignerView: JoliView {
             print("[historyView] ignoring set: \(String(describing: newValue))")
         }
         
-        return MyExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: binding){ stikrExp in
+        return LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: binding){ stikrExp in
             self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
             
             DispatchQueue.main.async(){

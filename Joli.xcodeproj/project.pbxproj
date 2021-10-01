@@ -260,7 +260,7 @@
 		92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
 		92E62CFF2701D169002008A0 /* GradientLoadingBar in Frameworks */ = {isa = PBXBuildFile; productRef = 92E62CFE2701D169002008A0 /* GradientLoadingBar */; };
-		92ECCEDD26C0543F009A2B75 /* MyExperiencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92ECCEDC26C0543F009A2B75 /* MyExperiencesView.swift */; };
+		92ECCEDD26C0543F009A2B75 /* LiveExperiencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92ECCEDC26C0543F009A2B75 /* LiveExperiencesView.swift */; };
 		92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE3CD2619394000688802 /* SFSafeSymbols */; };
 		92EDE41226193AE000688802 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE41126193AE000688802 /* PartialSheet */; };
 		92EDE43A26193DFA00688802 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE43926193DFA00688802 /* KeychainAccess */; };
@@ -528,7 +528,7 @@
 		92CC32A526E55B3200178465 /* SharedUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SharedUI.h; sourceTree = "<group>"; };
 		92CC32A626E55B3200178465 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeyRestuarantView.swift; sourceTree = "<group>"; };
-		92ECCEDC26C0543F009A2B75 /* MyExperiencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyExperiencesView.swift; sourceTree = "<group>"; };
+		92ECCEDC26C0543F009A2B75 /* LiveExperiencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveExperiencesView.swift; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92FBFC8C26AB33560068DDA5 /* Templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Templates; sourceTree = "<group>"; };
 		92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Experiences.generated.swift; sourceTree = "<group>"; };
@@ -653,7 +653,7 @@
 				922223E226A2E368007BD0D3 /* CodeDesignerView.swift */,
 				921F6C2F26BE81C00061D236 /* VisualCodeView.swift */,
 				921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */,
-				92ECCEDC26C0543F009A2B75 /* MyExperiencesView.swift */,
+				92ECCEDC26C0543F009A2B75 /* LiveExperiencesView.swift */,
 				9228F86B26C07A310053DC04 /* ExperienceData.swift */,
 				9217904F26C9832A009FC4CE /* VisualCodeDownloadView.swift */,
 				9217905526CC51DA009FC4CE /* MessageView.swift */,
@@ -1423,7 +1423,7 @@
 				921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */,
 				921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
-				92ECCEDD26C0543F009A2B75 /* MyExperiencesView.swift in Sources */,
+				92ECCEDD26C0543F009A2B75 /* LiveExperiencesView.swift in Sources */,
 				9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */,
 				921F6C4926BEA1C00061D236 /* Math.swift in Sources */,
 				921F6C4126BEA05C0061D236 /* UIImage+Extensions.swift in Sources */,
@@ -1720,7 +1720,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1747,7 +1747,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -1772,7 +1772,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -1799,7 +1799,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
