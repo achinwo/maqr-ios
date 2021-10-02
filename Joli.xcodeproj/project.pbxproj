@@ -183,6 +183,8 @@
 		9280818327046B5E001120ED /* NetworkImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9280818227046B5E001120ED /* NetworkImage */; };
 		9280818527046B6F001120ED /* NetworkImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9280818427046B6F001120ED /* NetworkImage */; };
 		9280818727046B7D001120ED /* NetworkImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9280818627046B7D001120ED /* NetworkImage */; };
+		9286049B2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
+		9286049C2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
 		92870E49259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */; };
 		92870E4A259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */; };
 		928A391D24E9DAE700A029A1 /* ListenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A391B24E9DAE600A029A1 /* ListenView.swift */; };
@@ -264,6 +266,7 @@
 		92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE3CD2619394000688802 /* SFSafeSymbols */; };
 		92EDE41226193AE000688802 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE41126193AE000688802 /* PartialSheet */; };
 		92EDE43A26193DFA00688802 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE43926193DFA00688802 /* KeychainAccess */; };
+		92F1D5FB2708CF7A00D0743B /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 92F1D5FA2708CF7A00D0743B /* Configuration.storekit */; };
 		92F8597225C791810057B3BC /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92FBFC8D26AB33560068DDA5 /* Templates in Resources */ = {isa = PBXBuildFile; fileRef = 92FBFC8C26AB33560068DDA5 /* Templates */; };
 		92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */; };
@@ -474,6 +477,7 @@
 		927AE0C02554AC020027493D /* LobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyView.swift; sourceTree = "<group>"; };
 		927E0E3524E9ADC000C8257D /* AppClip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppClip.swift; sourceTree = "<group>"; };
 		927E0E3924E9AFFF00C8257D /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
+		9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitHelper.swift; sourceTree = "<group>"; };
 		92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayroomHeaderView.swift; sourceTree = "<group>"; };
 		928A391B24E9DAE600A029A1 /* ListenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenView.swift; sourceTree = "<group>"; };
 		928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyDelegate.swift; sourceTree = "<group>"; };
@@ -529,6 +533,7 @@
 		92CC32A626E55B3200178465 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeyRestuarantView.swift; sourceTree = "<group>"; };
 		92ECCEDC26C0543F009A2B75 /* LiveExperiencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveExperiencesView.swift; sourceTree = "<group>"; };
+		92F1D5FA2708CF7A00D0743B /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92FBFC8C26AB33560068DDA5 /* Templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Templates; sourceTree = "<group>"; };
 		92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Experiences.generated.swift; sourceTree = "<group>"; };
@@ -634,6 +639,7 @@
 		9202D3D32659B6E700D5974F /* Smartz */ = {
 			isa = PBXGroup;
 			children = (
+				92F1D5F92708CF5B00D0743B /* StoreKit */,
 				92ED526F27067D84008073F3 /* Experiences */,
 				921F6C3D26BE9F880061D236 /* CoreMlHelpers */,
 				921F6C3726BE9DF80061D236 /* Preview Content */,
@@ -745,6 +751,7 @@
 				926DB4C72638BDD000D62912 /* ActivityIndicator.swift */,
 				921CAFA626B5F4730078A394 /* YouTubePlayer.swift */,
 				928E7B4E2704A4B80052E5A9 /* BaseDestination.swift */,
+				9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -892,6 +899,14 @@
 				921C300B2694B29400527D39 /* TvShowPromoView.swift */,
 			);
 			path = Experiences;
+			sourceTree = "<group>";
+		};
+		92F1D5F92708CF5B00D0743B /* StoreKit */ = {
+			isa = PBXGroup;
+			children = (
+				92F1D5FA2708CF7A00D0743B /* Configuration.storekit */,
+			);
+			path = StoreKit;
 			sourceTree = "<group>";
 		};
 		92F379D62363534D005FE2AB = {
@@ -1271,6 +1286,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				920264DC26924653005643E1 /* joey_sherway_data.json in Resources */,
+				92F1D5FB2708CF7A00D0743B /* Configuration.storekit in Resources */,
 				921F6C3926BE9DF80061D236 /* Preview Assets.xcassets in Resources */,
 				92562E2C266BC162004972E6 /* demo_sise_intro.mov in Resources */,
 				92562E2A266BC118004972E6 /* demo_sise_appclip.mp4 in Resources */,
@@ -1465,6 +1481,7 @@
 				922989AC26491F0D00FDD58F /* MailView.swift in Sources */,
 				926E2E24260F40E9007F62E0 /* PlayroomCreateView.swift in Sources */,
 				9203B32A24CB07FD00F465CC /* Consts.swift in Sources */,
+				9286049B2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */,
 				927E0E3624E9ADC000C8257D /* AppClip.swift in Sources */,
 				928A392424E9E2FA00A029A1 /* JoyMeterView.swift in Sources */,
 				926DB4C82638BDD000D62912 /* ActivityIndicator.swift in Sources */,
@@ -1640,6 +1657,7 @@
 				924E970926E55ED000FF41E3 /* Preview.swift in Sources */,
 				924E970A26E55EEB00FF41E3 /* ImageView.swift in Sources */,
 				924E96FF26E55E5400FF41E3 /* Publishers.swift in Sources */,
+				9286049C2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */,
 				924E970426E55E8600FF41E3 /* YouTubePlayer.swift in Sources */,
 				924E970626E55EB400FF41E3 /* MailView.swift in Sources */,
 				924E971726E5620800FF41E3 /* TrackView.swift in Sources */,

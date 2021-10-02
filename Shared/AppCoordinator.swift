@@ -64,6 +64,9 @@ public final class AppCoordinator: ObservableObject {
     
     public let requestedSignIn = PassthroughSubject<AuthenticationFlow, Never>()
     
+    public let purchaseNotificationSubject = PassthroughSubject<String?, Never>()
+    
+    public let storeKitHelper: StoreKitHelper
     @Published public var playStatePublisher: PlayState.Publisher? = nil
     @Published public var votesPublisher: QueuedTrackVote.Publisher? = nil {
         
@@ -287,6 +290,8 @@ public final class AppCoordinator: ObservableObject {
         self.playStatePublisher = playStatePublisher
         self.votesPublisher = votesPublisher
         
+        self.storeKitHelper = StoreKitHelper()
+        
         self.volumeCancel = self.volumeSubject
             .removeDuplicates()
             .debounce(for: 0.2, scheduler: DispatchQueue.global(qos: .userInitiated))
@@ -327,6 +332,15 @@ public final class AppCoordinator: ObservableObject {
         let notificationCenter = NotificationCenter.default
         
         #if !os(macOS)
+        notificationCenter.publisher(for: .storeKitHelperPurchaseNotification)
+            .map(){ notification in
+                return notification.object as? String
+            }
+            .sink(){ identifier in
+                self.purchaseNotificationSubject.send(identifier)
+            }
+            .store(in: &cancellableSet)
+        
         notificationCenter.publisher(for: UIWindow.keyboardWillShowNotification)
             .map {
                 guard

@@ -1,0 +1,85 @@
+{
+  "identifier" : "C0E13CE0",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "3.99",
+      "familyShareable" : false,
+      "internalID" : "8683BBBF",
+      "localizations" : [
+        {
+          "description" : "pack of stickers",
+          "displayName" : "4 Sticker Pack (single color) ",
+          "locale" : "en_GB"
+        }
+      ],
+      "productID" : "sticker_genric_singlecolor_unsecure_4",
+      "referenceName" : "Sticker pack",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "379AECCD",
+      "localizations" : [
+
+      ],
+      "name" : "Publishing - Basic",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "displayPrice" : "5.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "F3DB382B",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "standard publishing capabilities",
+              "displayName" : "Basic Account",
+              "locale" : "en_GB"
+            }
+          ],
+          "productID" : "basic_publishing_1m",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Basic Publishing - 1 Month",
+          "subscriptionGroupID" : "379AECCD",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "displayPrice" : "24.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "ECB3763C",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "standard publishing",
+              "displayName" : "Basic Account",
+              "locale" : "en_GB"
+            }
+          ],
+          "productID" : "basic_publishing_1y",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Basic Publishing - 1 Year",
+          "subscriptionGroupID" : "379AECCD",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 1,
+    "minor" : 1
+  }
+}

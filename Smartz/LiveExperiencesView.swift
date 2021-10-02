@@ -101,7 +101,7 @@ public struct LiveExperiencesView: JoliView {
                     .font(Font.title.weight(.thin))
                 VStack(alignment: .leading){
                     Text("Live Experiences").font(.title)
-                    Text("Your active brand experiences.").font(.caption) + Text("Pull down to refresh.").font(.caption.weight(.semibold))
+                    Text("Your active brand experiences.").font(.caption) + Text(" Pull down to refresh.").font(.caption.weight(.semibold))
                 }
                 Spacer()
             }

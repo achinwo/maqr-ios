@@ -444,7 +444,7 @@ public struct CodeDesignerView: JoliView {
         StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(on: .main){ exps in
                 self.storedExperiences = exps
-                print("[updateStoredExperiences] fetched experiences: \(exps)")
+                //print("[updateStoredExperiences] fetched experiences: \(exps)")
             }
             .catch(){ error in
                 print("Unable to fetch exps: \(error)")
@@ -614,6 +614,14 @@ public struct CodeDesignerView: JoliView {
                         let isLastTab = selectedTab == tabNames.count - 1
                         
                         Button(){
+//                            let view: AppPreview = .view2(){
+//                                VisualCodeDownloadView()
+//                                    .environment(\.colorScheme, .dark)
+//                                    .backgroundColor(.fixedGray)
+//                                    .eraseToAnyView()
+//                            }
+//                            
+//                            self.appCoordinator.globalModalSubject.send(view)
                             if isLastTab {
                                 guard let expData = experienceData else { return }
                                 self.submitExperience(expData, codes: [visualCode])
