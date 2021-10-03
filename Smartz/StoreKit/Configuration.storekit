@@ -21,7 +21,8 @@
     }
   ],
   "settings" : {
-
+    "_locale" : "en_GB",
+    "_storefront" : "GBR"
   },
   "subscriptionGroups" : [
     {
@@ -43,11 +44,11 @@
           "localizations" : [
             {
               "description" : "standard publishing capabilities",
-              "displayName" : "Basic Account",
+              "displayName" : "Basic Account - 1 Month",
               "locale" : "en_GB"
             }
           ],
-          "productID" : "basic_publishing_1m",
+          "productID" : "basic_publishing_1mx",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Basic Publishing - 1 Month",
           "subscriptionGroupID" : "379AECCD",
@@ -65,11 +66,11 @@
           "localizations" : [
             {
               "description" : "standard publishing",
-              "displayName" : "Basic Account",
+              "displayName" : "Basic Account - 1 Year",
               "locale" : "en_GB"
             }
           ],
-          "productID" : "basic_publishing_1y",
+          "productID" : "basic_publishing_1yx",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Basic Publishing - 1 Year",
           "subscriptionGroupID" : "379AECCD",

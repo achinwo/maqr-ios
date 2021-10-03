@@ -87,7 +87,7 @@ public struct CodeDesignerView: JoliView {
         return names
     }
     
-    func productView(_ product: Product) -> some View {
+    func productView(_ product: ProductOffering) -> some View {
         let onTap: () -> Void = {
             guard !product.isComingSoon else {
                 return
@@ -620,8 +620,9 @@ public struct CodeDesignerView: JoliView {
 //                                    .backgroundColor(.fixedGray)
 //                                    .eraseToAnyView()
 //                            }
-//                            
+//
 //                            self.appCoordinator.globalModalSubject.send(view)
+                            
                             if isLastTab {
                                 guard let expData = experienceData else { return }
                                 self.submitExperience(expData, codes: [visualCode])

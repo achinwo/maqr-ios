@@ -10,10 +10,30 @@ import Foundation
 import StoreKit
 import Combine
 
-public typealias ProductIdentifier = String
+public struct ProductIdentifier: Hashable, Equatable, RawRepresentable {
+    
+    public var rawValue: String
+    
+    public init(_ rawValue: String){
+        self.init(rawValue: rawValue)
+    }
+    
+    public init(rawValue: String){
+        self.rawValue = rawValue
+    }
+    
+}
 
-extension Notification.Name {
-    public static let storeKitHelperPurchaseNotification = Notification.Name("storeKitHelperPurchaseNotification")
+public extension Notification.Name {
+    static let storeKitHelperPurchaseNotification = Notification.Name("storeKitHelperPurchaseNotification")
+}
+
+public extension Collection where Element == ProductIdentifier {
+    
+    var rawValues: [String] {
+        return self.map() { $0.rawValue }
+    }
+    
 }
 
 public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequestDelegate {
@@ -27,8 +47,8 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
     }
     
     @discardableResult
-    public func request(_ productIdentifiers: Set<String>) -> SKProductsRequest {
-        let request = SKProductsRequest(productIdentifiers: productIdentifiers)
+    public func request(_ productIdentifiers: Set<ProductIdentifier>) -> SKProductsRequest {
+        let request = SKProductsRequest(productIdentifiers: productIdentifiers.rawValues.uniq)
         request.delegate = self
         request.start()
         return request
@@ -60,6 +80,25 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
         SKPaymentQueue.default().restoreCompletedTransactions()
     }
     
+    public func retreiveReceipt() -> String? {
+        guard let appStoreReceiptURL = Bundle.main.appStoreReceiptURL, FileManager.default.fileExists(atPath: appStoreReceiptURL.path) else {
+            return nil
+        }
+        
+        do {
+            let receiptData = try Data(contentsOf: appStoreReceiptURL, options: .alwaysMapped)
+            print(receiptData)
+            
+            let receiptString = receiptData.base64EncodedString(options: [])
+            print("[RECEIPT] \(receiptString)")
+                // Read receiptData
+            return receiptString
+        } catch {
+            print("Couldn't read receipt data with error: " + error.localizedDescription)
+            return nil
+        }
+    }
+    
 }
 
 extension StoreKitHelper: SKPaymentTransactionObserver {
@@ -69,8 +108,7 @@ extension StoreKitHelper: SKPaymentTransactionObserver {
             print("[StoreKitHelper] transaction: \(transaction) - \(transaction.transactionState.rawValue) - \(transaction.payment.productIdentifier)")
             switch transaction.transactionState {
                 case .purchased:
-                        //complete(transaction)
-                    break
+                    complete(transaction)
                 case .failed:
                         //fail(transaction)
                     break
@@ -85,6 +123,13 @@ extension StoreKitHelper: SKPaymentTransactionObserver {
                     break
             }
         }
+    }
+    
+    private func complete(_ transaction: SKPaymentTransaction) {
+        print("complete...")
+        //persistPurchase(identifier: transaction.payment.productIdentifier)
+        dispatchPurchaseNotificationFor(identifier: transaction.payment.productIdentifier)
+        SKPaymentQueue.default().finishTransaction(transaction)
     }
     
     public func paymentQueue(_ queue: SKPaymentQueue, didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {

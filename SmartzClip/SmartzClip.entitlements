@@ -4,9 +4,6 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>webcredentials:shops.smartstickr.com</string>
-		<string>appclips:shops.smartstickr.com</string>
-		<string>applinks:shops.smartstickr.com</string>
 		<string>webcredentials:smartstikr.com</string>
 		<string>appclips:smartstikr.com</string>
 		<string>applinks:smartstikr.com</string>

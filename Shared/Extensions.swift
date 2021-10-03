@@ -279,6 +279,41 @@ public extension Array where Element == Spotify.Image {
     
 }
 
+
+public extension Collection where Element: Hashable {
+    
+    var uniq: Set<Element> {
+        return Set(self)
+    }
+    
+}
+
+public extension View {
+    
+    func backgroundColor(_ color: Color) -> some View {
+        return self.background(color)
+    }
+    
+}
+
+extension Color: Encodable {
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.hexString)
+    }
+    
+}
+
+extension Color: Decodable {
+    
+    public init(from decoder: Decoder) throws {
+        let hex = try decoder.singleValueContainer().decode(String.self)
+        self.init(hex: hex)
+    }
+    
+}
+
 public extension Search {
     
     struct ResultView: JoliView, Identifiable {

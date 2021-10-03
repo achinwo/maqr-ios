@@ -52,7 +52,7 @@ struct ProductSection: Identifiable {
     }
 }
 
-public struct Product: Identifiable {
+public struct ProductOffering: Identifiable {
     public let companyName: String
     public let name: String
     public let description: String
@@ -98,14 +98,14 @@ public struct ReorderNowView: Experience, JoliView {
     
 }
 
-public let products: [Product] = [
-    Product(companyName: "Receipe Instructions", name: "Meal Preparations", description: "Interactive meal preparation guides", location: .product("sise", "ofada"), companyLogoName: nil, companyDescription: "Meal box delivery", isComingSoon: false, experienceCls: MealboxView.self, iconName: "list.bullet.rectangle"),
-    Product(companyName: "The Restaurant", name: "Reservation Check-in", description: "Seamless restaurant check-ins and menu browser", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false, experienceCls: RestaurantView.self, iconName: "calendar.circle.fill"),
-    Product(companyName: "Portal", name: "Brand Promotion", description: "Your frontpage for promoting brands such as products, movies and tv shows", location: .product("shows", "iacw"), companyLogoName: nil, companyDescription: "Brand", isComingSoon: false,
+public let products: [ProductOffering] = [
+    ProductOffering(companyName: "Receipe Instructions", name: "Meal Preparations", description: "Interactive meal preparation guides", location: .product("sise", "ofada"), companyLogoName: nil, companyDescription: "Meal box delivery", isComingSoon: false, experienceCls: MealboxView.self, iconName: "list.bullet.rectangle"),
+    ProductOffering(companyName: "The Restaurant", name: "Reservation Check-in", description: "Seamless restaurant check-ins and menu browser", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false, experienceCls: RestaurantView.self, iconName: "calendar.circle.fill"),
+    ProductOffering(companyName: "Portal", name: "Brand Promotion", description: "Your frontpage for promoting brands such as products, movies and tv shows", location: .product("shows", "iacw"), companyLogoName: nil, companyDescription: "Brand", isComingSoon: false,
             experienceCls: TvShowPromoView.self, iconName: "film.fill"),
-    Product(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "Household inventory management made effortless", location: .product("stikr", "sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true,
+    ProductOffering(companyName: "Re-order Now!", name: "Restock Essentials Instantly", description: "Household inventory management made effortless", location: .product("stikr", "sherman"), companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: true,
             experienceCls: ReorderNowView.self, iconName: "creditcard.fill"),
-    Product(companyName: "Playlist Sharing", name: "ꚠoli - Listen Together", description: "Enꚠoy music in groups with real-time voting", location: .product("joli", "joli"), companyLogoName: "logo_joli", companyDescription: "Entertainment", isComingSoon: true,
+    ProductOffering(companyName: "Playlist Sharing", name: "ꚠoli - Listen Together", description: "Enꚠoy music in groups with real-time voting", location: .product("joli", "joli"), companyLogoName: "logo_joli", companyDescription: "Entertainment", isComingSoon: true,
             experienceCls: ReorderNowView.self)
 ]
 

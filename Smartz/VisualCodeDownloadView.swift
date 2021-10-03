@@ -5,7 +5,7 @@
 //  Created by Anthony Chinwo on 15/08/2021.
 //  Copyright © 2021 Anthony Chinwo. All rights reserved.
 //
-
+import JoliCore
 import SwiftUI
 import SharedUI
 import os
@@ -21,7 +21,7 @@ struct VisualCodeDownloadView: JoliView {
     @State var products: [SKProduct] = []
     
     func performSubscribe(){
-        appCoordinator.storeKitHelper.request(["sticker_genric_singlecolor_unsecure_4", "basic_publishing_1m", "basic_publishing_1y"])
+        appCoordinator.storeKitHelper.request(ProductIdentifier.productIds)
     }
     
     var contentView: some View {
@@ -39,18 +39,18 @@ struct VisualCodeDownloadView: JoliView {
                 
                 Divider().padding(.bottom)
                 
-//                ForEach(products) { product in
-//                    HStack(){
-//                        Text(product.localizedTitle)
-//                        Spacer()
-//                        Button(){
-//                            appCoordinator.storeKitHelper.buyProduct(product)
-//                        } label: {
-//                            Text("Buy")
-//                        }
-//                    }
-//                    .padding()
-//                }
+                ForEach(products) { product in
+                    HStack(){
+                        Text(product.localizedTitle)
+                        Spacer()
+                        Button(){
+                            appCoordinator.storeKitHelper.buyProduct(product)
+                        } label: {
+                            Text("Buy")
+                        }
+                    }
+                    .padding()
+                }
                 
                 Image(systemName: "externaldrive.fill.badge.icloud")
                     .resizable()
@@ -59,18 +59,46 @@ struct VisualCodeDownloadView: JoliView {
                     .padding([.bottom, .horizontal])
                     .padding(.vertical)
                 
+                Link(destination: URL(staticString: "https://apps.apple.com/account/billing")){
+                    Text("Go to Billing")
+                }
+                .padding()
+                
+                Link(destination: URL(staticString: "https://apps.apple.com/account/subscriptions")){
+                    Text("Go to Subscriptions")
+                }
+                .padding()
+                
                 Button(){
-                    //self.performSubscribe()
-                    guard !downloaded else {
-                        appCoordinator.share(text: "Your file", url: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/austin-chan-ukzHlkoz1IE-unsplash.jpg"))
+                    self.performSubscribe()
+                    
+                    guard let receiptData = appCoordinator.storeKitHelper.retreiveReceipt() else {
                         return
                     }
                     
-                    self.iCloudDirectoryCreate() {
-                        self.presentToast("Done", subTitle: "Saved to iCloud Drive", type: .complete(.green)) { _ in
-                            self.downloaded = true
+                    
+                    let json: Json = [
+                        "receiptData": receiptData as AnyObject,
+                    ]
+                    
+                    HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/process-transaction")!, payload: json, baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: .main)
+                        .then(){ res in
+                            print("[RECEIPT] \(res)")
                         }
-                    }
+                        .catch(){ error in
+                            print("[RECEIPT] error: \(error)")
+                        }
+                    
+//                    guard !downloaded else {
+//                        appCoordinator.share(text: "Your file", url: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/austin-chan-ukzHlkoz1IE-unsplash.jpg"))
+//                        return
+//                    }
+//
+//                    self.iCloudDirectoryCreate() {
+//                        self.presentToast("Done", subTitle: "Saved to iCloud Drive", type: .complete(.green)) { _ in
+//                            self.downloaded = true
+//                        }
+//                    }
                 } label: {
                     HStack(){
                         Spacer()
