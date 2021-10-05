@@ -10,25 +10,42 @@ import Foundation
 import StoreKit
 import Combine
 
-public struct ProductIdentifier: Hashable, Equatable, RawRepresentable {
+public struct Product: Hashable, Equatable, Identifiable {
     
-    public var rawValue: String
-    
-    public init(_ rawValue: String){
-        self.init(rawValue: rawValue)
+    public struct Identifier: Hashable, Equatable, RawRepresentable, Identifiable {
+        
+        public var rawValue: String
+        
+        public init(_ rawValue: String){
+            self.init(rawValue: rawValue)
+        }
+        
+        public init(rawValue: String){
+            self.rawValue = rawValue
+        }
+        
+        public var id: String {
+            return rawValue
+        }
+        
+        public var productIds: Set<Identifier> = []
+        
     }
     
-    public init(rawValue: String){
-        self.rawValue = rawValue
+    let product: SKProduct
+    
+    public var id: String {
+        return product.id
     }
     
 }
+
 
 public extension Notification.Name {
     static let storeKitHelperPurchaseNotification = Notification.Name("storeKitHelperPurchaseNotification")
 }
 
-public extension Collection where Element == ProductIdentifier {
+public extension Collection where Element == Product.Identifier {
     
     var rawValues: [String] {
         return self.map() { $0.rawValue }
@@ -36,10 +53,21 @@ public extension Collection where Element == ProductIdentifier {
     
 }
 
-public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequestDelegate {
+public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequestDelegate, SKRequestDelegate {
     
     public typealias Response = (request: SKProductsRequest, response: SKProductsResponse)
     public let productResponse = PassthroughSubject<Response, Never>()
+    
+    private var currentRequest: SKRequest? = nil {
+        didSet {
+            DispatchQueue.main.async {
+                self.isLoadingProducts = self.currentRequest != nil
+            }
+        }
+    }
+    
+    @Published public var products: [SKProduct] = []
+    @Published public var isLoadingProducts: Bool = false
     
     public override init() {
         super.init()
@@ -47,17 +75,34 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
     }
     
     @discardableResult
-    public func request(_ productIdentifiers: Set<ProductIdentifier>) -> SKProductsRequest {
+    public func request(_ productIdentifiers: Set<Product.Identifier>) -> SKProductsRequest {
+        
+        self.currentRequest?.cancel()
+        self.currentRequest?.delegate = nil
+        
         let request = SKProductsRequest(productIdentifiers: productIdentifiers.rawValues.uniq)
         request.delegate = self
         request.start()
+        self.currentRequest = request
+        
         return request
     }
     
     public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         DispatchQueue.main.async(){
+            self.products = response.products
             self.productResponse.send((request, response))
         }
+    }
+    
+    public func requestDidFinish(_ request: SKRequest) {
+        print("[\(Self.self)] request finished: \(request)]")
+        self.currentRequest = nil
+    }
+    
+    public func request(_ request: SKRequest, didFailWithError error: Error) {
+        print("[\(Self.self)] request errored: \(request) - \(error)")
+        self.currentRequest = nil
     }
     
     public func buyProduct(_ product: SKProduct) {
@@ -66,9 +111,9 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
         SKPaymentQueue.default().add(payment)
     }
     
-    private var purchasedProductIdentifiers: Set<ProductIdentifier> = []
+    private var purchasedProductIdentifiers: Set<Product.Identifier> = []
     
-    public func isProductPurchased(_ productIdentifier: ProductIdentifier) -> Bool {
+    public func isProductPurchased(_ productIdentifier: Product.Identifier) -> Bool {
         return purchasedProductIdentifiers.contains(productIdentifier)
     }
     

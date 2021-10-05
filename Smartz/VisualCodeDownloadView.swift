@@ -21,7 +21,7 @@ struct VisualCodeDownloadView: JoliView {
     @State var products: [SKProduct] = []
     
     func performSubscribe(){
-        appCoordinator.storeKitHelper.request(ProductIdentifier.productIds)
+        appCoordinator.storeKitHelper.request(Product.Identifier.productIds)
     }
     
     var contentView: some View {

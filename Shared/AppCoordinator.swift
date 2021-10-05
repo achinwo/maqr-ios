@@ -53,6 +53,7 @@ public final class AppCoordinator: ObservableObject {
         return NetworkImageLoader(urlSession: URLSession(configuration: configuration), imageCache: NetworkImageCache())
     }()
     
+    @Published public var serverInfo: ServerInfo? = nil
     @Published public var isSearching: Search.Category = []
     @Published public var isSharePresented = false
     @Published public var namespace: Namespace.ID? = nil
@@ -148,6 +149,10 @@ public final class AppCoordinator: ObservableObject {
     //public let playRequestedSubject = CurrentValueSubject([:] as [AppPreview: ])
     
     private var allSearchengines = [spotifyEngine]
+    
+    public var isPaymentEnabled: Bool {
+        serverInfo?.feature.paymentsEnabled == true
+    }
     
     public enum ActionError: Error {
         case insufficientHeartPoints

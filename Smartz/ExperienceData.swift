@@ -15,13 +15,13 @@ import JoliApi
 
 public typealias MultilineString = String
 
-public extension ProductIdentifier {
+public extension Product.Identifier {
 
-    static let sticker4Pack = ProductIdentifier("sticker_genric_singlecolor_unsecure_4")
-    static let subscriptionBasic1m = ProductIdentifier("basic_publishing_1mx")
-    static let subscriptionBasic1y = ProductIdentifier("basic_publishing_1yx")
+    static let sticker4Pack = Product.Identifier("sticker_genric_singlecolor_unsecure_4")
+    static let subscriptionBasic1m = Product.Identifier("basic_publishing_1mx")
+    static let subscriptionBasic1y = Product.Identifier("basic_publishing_1yx")
     
-    static let productIds: Set<ProductIdentifier> = [
+    static let productIds: Set<Product.Identifier> = [
         sticker4Pack,
         subscriptionBasic1m,
         subscriptionBasic1y

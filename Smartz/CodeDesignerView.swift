@@ -614,29 +614,43 @@ public struct CodeDesignerView: JoliView {
                         let isLastTab = selectedTab == tabNames.count - 1
                         
                         Button(){
-//                            let view: AppPreview = .view2(){
-//                                VisualCodeDownloadView()
-//                                    .environment(\.colorScheme, .dark)
-//                                    .backgroundColor(.fixedGray)
-//                                    .eraseToAnyView()
-//                            }
-//
-//                            self.appCoordinator.globalModalSubject.send(view)
+
                             
-                            if isLastTab {
-                                guard let expData = experienceData else { return }
-                                self.submitExperience(expData, codes: [visualCode])
-                            } else {
+                            guard let expData = experienceData, let expCls = selectedExperience, isLastTab else {
                                 self.readyToDownload = true
                                 self.appCoordinator.dismissKeyboard()
                                 self.trialActivateCallback()
+                                return
                             }
+                            
+                            guard appCoordinator.isPaymentEnabled else {
+                                self.submitExperience(expData, codes: [visualCode])
+                                return
+                            }
+                            
+                            let view: AppPreview = .view2(){
+                                NavigationView(){
+                                        ExperiencePurchaseView() {
+                                            self.submitExperience(expData, codes: [visualCode])
+                                        }
+                                        .navigationBarTitle(Text("Purchase \(expCls.title) Experience"), displayMode: .inline)
+                                    }
+//                                    .environment(\.colorScheme, .dark)
+//                                    .backgroundColor(.fixedGray)
+                                    .eraseToAnyView()
+                            }
+
+                            self.appCoordinator.globalModalSubject.send(view)
+                            
                         } label: {
                             
                             if isLastTab && submitting {
                                 ProgressView().progressViewStyle(CircularProgressViewStyle())
                             } else if isLastTab {
-                                Text(experienceData?.uuid == nil ? "Submit" : "Save Changes")
+                                let isNew = experienceData?.uuid == nil
+                                let newTxt: String = isNew && appCoordinator.isPaymentEnabled ? "Purchase" : "Submit"
+                                
+                                Text(isNew ? newTxt : "Save Changes")
                             } else {
                                 Text("Try It")
                             }

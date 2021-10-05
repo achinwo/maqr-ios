@@ -187,6 +187,7 @@
 		9286049C2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
 		928604A1270C842200ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
 		928604A2270C842200ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
+		928604A4270CA80D00ED2E68 /* ExperiencePurchaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928604A3270CA80D00ED2E68 /* ExperiencePurchaseView.swift */; };
 		92870E49259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */; };
 		92870E4A259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */; };
 		928A391D24E9DAE700A029A1 /* ListenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A391B24E9DAE600A029A1 /* ListenView.swift */; };
@@ -480,6 +481,7 @@
 		927E0E3524E9ADC000C8257D /* AppClip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppClip.swift; sourceTree = "<group>"; };
 		927E0E3924E9AFFF00C8257D /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
 		9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitHelper.swift; sourceTree = "<group>"; };
+		928604A3270CA80D00ED2E68 /* ExperiencePurchaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperiencePurchaseView.swift; sourceTree = "<group>"; };
 		92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayroomHeaderView.swift; sourceTree = "<group>"; };
 		928A391B24E9DAE600A029A1 /* ListenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenView.swift; sourceTree = "<group>"; };
 		928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyDelegate.swift; sourceTree = "<group>"; };
@@ -665,6 +667,7 @@
 				9228F86B26C07A310053DC04 /* ExperienceData.swift */,
 				9217904F26C9832A009FC4CE /* VisualCodeDownloadView.swift */,
 				9217905526CC51DA009FC4CE /* MessageView.swift */,
+				928604A3270CA80D00ED2E68 /* ExperiencePurchaseView.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -1438,6 +1441,7 @@
 				921F6C4526BEA1110061D236 /* CGImage+RawBytes.swift in Sources */,
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */,
+				928604A4270CA80D00ED2E68 /* ExperiencePurchaseView.swift in Sources */,
 				921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */,
 				921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
