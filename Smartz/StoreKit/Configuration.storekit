@@ -34,13 +34,25 @@
       "subscriptions" : [
         {
           "adHocOffers" : [
-
+            {
+              "internalID" : "31483D2B",
+              "offerID" : "LONGOVERDUE",
+              "paymentMode" : "free",
+              "referenceName" : "Free Trial - 3 Months",
+              "subscriptionPeriod" : "P3M"
+            }
           ],
           "displayPrice" : "5.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "F3DB382B",
-          "introductoryOffer" : null,
+          "introductoryOffer" : {
+            "displayPrice" : "",
+            "internalID" : "B39A624A",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "payAsYouGo",
+            "subscriptionPeriod" : "P1M"
+          },
           "localizations" : [
             {
               "description" : "standard publishing capabilities",

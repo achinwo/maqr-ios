@@ -85,7 +85,7 @@ struct JoliClip: AppClip {
     
     let keychain: Keychain = Keychain(service: "live.joli.session-token")
     
-    @State var serverVersion: Version? = nil
+    @State var serverInfo: ServerInfo? = nil
     @State var appleSignInDelegates: SignInWithAppleDelegates?
     let apnTokenPublisher: NotificationCenter.Publisher = NotificationCenter.default.publisher(for: Notifications.apnToken)
     

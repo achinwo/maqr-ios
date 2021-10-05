@@ -38,7 +38,7 @@ struct SmartzApp: AppClip {
     
     @State var appleSignInDelegates: SignInWithAppleDelegates? = nil
     
-    @State var serverVersion: Version? = nil
+    @State var serverInfo: ServerInfo? = nil
     
     var apnTokenPublisher: NotificationCenter.Publisher
     

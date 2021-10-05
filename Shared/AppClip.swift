@@ -675,7 +675,7 @@ public protocol AppClip: App {
     var coordinator: AppCoordinator { nonmutating get }
     var namespace: Namespace.ID { get }
     var appleSignInDelegates: SignInWithAppleDelegates? { get nonmutating set }
-    var serverVersion: Version? { get nonmutating set }
+    var serverInfo: ServerInfo? { get nonmutating set }
     var apnTokenPublisher: NotificationCenter.Publisher { get }
     
     var websocket: Socket { get }
@@ -982,9 +982,9 @@ public extension AppClip {
                 
                 JoliApi.resolveServer(self.coordinator.api.baseUrl.http)
                     .timeout(3.0)
-                    .then(on: .main) { version in
-                        logger.info("[\(Self.self)] server info: host=\(self.coordinator.api.baseUrl.http), version=\(version)")
-                        self.serverVersion = version
+                    .then(on: .main) { info in
+                        logger.info("[\(Self.self)] server info: host=\(self.coordinator.api.baseUrl.http), version=\(info.version), features: \(info.feature)")
+                        self.serverInfo = info
                     }
                     .catch(self.coordinator.globalErrorHandler())
             }

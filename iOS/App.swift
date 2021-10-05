@@ -37,7 +37,7 @@ struct JoliApp: AppClip {
     
     let keychain: Keychain = Keychain(service: "live.joli.session-token")
     
-    @State var serverVersion: Version? = nil
+    @State var serverInfo: ServerInfo? = nil
     @State var alertInfo: Alert? = nil
     
     @AppStorage("spotify.devices.active") var activeDeviceId: String = .empty

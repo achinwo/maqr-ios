@@ -268,9 +268,9 @@ class AppState: ObservableObject {
         
         JoliApi.resolveServer(self.baseUrl.http)
             .timeout(3.0)
-            .then(on: .main) { version in
-                logger.info("[AppState#init] server version: \(version)")
-                self.serverVersion = version
+            .then(on: .main) { info in
+                logger.info("[AppState#init] server version: \(info)")
+                self.serverVersion = info.version
             }
             .catch() { error in
                 logger.error("[serverResolve] error: \(String(describing: error))")

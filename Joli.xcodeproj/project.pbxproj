@@ -185,6 +185,8 @@
 		9280818727046B7D001120ED /* NetworkImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9280818627046B7D001120ED /* NetworkImage */; };
 		9286049B2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
 		9286049C2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
+		928604A1270C842200ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
+		928604A2270C842200ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
 		92870E49259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */; };
 		92870E4A259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */; };
 		928A391D24E9DAE700A029A1 /* ListenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A391B24E9DAE600A029A1 /* ListenView.swift */; };
@@ -1533,6 +1535,7 @@
 				926E2E25260F40E9007F62E0 /* PlayroomCreateView.swift in Sources */,
 				92A32DFC24C79C07007C960E /* ImageView.swift in Sources */,
 				92A32DB724C79B59007C960E /* UserSettings.swift in Sources */,
+				928604A1270C842200ED2E68 /* StoreKitHelper.swift in Sources */,
 				92A32DE624C79C07007C960E /* ServiceAlert.swift in Sources */,
 				92870E4A259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */,
 				92A7120F24D85EC600AD6729 /* NetworkImageView.swift in Sources */,
@@ -1615,6 +1618,7 @@
 				926DB4AF26389E0900D62912 /* ListenTabbarView.swift in Sources */,
 				926DB4B026389E0D00D62912 /* ListenView.swift in Sources */,
 				92A32D8824C79A13007C960E /* Styles.swift in Sources */,
+				928604A2270C842200ED2E68 /* StoreKitHelper.swift in Sources */,
 				926DB4BC26389E3600D62912 /* SkipVoteView.swift in Sources */,
 				923D0DC426205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
 				926DB4B826389E2800D62912 /* TrackList.swift in Sources */,
