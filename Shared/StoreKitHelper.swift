@@ -110,6 +110,14 @@ public struct Product: Hashable, Equatable, Identifiable {
         return product.productIdentifier
     }
     
+    public var price: String? {
+        let formatter = NumberFormatter()
+        formatter.formatterBehavior = .behavior10_4
+        formatter.numberStyle = .currency
+        formatter.locale = product.priceLocale
+        return formatter.string(from: product.price)
+    }
+    
     public var subscriptionPeriod: SKProductSubscriptionPeriod? {
         guard product.subscriptionPeriod == nil else {
             return product.subscriptionPeriod
@@ -163,6 +171,7 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
     }
     
     @Published public var products: [Product] = []
+    @Published public var invalidProductIds: [String]? = nil
     @Published public var isLoadingProducts: Bool = false
     
     public override init() {
@@ -186,6 +195,7 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
     
     public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         DispatchQueue.main.async(){
+            self.invalidProductIds = response.invalidProductIdentifiers
             self.products = response.products.map() { Product(product: $0) }
             self.productResponse.send((request, response))
         }
