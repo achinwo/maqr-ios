@@ -18,6 +18,7 @@ public struct GridChooserView<Item: Identifiable, Content: View>: JoliView {
     let content: (Item) -> Content
     let mode: SelectionMode
     let layout: LayoutStyle
+    let cornerRadius: CGFloat?
     
     public enum SelectionMode {
         case single
@@ -25,11 +26,15 @@ public struct GridChooserView<Item: Identifiable, Content: View>: JoliView {
     }
     
     public enum LayoutStyle {
-        case grid
+        case grid(Int)
         case list
+        
+        public static var grid: LayoutStyle {
+            return .grid(2)
+        }
     }
     
-    public init(items: Binding<[Item]>, selection: Binding<Item.ID?>, layout: LayoutStyle = .grid, onSelection: @escaping (Item) -> Void, @ViewBuilder content: @escaping (Item) -> Content) {
+    public init(items: Binding<[Item]>, selection: Binding<Item.ID?>, layout: LayoutStyle = .grid, cornerRadius: CGFloat? = 20, onSelection: @escaping (Item) -> Void, @ViewBuilder content: @escaping (Item) -> Content) {
         self._items = items
         self.content = content
         self.onSelection = onSelection
@@ -46,15 +51,16 @@ public struct GridChooserView<Item: Identifiable, Content: View>: JoliView {
         
         self.mode = .single
         self.layout = layout
+        self.cornerRadius = cornerRadius
     }
     
-    public init(items: Binding<[Item]>, selections: Binding<[Item.ID]>, layout: LayoutStyle = .grid, @ViewBuilder content: @escaping (Item) -> Content) {
+    public init(items: Binding<[Item]>, selections: Binding<[Item.ID]>, layout: LayoutStyle = .grid, cornerRadius: CGFloat? = 20, @ViewBuilder content: @escaping (Item) -> Content) {
         self._items = items
         self.content = content
         self._selections = selections
         self.mode = .multiple
         self.layout = layout
-        self.onSelection = self.onSelect(_:)
+        self.cornerRadius = cornerRadius
     }
     
     private func onSelect(_ item: Item) {
@@ -70,28 +76,26 @@ public struct GridChooserView<Item: Identifiable, Content: View>: JoliView {
         }
     }
     
-    var columns: [GridItem] {
-        return [
-            GridItem(),
-            GridItem(),
-        ]
-    }
-    
     private var forEachView: some View {
         ForEach(items) { item in
             Button(){
+                self.onSelect(item)
                 self.onSelection?(item)
             } label: {
                 content(item)
             }
-            .cornerRadius(20)
+            .ifLet(cornerRadius){ view, value in
+                view.cornerRadius(value)
+            }
             .id(item.id)
         }
     }
     
     public var contentView: some View {
         Group(){
-            if layout == .grid {
+            if case let .grid(columnCount) = layout {
+                let columns = (0 ..< columnCount).map() { _ in GridItem() }
+                
                 LazyVGrid(columns: columns, spacing: Sizing.medium){
                     forEachView
                 }

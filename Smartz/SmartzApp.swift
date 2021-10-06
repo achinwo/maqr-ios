@@ -72,6 +72,9 @@ struct SmartzApp: AppClip {
         
         _safeAreaInsets = State(initialValue: EdgeInsets())
         
+        // set app products as default
+        Product.Identifier.productIds = Product.Identifier.stikrProductIds
+        
         let coordinator = AppCoordinator()
         self.coordinator = coordinator
         

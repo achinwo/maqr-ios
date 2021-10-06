@@ -1,7 +1,51 @@
 {
   "identifier" : "C0E13CE0",
   "nonRenewingSubscriptions" : [
-
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "BFA42A23",
+      "localizations" : [
+        {
+          "description" : "One-off publishing for 24hrs",
+          "displayName" : "Publishing - 24 hours",
+          "locale" : "en_GB"
+        }
+      ],
+      "productID" : "com.smartstickr.Smartz.oneoff.199_24h",
+      "referenceName" : "Publishing - 24h",
+      "type" : "NonRenewingSubscription"
+    },
+    {
+      "displayPrice" : "5.99",
+      "familyShareable" : false,
+      "internalID" : "B28EBDD6",
+      "localizations" : [
+        {
+          "description" : "One-off publishing for 3 days",
+          "displayName" : "Publishing - 3 days",
+          "locale" : "en_GB"
+        }
+      ],
+      "productID" : "com.smartstickr.Smartz.oneoff.599_3d",
+      "referenceName" : "Publishing - 3d",
+      "type" : "NonRenewingSubscription"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "1668B6AC",
+      "localizations" : [
+        {
+          "description" : "One-off publishing for 1 week",
+          "displayName" : "Publishing - 1 week",
+          "locale" : "en_GB"
+        }
+      ],
+      "productID" : "com.smartstickr.Smartz.oneoff.999_1w",
+      "referenceName" : "Publishing - 1w",
+      "type" : "NonRenewingSubscription"
+    }
   ],
   "products" : [
     {
@@ -15,7 +59,7 @@
           "locale" : "en_GB"
         }
       ],
-      "productID" : "sticker_genric_singlecolor_unsecure_4",
+      "productID" : "com.smartstickr.Smartz.fixed.pack4_399",
       "referenceName" : "Sticker pack",
       "type" : "Consumable"
     }
@@ -42,7 +86,7 @@
               "subscriptionPeriod" : "P3M"
             }
           ],
-          "displayPrice" : "5.99",
+          "displayPrice" : "3.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "F3DB382B",
@@ -60,7 +104,7 @@
               "locale" : "en_GB"
             }
           ],
-          "productID" : "basic_publishing_1mx",
+          "productID" : "com.smartstickr.Smartz.subscription.basic_399_1m",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Basic Publishing - 1 Month",
           "subscriptionGroupID" : "379AECCD",
@@ -70,7 +114,7 @@
           "adHocOffers" : [
 
           ],
-          "displayPrice" : "24.99",
+          "displayPrice" : "37.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "ECB3763C",
@@ -82,7 +126,7 @@
               "locale" : "en_GB"
             }
           ],
-          "productID" : "basic_publishing_1yx",
+          "productID" : "com.smartstickr.Smartz.subscription.basic_3799_1y",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Basic Publishing - 1 Year",
           "subscriptionGroupID" : "379AECCD",

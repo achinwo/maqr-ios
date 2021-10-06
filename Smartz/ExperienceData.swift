@@ -16,17 +16,25 @@ import JoliApi
 public typealias MultilineString = String
 
 public extension Product.Identifier {
+    // <app>_<price>_<duration>_<intro duration><intro price>
+    static let prefix: String = "com.smartstickr.Smartz"
 
-    static let sticker4Pack = Product.Identifier("sticker_genric_singlecolor_unsecure_4")
-    static let subscriptionBasic1m = Product.Identifier("basic_publishing_1mx")
-    static let subscriptionBasic1y = Product.Identifier("basic_publishing_1yx")
+    static let sticker4Pack = Product.Identifier(.fixed(prefix: prefix, name: "pack4_399"))
+    static let subscriptionBasic1m = Product.Identifier(.subscription(prefix: prefix, name: "basic_399_1m"))
+    static let subscriptionBasic1y = Product.Identifier(.subscription(prefix: prefix, name: "basic_3799_1y"))
     
-    static let productIds: Set<Product.Identifier> = [
-        sticker4Pack,
-        subscriptionBasic1m,
-        subscriptionBasic1y
-    ]
+    static let oneoff24h = Product.Identifier(.oneoff(prefix: prefix, name: "199_24h", period: .period(.day, numberOfUnits: 1)))
+    static let oneoff3d = Product.Identifier(.oneoff(prefix: prefix, name: "599_3d", period: .period(.day, numberOfUnits: 3)))
+    static let oneoff1w = Product.Identifier(.oneoff(prefix: prefix, name: "999_1w", period: .period(.week, numberOfUnits: 1)))
     
+    static let stikrProductIds: Set<Product.Identifier> = [
+                sticker4Pack,
+                subscriptionBasic1m,
+                subscriptionBasic1y,
+                oneoff3d,
+                oneoff24h,
+                oneoff1w
+            ]
 }
 
 public protocol ExperienceDataItem: Codable {
