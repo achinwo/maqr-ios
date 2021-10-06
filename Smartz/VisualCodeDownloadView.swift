@@ -44,7 +44,9 @@ struct VisualCodeDownloadView: JoliView {
                         Text(product.product.localizedTitle)
                         Spacer()
                         Button(){
-                            appCoordinator.storeKitHelper.buyProduct(product)
+                            appCoordinator.storeKitHelper.buyProduct(product) { _ in
+                                
+                            }
                         } label: {
                             Text("Buy")
                         }

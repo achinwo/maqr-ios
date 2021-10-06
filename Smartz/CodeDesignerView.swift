@@ -415,6 +415,13 @@ public struct CodeDesignerView: JoliView {
                     .catch(){ error in
                         print("error saving code: \(error)")
                     }
+                    .always {
+                        
+                        DispatchQueue.main.async(){
+                            self.experienceData = ExperienceData.fromExperienceData(saved, baseUrl: api.baseUrlHttp)
+                            onExperinceDataChanged(self.experienceData)
+                        }
+                    }
                 
             }
             .catch() { error in
@@ -630,7 +637,8 @@ public struct CodeDesignerView: JoliView {
                             
                             let view: AppPreview = .view2(){
                                 NavigationView(){
-                                        ExperiencePurchaseView() {
+                                        ExperiencePurchaseView() { _ in
+                                            self.appCoordinator.globalModalSubject.send(nil)
                                             self.submitExperience(expData, codes: [visualCode])
                                         }
                                         .navigationBarTitle(Text("Purchase \(expCls.title) Experience"), displayMode: .inline)

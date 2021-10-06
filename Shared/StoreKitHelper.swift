@@ -211,10 +211,15 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
         self.currentRequest = nil
     }
     
-    public func buyProduct(_ product: Product) {
+    private var pendingTransactionCallbacks = [String: (SKPaymentTransaction) -> Void]()
+    
+    @discardableResult
+    public func buyProduct(_ product: Product, callback: @escaping (SKPaymentTransaction) -> Void) -> SKPayment {
         print("Buying \(product.product.productIdentifier)...")
         let payment = SKPayment(product: product.product)
         SKPaymentQueue.default().add(payment)
+        pendingTransactionCallbacks[product.productIdentifier] = callback
+        return payment
     }
     
     private var purchasedProductIdentifiers: Set<Product.Identifier> = []
@@ -279,8 +284,17 @@ extension StoreKitHelper: SKPaymentTransactionObserver {
     private func complete(_ transaction: SKPaymentTransaction) {
         print("complete...")
         //persistPurchase(identifier: transaction.payment.productIdentifier)
+        
         dispatchPurchaseNotificationFor(identifier: transaction.payment.productIdentifier)
         SKPaymentQueue.default().finishTransaction(transaction)
+        
+        
+        guard let callback = pendingTransactionCallbacks.removeValue(forKey: transaction.payment.productIdentifier) else {
+            print("Unable to locate callback for transaction: \(transaction.payment.productIdentifier)")
+            return
+        }
+        
+        callback(transaction)
     }
     
     public func paymentQueue(_ queue: SKPaymentQueue, didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {

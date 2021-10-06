@@ -8,7 +8,7 @@
 
 import SwiftUI
 import SharedUI
-//import StoreKit
+import class StoreKit.SKPaymentTransaction
 
 struct GeometryGetter: View {
     
@@ -55,7 +55,7 @@ struct GrowingButton: ButtonStyle {
 
 struct ExperiencePurchaseView: JoliView {
     
-    let onPurchased: () -> Void
+    let onPurchased: (SKPaymentTransaction) -> Void
     @State var products: [Product] = []
     @State var invalidProductIds: [String]? = nil
     @State var isLoadingProducts: Bool = false
@@ -229,7 +229,7 @@ struct ExperiencePurchaseView: JoliView {
                         Text("Publish an Experince Anytime")
                             .font(.title.weight(.semibold))
                             .padding([.horizontal, .top])
-                        (Text("Get an always-on publishing plan - perfect for ") + Text("hobbyists").fontWeight(.semibold) + Text(" and ") + Text("small business").fontWeight(.semibold)).padding()
+                        (Text("Get an always-on publishing plan - perfect for ") + Text("hobbyists").fontWeight(.semibold) + Text(" and ") + Text("small businesses").fontWeight(.semibold)).padding()
                             .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
                             .padding(.horizontal)
@@ -238,8 +238,7 @@ struct ExperiencePurchaseView: JoliView {
                         Divider().padding()
                             .animation(.easeInOut)
                         Text("Don't need a subscription?").font(.title2.weight(.semibold)).padding(.horizontal)
-                        (Text("We've got you covered, use a one-off fixed duration plan - perfect for trailing, or ") + Text("planning events").fontWeight(.semibold) + Text("."))
-                            .multilineTextAlignment(.center)
+                        (Text("We've got you covered, use a one-off fixed duration plan - perfect for trailing, or ") + Text("planning events").fontWeight(.semibold))                            .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
                             .padding(.horizontal)
                         
@@ -251,7 +250,9 @@ struct ExperiencePurchaseView: JoliView {
                         Button(){
                             guard let product = selectedProduct else { return }
                             
-                            appCoordinator.storeKitHelper.buyProduct(product)
+                            appCoordinator.storeKitHelper.buyProduct(product) { (transaction: SKPaymentTransaction) in
+                                onPurchased(transaction)
+                            }
                         } label: {
                             Group(){
                                 let cartIconName = self.selectedProduct == nil ? "cart" : "cart.fill"
