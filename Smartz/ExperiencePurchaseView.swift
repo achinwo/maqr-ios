@@ -9,6 +9,8 @@
 import SwiftUI
 import SharedUI
 import class StoreKit.SKPaymentTransaction
+import JoliCore
+import AlertToast
 
 struct GeometryGetter: View {
     
@@ -66,6 +68,13 @@ struct ExperiencePurchaseView: JoliView {
     @State var scrollProxy: ScrollViewProxy? = nil
     
     @EnvironmentObject var appCoordinator: AppCoordinator
+    
+    private let shouldShowTnC: Bool
+    
+    init(_ callback: @escaping (SKPaymentTransaction) -> Void){
+        self.onPurchased = callback
+        self.shouldShowTnC = !UserDefaults.standard.bool(forKey: AppStorageKey.isTcAccepted.rawValue)
+    }
     
     func oneoffProductView(_ product: Product) -> some View {
         let isActive = product.productIdentifier == self.selectedProductId
@@ -215,11 +224,38 @@ struct ExperiencePurchaseView: JoliView {
         
     }
     
+    @AppStorage(key: .isTcAccepted) var isAgreed: Bool = false
+    @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
+    
+    var aggrementView: some View {
+        return HStack(){
+            VStack(alignment: .leading){
+                Text("I've read and accept the").font(.subheadline.weight(.light)).padding(.trailing)
+                Link("Terms and Conditions", destination: URL(staticString: "https://smartstikr.com/uk/legal/terms_and_conditions/"))
+            }
+            Spacer()
+            Toggle(isOn: self.$isAgreed){
+                Text("agreed")
+            }
+            .labelsHidden()
+        }
+    }
+    
     var contentView: some View {
-        ScrollViewReader(){ scrollProxy in
-            ScrollView(){
+        
+        let isPresentingToast = Binding<Bool>(){
+            return toastInfo != nil
+        } set: { newValue in
+            print("\(tag) setting presenting to: \(newValue)")
+            guard toastInfo != nil, !newValue else {
+                return
+            }
             
-            
+            self.toastInfo = nil
+        }
+        
+        return ScrollView(){
+            ScrollViewReader(){ scrollProxy in
                 VStack(){
                     if isLoadingProducts {
                         ProgressView()
@@ -247,25 +283,41 @@ struct ExperiencePurchaseView: JoliView {
                             .animation(.easeInOut)
                             .padding(.bottom)
                         
+                        if shouldShowTnC {
+                            Divider().padding(.horizontal)
+                            
+                            self.aggrementView
+                                .padding()
+                                .padding(.horizontal)
+                        }
+                        
                         Button(){
                             guard let product = selectedProduct else { return }
+                            
+                            if let invalidProductIds = invalidProductIds, invalidProductIds.contains(product.productIdentifier) {
+                                self.presentToast("Pay Unsuccessful", subTitle: "App Store did not respond on time, try again later", type: .error(.red), displayMode: .alert, tapToDismiss: true){ _ in
+                                    print("Pay aborted!")
+                                }
+                                return
+                            }
                             
                             appCoordinator.storeKitHelper.buyProduct(product) { (transaction: SKPaymentTransaction) in
                                 onPurchased(transaction)
                             }
                         } label: {
                             Group(){
-                                let cartIconName = self.selectedProduct == nil ? "cart" : "cart.fill"
+                                let cartIconName = self.selectedProduct == nil || !self.isAgreed ? "cart" : "cart.fill"
                                 let iconName = self.invalidProductIds != nil && products.isEmpty ? "circle.slash" : cartIconName
                                 
-                                if let product = self.selectedProduct, product.isSubscription {
+                                if let product = self.selectedProduct, product.isSubscription, self.isAgreed {
                                     let txt = "Subscribe" //to \(product.localizedTitle)"
                                     Label(txt, systemImage: iconName)
-                                } else if let product = self.selectedProduct {
+                                } else if let product = self.selectedProduct, self.isAgreed {
                                     Label("Buy \(product.localizedTitle) - \(product.price ?? "No Price")", systemImage: iconName)
                                 } else{
                                     let txt = self.invalidProductIds != nil && products.isEmpty ? "Unable to load products" : "Select a product"
-                                    Label(txt, systemImage: iconName)
+                                    let prodSelectTxt = self.isAgreed ? txt : "Review and accept terms"
+                                    Label(prodSelectTxt, systemImage: iconName)
                                 }
                             }
                             .ifLet(frameSize){ view, value in
@@ -276,18 +328,66 @@ struct ExperiencePurchaseView: JoliView {
                         }
                         .buttonStyle(GrowingButton())
                         .padding()
-                        .disabled(self.selectedProduct == nil)
+                        .disabled(self.selectedProduct == nil || !self.isAgreed)
                     }
                 }
                 .exportFrame($frameSize)
                 .onAppear(){
                     self.scrollProxy = scrollProxy
                 }
+                .frame(maxWidth: screenWidth, maxHeight: screenHeight * 1.4)
             }
         }
+        .overlay(
+            GeometryReader(){ proxy in
+                HStack(alignment: .top) {
+                    Spacer()
+                        .padding(.top, 200)
+                        .ifLet(self.toastInfo) { view, alertToast in
+                            return view.toast(isPresenting: isPresentingToast) {
+                                alertToast.alert
+                            } completion: {
+                                print("[\(Self.self)] toast completion")
+                                alertToast.onDismiss(true)
+                            }
+                        }
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height / 2)
+                .padding(.top, proxy.safeAreaInsets.top)
+            }
+        )
         .onReceive(appCoordinator.storeKitHelper.$products, assign: \.products, target: self)
         .onReceive(appCoordinator.storeKitHelper.$invalidProductIds, assign: \.invalidProductIds, target: self)
+        .onReceive(appCoordinator.storeKitHelper.$isLoadingProducts) { isLoadingProducts in
+            guard let invalidProductIds = self.invalidProductIds, !isLoadingProducts, !invalidProductIds.isEmpty, products.isEmpty else { return }
+            
+            print("Falling back to database products...")
+            
+            ProductSummary.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                .then(on: .main){ summaries in
+                    self.products = summaries.compactMap(){ Product.fromProductSummary($0) }
+                }
+        }
         .onReceive(appCoordinator.storeKitHelper.$isLoadingProducts, assign: \.isLoadingProducts, target: self)
+//        .onReceive(appCoordinator.storeKitHelper.$products) { products in
+//            print("Got products: \(products)")
+//            for product in products {
+//                product.toProductInfo().save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+//                    .then(){ prod in
+//                        print("saved: \(prod)")
+//                    }
+//                    .catch(){ error in
+//                        print("error: \(error)")
+//                    }
+//            }
+//        }
+        .onReceive(appCoordinator.globalToastInfo) { info in
+            self.toastInfo = info
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0){
+                self.toastInfo = nil
+            }
+        }
         .onChange(of: self.selectedProductId){ productId in
             let product = products.first() { $0.productIdentifier == productId }
             self.selectedProduct = product

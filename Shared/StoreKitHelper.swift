@@ -9,6 +9,7 @@
 import Foundation
 import StoreKit
 import Combine
+import JoliCore
 //
 //open class SKProductSubscriptionPeriod : NSObject {
 //
@@ -149,6 +150,64 @@ public struct Product: Hashable, Equatable, Identifiable {
     
     public subscript<T>(dynamicMember keyPath: KeyPath<SKProduct, T>) -> T {
         product[keyPath: keyPath]
+    }
+    
+    public static func fromProductSummary(_ summary: ProductSummary) -> Product? {
+        let product: SKProduct = SKProduct()
+        
+        let locale = Locale(identifier: summary.priceLocale)
+        let formatter = NumberFormatter()
+        formatter.formatterBehavior = .behavior10_4
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        
+        guard let priceDecimal = formatter.string(from: NSNumber(value: Double(summary.price) / 100)) else {
+            return nil
+        }
+        
+        product.setValue(summary.localizedTitle, forKey: "localizedTitle")
+        product.setValue(Decimal(string: priceDecimal), forKey: "price")
+        product.setValue(locale, forKey: "priceLocale")
+        product.setValue(summary.productIdentifier, forKey: "productIdentifier")
+        product.setValue(summary.localizedDescription, forKey: "localizedDescription")
+        product.setValue(summary.subscriptionGroupIdentifier, forKey: "subscriptionGroupIdentifier")
+        //product.setValue(summary.isFamilyShareable, forKey: "isFamilyShareable")
+        //product.setValue(summary.isDownloadable, forKey: "isDownloadable")
+        
+        guard let unit = summary.subscriptionPeriodUnit,
+                let units = summary.subscriptionPeriodUnits,
+                let periodUnit = SKProduct.PeriodUnit(rawValue: UInt(unit)) else {
+            return Product(product: product)
+        }
+
+        product.setValue(SKProductSubscriptionPeriod.period(periodUnit, numberOfUnits: units), forKey: "subscriptionPeriod")
+        
+        return Product(product: product)
+    }
+    
+    public func toProductInfo() -> ProductSummaryRecord {
+        var rec = ProductSummaryRecord()
+        rec.localizedDescription = self.localizedDescription
+        rec.localizedTitle = self.localizedTitle
+        
+        rec.price = Int(Double(truncating: self.product.price) * 100.0)
+        rec.priceLocale = self.priceLocale.identifier
+        
+        rec.productIdentifier = product.productIdentifier
+        rec.isDownloadable = product.isDownloadable
+        rec.isFamilyShareable = product.isFamilyShareable
+        
+        rec.subscriptionGroupIdentifier = product.subscriptionGroupIdentifier
+        rec.createdById = 17
+        rec.updatedById = 17
+        
+        guard let period = product.subscriptionPeriod else {
+            return rec
+        }
+        
+        rec.subscriptionPeriodUnit = Int(period.unit.rawValue)
+        rec.subscriptionPeriodUnits = period.numberOfUnits
+        return rec
     }
     
 }

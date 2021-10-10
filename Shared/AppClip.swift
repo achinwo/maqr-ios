@@ -182,6 +182,7 @@ public extension JoliApi {
 public enum AppStorageKey: String {
     case authToken = "auth_token"
     case location = "location"
+    case isTcAccepted = "terms_and_conditions_agreed"
 }
 
 public struct Regex: ExpressibleByStringLiteral, Equatable {
@@ -470,6 +471,10 @@ extension JoliContentView {
             }
             .onReceive(appCoordinator.globalToastInfo) { info in
                 self.toastInfo = info
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4.0){
+                    self.toastInfo = nil
+                }
             }
     }
     
@@ -1123,6 +1128,10 @@ public extension AppStorage {
     }
     
     init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value: RawRepresentable, Value.RawValue == String {
+        self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
+    }
+    
+    init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value == Bool {
         self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
     }
     
