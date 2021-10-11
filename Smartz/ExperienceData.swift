@@ -23,9 +23,9 @@ public extension Product.Identifier {
     static let subscriptionBasic1m = Product.Identifier(.subscription(prefix: prefix, name: "basic_399_1m"))
     static let subscriptionBasic1y = Product.Identifier(.subscription(prefix: prefix, name: "basic_3799_1y"))
     
-    static let oneoff24h = Product.Identifier(.oneoff(prefix: prefix, name: "199_24h", period: .period(.day, numberOfUnits: 1)))
-    static let oneoff3d = Product.Identifier(.oneoff(prefix: prefix, name: "599_3d", period: .period(.day, numberOfUnits: 3)))
-    static let oneoff1w = Product.Identifier(.oneoff(prefix: prefix, name: "999_1w", period: .period(.week, numberOfUnits: 1)))
+    static let oneoff24h = Product.Identifier(.oneoff(prefix: prefix, name: "199_7d", period: .period(.day, numberOfUnits: 7)))
+    static let oneoff3d = Product.Identifier(.oneoff(prefix: prefix, name: "599_2w", period: .period(.week, numberOfUnits: 2)))
+    static let oneoff1w = Product.Identifier(.oneoff(prefix: prefix, name: "999_4w", period: .period(.week, numberOfUnits: 4)))
     
     static let stikrProductIds: Set<Product.Identifier> = [
                 sticker4Pack,

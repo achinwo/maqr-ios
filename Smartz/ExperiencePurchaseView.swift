@@ -294,15 +294,25 @@ struct ExperiencePurchaseView: JoliView {
                         Button(){
                             guard let product = selectedProduct else { return }
                             
-                            if let invalidProductIds = invalidProductIds, invalidProductIds.contains(product.productIdentifier) {
-                                self.presentToast("Pay Unsuccessful", subTitle: "App Store did not respond on time, try again later", type: .error(.red), displayMode: .alert, tapToDismiss: true){ _ in
-                                    print("Pay aborted!")
-                                }
-                                return
-                            }
+//                            if let invalidProductIds = invalidProductIds, invalidProductIds.contains(product.productIdentifier) {
+//                                self.presentToast("Pay Unsuccessful", subTitle: "App Store did not respond on time, try again later", type: .error(.red), displayMode: .alert, tapToDismiss: true){ _ in
+//                                    print("Pay aborted!")
+//                                }
+//                                return
+//                            }
                             
-                            appCoordinator.storeKitHelper.buyProduct(product) { (transaction: SKPaymentTransaction) in
-                                onPurchased(transaction)
+                            appCoordinator.storeKitHelper.buyProduct(product) { (transaction: SKPaymentTransaction, error: Error?) in
+                                
+                                if let error = error {
+                                    let subtitle = ((error as NSError).userInfo["NSUnderlyingError"] as? Error)?.localizedDescription ?? error.localizedDescription
+                                    self.presentToast("Pay Unsuccessful", subTitle: subtitle, type: .error(.red.opacity(0.7)), displayMode: .alert, tapToDismiss: true){ _ in
+                                        print("Pay error: \(error)")
+                                        selectedProductId = nil
+                                    }
+                                } else {
+                                    onPurchased(transaction)
+                                }
+                                
                             }
                         } label: {
                             Group(){
@@ -365,7 +375,7 @@ struct ExperiencePurchaseView: JoliView {
             
             ProductSummary.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
                 .then(on: .main){ summaries in
-                    self.products = summaries.compactMap(){ Product.fromProductSummary($0) }
+                    self.products = summaries.sorted(by: { $0.id < $1.id }).compactMap(){ Product.fromProductSummary($0) }
                 }
         }
         .onReceive(appCoordinator.storeKitHelper.$isLoadingProducts, assign: \.isLoadingProducts, target: self)
@@ -384,7 +394,7 @@ struct ExperiencePurchaseView: JoliView {
         .onReceive(appCoordinator.globalToastInfo) { info in
             self.toastInfo = info
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0){
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0){
                 self.toastInfo = nil
             }
         }

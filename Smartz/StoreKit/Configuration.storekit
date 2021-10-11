@@ -7,13 +7,13 @@
       "internalID" : "BFA42A23",
       "localizations" : [
         {
-          "description" : "One-off publishing for 24hrs",
-          "displayName" : "Publishing - 24 hours",
+          "description" : "One-off publishing for 7 days",
+          "displayName" : "Publishing - 7 days",
           "locale" : "en_GB"
         }
       ],
-      "productID" : "com.smartstickr.Smartz.oneoff.199_24h",
-      "referenceName" : "Publishing - 24h",
+      "productID" : "com.smartstickr.Smartz.oneoff.199_7d",
+      "referenceName" : "Publishing - 7d",
       "type" : "NonRenewingSubscription"
     },
     {
@@ -22,13 +22,13 @@
       "internalID" : "B28EBDD6",
       "localizations" : [
         {
-          "description" : "One-off publishing for 3 days",
-          "displayName" : "Publishing - 3 days",
+          "description" : "One-off publishing for 2 weeks",
+          "displayName" : "Publishing - 2 weeks",
           "locale" : "en_GB"
         }
       ],
-      "productID" : "com.smartstickr.Smartz.oneoff.599_3d",
-      "referenceName" : "Publishing - 3d",
+      "productID" : "com.smartstickr.Smartz.oneoff.599_2w",
+      "referenceName" : "Publishing - 2w",
       "type" : "NonRenewingSubscription"
     },
     {
@@ -37,13 +37,13 @@
       "internalID" : "1668B6AC",
       "localizations" : [
         {
-          "description" : "One-off publishing for 1 week",
-          "displayName" : "Publishing - 1 week",
+          "description" : "One-off publishing for 4 week",
+          "displayName" : "Publishing - 4 weeks",
           "locale" : "en_GB"
         }
       ],
-      "productID" : "com.smartstickr.Smartz.oneoff.999_1w",
-      "referenceName" : "Publishing - 1w",
+      "productID" : "com.smartstickr.Smartz.oneoff.999_4w",
+      "referenceName" : "Publishing - 4w",
       "type" : "NonRenewingSubscription"
     }
   ],

@@ -49,7 +49,7 @@ extension SKProductSubscriptionPeriod {
         
         let formatter = DateComponentsFormatter()
         
-        formatter.allowedUnits = self.unit == .day && self.numberOfUnits == 1 ? [.hour] : [.hour, .day]
+        formatter.allowedUnits = self.unit == .week && self.numberOfUnits == 4 ?  [.weekOfMonth, .day] : [.day]
         formatter.unitsStyle = .brief
         
         return formatter.string(from: timeInterval)
@@ -270,10 +270,10 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
         self.currentRequest = nil
     }
     
-    private var pendingTransactionCallbacks = [String: (SKPaymentTransaction) -> Void]()
+    private var pendingTransactionCallbacks = [String: (SKPaymentTransaction, Error?) -> Void]()
     
     @discardableResult
-    public func buyProduct(_ product: Product, callback: @escaping (SKPaymentTransaction) -> Void) -> SKPayment {
+    public func buyProduct(_ product: Product, callback: @escaping (SKPaymentTransaction, Error?) -> Void) -> SKPayment {
         print("Buying \(product.product.productIdentifier)...")
         let payment = SKPayment(product: product.product)
         SKPaymentQueue.default().add(payment)
@@ -319,41 +319,45 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
 extension StoreKitHelper: SKPaymentTransactionObserver {
     
     public func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+        
         for transaction in transactions {
             print("[StoreKitHelper] transaction: \(transaction) - \(transaction.transactionState.rawValue) - \(transaction.payment.productIdentifier)")
+            
             switch transaction.transactionState {
                 case .purchased:
-                    complete(transaction)
-                case .failed:
-                        //fail(transaction)
-                    break
+                    dispatchPurchaseNotificationFor(identifier: transaction.payment.productIdentifier)
                 case .restored:
-                        //restore(transaction)
+                    guard let productIdentifier = transaction.original?.payment.productIdentifier else { continue }
+                    
+                    print("restore... \(productIdentifier)")
+                    //persistPurchase(identifier: productIdentifier)
+                    dispatchPurchaseNotificationFor(identifier: productIdentifier)
+                case .failed:
                     break
                 case .deferred:
-                    break
+                    continue
                 case .purchasing:
-                    break
+                    continue
                 @unknown default:
-                    break
+                    continue
             }
+            
+            SKPaymentQueue.default().finishTransaction(transaction)
+            
+            guard let callback = pendingTransactionCallbacks.removeValue(forKey: transaction.payment.productIdentifier) else {
+                print("Unable to locate callback for transaction: \(transaction.payment.productIdentifier)")
+                continue
+            }
+            
+            if let transactionError = transaction.error {
+                print("Transaction Error: \(transactionError.localizedDescription)")
+                callback(transaction, transactionError)
+            } else {
+                callback(transaction, nil)
+            }
+            
         }
-    }
-    
-    private func complete(_ transaction: SKPaymentTransaction) {
-        print("complete...")
-        //persistPurchase(identifier: transaction.payment.productIdentifier)
         
-        dispatchPurchaseNotificationFor(identifier: transaction.payment.productIdentifier)
-        SKPaymentQueue.default().finishTransaction(transaction)
-        
-        
-        guard let callback = pendingTransactionCallbacks.removeValue(forKey: transaction.payment.productIdentifier) else {
-            print("Unable to locate callback for transaction: \(transaction.payment.productIdentifier)")
-            return
-        }
-        
-        callback(transaction)
     }
     
     public func paymentQueue(_ queue: SKPaymentQueue, didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
