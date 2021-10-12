@@ -303,11 +303,16 @@ struct ExperiencePurchaseView: JoliView {
                             
                             appCoordinator.storeKitHelper.buyProduct(product) { (transaction: SKPaymentTransaction, error: Error?) in
                                 
+                                let msg = "[\(Self.self)] attempting to buy: \(product.localizedDescription)"
+                                appCoordinator.serverLogDestination.send(.info, msg: msg, thread: Thread.current.description,
+                                                                       file: #file, function: #function, line: #line)
+                                
                                 if let error = error {
-                                    let subtitle = ((error as NSError).userInfo["NSUnderlyingError"] as? Error)?.localizedDescription ?? error.localizedDescription
-                                    self.presentToast("Pay Unsuccessful", subTitle: subtitle, type: .error(.red.opacity(0.7)), displayMode: .alert, tapToDismiss: true){ _ in
+                                    let subtitle = "App Store transaction will retry in background"
+                                        //((error as NSError).userInfo["NSUnderlyingError"] as? Error)?.localizedDescription ?? error.localizedDescription
+                                    self.presentToast("Processing...", subTitle: subtitle, type: .systemImage("exclamationmark.arrow.circlepath", .yellow.opacity(0.7)), displayMode: .alert, tapToDismiss: true){ _ in
                                         print("Pay error: \(error)")
-                                        selectedProductId = nil
+                                        onPurchased(transaction)
                                     }
                                 } else {
                                     onPurchased(transaction)

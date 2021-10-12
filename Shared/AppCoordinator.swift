@@ -37,7 +37,10 @@ public final class AppCoordinator: ObservableObject {
     #endif
     
     public var api: JoliApi!
-    public var serverLogDestination: ServerDestination? = nil
+    public lazy var serverLogDestination: ServerDestination = {
+        return ServerDestination(url: api.baseUrlHttp, urlSession: api.urlSession)
+    }()
+    
     private var cancellableSet: Set<AnyCancellable> = []
     
     lazy var imageLoader: NetworkImageLoader = {

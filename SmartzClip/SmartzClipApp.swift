@@ -143,7 +143,7 @@ struct SmartzClipApp: AppClip {
                        let validUrl = URL(string: "mailto:\(Strings.appSupportEmail)?subject=\(encoded)") {
                         UIApplication.shared.open(validUrl)
                     } else {
-                        coordinator.serverLogDestination?.send(.error, msg: "[\(Self.self)] unable to send mail: subject=\(opts.subject)",
+                        coordinator.serverLogDestination.send(.error, msg: "[\(Self.self)] unable to send mail: subject=\(opts.subject)",
                                                                thread: Thread.current.debugDescription, file: #file, function: #function, line: #line)
                     }
                     

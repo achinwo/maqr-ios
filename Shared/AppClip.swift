@@ -1036,7 +1036,7 @@ public extension AppClip {
         }
         
         let msg = "[\(Self.self)] navigation: \(lastLocation) -> \(self.coordinator.currentLocation)"
-        coordinator.serverLogDestination?.send(.info, msg: msg, thread: Thread.current.description,
+        coordinator.serverLogDestination.send(.info, msg: msg, thread: Thread.current.description,
                                                file: #file, function: #function, line: #line)
     }
     

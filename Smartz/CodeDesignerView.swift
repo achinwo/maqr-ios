@@ -389,11 +389,13 @@ public struct CodeDesignerView: JoliView {
         return vs
     }
     
-    func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []){
+    @discardableResult
+    func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) -> Promise<StikrExperienceData> {
         self.submitting = true
         expData.experienceTypeName = String(describing: self.selectedExperience ?? TvShowPromoView.self)
-        expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then(){ saved in
+        
+        return expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then(){ saved -> Promise<StikrExperienceData> in
                 print("SAVE experience: \(saved)")
                 
                 let promises = codes.map(){ code -> Promise<VisualCode.PersistedType> in
@@ -408,9 +410,10 @@ public struct CodeDesignerView: JoliView {
                     return code.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
                 }
                 
-                Promises.all(promises)
-                    .then(){ savedCodes in
+                return Promises.all(promises)
+                    .then(){ savedCodes -> StikrExperienceData in
                         print("SAVED Code: \(savedCodes)")
+                        return saved
                     }
                     .catch(){ error in
                         print("error saving code: \(error)")
@@ -640,6 +643,15 @@ public struct CodeDesignerView: JoliView {
                                         ExperiencePurchaseView() { _ in
                                             self.appCoordinator.globalModalSubject.send(nil)
                                             self.submitExperience(expData, codes: [visualCode])
+                                                .always(){
+                                                    self.updateStoredExperiences()
+                                                    
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
+                                                        withAnimation(){
+                                                            self.selectedTab = 0
+                                                        }
+                                                    }
+                                                }
                                         }
                                         .navigationBarTitle(Text("Purchase \(expCls.title) Experience"), displayMode: .inline)
                                     }
