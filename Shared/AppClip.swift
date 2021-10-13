@@ -183,6 +183,7 @@ public enum AppStorageKey: String {
     case authToken = "auth_token"
     case location = "location"
     case isTcAccepted = "terms_and_conditions_agreed"
+    case purchasesIdsForTesting = "testing_purchases"
 }
 
 public struct Regex: ExpressibleByStringLiteral, Equatable {

@@ -225,6 +225,7 @@ struct ExperiencePurchaseView: JoliView {
     }
     
     @AppStorage(key: .isTcAccepted) var isAgreed: Bool = false
+    @AppStorage(key: .purchasesIdsForTesting) var purchasesIdsForTesting: String = .empty
     @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
     
     var aggrementView: some View {
@@ -265,8 +266,10 @@ struct ExperiencePurchaseView: JoliView {
                         Text("Publish an Experince Anytime")
                             .font(.title.weight(.semibold))
                             .padding([.horizontal, .top])
-                        (Text("Get an always-on publishing plan - perfect for ") + Text("hobbyists").fontWeight(.semibold) + Text(" and ") + Text("small businesses").fontWeight(.semibold)).padding()
+                        (Text("Get an always-on publishing plan - perfect for ") + Text("hobbyists").fontWeight(.semibold) + Text(" and ") + Text("small businesses").fontWeight(.semibold))
+                            .padding()
                             .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
                             .foregroundColor(.secondary)
                             .padding(.horizontal)
                         
@@ -303,7 +306,12 @@ struct ExperiencePurchaseView: JoliView {
                             
                             appCoordinator.storeKitHelper.buyProduct(product) { (transaction: SKPaymentTransaction, error: Error?) in
                                 
-                                let msg = "[\(Self.self)] attempting to buy: \(product.localizedDescription)"
+                                var currentPurchases = Set(purchasesIdsForTesting.components(separatedBy: ","))
+                                currentPurchases.insert(product.productIdentifier)
+                                
+                                self.purchasesIdsForTesting = currentPurchases.joined(separator: ",")
+                                
+                                let msg = "[\(Self.self)] attempting to buy: \(product.localizedDescription), pruchases: \(purchasesIdsForTesting)"
                                 appCoordinator.serverLogDestination.send(.info, msg: msg, thread: Thread.current.description,
                                                                        file: #file, function: #function, line: #line)
                                 
@@ -419,6 +427,7 @@ struct ExperiencePurchaseView: JoliView {
                 print("ID: \(x.rawValue.id)")
             }
             
+            print("[\(Self.self)] purchases: \(purchasesIdsForTesting)")
             appCoordinator.storeKitHelper.request(Product.Identifier.productIds)
         }
     }

@@ -580,6 +580,17 @@ public struct CodeDesignerView: JoliView {
 //    public static func experienceClsByName(_ typeName: String) -> Experience.Type? {
 //        return Self.experienceClasses().first() { String(describing: $0) == typeName }
 //    }
+    @AppStorage(key: .purchasesIdsForTesting) var purchasesIdsForTesting: String = .empty
+    
+    var hasSubscription: Bool {
+        
+        guard Date(timeIntervalSince1970: 1640993136) > Date() else { return false } // disable testing purchase flow end of 2021
+        
+        let existingPurchaseIds = purchasesIdsForTesting.components(separatedBy: ",")
+        let subscriptionPurchases = Product.Identifier.productIds.filter() { existingPurchaseIds.contains($0.id) && $0.isSubscription }
+        
+        return !subscriptionPurchases.isEmpty
+    }
     
     public var contentView: some View {
         //return //ZStack(alignment: .top){
@@ -625,6 +636,9 @@ public struct CodeDesignerView: JoliView {
                         
                         Button(){
 
+                            let msg = "[\(Self.self)] attempting to submit: isLastTab=\(isLastTab), brandName=\(String(describing: experienceData?.brandName)), purchases: \(purchasesIdsForTesting), hasSubscription: \(hasSubscription)"
+                            appCoordinator.serverLogDestination.send(.info, msg: msg, thread: Thread.current.description,
+                                                                     file: #file, function: #function, line: #line)
                             
                             guard let expData = experienceData, let expCls = selectedExperience, isLastTab else {
                                 self.readyToDownload = true
@@ -633,7 +647,7 @@ public struct CodeDesignerView: JoliView {
                                 return
                             }
                             
-                            guard appCoordinator.isPaymentEnabled else {
+                            guard appCoordinator.isPaymentEnabled, !self.hasSubscription else {
                                 self.submitExperience(expData, codes: [visualCode])
                                 return
                             }
@@ -668,7 +682,7 @@ public struct CodeDesignerView: JoliView {
                                 ProgressView().progressViewStyle(CircularProgressViewStyle())
                             } else if isLastTab {
                                 let isNew = experienceData?.uuid == nil
-                                let newTxt: String = isNew && appCoordinator.isPaymentEnabled ? "Purchase" : "Submit"
+                                let newTxt: String = isNew && appCoordinator.isPaymentEnabled && !self.hasSubscription ? "Purchase" : "Submit"
                                 
                                 Text(isNew ? newTxt : "Save Changes")
                             } else {

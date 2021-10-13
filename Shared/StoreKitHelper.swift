@@ -83,6 +83,21 @@ public struct Product: Hashable, Equatable, Identifiable {
             }
         }
         
+        public var isOneoff: Bool {
+            guard case .oneoff(_, _, _) = self else { return false }
+            return true
+        }
+        
+        public var isSubscription: Bool {
+            guard case .subscription(_, _) = self else { return false }
+            return true
+        }
+        
+        public var isFixed: Bool {
+            guard case .fixed(_, _) = self else { return false }
+            return true
+        }
+        
     }
     
     public struct Identifier: Hashable, Equatable, RawRepresentable, Identifiable {
@@ -100,6 +115,12 @@ public struct Product: Hashable, Equatable, Identifiable {
         public var id: String {
             return rawValue.id
         }
+        
+        public var isOneoff: Bool { self.rawValue.isOneoff }
+        
+        public var isSubscription: Bool { self.rawValue.isSubscription }
+        
+        public var isFixed: Bool { self.rawValue.isFixed }
         
         public static var productIds: Set<Product.Identifier> = []
         
@@ -133,20 +154,11 @@ public struct Product: Hashable, Equatable, Identifiable {
         return Identifier.productIds.first() { $0.rawValue.id == product.productIdentifier }
     }
     
-    public var isOneoff: Bool {
-        guard case .oneoff(_, _, _) = self.identifier?.rawValue else { return false }
-        return true
-    }
+    public var isOneoff: Bool { self.identifier?.isOneoff ?? false }
     
-    public var isSubscription: Bool {
-        guard case .subscription(_, _) = self.identifier?.rawValue else { return false }
-        return true
-    }
+    public var isSubscription: Bool { self.identifier?.isSubscription ?? false }
     
-    public var isFixed: Bool {
-        guard case .fixed(_, _) = self.identifier?.rawValue else { return false }
-        return true
-    }
+    public var isFixed: Bool { self.identifier?.isFixed ?? false }
     
     public subscript<T>(dynamicMember keyPath: KeyPath<SKProduct, T>) -> T {
         product[keyPath: keyPath]
