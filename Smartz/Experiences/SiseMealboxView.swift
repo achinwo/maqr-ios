@@ -532,7 +532,7 @@ public struct MealboxView: Experience, JoliView {
                                     .foregroundColor(.tertiaryLabel)
                                     
                                     VStack(alignment: .leading){
-                                        Text(itm.element.title ?? "")
+                                        Text(itm.element.subtitle! )
                                             .strikethrough(isChecked, color: .secondaryLabel)
                                             .lineLimit(nil)
                                             .font(.body)
