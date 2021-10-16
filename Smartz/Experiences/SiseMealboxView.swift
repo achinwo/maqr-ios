@@ -373,18 +373,19 @@ public struct MealboxView: Experience, JoliView {
             
             Section(header: header){
                 VStack(){
-                    ForEach(ingredients) { ing in
+                    ForEach((dataModel?.items ?? []).filter { $0.experienceItemType == .mealPrepIngredient }) { ing in
+
                         HStack(){
-                            Image(ing.id)
+                            Image(ing.id.uuidString)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 100, height: 100)
-                            VStack(alignment: .leading){
-                                Text(ing.title).font(.subheadline)
-                                Text(ing.description).font(.caption).foregroundColor(.secondaryLabel).fixedSize(horizontal: false, vertical: true)
+                                VStack(alignment: .leading){
+                                    Text( ing.title ?? "").font(.subheadline)
+                                    Text(ing.subtitle ?? "").font(.caption).foregroundColor(.secondaryLabel).fixedSize(horizontal: false, vertical: true)
+                                }
                             }
-                        }
-                        .padding(.horizontal)
+                            .padding(.horizontal)
                     }
                 }
             }
@@ -428,7 +429,8 @@ public struct MealboxView: Experience, JoliView {
         }
         .id("share-section")
         
-        
+        let steps_ = (dataModel?.items ?? []).filter { $0.experienceItemType == .mealPrepStep }
+
         let reorderView = VStack(){
             VStack(){
                 Text("Schedule a re-order?").font(.title2.weight(.light))
@@ -478,7 +480,7 @@ public struct MealboxView: Experience, JoliView {
                                     } else {
                                         Text("\(lastStepId + 1)").font(.subheadline.weight(.semibold)) +
                                             Text(" of ") +
-                                            Text("\(steps.count) ").font(.subheadline.weight(.semibold)) +
+                                            Text("\(steps_.count) ").font(.subheadline.weight(.semibold)) +
                                             Text("steps completed")
                                     }
                                 }
@@ -500,7 +502,6 @@ public struct MealboxView: Experience, JoliView {
                     
                 }
                 
-                
                 ScrollViewReader() { proxy in
                     ScrollView(){
                         VStack(){
@@ -520,10 +521,9 @@ public struct MealboxView: Experience, JoliView {
                             ingredientsView
                             Divider().padding()
                             
-                            ForEach(Array(steps.enumerated()), id: \.element.title) { itm in
-                                
+                            ForEach(Array(steps_.enumerated()), id: \.element.title) { itm in
                                 let isChecked = self.lastStepId >= itm.offset
-                                
+
                                 HStack(alignment: .top){
                                     VStack(){
                                         Text(itm.offset.advanced(by: 1).description) + Text(".")
@@ -532,7 +532,7 @@ public struct MealboxView: Experience, JoliView {
                                     .foregroundColor(.tertiaryLabel)
                                     
                                     VStack(alignment: .leading){
-                                        Text(itm.element.description)
+                                        Text(itm.element.title ?? "")
                                             .strikethrough(isChecked, color: .secondaryLabel)
                                             .lineLimit(nil)
                                             .font(.body)
@@ -540,26 +540,28 @@ public struct MealboxView: Experience, JoliView {
                                             .foregroundColor(isChecked ? .secondaryLabel : .primary)
                                         
                                         HStack() {
-                                            
-                                            if itm.element.isOptional {
+
+                                            if itm.element.isOptional ?? false {
                                                 Label("Optional", systemImage: "info.circle")
                                                     .font(.footnote).foregroundColor(Color.systemIndigo.opacity(0.7))
                                             }
-                                            
-                                            if let duration = itm.element.duration, let durationStr = formatter.string(from: duration) {
-                                                Label(durationStr, systemImage: "timer")
-                                                    .font(.footnote)
-                                            }
-                                            
+
+//                                            if let duration = itm.element.duration, let durationStr = formatter.string(from: duration) {
+//                                                Label(durationStr, systemImage: "timer")
+//                                                    .font(.footnote)
+//                                            }
+
                                             if let spicy = itm.element.spicy {
-                                                Text(spicy)
+                                                
+                                                Text(String(describing: spicy)
+)
                                                     .font(.footnote)
                                             }
-                                            
+
                                             Spacer()
-                                            
+
                                             if let caution = itm.element.caution {
-                                                Label(caution, systemImage: "nosign")
+                                                Label(String(describing: caution), systemImage: "nosign")
                                                     .font(.footnote)
                                                     .foregroundColor(.yellow)
                                             }
@@ -573,12 +575,12 @@ public struct MealboxView: Experience, JoliView {
                                     Button() {
                                         self.lastStepId = self.lastStepId == 0 && itm.offset == 0 ? -1 : itm.offset
                                         
-                                        let feeback: FeedbackStyle = self.lastStepId == steps.count - 1 ? .heavy : .light
+                                        let feeback: FeedbackStyle = self.lastStepId == steps_.count - 1 ? .heavy : .light
                                         
                                         withImpact(feeback, animated: .easeInOut){
                                             self.autoResetting.send(itm.offset)
                                             
-                                            guard self.lastStepId == steps.count - 1 else { return }
+                                            guard self.lastStepId == steps_.count - 1 else { return }
                                             
                                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3){
                                                 withAnimation(){
@@ -610,8 +612,7 @@ public struct MealboxView: Experience, JoliView {
                             
                             Group(){
                                 if completed {
-                                    
-                                    
+    
                                     Divider().padding(.vertical)
                                     shareView
                                     
@@ -624,7 +625,6 @@ public struct MealboxView: Experience, JoliView {
                         }
                         .frame(maxWidth: screenWidth)
                         .padding(.bottom, max(100, safeAreaInsets.bottom))
-                        //.frame(minHeight: screenHeight)
                     }
                 }
             }
@@ -711,9 +711,10 @@ public struct MealboxView: Experience, JoliView {
                     //
                     
                     VStack(){
+                    
                         Section(header: Text("HELLO & WELCOME").font(.title3)) {
-                            Text("Sísè ").font(.subheadline.weight(.semibold)) + Text("pronounced sea-say, is a Yoruba word that means cook").font(.subheadline.weight(.light))
-                            Text("Sísè food box provides you with pre-prepped ingredients as well as simple step by step instructions required to cook delicious mouth-watering meals in under 20mins! \n\nOur ❤️ for food means that we source only the best ingredients with quality and authenticity at the heart of it all.")
+                            Text(dataModel?.brandName ?? "DefaultText").font(.subheadline.weight(.semibold)) + Text(" pronounced sea-say, is a Yoruba word that means cook").font(.subheadline.weight(.light))
+                            Text(dataModel?.landingPageText ?? "")
                                 .font(.body.weight(.light))
                         }
                         .padding()
@@ -784,7 +785,6 @@ public struct MealboxView: Experience, JoliView {
             
             VStack(){
                 Spacer()
-                //                Picker(selection: self.$selectedTab, label: Text("Users")) {
                 HStack(){
                     ForEach(Tab.allCases) { tab in
                         Button() {
@@ -814,13 +814,6 @@ public struct MealboxView: Experience, JoliView {
                 .animation(.easeInOut)
             }
             .padding(.bottom, max(16, safeAreaInsets.bottom))
-            
-            
-            //            HStack(){
-            //                Button() {
-            //
-            //                }
-            //            }
         }
         .frame(maxWidth: screenWidth, maxHeight: screenHeight)
         .edgesIgnoringSafeArea(.all)
