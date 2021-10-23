@@ -314,6 +314,22 @@ extension Color: Decodable {
     
 }
 
+extension Collection where Element: RawRepresentable {
+    
+    public var rawValues: [Element.RawValue] {
+        return self.map() { $0.rawValue }
+    }
+    
+}
+
+extension Collection where Element: Identifiable {
+    
+    public var ids: [Element.ID] {
+        return self.map() { $0.id }
+    }
+    
+}
+
 public extension Search {
     
     struct ResultView: JoliView, Identifiable {

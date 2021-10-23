@@ -436,8 +436,6 @@ struct JoliApp: AppClip {
                 self.coordinator.namespace = namespace
                 self.coordinator.initialActiveDeviceId = activeDeviceId == .empty ? nil : activeDeviceId
                 
-                self.coordinator.serverLogDestination = ServerDestination(url: api.baseUrlHttp, urlSession: api.urlSession)
-                
                 
                 guard let token = TOKEN ?? activeSessionToken ?? self.auths.first?.session.token else {
                     return

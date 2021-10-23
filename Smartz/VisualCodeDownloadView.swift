@@ -9,7 +9,7 @@ import JoliCore
 import SwiftUI
 import SharedUI
 import os
-import StoreKit
+//import StoreKit
 
 struct VisualCodeDownloadView: JoliView {
     
@@ -18,7 +18,7 @@ struct VisualCodeDownloadView: JoliView {
     @Environment(\.colorScheme) var colorScheme
     
     @State var downloaded = false
-    @State var products: [SKProduct] = []
+    @State var products: [Product] = []
     
     func performSubscribe(){
         appCoordinator.storeKitHelper.request(Product.Identifier.productIds)
@@ -41,10 +41,12 @@ struct VisualCodeDownloadView: JoliView {
                 
                 ForEach(products) { product in
                     HStack(){
-                        Text(product.localizedTitle)
+                        Text(product.product.localizedTitle)
                         Spacer()
                         Button(){
-                            appCoordinator.storeKitHelper.buyProduct(product)
+                            appCoordinator.storeKitHelper.buyProduct(product) { (_, _) in
+                                
+                            }
                         } label: {
                             Text("Buy")
                         }
@@ -120,20 +122,7 @@ struct VisualCodeDownloadView: JoliView {
             .onReceive(appCoordinator.purchaseNotificationSubject){ identifier in
                 print("[purchaseNotificationSubject] identifier: \(String(describing: identifier))")
             }
-            .onReceive(appCoordinator.storeKitHelper.productResponse) { res in
-                let (_, response) = res
-                
-                self.products = response.products
-                
-                for product: SKProduct in response.products {
-                    print("PRODUCT: \(String(describing: product.subscriptionGroupIdentifier)) - \(product.productIdentifier) - \(product.isSubscription)")
-                }
-                
-                for invalidIdentifier in response.invalidProductIdentifiers {
-                        // Handle any invalid product identifiers as appropriate.
-                    print("INVALID IDS: \(invalidIdentifier)")
-                }
-            }
+            //.onReceive(appCoordinator.storeKitHelper.$products, assign: \.products, target: self)
             .frame(width: screenWidth - 100)
             .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
             .fixedSize(horizontal: false, vertical: true)

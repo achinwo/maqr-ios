@@ -402,6 +402,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                 .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
                 .clipShape(RoundedRectangle(cornerRadius: 24))
                 .padding(.bottom)
+                .padding(.bottom)
                 .overlay(
                     GeometryReader(){ _ in
                         VStack(){
@@ -416,6 +417,9 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     }
                 )
                 
+                Link("Privacy Policy", destination: URL(staticString: "https://smartstikr.com/uk/legal/privacy-policy/")).padding()
+                Link("Our Terms of Use", destination: URL(staticString: "https://smartstikr.com/uk/legal/terms_and_conditions/")).padding(.bottom)
+                Link("License Agreement", destination: URL(staticString: "https://smartstikr.com/uk/legal/end_user_license_agreement/")).padding(.bottom)
                 
             }
             .frame(width: screenWidth - 100)

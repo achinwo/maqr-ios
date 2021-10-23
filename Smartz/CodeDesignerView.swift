@@ -389,11 +389,13 @@ public struct CodeDesignerView: JoliView {
         return vs
     }
     
-    func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []){
+    @discardableResult
+    func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) -> Promise<StikrExperienceData> {
         self.submitting = true
         expData.experienceTypeName = String(describing: self.selectedExperience ?? TvShowPromoView.self)
-        expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then(){ saved in
+        
+        return expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            .then(){ saved -> Promise<StikrExperienceData> in
                 print("SAVE experience: \(saved)")
                 
                 let promises = codes.map(){ code -> Promise<VisualCode.PersistedType> in
@@ -408,12 +410,20 @@ public struct CodeDesignerView: JoliView {
                     return code.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
                 }
                 
-                Promises.all(promises)
-                    .then(){ savedCodes in
+                return Promises.all(promises)
+                    .then(){ savedCodes -> StikrExperienceData in
                         print("SAVED Code: \(savedCodes)")
+                        return saved
                     }
                     .catch(){ error in
                         print("error saving code: \(error)")
+                    }
+                    .always {
+                        
+                        DispatchQueue.main.async(){
+                            self.experienceData = ExperienceData.fromExperienceData(saved, baseUrl: api.baseUrlHttp)
+                            onExperinceDataChanged(self.experienceData)
+                        }
                     }
                 
             }
@@ -570,6 +580,17 @@ public struct CodeDesignerView: JoliView {
 //    public static func experienceClsByName(_ typeName: String) -> Experience.Type? {
 //        return Self.experienceClasses().first() { String(describing: $0) == typeName }
 //    }
+    @AppStorage(key: .purchasesIdsForTesting) var purchasesIdsForTesting: String = .empty
+    
+    var hasSubscription: Bool {
+        
+        guard Date(timeIntervalSince1970: 1640993136) > Date() else { return false } // disable testing purchase flow end of 2021
+        
+        let existingPurchaseIds = purchasesIdsForTesting.components(separatedBy: ",")
+        let subscriptionPurchases = Product.Identifier.productIds.filter() { existingPurchaseIds.contains($0.id) && $0.isSubscription }
+        
+        return !subscriptionPurchases.isEmpty
+    }
     
     public var contentView: some View {
         //return //ZStack(alignment: .top){
@@ -615,6 +636,9 @@ public struct CodeDesignerView: JoliView {
                         
                         Button(){
 
+                            let msg = "[\(Self.self)] attempting to submit: isLastTab=\(isLastTab), brandName=\(String(describing: experienceData?.brandName)), purchases: \(purchasesIdsForTesting), hasSubscription: \(hasSubscription)"
+                            appCoordinator.serverLogDestination.send(.info, msg: msg, thread: Thread.current.description,
+                                                                     file: #file, function: #function, line: #line)
                             
                             guard let expData = experienceData, let expCls = selectedExperience, isLastTab else {
                                 self.readyToDownload = true
@@ -623,15 +647,25 @@ public struct CodeDesignerView: JoliView {
                                 return
                             }
                             
-                            guard appCoordinator.isPaymentEnabled else {
+                            guard appCoordinator.isPaymentEnabled, !self.hasSubscription else {
                                 self.submitExperience(expData, codes: [visualCode])
                                 return
                             }
                             
                             let view: AppPreview = .view2(){
                                 NavigationView(){
-                                        ExperiencePurchaseView() {
+                                        ExperiencePurchaseView() { _ in
+                                            self.appCoordinator.globalModalSubject.send(nil)
                                             self.submitExperience(expData, codes: [visualCode])
+                                                .always(){
+                                                    self.updateStoredExperiences()
+                                                    
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
+                                                        withAnimation(){
+                                                            self.selectedTab = 0
+                                                        }
+                                                    }
+                                                }
                                         }
                                         .navigationBarTitle(Text("Purchase \(expCls.title) Experience"), displayMode: .inline)
                                     }
@@ -648,7 +682,7 @@ public struct CodeDesignerView: JoliView {
                                 ProgressView().progressViewStyle(CircularProgressViewStyle())
                             } else if isLastTab {
                                 let isNew = experienceData?.uuid == nil
-                                let newTxt: String = isNew && appCoordinator.isPaymentEnabled ? "Purchase" : "Submit"
+                                let newTxt: String = isNew && appCoordinator.isPaymentEnabled && !self.hasSubscription ? "Purchase" : "Submit"
                                 
                                 Text(isNew ? newTxt : "Save Changes")
                             } else {
