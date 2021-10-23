@@ -505,7 +505,7 @@ public struct MealboxView: Experience, JoliView {
                 ScrollViewReader() { proxy in
                     ScrollView(){
                         VStack(){
-                            Image("food_ofada")
+                            Image("food_ofada").data(url: dataModel?.productImageUrl ?? URL(string: "https://picsum.photos/200")!)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: screenWidth - 100, height: screenWidth - 100)
@@ -608,7 +608,7 @@ public struct MealboxView: Experience, JoliView {
                                 }
                                 .padding([.bottom, .horizontal])
                             }
-                            .navigationTitle("Preparing Ofada Sauce")
+                            .navigationTitle("Preparation" )
                             
                             Group(){
                                 if completed {
@@ -713,7 +713,7 @@ public struct MealboxView: Experience, JoliView {
                     VStack(){
                     
                         Section(header: Text("HELLO & WELCOME").font(.title3)) {
-                            Text(dataModel?.brandName ?? "DefaultText").font(.subheadline.weight(.semibold)) + Text(" pronounced sea-say, is a Yoruba word that means cook").font(.subheadline.weight(.light))
+                            Text(dataModel?.brandName ?? "DefaultText").font(.subheadline.weight(.semibold))
                             Text(dataModel?.landingPageText ?? "")
                                 .font(.body.weight(.light))
                         }
@@ -826,3 +826,14 @@ public struct MealboxView: Experience, JoliView {
 //        ContentView()
 //    }
 //}
+
+
+
+extension Image{
+    func data(url: URL) -> Self {
+        if let data = try? Data(contentsOf: url) {
+            return Image(uiImage: UIImage(data: data)!).resizable()
+        }
+        return self.resizable()
+    }
+}
