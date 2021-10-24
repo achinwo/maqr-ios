@@ -587,7 +587,7 @@ public struct CodeDesignerView: JoliView {
     
     var hasSubscription: Bool {
         
-        guard Date(timeIntervalSince1970: 1640993136) > Date() else { return false } // disable testing purchase flow end of 2021
+        guard Date(timeIntervalSince1970: 1_640_993_136) > Date() else { return false } // disable testing purchase flow end of 2021
         
         let existingPurchaseIds = purchasesIdsForTesting.components(separatedBy: ",")
         let subscriptionPurchases = Product.Identifier.productIds.filter() { existingPurchaseIds.contains($0.id) && $0.isSubscription }
