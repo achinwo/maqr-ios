@@ -317,7 +317,7 @@ public final class StoreKitHelper: NSObject, ObservableObject, SKProductsRequest
             print(receiptData)
             
             let receiptString = receiptData.base64EncodedString(options: [])
-            print("[RECEIPT] \(receiptString)")
+            print("[RECEIPT] \(appStoreReceiptURL.path) - \(receiptString)")
                 // Read receiptData
             return receiptString
         } catch {

@@ -423,12 +423,26 @@ struct ExperiencePurchaseView: JoliView {
             }
         }
         .onAppear(){
-            for x in Product.Identifier.productIds {
-                print("ID: \(x.rawValue.id)")
-            }
-            
             print("[\(Self.self)] purchases: \(purchasesIdsForTesting)")
             appCoordinator.storeKitHelper.request(Product.Identifier.productIds)
+            
+            guard let receiptData = appCoordinator.storeKitHelper.retreiveReceipt() else {
+                print("no reciept")
+                return
+            }
+            
+            
+            let json: Json = [
+                "receiptData": receiptData as AnyObject,
+            ]
+            
+            HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/process-transaction")!, payload: json, baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: .main)
+                .then(){ res in
+                    print("[RECEIPT] \(res)")
+                }
+                .catch(){ error in
+                    print("[RECEIPT] error: \(error)")
+                }
         }
     }
 }
