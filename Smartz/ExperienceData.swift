@@ -253,6 +253,9 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience", default = ""Describe \nyour brand \nexperience""
     @Published var landingPageText: MultilineString
     
+    // sourcery: title = "Product Description", description = "Brand product description", default = ""Describe \nthis product""
+    @Published var productDescription: MultilineString?
+    
     // sourcery: title = "Instagram", description = "Instagram account username", default = ""smartstikr""
     @Published var socialInstagramUsername: String?
     
@@ -308,6 +311,9 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         res.bannerVideoUrl = URL.fromString(experienceData.bannerVideoUrl)
         res.backgroundImageUrl = URL.fromString(experienceData.backgroundImageUrl)
         
+        res.productImageUrl = URL.fromString(experienceData.productImageUrl)
+        res.productDescription = experienceData.productDescription
+        
         res.brandName = experienceData.brandName
         res.landingPageText = experienceData.landingPageText ?? res.landingPageText
         res.socialInstagramUsername = experienceData.socialInstagramUsername
@@ -340,6 +346,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         productImageUrl = try container.decode(URL?.self, forKey: .productImageUrl)
         brandName = try container.decode(String.self, forKey: .brandName)
         landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
+        productDescription = try container.decode(MultilineString?.self, forKey: .productDescription)
         socialInstagramUsername = try container.decode(String?.self, forKey: .socialInstagramUsername)
         releaseDate = try container.decode(Date?.self, forKey: .releaseDate)
         releasePlatformName = try container.decode(String?.self, forKey: .releasePlatformName)

@@ -526,7 +526,26 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
             Divider().padding()
             
             Button(){
+                
                 self.selectedTab = .appClipCreator
+                
+                guard let receiptData = appCoordinator.storeKitHelper.retreiveReceipt() else {
+                    appCoordinator.serverLogDestination.send(.info, msg: "No receipt found!", thread: Thread.current.description,
+                                                             file: #file, function: #function, line: #line)
+                    return
+                }
+                
+                let json: Json = [
+                    "receiptData": receiptData as AnyObject,
+                ]
+                
+                HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/process-transaction")!, payload: json, baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: .main)
+                    .then(){ res in
+                        print("[RECEIPT] \(res)")
+                    }
+                    .catch(){ error in
+                        print("[RECEIPT] error: \(error)")
+                    }
             } label: {
                 HStack(){
                     Spacer()
@@ -543,23 +562,23 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
             .clipShape(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
             )
-            .overlay(
-                GeometryReader() { proxy in
-                    HStack(){
-                        Spacer()
-                        Text("Coming Soon")
-                            .fixedSize(horizontal: true, vertical: true)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.fixedWhite)
-                            .padding(2)
-                            .background(Color.fixedGray)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            .offset(x: proxy.size.height / 4, y: proxy.size.height / 12 * -1)
-                            .rotationEffect(.degrees(15))
-                        //.rotationEffect(.degres(15))
-                    }
-                }
-            )
+//            .overlay(
+//                GeometryReader() { proxy in
+//                    HStack(){
+//                        Spacer()
+//                        Text("Coming Soon")
+//                            .fixedSize(horizontal: true, vertical: true)
+//                            .font(.subheadline.weight(.semibold))
+//                            .foregroundColor(.fixedWhite)
+//                            .padding(2)
+//                            .background(Color.fixedGray)
+//                            .clipShape(RoundedRectangle(cornerRadius: 6))
+//                            .offset(x: proxy.size.height / 4, y: proxy.size.height / 12 * -1)
+//                            .rotationEffect(.degrees(15))
+//                        //.rotationEffect(.degres(15))
+//                    }
+//                }
+//            )
             .frame(width: screenWidth - 100, height: 60)
             .accentColor(.orange)
             .buttonStyle(OutlineButton())
