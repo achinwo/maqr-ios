@@ -423,10 +423,6 @@ struct ExperiencePurchaseView: JoliView {
             }
         }
         .onAppear(){
-            for x in Product.Identifier.productIds {
-                print("ID: \(x.rawValue.id)")
-            }
-            
             print("[\(Self.self)] purchases: \(purchasesIdsForTesting)")
             appCoordinator.storeKitHelper.request(Product.Identifier.productIds)
         }

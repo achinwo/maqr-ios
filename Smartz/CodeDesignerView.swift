@@ -353,10 +353,11 @@ public struct CodeDesignerView: JoliView {
         
         let codeView = VisualCodeView(code: $visualCode, submitEnabled: $submitEnabled){ visualCode in
             print("Submitting: \(visualCode.properties)")
-            self.submitExperience(expData, codes: [visualCode])
+            self.submitOrPurchase(expData, codes: [visualCode])
         } label: {
             if expData.uuid == nil {
-                Label("Submit", systemImage: "arrow.up")
+                let newTxt: (String, String) = appCoordinator.isPaymentEnabled && !self.hasSubscription ? ("Purchase", "cart") : ("Submit", "arrow.up")
+                Label(newTxt.0, systemImage: newTxt.1)
             } else {
                 Text("Save Changes")
             }
@@ -407,6 +408,8 @@ public struct CodeDesignerView: JoliView {
                     
                     code.url = api.baseUrlHttp.appendingPathComponent("e/\(saved.uuid)").absoluteString
                     code.experienceId = saved.id
+                    code.style = code.style ?? Style.appclip.rawValue
+                    
                     return code.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
                 }
                 
@@ -584,12 +587,48 @@ public struct CodeDesignerView: JoliView {
     
     var hasSubscription: Bool {
         
-        guard Date(timeIntervalSince1970: 1640993136) > Date() else { return false } // disable testing purchase flow end of 2021
+        guard Date(timeIntervalSince1970: 1_640_993_136) > Date() else { return false } // disable testing purchase flow end of 2021
         
         let existingPurchaseIds = purchasesIdsForTesting.components(separatedBy: ",")
         let subscriptionPurchases = Product.Identifier.productIds.filter() { existingPurchaseIds.contains($0.id) && $0.isSubscription }
         
         return !subscriptionPurchases.isEmpty
+    }
+    
+    public func submitOrPurchase(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) {
+        
+        guard let expCls = selectedExperience else {
+            return
+        }
+        
+        guard appCoordinator.isPaymentEnabled, !self.hasSubscription, expData.uuid == nil else {
+            self.submitExperience(expData, codes: codes)
+            return
+        }
+        
+        let view: AppPreview = .view2(){
+            NavigationView(){
+                ExperiencePurchaseView() { _ in
+                    self.appCoordinator.globalModalSubject.send(nil)
+                    self.submitExperience(expData, codes: codes)
+                        .always(){
+                            self.updateStoredExperiences()
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
+                                withAnimation(){
+                                    self.selectedTab = 0
+                                }
+                            }
+                        }
+                }
+                .navigationBarTitle(Text("Purchase \(expCls.title) Experience"), displayMode: .inline)
+            }
+                //                                    .environment(\.colorScheme, .dark)
+                //                                    .backgroundColor(.fixedGray)
+            .eraseToAnyView()
+        }
+        
+        self.appCoordinator.globalModalSubject.send(view)
     }
     
     public var contentView: some View {
@@ -640,41 +679,14 @@ public struct CodeDesignerView: JoliView {
                             appCoordinator.serverLogDestination.send(.info, msg: msg, thread: Thread.current.description,
                                                                      file: #file, function: #function, line: #line)
                             
-                            guard let expData = experienceData, let expCls = selectedExperience, isLastTab else {
+                            guard let expData = experienceData, isLastTab else {
                                 self.readyToDownload = true
                                 self.appCoordinator.dismissKeyboard()
                                 self.trialActivateCallback()
                                 return
                             }
                             
-                            guard appCoordinator.isPaymentEnabled, !self.hasSubscription else {
-                                self.submitExperience(expData, codes: [visualCode])
-                                return
-                            }
-                            
-                            let view: AppPreview = .view2(){
-                                NavigationView(){
-                                        ExperiencePurchaseView() { _ in
-                                            self.appCoordinator.globalModalSubject.send(nil)
-                                            self.submitExperience(expData, codes: [visualCode])
-                                                .always(){
-                                                    self.updateStoredExperiences()
-                                                    
-                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
-                                                        withAnimation(){
-                                                            self.selectedTab = 0
-                                                        }
-                                                    }
-                                                }
-                                        }
-                                        .navigationBarTitle(Text("Purchase \(expCls.title) Experience"), displayMode: .inline)
-                                    }
-//                                    .environment(\.colorScheme, .dark)
-//                                    .backgroundColor(.fixedGray)
-                                    .eraseToAnyView()
-                            }
-
-                            self.appCoordinator.globalModalSubject.send(view)
+                            self.submitOrPurchase(expData, codes: [visualCode])
                             
                         } label: {
                             
