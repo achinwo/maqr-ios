@@ -156,6 +156,7 @@ public struct ExperienceDataView: JoliView {
         self.experienceType = dataType
         self.completionCallback = callback
         self._socialInstagramUsername = State(initialValue: data.socialInstagramUsername ?? .empty)
+        self._productDescription = State(initialValue: data.productDescription ?? .empty)
         self._bannerVideoUrl = State(initialValue: data.bannerVideoUrl?.absoluteString ?? .empty)
     }
     
@@ -227,6 +228,7 @@ public struct ExperienceDataView: JoliView {
     }
     
     @State var socialInstagramUsername: String = .empty
+    @State var productDescription: MultilineString = .empty
     @State var bannerVideoUrl: String = .empty
     
     @State var fieldSizeIg: CGSize = .zero
@@ -430,6 +432,26 @@ public struct ExperienceDataView: JoliView {
                 }
             }
             
+            Section(header: Text("Product Description")) {
+                
+                if let productMeta = allDataKeys.first(keypath: \ExperienceData.productDescription) {
+//                    TextField(productMeta.description, text: $productDescription, onEditingChanged: {_ in }){
+//                        print("[Product description] committed")
+//                    }
+                    
+                    TextEditor(text: $productDescription)
+                        .frame(height: screenWidth / 2.5)
+                        .onChange(of: productDescription) { descr in
+                            let description = descr.trimmingCharacters(in: .whitespacesAndNewlines)
+                            
+                            guard !description.isEmpty else { return }
+                            
+                            data.productDescription = description
+                        }
+                 
+                }
+            }
+            
             Section(header: Text("Social")) {
                 if let instaMeta = allDataKeys.first(keypath: \ExperienceData.socialInstagramUsername) {
                     TextField(instaMeta.description, text: $socialInstagramUsername, onEditingChanged: {_ in }) {
@@ -520,4 +542,29 @@ public struct ExperienceDataView: JoliView {
 //        )
     }
     
+}
+
+
+extension String: Identifiable {
+    public var id: String { self }
+}
+
+
+extension Optional where Wrapped == String {
+    var _bound: String? {
+        get {
+            return self
+        }
+        set {
+            self = newValue
+        }
+    }
+    public var bound: String {
+        get {
+            return _bound ?? ""
+        }
+        set {
+            _bound = newValue.isEmpty ? nil : newValue
+        }
+    }
 }

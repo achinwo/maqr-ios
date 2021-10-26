@@ -166,6 +166,7 @@ public struct MealboxView: Experience, JoliView {
             \ExperienceData.bannerImageUrl,
             \ExperienceData.socialInstagramUsername,
             \ExperienceData.productImageUrl,
+             \ExperienceData.productDescription,
         ]
     }
     
@@ -511,7 +512,7 @@ public struct MealboxView: Experience, JoliView {
                                 .frame(width: screenWidth - 100, height: screenWidth - 100)
                                 .padding(.top)
                             
-                            (Text("(Pronounced Or-far-da) ").fontWeight(.semibold) + Text("also known as designer stew, originates from Western Nigeria and gets its name from a locally grown rice known as Ofada rice. This delicious sauce is enriched with flavours as it is originally made with a variety of red peppers."))
+                            (Text(dataModel?.productDescription ??  " ").fontWeight(.semibold) )
                                 .padding()
                                 .padding(.horizontal)
                                 .font(.body.weight(.light))
