@@ -53,7 +53,11 @@ public final class AppCoordinator: ObservableObject {
         configuration.urlCache = URLCache(memoryCapacity: memoryCapacity, diskCapacity: diskCapacity)
         configuration.httpAdditionalHeaders = ["Accept": "image/*"]
         
-        return NetworkImageLoader(urlSession: URLSession(configuration: configuration, delegate: JoliApi.sharedUrlSessionDelegate, delegateQueue: .current), imageCache: NetworkImageCache())
+        guard api.env == .production else {
+            return NetworkImageLoader(urlSession: URLSession(configuration: configuration, delegate: JoliApi.sharedUrlSessionDelegate, delegateQueue: .current), imageCache: NetworkImageCache())
+        }
+        
+        return NetworkImageLoader(urlSession: URLSession(configuration: configuration), imageCache: NetworkImageCache())
     }()
     
     @Published public var serverInfo: ServerInfo? = nil
