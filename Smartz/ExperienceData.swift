@@ -50,14 +50,10 @@ public protocol ExperienceDataItem: Codable {
     var spicy: Spicy? { get set }
     var subtitle: String? { get set }
     var title: String? { get set }
-    var identifier: Int? { get }
+    var uuid: String { get }
 }
 
 extension StikrExperienceDataItem: ExperienceDataItem {
-    
-    public var identifier: Int? {
-        return id
-    }
     
 }
 
@@ -119,7 +115,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     public struct Item: ExperienceDataItem, Identifiable, Comparable, Equatable {
         
         public static func < (lhs: ExperienceData.Item, rhs: ExperienceData.Item) -> Bool {
-            lhs.id.hashValue > rhs.id.hashValue
+            lhs.uuid > rhs.uuid
         }
         
         public var experienceItemType: ExperienceItemType
@@ -136,7 +132,12 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         public var title: String?
         public var identifier: Int?
         
-        public var id: UUID = UUID()
+        public var uuid: String = UUID().uuidString
+        
+        public var id: String {
+            return uuid
+        }
+        
     }
     
 //    public var json: Json {

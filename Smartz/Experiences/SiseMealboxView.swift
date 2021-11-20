@@ -377,7 +377,7 @@ public struct MealboxView: Experience, JoliView {
                     ForEach((dataModel?.items ?? []).filter { $0.experienceItemType == .mealPrepIngredient }) { ing in
 
                         HStack(){
-                            Image(ing.id.uuidString)
+                            Image(ing.uuid)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 100, height: 100)

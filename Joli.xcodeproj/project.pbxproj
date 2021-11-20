@@ -643,6 +643,7 @@
 		9202D3D32659B6E700D5974F /* Smartz */ = {
 			isa = PBXGroup;
 			children = (
+				9239722C27497851006FCE06 /* Components */,
 				92F1D5F92708CF5B00D0743B /* StoreKit */,
 				92ED526F27067D84008073F3 /* Experiences */,
 				921F6C3D26BE9F880061D236 /* CoreMlHelpers */,
@@ -657,17 +658,9 @@
 				9202D3D82659B6E900D5974F /* Assets.xcassets */,
 				9202D3D42659B6E700D5974F /* SmartzApp.swift */,
 				9202D3D62659B6E700D5974F /* ContentView.swift */,
-				92C1A24D26626D5B00A11E0F /* Playback.swift */,
-				920264CA268FAE06005643E1 /* ExperienceView.swift */,
-				921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */,
-				922223E226A2E368007BD0D3 /* CodeDesignerView.swift */,
-				921F6C2F26BE81C00061D236 /* VisualCodeView.swift */,
-				921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */,
-				92ECCEDC26C0543F009A2B75 /* LiveExperiencesView.swift */,
 				9228F86B26C07A310053DC04 /* ExperienceData.swift */,
-				9217904F26C9832A009FC4CE /* VisualCodeDownloadView.swift */,
-				9217905526CC51DA009FC4CE /* MessageView.swift */,
-				928604A3270CA80D00ED2E68 /* ExperiencePurchaseView.swift */,
+				921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */,
+				92C1A24D26626D5B00A11E0F /* Playback.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -720,6 +713,21 @@
 				921F6C3E26BEA05C0061D236 /* UIImage+Extensions.swift */,
 			);
 			name = CoreMlHelpers;
+			sourceTree = "<group>";
+		};
+		9239722C27497851006FCE06 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				920264CA268FAE06005643E1 /* ExperienceView.swift */,
+				921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */,
+				922223E226A2E368007BD0D3 /* CodeDesignerView.swift */,
+				921F6C2F26BE81C00061D236 /* VisualCodeView.swift */,
+				92ECCEDC26C0543F009A2B75 /* LiveExperiencesView.swift */,
+				9217904F26C9832A009FC4CE /* VisualCodeDownloadView.swift */,
+				9217905526CC51DA009FC4CE /* MessageView.swift */,
+				928604A3270CA80D00ED2E68 /* ExperiencePurchaseView.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		9274A7E524CDB29200B45EDF /* JoliClip */ = {
