@@ -9,6 +9,21 @@
 import Foundation
 import JoliCore
 
+public extension Spicy {
+    
+    var emoji: String {
+        switch self {
+            case .extraHot:
+                return "🌶🌶🌶"
+            case .mild:
+                return "🌶"
+            case .hot:
+                return "🌶🌶"
+        }
+    }
+    
+}
+
 public extension ExperienceData.Item {
     
     static func makeCastmember(_ title: String, subtitle: String, alias: String, imageUrlString: String) -> Self {
@@ -22,6 +37,36 @@ public extension ExperienceData.Item {
                                    itemGrouping: nil,
                                    itemSubgrouping: nil,
                                    spicy: nil,
+                                   subtitle: subtitle,
+                                   title: title)
+    }
+    
+    static func makeMealIngredient(_ title: String, description subtitle: String, spicy: Spicy? = nil, imageName: String) -> Self {
+        return ExperienceData.Item(experienceItemType: .mealPrepIngredient,
+                                   aliasTitle: nil,
+                                   caution: nil,
+                                   defaultPrice: nil,
+                                   duration: nil,
+                                   imageName: "https://storage.googleapis.com/joli-app-bucket/images/\(imageName)",
+                                   isOptional: nil,
+                                   itemGrouping: nil,
+                                   itemSubgrouping: nil,
+                                   spicy: spicy,
+                                   subtitle: subtitle,
+                                   title: title)
+    }
+    
+    static func makeMealStep(_ title: String, description subtitle: String, duration: Int? = nil, isOptional: Bool = false, spicy: Spicy? = nil, caution: String? = nil) -> Self {
+        return ExperienceData.Item(experienceItemType: .mealPrepStep,
+                                   aliasTitle: nil,
+                                   caution: caution,
+                                   defaultPrice: nil,
+                                   duration: duration,
+                                   imageName: nil,
+                                   isOptional: isOptional,
+                                   itemGrouping: nil,
+                                   itemSubgrouping: nil,
+                                   spicy: spicy,
                                    subtitle: subtitle,
                                    title: title)
     }
@@ -51,3 +96,61 @@ let crazyworldDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(staticS
                                                         ExperienceData.Item.makeCastmember("John Owotorufa", subtitle: "Sammy is the first son of Adaeze, and in the university. He is very flirtatious like his father and doesn’t have issues with his father’s mistresses.", alias: "Sammy", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.21.57.png"),
                                                        ]
 ))
+
+let siseMealboxDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/sise_logo_full.png"),
+                                                       bannerImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/sise_meal_banner.jpg"),
+                                                       bannerVideoUrl: URL(staticString: "https://youtu.be/wbs5ed9I9C0"),
+                                                       productImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/food_ofada.png"),
+                                                       brandName: "Sísè Food",
+                                                       landingPageText: "Sísè pronounced sea-say, is a Yoruba word that means cook.\nSísè food box provides you with pre-prepped ingredients as well as simple step by step instructions required to cook delicious mouth-watering meals in under 20mins! \n\nOur ❤️ for food means that we source only the best ingredients with quality and authenticity at the heart of it all.",
+                                                       productName: "Ofada Sauce",
+                                                       productDescription: "(Pronounced Or-far-da) also known as designer stew, originates from Western Nigeria and gets its name from a locally grown rice known as Ofada rice. This delicious sauce is enriched with flavours as it is originally made with a variety of red peppers.",
+                                                       socialInstagramUsername: "ashabismeals",
+                                                       releaseDate: Date(timeIntervalSince1970: 1627171200),
+                                                       releasePlatformName: "Netflix",
+                                                       releasePlatformLogoUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/logo_netflix.png"),
+                                                       releasePlatformInstaUsername: "naijaonnetflix",
+                                                       items: [
+                                                        .makeMealIngredient("Chilli Flakes", description: "Crushed Chillies flakes contain the flesh and seeds of whole chillies; if you want to add a warm, fiery punch to a dish, then look no further", imageName: "food_ing_chilliflakes.png"),
+                                                        .makeMealIngredient("Bleached Palm oil", description: "A unique tasting oil made by bleaching red palm oil for a few minutes till it looks somewhat like vegetable oil", imageName: "food_ing_palmoil.png"),
+                                                        .makeMealIngredient("Salt", description: "Cooking salt – a seasoning to enhance taste and bring out the natural flavours", imageName: "food_ing_salt.png"),
+                                                        .makeMealIngredient("Scotch Bonnet", description: "Scotch bonnet, also known as bonney peppers, or Caribbean red peppers, is a variety of chili pepper named for its resemblance to a tam o' shanter hat", imageName: "food_ing_scotch_bornet.png"),
+                                                        .makeMealIngredient("Season Mix", description: "A flavourful, umami-packed blend of ground dried ginger, peanuts, and more", imageName: "food_ing_seasoningmix.png"),
+                                                        
+                                                        .makeMealStep("Heat Palm Oil", description: "Heat the bleached palm oil on medium heat for 1-2mins", duration: 60 * 2, caution: "Do Not Cover"),
+                                                        .makeMealStep("Add Locust Beans", description: "Add in locust beans to cook for 50 secs, stir continuously to avoid burning"),
+                                                        .makeMealStep("Add Protein", description: "Add protein (meat/fish) and fry for 2-3mins stirring continuously", duration: 60 * 3),
+                                                        .makeMealStep("Add Red Pepper", description: "Add the precooked red pepper", spicy: .mild),
+                                                        .makeMealStep("Add Chilli Flakes", description: "Add the chilli flakes", spicy: .hot),
+                                                        .makeMealStep("Add Crayfish", description: "Add the crayfish", isOptional: true),
+                                                        .makeMealStep("Add scotch bonnet", description: "Add scotch bonnet (quarter teaspoon at a time, until desired level of spice is reached)", spicy: .extraHot),
+                                                        .makeMealStep("Add the spice/season mix", description: "Add the spice/season mix as desired (half a teaspoon at a time)"),
+                                                        .makeMealStep("Add a pinch of salt", description: "Add a pinch of salt, optionally tasting till you achieve your desired taste", isOptional: true),
+                                                        .makeMealStep("Cover and leave to simmer", description: "Cover and leave to simmer for 6-10mins on medium heat", duration: 60 * 10),
+                                                        .makeMealStep("Serve warn and enjoy", description: "Serve warn and enjoy your meal"),
+                                                       ]
+                                                      )
+)
+
+//
+//let ingredients: [Ingredient] = [
+//    Ingredient(id: "food_ing_chilliflakes", title: "Chilli Flakes", description: "Crushed Chillies flakes contain the flesh and seeds of whole chillies; if you want to add a warm, fiery punch to a dish, then look no further"),
+//    Ingredient(id: "food_ing_palmoil", title: "Bleached Palm oil", description: "A unique tasting oil made by bleaching red palm oil for a few minutes till it looks somewhat like vegetable oil"),
+//    Ingredient(id: "food_ing_salt", title: "Salt", description: "Cooking salt – a seasoning to enhance taste and bring out the natural flavours"),
+//    Ingredient(id: "food_ing_scotch_bornet", title: "Scotch Bonnet", description: "Scotch bonnet, also known as bonney peppers, or Caribbean red peppers, is a variety of chili pepper named for its resemblance to a tam o' shanter hat"),
+//    Ingredient(id: "food_ing_seasoningmix", title: "Season Mix", description: "A flavourful, umami-packed blend of ground dried ginger, peanuts, and more"),
+//]
+
+//let steps: [Step] = [
+//    Step(id: "heat_oil", title: "Heat Palm Oil", description: "Heat the bleached palm oil on medium heat for 1-2mins", duration: 60.0 * 2, caution: "Do Not Cover"),
+//    Step(id: "add_locust_beans", title: "Add Locust Beans", description: "Add in locust beans to cook for 50 secs, stir continuously to avoid burning"),
+//    Step(id: "add_protein", title: "Add Protein", description: "Add protein (meat/fish) and fry for 2-3mins stirring continuously", duration: 60.0 * 3),
+//    Step(id: "add_red_pepper", title: "Add Red Pepper", description: "Add the precooked red pepper", spicy: "🌶"),
+//    Step(id: "add_chillies", title: "Add Chilli Flakes", description: "Add the chilli flakes", spicy: "🌶🌶"),
+//    Step(id: "add_crayfish", title: "Add Crayfish", description: "Add the crayfish", isOptional: true),
+//    Step(id: "add_scotch_bonnet", title: "Add scotch bonnet", description: "Add scotch bonnet (quarter teaspoon at a time, until desired level of spice is reached)", spicy: "🌶🌶🌶"),
+//    Step(id: "add_spice", title: "Add the spice/season mix", description: "Add the spice/season mix as desired (half a teaspoon at a time)"),
+//    Step(id: "add_salt", title: "Add a pinch of salt", description: "Add a pinch of salt, optionally tasting till you achieve your desired taste", isOptional: true),
+//    Step(id: "cover_and_simmer", title: "Cover and leave to simmer", description: "Cover and leave to simmer for 6-10mins on medium heat", duration: 60.0 * 10),
+//    Step(id: "serve_enjoy", title: "Serve warn and enjoy", description: "Serve warn and enjoy your meal"),
+//]

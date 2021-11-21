@@ -95,7 +95,7 @@ struct SmartzClipApp: AppClip {
                           storeId.lowercased() == "shows" {
                     TvShowPromoView(crazyworldDemo)
                 } else {
-                    SiseMealboxView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                    SiseMealboxView<VideoPlaybackController>(siseMealboxDemo, currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                 }
             }
             .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)

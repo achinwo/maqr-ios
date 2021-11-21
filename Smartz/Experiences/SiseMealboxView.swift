@@ -137,15 +137,17 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
     @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
     
     @Binding var currentUser: User?
-
-    public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
+    @State var experienceData: ExperienceData?
+    
+    public init(_ experienceData: ExperienceData? = nil, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
         self._currentUser = currentUser
         self.websocket = websocket
         self.localPlaybackController = localPlaybackController
+        self._experienceData = State(initialValue: experienceData)
     }
     
     var contentView: some View {
-        MealboxView()
+        MealboxView(self.experienceData)
     }
     
 }
@@ -377,16 +379,18 @@ public struct MealboxView: Experience, JoliView {
                     ForEach((dataModel?.items ?? []).filter { $0.experienceItemType == .mealPrepIngredient }) { ing in
 
                         HStack(){
-                            Image(ing.uuid)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 100, height: 100)
-                                VStack(alignment: .leading){
-                                    Text( ing.title ?? "").font(.subheadline)
-                                    Text(ing.subtitle ?? "").font(.caption).foregroundColor(.secondaryLabel).fixedSize(horizontal: false, vertical: true)
-                                }
+                            NetworkImage(string: ing.imageName){
+                                EmptyView()
                             }
-                            .padding(.horizontal)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 100, height: 100)
+                                //.resizable()
+                            VStack(alignment: .leading){
+                                Text(ing.title ?? "").font(.subheadline)
+                                Text(ing.subtitle ?? "").font(.caption).foregroundColor(.secondaryLabel).fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .padding(.horizontal)
                     }
                 }
             }
@@ -506,13 +510,16 @@ public struct MealboxView: Experience, JoliView {
                 ScrollViewReader() { proxy in
                     ScrollView(){
                         VStack(){
-                            Image("food_ofada").data(url: dataModel?.productImageUrl ?? URL(string: "https://picsum.photos/200")!)
-                                .resizable()
+                            //Image("food_ofada").data(url: dataModel?.productImageUrl ?? URL(string: "https://picsum.photos/200")!)
+                            NetworkImage(url: dataModel?.productImageUrl ?? dataModelDefault.productImageUrl){
+                                    EmptyView()
+                                }
+                                //.resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: screenWidth - 100, height: screenWidth - 100)
                                 .padding(.top)
                             
-                            (Text(dataModel?.productDescription ??  " ").fontWeight(.semibold) )
+                            Text(dataModel?.productDescription ??  dataModelDefault.productDescription) //.fontWeight(.semibold) )
                                 .padding()
                                 .padding(.horizontal)
                                 .font(.body.weight(.light))
@@ -547,15 +554,13 @@ public struct MealboxView: Experience, JoliView {
                                                     .font(.footnote).foregroundColor(Color.systemIndigo.opacity(0.7))
                                             }
 
-//                                            if let duration = itm.element.duration, let durationStr = formatter.string(from: duration) {
-//                                                Label(durationStr, systemImage: "timer")
-//                                                    .font(.footnote)
-//                                            }
+                                            if let duration = itm.element.duration, let durationStr = formatter.string(from: Double(duration)) {
+                                                Label(durationStr, systemImage: "timer")
+                                                    .font(.footnote)
+                                            }
 
                                             if let spicy = itm.element.spicy {
-                                                
-                                                Text(String(describing: spicy)
-)
+                                                Text(spicy.emoji)
                                                     .font(.footnote)
                                             }
 
@@ -609,7 +614,6 @@ public struct MealboxView: Experience, JoliView {
                                 }
                                 .padding([.bottom, .horizontal])
                             }
-                            .navigationTitle("Preparation" )
                             
                             Group(){
                                 if completed {
@@ -629,6 +633,7 @@ public struct MealboxView: Experience, JoliView {
                     }
                 }
             }
+            .navigationTitle("Preparing \(dataModel?.productName ?? dataModelDefault.productName)")
             
         }
         .onReceive(self.autoResetting) { value in
@@ -714,9 +719,10 @@ public struct MealboxView: Experience, JoliView {
                     VStack(){
                     
                         Section(header: Text("HELLO & WELCOME").font(.title3)) {
-                            Text(dataModel?.brandName ?? "DefaultText").font(.subheadline.weight(.semibold))
-                            Text(dataModel?.landingPageText ?? "")
+                            Text(dataModel?.brandName ?? dataModelDefault.brandName).font(.subheadline.weight(.semibold))
+                            Text(dataModel?.landingPageText ?? dataModelDefault.landingPageText)
                                 .font(.body.weight(.light))
+                                .multilineTextAlignment(.center)
                         }
                         .padding()
                     }

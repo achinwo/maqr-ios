@@ -254,6 +254,9 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience", default = ""Describe \nyour brand \nexperience""
     @Published var landingPageText: MultilineString
     
+    // sourcery: title = "Product Name", description = "Brand product name", default = ""Your Product""
+    @Published var productName: String?
+    
     // sourcery: title = "Product Description", description = "Brand product description", default = ""Describe \nthis product""
     @Published var productDescription: MultilineString?
     
@@ -312,6 +315,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         res.bannerVideoUrl = URL.fromString(experienceData.bannerVideoUrl)
         res.backgroundImageUrl = URL.fromString(experienceData.backgroundImageUrl)
         
+        res.productName = experienceData.productName
         res.productImageUrl = URL.fromString(experienceData.productImageUrl)
         res.productDescription = experienceData.productDescription
         
@@ -362,6 +366,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         productImageUrl = try container.decode(URL?.self, forKey: .productImageUrl)
         brandName = try container.decode(String.self, forKey: .brandName)
         landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
+        productName = try container.decode(String?.self, forKey: .productName)
         productDescription = try container.decode(MultilineString?.self, forKey: .productDescription)
         socialInstagramUsername = try container.decode(String?.self, forKey: .socialInstagramUsername)
         releaseDate = try container.decode(Date?.self, forKey: .releaseDate)

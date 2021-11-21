@@ -55,7 +55,7 @@
          <EnvironmentVariable
             key = "_XCAppClipURL"
             value = "https://smartstikr.com/s/shows/iacw"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "_XCAppClipURL"
@@ -65,7 +65,7 @@
          <EnvironmentVariable
             key = "_XCAppClipURL"
             value = "https://smartstikr.com/s/sise/ofada"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
