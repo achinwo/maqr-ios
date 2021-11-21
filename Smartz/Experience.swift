@@ -142,7 +142,7 @@ enum ViewDisplayMode {
 }
 
 extension Color {
-    static func random()->Color {
+    static func random() -> Color {
         let r = Double.random(in: 0 ... 1)
         let g = Double.random(in: 0 ... 1)
         let b = Double.random(in: 0 ... 1)
@@ -170,16 +170,17 @@ struct AnimatableGradientView: View {
         ZStack {
             Rectangle()
                 .fill(LinearGradient(gradient: Gradient(colors: self.gradientA), startPoint: UnitPoint(x: 0, y: 0), endPoint: UnitPoint(x: 1, y: 1)))
+            
             Rectangle()
                 .fill(LinearGradient(gradient: Gradient(colors: self.gradientB), startPoint: UnitPoint(x: 0, y: 0), endPoint: UnitPoint(x: 1, y: 1)))
                 .opacity(self.firstPlane ? 0 : 1)
+            
             ///this button just demonstrates the solution
-            Button(action:{
+            Button(){
                 withAnimation(.spring()) {
                     self.setGradient(gradient: [Color.random(), Color.random()])
                 }
-            })
-            {
+            } label: {
                 Text("Change gradient")
             }
         }

@@ -329,6 +329,21 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         res.brandColorAccent = Color.init(hex: experienceData.brandColorAccent ?? res.brandColorAccent.hexString)
         
         res.stored = experienceData
+        
+        guard let items = experienceData.items else {
+            return res
+        }
+        
+        res.items = items.map(){ stkItem -> Item in
+            return ExperienceData.Item(experienceItemType: stkItem.experienceItemType,
+                                       aliasTitle: stkItem.aliasTitle, caution: stkItem.caution,
+                                       defaultPrice: stkItem.defaultPrice, duration: stkItem.duration,
+                                       imageName: stkItem.imageName, isOptional: stkItem.isOptional,
+                                       itemGrouping: stkItem.itemGrouping, itemSubgrouping: stkItem.itemSubgrouping,
+                                       spicy: stkItem.spicy, subtitle: stkItem.subtitle,
+                                       title: stkItem.title, identifier: stkItem.id, uuid: stkItem.uuid)
+        }
+        
         return res
     }
 
