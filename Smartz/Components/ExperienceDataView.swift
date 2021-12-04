@@ -432,13 +432,8 @@ public struct ExperienceDataView: JoliView {
                 }
             }
             
-            Section(header: Text("Product Description")) {
-                
-                if let productMeta = allDataKeys.first(keypath: \ExperienceData.productDescription) {
-//                    TextField(productMeta.description, text: $productDescription, onEditingChanged: {_ in }){
-//                        print("[Product description] committed")
-//                    }
-                    
+            if let productMeta = allDataKeys.first(keypath: \ExperienceData.productDescription) {
+                Section(header: Text(productMeta.title)) {
                     TextEditor(text: $productDescription)
                         .frame(height: screenWidth / 2.5)
                         .onChange(of: productDescription) { descr in

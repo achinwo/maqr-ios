@@ -50,6 +50,7 @@ public protocol ExperienceDataItem: Codable {
     var spicy: Spicy? { get set }
     var subtitle: String? { get set }
     var title: String? { get set }
+    var createdAt: Date { get }
     var uuid: String { get }
 }
 
@@ -112,10 +113,10 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     public typealias PersistedType = StikrExperienceData
     
-    public struct Item: ExperienceDataItem, Identifiable, Comparable, Equatable {
+    public struct Item: ExperienceDataItem, Identifiable, Comparable, Equatable, Hashable {
         
         public static func < (lhs: ExperienceData.Item, rhs: ExperienceData.Item) -> Bool {
-            lhs.uuid > rhs.uuid
+            lhs.createdAt < rhs.createdAt
         }
         
         public var experienceItemType: ExperienceItemType
@@ -131,7 +132,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         public var subtitle: String?
         public var title: String?
         public var identifier: Int?
-        
+        public var createdAt: Date = Date()
         public var uuid: String = UUID().uuidString
         
         public var id: String {
