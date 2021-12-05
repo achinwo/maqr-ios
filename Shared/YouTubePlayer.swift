@@ -89,7 +89,7 @@ public func videoIDFromYouTubeURL(_ videoURL: URL) -> String? {
     }
     let url = videoURL.queryStringComponents()["v"] as? String
     
-    print("Video: \(url)")
+    //print("Video: \(url)")
     return url
 }
 
@@ -268,7 +268,7 @@ open class YouTubePlayerView: UIView, WKNavigationDelegate {
         
         // Replace %@ in rawHTMLString with jsonParameters string
         let htmlString = rawHTMLString.replacingOccurrences(of: "%@", with: jsonParameters)
-        print("JOSN: \(jsonParameters)")
+        //print("JOSN: \(jsonParameters)")
         
         // Load HTML in web view
         webView.loadHTMLString(htmlString, baseURL: URL(string: baseURL))
@@ -491,13 +491,15 @@ final class YouTubeView: UIViewRepresentable {
     typealias UIViewType = YouTubePlayerView
     
     let playerState: YouTubeControlState
+    let autoplay: Bool
     
-    init(playerState: YouTubeControlState) {
+    init(playerState: YouTubeControlState, autoplay: Bool = true) {
         self.playerState = playerState
+        self.autoplay = autoplay
     }
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(playerState: playerState)
+        Coordinator(playerState: playerState, autoplay: autoplay)
     }
     
     func makeUIView(context: Context) -> UIViewType {
@@ -517,7 +519,7 @@ final class YouTubeView: UIViewRepresentable {
         
         ytVideo.playerVars = playerVars as YouTubePlayerView.YouTubePlayerParameters
         ytVideo.delegate = context.coordinator
-        print("[Youtube] made UI")
+        //print("[Youtube] made UI")
         return ytVideo
     }
     
@@ -564,13 +566,19 @@ final class YouTubeView: UIViewRepresentable {
     }
     
     class Coordinator: YouTubePlayerDelegate {
-        @ObservedObject var playerState: YouTubeControlState
         
-        init(playerState: YouTubeControlState) {
+        @ObservedObject var playerState: YouTubeControlState
+        let autoplay: Bool
+        
+        init(playerState: YouTubeControlState, autoplay: Bool) {
             self.playerState = playerState
+            self.autoplay = autoplay
         }
         
         func playerReady(_ videoPlayer: YouTubePlayerView) {
+            
+            guard autoplay else { return }
+            
             videoPlayer.play()
             playerState.videoState = .play
         }

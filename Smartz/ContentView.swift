@@ -16,6 +16,7 @@ import Combine
 
 enum AssetInfo {
     case video(AVPlayer)
+    case youtube(YouTubeVideoIdentifier)
     case image(String)
     case symbol(String)
 }
@@ -210,11 +211,11 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                        learnMore: URL(string: "https://developer.apple.com/app-clips/")!
                       ),
         
-        ProductSection(asset: .video(AVPlayer(url: Bundle.main.url(forResource: "demo_sise_appclip", withExtension: "mp4")!)),
+        ProductSection(asset: .youtube(.url(URL(staticString: "https://youtu.be/P4016ZGlbVc"))),
                        title: "Rich Customer Experience",
                        subtitle: "Our mission here at SmartStikr is simple. We want to give e-commerce businesses the ability to seamlessly organise, market and streamline their business processes and interact with customers in the language they speak using impressive user friendly technology while saving our planet at the same time."),
         
-        ProductSection(asset: .video(AVPlayer(url: Bundle.main.url(forResource: "demo_sise_intro", withExtension: "mov")!)),
+        ProductSection(asset: .youtube(.url(URL(staticString: "https://youtu.be/_Ly3UEV9NnE"))),
                        title: "Go Contactless",
                        subtitle: "Stikrs support NFC for a contactless experience."),
         
@@ -262,9 +263,20 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     .aspectRatio(contentMode: .fit)
                     .font(.largeTitle)
                     .frame(maxWidth: screenWidth / 2)
+            } else if case let .youtube(youtubeId) = section.asset {
+                
+                GeometryReader(){ proxy in
+                    YouTubeView(playerState: YouTubeControlState(youtubeId), autoplay: false)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: proxy.size.width)
+                        .frame(height: screenWidth)
+                }
+                .frame(height: screenWidth)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
-            .padding(.vertical)
+        .padding(.vertical)
+        .frame(maxWidth: screenWidth - 20)
         
         return Section(header: Text(section.title).font(.title2)){
             VStack(){
@@ -508,18 +520,24 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
             Text("Smart Stikr").font(.headline.weight(.light)).foregroundColor(.tertiaryLabel).padding([.bottom])
             (Text("Welcome to the ").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)
              + Text("Paperless ").font(.title.weight(.light)).foregroundColor(.secondaryLabel)
-             + Text("Future").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)).multilineTextAlignment(.center)
-            Text(whoWeAreText)
+             + Text("Future").font(.title.weight(.light)).foregroundColor(.tertiaryLabel))
                 .multilineTextAlignment(.center)
+            
+            Text(whoWeAreText)
                 .font(.subheadline)
                 .foregroundColor(.primary)
+                .multilineTextAlignment(.center)
                 .padding()
             
-            VideoPlayer(player: AVPlayer(url: Bundle.main.url(forResource: "demo_sise_code_scan", withExtension: "mov")!))
-                .frame(height: screenWidth - 100)
-                .clipShape(RoundedRectangle(cornerRadius: 24))
-                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
-                .padding()
+            GeometryReader(){ proxy in
+                YouTubeView(playerState: YouTubeControlState(.url(URL(staticString: "https://youtu.be/JjwIdYIFSSo"))), autoplay: false)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: proxy.size.width)
+                    .frame(height: screenWidth)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .frame(height: screenWidth)
+            .frame(maxWidth: screenWidth - 20)
             
             Divider().padding()
             self.mainView
@@ -587,7 +605,7 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
             HStack(){
                 Spacer()
                 
-                Link(destination: URL(string: "https://www.instagram.com/smartstikr/")!) {
+                Link(destination: URL(social: .instagramUser("smartstikr"))) {
                     VStack(){
                         Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
                         Text("Follow Us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)

@@ -12,6 +12,7 @@ import Combine
 import os
 import Foundation
 import JoliCore
+import JoliApi
 import Promises
 
 extension Array where Element == ExperienceDataKeyPath.Metadata {
@@ -393,7 +394,8 @@ public struct CodeDesignerView: JoliView {
     @discardableResult
     func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) -> Promise<StikrExperienceData> {
         self.submitting = true
-        expData.experienceTypeName = String(describing: self.selectedExperience ?? TvShowPromoView.self)
+        let expType = self.selectedExperience ?? TvShowPromoView.self
+        expData.experienceTypeName = String(describing: expType)
         
         return expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             .then(){ saved -> Promise<StikrExperienceData> in
@@ -406,7 +408,7 @@ public struct CodeDesignerView: JoliView {
                     code.createdById = 17
                     code.updatedById = 17
                     
-                    code.url = api.baseUrlHttp.appendingPathComponent("e/\(saved.uuid)").absoluteString
+                    code.url = JoliApi.BaseUrl.prod.rawValue.http.appendingPathComponent(expType.basePath).appendingPathComponent(saved.uuid).standardized.absoluteString
                     code.experienceId = saved.id
                     code.style = code.style ?? Style.appclip.rawValue
                     
