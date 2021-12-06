@@ -94,6 +94,8 @@ struct SmartzClipApp: AppClip {
                 } else if case let AppLocation.product(storeId, _) = currentLocation,
                           storeId.lowercased() == "shows" {
                     TvShowPromoView(crazyworldDemo)
+                } else if currentLocation.isExperience {
+                    DynamicExperienceView<VideoPlaybackController>(currentLocation, currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                 } else {
                     SiseMealboxView<VideoPlaybackController>(siseMealboxDemo, currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                 }

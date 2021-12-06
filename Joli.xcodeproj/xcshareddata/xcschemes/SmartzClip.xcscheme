@@ -59,13 +59,23 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "_XCAppClipURL"
+            value = "https://smartstikr.com/ecook/EaBCv1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "_XCAppClipURL"
+            value = "https://smartstikr.com/emeal/HG33dc"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "_XCAppClipURL"
             value = "https://smartstikr.com/s/joey/sherway"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "_XCAppClipURL"
             value = "https://smartstikr.com/s/sise/ofada"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>

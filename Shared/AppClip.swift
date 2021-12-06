@@ -251,6 +251,11 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     case reward(String)
     case product(String, String)
     
+    case experienceMeal(String)
+    case experienceBrand(String)
+    case experienceCook(String)
+    case experienceReorderNow(String)
+    
     case unset
     case home
     case upgrade
@@ -265,6 +270,14 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
             self = .invited(inviteId)
         } else if let matches = patterns.playroom.matchGroups(rawValue), let roomId = matches["roomId"] {
             self = .playroom(roomId)
+        } else if let matches = patterns.experienceMeal.matchGroups(rawValue), let experienceId = matches["experienceId"] {
+            self = .experienceMeal(experienceId)
+        } else if let matches = patterns.experienceBrand.matchGroups(rawValue), let experienceId = matches["experienceId"] {
+            self = .experienceBrand(experienceId)
+        } else if let matches = patterns.experienceCook.matchGroups(rawValue), let experienceId = matches["experienceId"] {
+            self = .experienceCook(experienceId)
+        } else if let matches = patterns.experienceReorderNow.matchGroups(rawValue), let experienceId = matches["experienceId"] {
+            self = .experienceReorderNow(experienceId)
         } else if let matches = patterns.rsvp.matchGroups(rawValue), let eventId = matches["eventId"] {
             self = .rsvp(eventId)
         } else if let matches = patterns.reward.matchGroups(rawValue), let rewardUid = matches["rewardId"] {
@@ -285,6 +298,19 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
         
     }
     
+    public var isExperience: Bool {
+        return experienceId != nil
+    }
+    
+    public var experienceId: String? {
+        switch self {
+            case .experienceMeal(let expId), .experienceCook(let expId), .experienceBrand(let expId), .experienceReorderNow(let expId):
+                return expId
+            default:
+                return nil
+        }
+    }
+    
     public var rawValue: String {
         switch self {
             case .upgrade:
@@ -301,6 +327,14 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                 return "/ir/\(uid)"
             case .product(let storeId, let pId):
                 return "/s/\(storeId)/\(pId)"
+            case .experienceMeal(let experienceId):
+                return "/emeal/\(experienceId)"
+            case .experienceBrand(let experienceId):
+                return "/ebrand/\(experienceId)"
+            case .experienceCook(let experienceId):
+                return "/ecook/\(experienceId)"
+            case .experienceReorderNow(let experienceId):
+                return "/p/\(experienceId)"
             default:
                 return AppLocation.default
         }
@@ -312,7 +346,11 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
         playroom: Regex("^/r/(?<roomId>.+)$"),
         rsvp: Regex("^/rsvp/b/(?<eventId>.+)$"),
         reward: Regex("^/ir/(?<rewardId>.+)$"),
-        product: Regex("^/s/(?<storeId>.+)/(?<productId>.+)$")
+        product: Regex("^/s/(?<storeId>.+)/(?<productId>.+)$"),
+        experienceMeal: Regex("^/emeal/(?<experienceId>.+)$"),
+        experienceBrand: Regex("^/ebrand/(?<experienceId>.+)$"),
+        experienceCook: Regex("^/ecook/(?<experienceId>.+)$"),
+        experienceReorderNow: Regex("^/p/(?<experienceId>.+)$")
     )
     
     public var description: String {
