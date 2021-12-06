@@ -94,9 +94,10 @@ struct DynamicExperienceView<PlaybackControllerType: PlaybackController>: JoliCo
             }
         }
         .frame(width: screenWidth, height: screenHeight)
+        .backgroundColor(.fixedWhite)
         .onAppear(){
             guard !loadingData else { return }
-            //self.loadExperienceData()
+            self.loadExperienceData()
         }
     }
 }
