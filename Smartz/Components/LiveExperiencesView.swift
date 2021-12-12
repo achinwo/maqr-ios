@@ -52,33 +52,36 @@ public struct LiveExperiencesView: JoliView {
         NavigationView(){
             ScrollView(){
                 VStack(){
-                    Image(uiImage: image)
-                        .scaleEffect(savedToPhotos ? 1.2 : 1)
-                        .padding([.horizontal, .top])
-                        .sheet(isPresented: $isShowingMessages) {
-                            MessageView("Share Experience", body: url.absoluteString) {
-                                print("Messages closed")
+                    
+                    Button(){
+                        self.autoResetting.send(true)
+                        
+                        ImageSaver()
+                            .writeToPhotoAlbum(image: image) { error in
+                                print("saving image: error=\(String(describing: error))")
                             }
-                            .ignoresSafeArea()
-                        }
-                        .onTapGesture(count: 2){
-                            self.autoResetting.send(true)
-                            
-                            ImageSaver()
-                                .writeToPhotoAlbum(image: image) { error in
-                                    print("saving image: error=\(String(describing: error))")
+                    } label: {
+                        Image(uiImage: image)
+                            .scaleEffect(savedToPhotos ? 1.2 : 1)
+                            .sheet(isPresented: $isShowingMessages) {
+                                MessageView("Share Experience", body: url.absoluteString) {
+                                    print("Messages closed")
                                 }
-                        }
-                        .onReceive(self.autoResetting) { value in
-                            self.savedToPhotos = value
-                            print("savedToPhotos: \(self.savedToPhotos)")
-                        }
+                                .ignoresSafeArea()
+                            }
+                            .onReceive(self.autoResetting) { value in
+                                self.savedToPhotos = value
+                                print("savedToPhotos: \(self.savedToPhotos)")
+                            }
+                    }
+                    .padding([.horizontal, .top])
+                    
                     
                     Group(){
                         if savedToPhotos {
                             Text("Saved QR code to Photos!")
                         } else {
-                            Text("Double tap to save to Photos")
+                            Text("Tap to save to Photos")
                         }
                     }
                     .font(.caption)
