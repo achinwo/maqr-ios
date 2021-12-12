@@ -11,6 +11,21 @@ import SharedUI
 import JoliCore
 import QRCode
 
+public final class ImageSaver: NSObject {
+    
+    var completion: ((Error?) -> Void)?
+    
+    func writeToPhotoAlbum(image: UIImage, completion: ((Error?) -> Void)? = nil) {
+        self.completion = completion
+        UIImageWriteToSavedPhotosAlbum(image, self, #selector(saveCompleted), nil)
+    }
+    
+    @objc func saveCompleted(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        self.completion?(error)
+    }
+    
+}
+
 public struct LiveExperiencesView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
@@ -18,18 +33,113 @@ public struct LiveExperiencesView: JoliView {
     @Binding public var selectedExperienceUuid: String?
     public var onSelect: (StikrExperienceData) -> Void
     
-    private func makeQrCode(_ data: StikrExperienceData) -> UIImage? {
+    private func makeQrCode(_ data: StikrExperienceData) -> (UIImage, URL)? {
 
         guard let vizCode = data.visualcodes?.last,
               let url = URL(string: vizCode.url),
               let img = try? QRCode(url: url, color: UIColor(hex: "#29304B"), backgroundColor: UIColor(hex: "#E1E5EE"), size: CGSize(width: screenWidth - 100, height: screenWidth - 100))?.image() else {
             return nil
         }
-        return img
+        return (img, url)
+    }
+    
+    @State var isShowingMessages = false
+    
+    @State var autoResetting = AutoResetSubject<Bool, Never, DispatchQueue>(false, delay: 3, scheduler: DispatchQueue.main)
+    @State var savedToPhotos = false
+    
+    private func prepareCodeModal(_ exp: StikrExperienceData, _ image: UIImage, _ url: URL) -> some View {
+        NavigationView(){
+            ScrollView(){
+                VStack(){
+                    Image(uiImage: image)
+                        .scaleEffect(savedToPhotos ? 1.2 : 1)
+                        .padding([.horizontal, .top])
+                        .sheet(isPresented: $isShowingMessages) {
+                            MessageView("Share Experience", body: url.absoluteString) {
+                                print("Messages closed")
+                            }
+                            .ignoresSafeArea()
+                        }
+                        .onTapGesture(count: 2){
+                            self.autoResetting.send(true)
+                            
+                            ImageSaver()
+                                .writeToPhotoAlbum(image: image) { error in
+                                    print("saving image: error=\(String(describing: error))")
+                                }
+                        }
+                        .onReceive(self.autoResetting) { value in
+                            self.savedToPhotos = value
+                            print("savedToPhotos: \(self.savedToPhotos)")
+                        }
+                    
+                    Group(){
+                        if savedToPhotos {
+                            Text("Saved QR code to Photos!")
+                        } else {
+                            Text("Double tap to save to Photos")
+                        }
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondaryLabel)
+                    .padding(.bottom)
+                    .animation(.spring(), value: savedToPhotos)
+                    
+                    if let txt = exp.landingPageText {
+                        Text(txt).multilineTextAlignment(.center)
+                            .foregroundColor(.secondary)
+                            .lineLimit(10)
+                            .font(.body.weight(.light))
+                            .padding()
+                    }
+                    
+                    Button(){
+                        isShowingMessages = true
+                    } label: {
+                        HStack(){
+                            Spacer()
+                            Label("Share via Messages", systemImage: "message.fill")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                            Spacer()
+                        }
+                    }
+                    .backgroundColor(.blue)
+                    .clipShape(RoundedRectangle(
+                        cornerRadius: 8,
+                        style: .continuous
+                    ))
+                    .frame(width: screenWidth - 100, height: 60)
+                    .buttonStyle(OutlineButton())
+                    
+                    Spacer()
+                }
+            }
+            .navigationTitle(exp.brandName)
+            .toolbar(id: "experience-actions-\(exp.uuid)") {
+                ToolbarItem(id: "share-experience-\(exp.uuid)", placement: .navigationBarLeading, showsByDefault: true){
+                    Button(){
+                        appCoordinator.globalModalSubject.send(nil)
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
+                            appCoordinator.share(text: "Here's an interactive experience for you! \(url.absoluteString)", url: url){ sent in
+                                print("shared \(exp.uuid): \(sent)")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.title3)
+                    }
+                }
+            }
+        }
+        //.id(savedToPhotos)
     }
     
     private func experienceView(_ exp: StikrExperienceData) -> some View {
-        HStack(){
+        
+        return HStack(){
             NetworkImage(string: exp.logoImageUrl){
                 ProgressView().progressViewStyle(CircularProgressViewStyle())
             }
@@ -51,28 +161,13 @@ public struct LiveExperiencesView: JoliView {
                 
                 HStack(){
                     Spacer()
-                    if let img = self.makeQrCode(exp) {
+                    if let (img, url) = self.makeQrCode(exp) {
                         
                         Button(){
                             let preview: AppPreview = .view2(){
-                                NavigationView(){
-                                    ScrollView(){
-                                        VStack(){
-                                            Image(uiImage: img).padding()
-                                            if let txt = exp.landingPageText {
-                                                Text(txt).multilineTextAlignment(.center)
-                                                    .foregroundColor(.secondary)
-                                                    .lineLimit(10)
-                                                    .font(.body.weight(.light))
-                                                    .padding()
-                                            }
-                                            Spacer()
-                                        }
-                                    }
-                                    .navigationTitle(exp.brandName)
-                                }
-                                .frame(width: screenWidth)
-                                .eraseToAnyView()
+                                prepareCodeModal(exp, img, url)
+                                    .frame(width: screenWidth)
+                                    .eraseToAnyView()
                             }
                             
                             appCoordinator.globalModalSubject.send(preview)
@@ -97,8 +192,8 @@ public struct LiveExperiencesView: JoliView {
     public var contentView: some View {
         VStack(){
             let headerMyExperiences = HStack(alignment: .center){
-                Image(systemName: "bookmark")
-                    .font(Font.title.weight(.thin))
+//                Image(systemName: "bookmark")
+//                    .font(Font.title.weight(.thin))
                 VStack(alignment: .leading){
                     Text("Live Experiences").font(.title)
                     Text("Your active brand experiences.").font(.caption) + Text(" Pull down to refresh.").font(.caption.weight(.semibold))
@@ -112,6 +207,7 @@ public struct LiveExperiencesView: JoliView {
             Section(header: headerMyExperiences) {
                 ForEach(experiences){ exp in
                     self.experienceView(exp)
+                        .id("experience-\(exp.uuid)")
                 }
                 .padding(.horizontal)
             }

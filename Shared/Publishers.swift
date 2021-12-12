@@ -918,8 +918,8 @@ public final class AutoResetSubject<Output, Failure, S>: Subject where Failure :
     private let passthrough = PassthroughSubject<Output, Failure>()
     private var delayedCancel: AnyCancellable
     
-    let resetValue: Output
-    let delay: S.SchedulerTimeType.Stride
+    public let resetValue: Output
+    public let delay: S.SchedulerTimeType.Stride
     
     public init(_ resetValue: Output, delay: S.SchedulerTimeType.Stride, scheduler: S) {
         self.resetValue = resetValue
