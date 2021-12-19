@@ -994,7 +994,7 @@ public final class Debounced<T: Hashable> {
             .debounce(for: .seconds(debounceDelay), scheduler: DispatchQueue.main)
             .receive(on: DispatchQueue.main)
             .sink(){ [weak self] value in
-                print("[Debounced] sending value: \(value) - \(self)")
+                print("[Debounced] sending value: \(value) - \(String(describing: self))")
                 self?._value = value
                 self?.publisher.send(value)
             }

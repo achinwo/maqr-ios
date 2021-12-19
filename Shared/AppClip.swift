@@ -25,6 +25,7 @@ public enum FeedbackStyle {
     case rigid
     case medium
     case light
+    case heavy
 }
 
 public typealias UIWindow = NSWindow
@@ -751,15 +752,17 @@ public extension AppClip {
         let uuid: String? = nil
         let model: String = "Mac"
         let name: String = Host.current().localizedName ?? model
+        let systemVersion: String = ProcessInfo.processInfo.operatingSystemVersionString
         #else
         let uuid: String? = UIDevice.current.identifierForVendor?.uuidString
         let model: String = UIDevice.current.model
         let name: String = UIDevice.current.name
+        let systemVersion: String = UIDevice.current.systemVersion
         #endif
         
         var headers = [
             "X-PLATFORM": "ios",
-            "X-PLATFORM-VERSION": UIDevice.current.systemVersion,
+            "X-PLATFORM-VERSION": systemVersion,
             "X-DEVICE-UUID": uuid ?? "",
             "X-DEVICE-MODEL": model,
             "X-DEVICE-NAME": name,

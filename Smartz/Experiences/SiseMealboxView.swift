@@ -7,13 +7,18 @@
 //
 
 import SwiftUI
-import SharedUI
 import Combine
 import JoliApi
 import AlertToast
 import JoliCore
-import UIKit
 import PassKit
+
+#if os(macOS)
+import AppKit
+#else
+import SharedUI
+import UIKit
+#endif
 
 struct PaymentButton: View {
     
@@ -52,10 +57,14 @@ extension PaymentButtonHelper {
             return button
         }
         
-        func makeUIView(context: Context) -> PKPaymentButton {
-            return button
-        }
+#if os(macOS)
+        func makeNSView(context: Context) -> PKPaymentButton { button }
+        func updateNSView(_ uiView: PKPaymentButton, context: Context) { }
+        
+#else
+        func makeUIView(context: Context) -> PKPaymentButton { button }
         func updateUIView(_ uiView: PKPaymentButton, context: Context) { }
+#endif
     }
     
 }
@@ -98,7 +107,7 @@ public struct MealboxView: Experience, JoliView {
     
     public let dataModelDefault = ExperienceData.Defaults()
     
-    @State public var editMode: EditMode
+    @State public var editMode: EditingState
     
     public static var dataKeys: [PartialKeyPath<ExperienceData>] {
         return [
@@ -781,14 +790,3 @@ public struct MealboxView: Experience, JoliView {
 //        ContentView()
 //    }
 //}
-
-
-
-extension Image{
-    func data(url: URL) -> Self {
-        if let data = try? Data(contentsOf: url) {
-            return Image(uiImage: UIImage(data: data)!).resizable()
-        }
-        return self.resizable()
-    }
-}

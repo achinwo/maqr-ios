@@ -13,9 +13,14 @@
 //  Copyright (c) 2014 Giles Van Gruisen. All rights reserved.
 //
 
-import UIKit
 import WebKit
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 public enum YouTubePlayerState: String {
     case Unstarted = "-1"
@@ -129,6 +134,7 @@ open class YouTubePlayerView: UIView, WKNavigationDelegate {
         buildWebView(playerParameters())
     }
     
+    #if !os(macOS)
     override open func layoutSubviews() {
         super.layoutSubviews()
         print("[YouTubePlayerView#layoutSubviews] before bounds=\(bounds)")
@@ -138,22 +144,30 @@ open class YouTubePlayerView: UIView, WKNavigationDelegate {
         print("[YouTubePlayerView#layoutSubviews] after bounds=\(bounds)")
         addSubview(webView)
     }
-    
+    #endif
     
     // MARK: Web view initialization
     
     fileprivate func buildWebView(_ parameters: [String: AnyObject]) {
         let configuration = WKWebViewConfiguration()
+        
+        #if !os(macOS)
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaPlaybackRequiresUserAction = false
+        #endif
+        
         configuration.preferences.javaScriptEnabled = true
         
         webView = WKWebView(frame: frame, configuration: configuration)
         print("Webview frame: \(frame)")
+        webView.navigationDelegate = self
+        
+        #if !os(macOS)
         webView.isOpaque = false
         webView.backgroundColor = UIColor.clear
-        webView.navigationDelegate = self
         webView.scrollView.isScrollEnabled = false
+        #endif
+        
     }
     
     
@@ -502,7 +516,7 @@ final class YouTubeView: UIViewRepresentable {
         Coordinator(playerState: playerState, autoplay: autoplay)
     }
     
-    func makeUIView(context: Context) -> UIViewType {
+    func makeView(context: Context) -> UIViewType {
         let playerVars = [
             "controls": "1",
             "playsinline": "1",
@@ -519,18 +533,25 @@ final class YouTubeView: UIViewRepresentable {
         
         ytVideo.playerVars = playerVars as YouTubePlayerView.YouTubePlayerParameters
         ytVideo.delegate = context.coordinator
-        //print("[Youtube] made UI")
+            //print("[Youtube] made UI")
         return ytVideo
     }
     
-    func updateUIView(_ uiView: UIViewType, context: Context) {
-        
+    func makeUIView(context: Context) -> UIViewType {
+        makeView(context: context)
+    }
+    
+    func makeNSView(context: Context) -> UIViewType {
+        makeView(context: context)
+    }
+    
+    func updateView(_ uiView: UIViewType, context: Context) {
         guard let videoId = playerState.videoId else {
             print("[Youtube] updateUIView no video")
             return
         }
         
-        print("[Youtube] updateUIView: \(playerState.executeCommand) - \(uiView.frame) - \(frame)")
+        print("[Youtube] updateUIView: \(playerState.executeCommand) - \(uiView.frame) - \(String(describing: frame))")
         
         if !(playerState.executeCommand == .idle) && uiView.ready {
             switch playerState.executeCommand {
@@ -562,7 +583,14 @@ final class YouTubeView: UIViewRepresentable {
         } else if !uiView.ready {
             uiView.loadVideo(videoId)
         }
-        
+    }
+    
+    func updateUIView(_ uiView: UIViewType, context: Context) {
+        updateView(uiView, context: context)
+    }
+    
+    func updateNSView(_ uiView: UIViewType, context: Context) {
+        updateView(uiView, context: context)
     }
     
     class Coordinator: YouTubePlayerDelegate {

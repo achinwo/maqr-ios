@@ -106,6 +106,8 @@ struct JoliMacApp: AppClip {
     
     @State var auths: [Auth] = []
     
+    @State var serverInfo: ServerInfo?
+    
     
     let coordinator: AppCoordinator
     @State var activeSessionToken: String? = nil

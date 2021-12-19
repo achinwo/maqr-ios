@@ -18,14 +18,21 @@ extension ExperienceItemType: Identifiable {
     }
 }
 
+#if os(macOS)
+public enum EditingState {
+    case active
+    case inactive
+}
+#else
+public typealias EditingState = EditMode
+#endif
+
 public protocol Experience {
     //associatedtype Model: ExperienceData
     var dataModel: ExperienceData? { get nonmutating set }
     var dataModelDefault: ExperienceData.Defaults { get }
     
-    #if !os(macOS)
-    var editMode: EditMode { get nonmutating set }
-    #endif
+    var editMode: EditingState { get nonmutating set }
     
     static var title: String { get }
     

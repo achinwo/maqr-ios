@@ -7,8 +7,11 @@
 //
 
 import SwiftUI
-import SharedUI
 import JoliCore
+
+#if !os(macOS)
+import SharedUI
+#endif
 
 public typealias MultilineString = String
 
@@ -76,7 +79,7 @@ struct EditPencilViewModifier: ViewModifier {
     
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Binding var displayMode: ViewDisplayMode
-    @State var editMode: EditMode = .inactive
+    @State var editMode: EditingState = .inactive
     
     func body(content: Content) -> some View {
         
@@ -84,7 +87,7 @@ struct EditPencilViewModifier: ViewModifier {
             HStack(){
                 Spacer()
                 Group(){
-                    if editMode == EditMode.active {
+                    if editMode == .active {
                         Text("Save")
                             .fixedSize()
                             .frame(width: 32, height: 32)
@@ -97,7 +100,7 @@ struct EditPencilViewModifier: ViewModifier {
                     }
                 }
                 .onTapGesture {
-                    self.editMode = editMode == EditMode.active ? EditMode.inactive : EditMode.active
+                    self.editMode = editMode == .active ? .inactive : .active
                 }
                 .foregroundColor(.primary)
                 .background(Circle().foregroundColor(.blue).opacity(0.6))
@@ -110,7 +113,9 @@ struct EditPencilViewModifier: ViewModifier {
         return Group(){
             if displayMode != .readonly {
                 content
+                #if !os(macOS)
                     .environment(\.editMode, $editMode)
+                #endif
                     .overlay(editOverlay)
             } else {
                 content

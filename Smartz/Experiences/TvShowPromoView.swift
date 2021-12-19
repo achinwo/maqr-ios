@@ -7,9 +7,12 @@
 //
 
 import SwiftUI
-import SharedUI
 import Combine
 import JoliCore
+
+#if !os(macOS)
+import SharedUI
+#endif
 
 struct TvShowCastInfo: Codable, Identifiable {
     let name: String
@@ -57,7 +60,7 @@ public struct TvShowPromoView: Experience, JoliView {
         return [.person]
     }
     
-    @Binding public var editMode: EditMode
+    @Binding public var editMode: EditingState
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     
@@ -72,7 +75,7 @@ public struct TvShowPromoView: Experience, JoliView {
     @State var menu: [TvShowCastInfo] = []
     @AppStorage("isvideomuted-crazyworld") var isVideoMuted = false
     
-    public init(_ data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
+    public init(_ data: ExperienceData? = nil, editMode: Binding<EditingState> = .constant(.inactive)){
         self._editMode = editMode
         self._dataModel = State(initialValue: data)
         self._videoLocalUrl = State(initialValue: FileManager.default.fileExists(atPath: cacheFileUrl.path) ? cacheFileUrl : nil)
@@ -181,7 +184,7 @@ public struct TvShowPromoView: Experience, JoliView {
                                     )
                                 Spacer()
                             }
-                            .frame(maxHeight: UIScreen.main.bounds.width / 2)
+                            .frame(maxHeight: PlayerView.bounds.width / 2)
                             .clipped()
                         )
                         .aspectRatio(contentMode: .fill)
@@ -368,10 +371,14 @@ public struct TvShowPromoView: Experience, JoliView {
                     }
             }
             .edgesIgnoringSafeArea(.vertical)
+            #if !os(macOS)
             .navigationBarHidden(true)
+            #endif
         }
         .edgesIgnoringSafeArea(.vertical)
+        #if !os(macOS)
         .showEditPencil(.constant(.readonly))
+        #endif
     }
     
 }
@@ -448,7 +455,9 @@ struct TvShowCastView: View {
                 .padding()
             }
             .frame(width: screenWidth - 100)
+            #if !os(macOS)
             .background(BlurView(colorScheme == .dark ? .systemThinMaterialDark : .systemThinMaterialLight))
+            #endif
             .clipShape(RoundedRectangle(cornerRadius: 24))
             Spacer()
         }
@@ -478,8 +487,10 @@ struct TvShowCastView: View {
                 }
             }
             .navigationTitle(Text(tabNames.count > selectedTab ? tabNames[selectedTab] : ""))
+#if !os(macOS)
             .tabViewStyle(PageTabViewStyle())
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+#endif
         }
         
         //}

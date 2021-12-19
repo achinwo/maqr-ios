@@ -7,12 +7,14 @@
 //
 
 import SwiftUI
-import SharedUI
 import Combine
 import AlertToast
 import JoliCore
 
-#if !os(macOS)
+#if os(macOS)
+import AppKit
+#else
+import SharedUI
 import AVKit
 #endif
 
@@ -27,15 +29,22 @@ struct PlayerView: UIViewRepresentable {
     init(url: URL, isMuted: Bool = true, size: CGSize? = nil){
         self.url = url //?? 
         self.isMuted = isMuted
-        self.size = size ?? .init(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width / 1.2)
+        self.size = size ?? .init(width: Self.bounds.width, height: Self.bounds.width / 1.2)
     }
     
-    func updateUIView(_ uiView: UIView, context: UIViewRepresentableContext<PlayerView>) {
-        
+    static var bounds: CGRect {
+        #if os(macOS)
+        return NSScreen.main?.frame ?? .init(origin: .zero, size: .init(width: 600, height: 400))
+        #else
+        return UIScreen.main.bounds
+        #endif
+    }
+    
+    func updateView(_ uiView: UIView, context: UIViewRepresentableContext<PlayerView>) {
         print("[updateUIView] Is Vides muted: \(isMuted)")
         guard let loopingView = uiView as? LoopingPlayerUIView,
               loopingView.url != url ||
-              loopingView.isMuted != isMuted else { return }
+                loopingView.isMuted != isMuted else { return }
         
         print("[updateUIView] updating Video mute: \(loopingView.isMuted) -> \(isMuted) | \(loopingView.url) -> \(url)")
         loopingView.isMuted = isMuted
@@ -45,12 +54,31 @@ struct PlayerView: UIViewRepresentable {
         print("[updateUIView] updating Video url: \(url)")
         loopingView.url = url
     }
-
-    func makeUIView(context: Context) -> UIView {
+    
+    func makeView(context: Context) -> UIView {
         print("[makeUIView] Is Vides muted: \(isMuted)")
-        let size = self.size == .zero ? .init(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width / 1.2) : self.size
+        let size = self.size == .zero ? .init(width: Self.bounds.width, height: Self.bounds.width / 1.2) : self.size
         return LoopingPlayerUIView(frame: CGRect.init(origin: .zero, size: size), url: url, isMuted: isMuted)
     }
+    
+#if os(macOS)
+    func updateNSView(_ uiView: UIView, context: UIViewRepresentableContext<PlayerView>) {
+        updateView(uiView, context: context)
+    }
+    
+    func makeNSView(context: Context) -> UIView {
+        return makeView(context: context)
+    }
+    
+#else
+    func updateUIView(_ uiView: UIView, context: UIViewRepresentableContext<PlayerView>) {
+        updateView(uiView, context: context)
+    }
+    
+    func makeUIView(context: Context) -> UIView {
+        return makeView(context: context)
+    }
+#endif
     
 }
 
@@ -92,7 +120,10 @@ class LoopingPlayerUIView: UIView {
         // Setup the player
         playerLayer.player = playerQueue
         playerLayer.videoGravity = .resizeAspectFill
+        
+        #if !os(macOS)
         layer.addSublayer(playerLayer)
+        #endif
         
         playerQueue.pause()
         
@@ -105,12 +136,12 @@ class LoopingPlayerUIView: UIView {
         playerQueue.play()
     }
     
+#if !os(macOS)
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
         
         guard !audioSessionSet else { return }
         
-        #if !os(macOS)
         do {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
@@ -119,13 +150,14 @@ class LoopingPlayerUIView: UIView {
         catch {
             print("Setting category to AVAudioSessionCategoryPlayback failed.")
         }
-        #endif
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
         playerLayer.frame = bounds
     }
+#endif
+    
 }
 
 struct JoeyRestuarantView<PlaybackControllerType: PlaybackController>: JoliContentView {
@@ -163,7 +195,7 @@ struct RestaurantView: Experience, JoliView {
     static var title: String = "Restaurant"
     static var basePath = "emeal"
     
-    @Binding var editMode: EditMode
+    @Binding var editMode: EditingState
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
@@ -177,7 +209,7 @@ struct RestaurantView: Experience, JoliView {
     
     @State var menu: RestaurantMenu?
     
-    public init(_ data: ExperienceData? = nil, editMode: Binding<EditMode> = .constant(.inactive)){
+    public init(_ data: ExperienceData? = nil, editMode: Binding<EditingState> = .constant(.inactive)){
         self._dataModel = State(initialValue: data)
         self._editMode = editMode
     }
@@ -308,7 +340,9 @@ struct RestaurantView: Experience, JoliView {
                     }
             }
             .edgesIgnoringSafeArea(.vertical)
+            #if !os(macOS)
             .navigationBarHidden(true)
+            #endif
         }
         .edgesIgnoringSafeArea(.vertical)
         .showEditPencil(.constant(.readonly))
@@ -427,6 +461,7 @@ struct RestaurantReservationView: View {
                 .padding(.top)
             }
         }
+        #if !os(macOS)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: Image(colorScheme == .dark ? "logo_joey_full_white" : "logo_joey_full_black")
                                 .resizable()
@@ -436,6 +471,7 @@ struct RestaurantReservationView: View {
                                     presentationMode.wrappedValue.dismiss()
                                 }
         )
+        #endif
         //.background(AnimatableGradientView())
     }
     
@@ -550,6 +586,7 @@ struct RestaurantWalkinView: View {
                 .padding(.top)
             }
         }
+        #if !os(macOS)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: Image(colorScheme == .dark ? "logo_joey_full_white" : "logo_joey_full_black")
                                 .resizable()
@@ -559,6 +596,7 @@ struct RestaurantWalkinView: View {
                                     presentationMode.wrappedValue.dismiss()
                                 }
         )
+        #endif
         .onAppear(){
             
         }
@@ -717,10 +755,12 @@ struct RestaurantMenuView: View {
                     .tag(item.offset + 1)
                 }
             }
+            #if !os(macOS)
             .navigationBarHidden(true)
-            .navigationTitle(Text(tabNames.count > selectedTab ? tabNames[selectedTab] : ""))
             .tabViewStyle(PageTabViewStyle())
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+            #endif
+            .navigationTitle(Text(tabNames.count > selectedTab ? tabNames[selectedTab] : ""))
             
             VStack(){
                 Color.white.opacity(0.2).frame(width: screenWidth, height: 50)
@@ -728,8 +768,6 @@ struct RestaurantMenuView: View {
             }
         }
         .frame(width: screenWidth)
-            
-        //}
     }
 }
 

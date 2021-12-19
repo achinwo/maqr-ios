@@ -204,7 +204,10 @@ public struct EventView: JoliView {
             
             DispatchQueue.main.async(){
                 scrollProxy?.scrollTo("food", anchor: .top)
+                
+                #if !os(macOS)
                 self.appCoordinator.sheet.closePartialSheet()
+                #endif
             }
         }
         
@@ -235,9 +238,11 @@ public struct EventView: JoliView {
             rec.rejectedAt = Date()
             self.saveEntitlement(rec)
             
+#if !os(macOS)
             DispatchQueue.main.async {
                 self.appCoordinator.sheet.closePartialSheet()
             }
+#endif
         }
         
         guard appCoordinator.activeAuth != nil else {
