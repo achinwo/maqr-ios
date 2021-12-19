@@ -5,7 +5,7 @@
 import Foundation
 import SwiftUI
 import JoliCore
-import SharedUI
+//import SharedUI
 
 public typealias ExperienceDataKeyPath = PartialKeyPath<ExperienceData>
 

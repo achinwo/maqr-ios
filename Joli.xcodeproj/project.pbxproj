@@ -130,6 +130,12 @@
 		925B40362621B6A6009BD781 /* TrackSuggestionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925B40342621B6A6009BD781 /* TrackSuggestionsListView.swift */; };
 		925C6FF324CB722A0016963F /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 925C6FF224CB722A0016963F /* FBLPromises */; };
 		9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
+		92643780276F93A100E5F1B4 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 9264377F276F93A100E5F1B4 /* JoliApi */; };
+		92643781276F93EC00E5F1B4 /* Experience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CA268FAE06005643E1 /* Experience.swift */; };
+		92643782276F93FD00E5F1B4 /* ExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9228F86B26C07A310053DC04 /* ExperienceData.swift */; };
+		92643783276F94EC00E5F1B4 /* Experiences.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */; };
+		92643785276FB53C00E5F1B4 /* Experience+JoliView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92643784276FB53C00E5F1B4 /* Experience+JoliView.swift */; };
+		92643786276FB56200E5F1B4 /* Experience+JoliView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92643784276FB53C00E5F1B4 /* Experience+JoliView.swift */; };
 		926DB4A6263897F500D62912 /* AppClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3524E9ADC000C8257D /* AppClip.swift */; };
 		926DB4A7263897FE00D62912 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
 		926DB4A826389CF000D62912 /* LobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927AE0C02554AC020027493D /* LobbyView.swift */; };
@@ -493,6 +499,7 @@
 		925B40342621B6A6009BD781 /* TrackSuggestionsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackSuggestionsListView.swift; sourceTree = "<group>"; };
 		925E5C76236A753700D95AB7 /* Joli-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Joli-Bridging-Header.h"; sourceTree = "<group>"; };
 		9263B87724F080E6008962EC /* ListenTabbarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListenTabbarView.swift; sourceTree = "<group>"; };
+		92643784276FB53C00E5F1B4 /* Experience+JoliView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Experience+JoliView.swift"; sourceTree = "<group>"; };
 		926DB4C32638B83C00D62912 /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
 		926DB4C72638BDD000D62912 /* ActivityIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityIndicator.swift; sourceTree = "<group>"; };
 		926E2E23260F40E9007F62E0 /* PlayroomCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayroomCreateView.swift; sourceTree = "<group>"; };
@@ -625,6 +632,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92643780276F93A100E5F1B4 /* JoliApi in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -708,6 +716,7 @@
 				9228F86B26C07A310053DC04 /* ExperienceData.swift */,
 				921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */,
 				92C1A24D26626D5B00A11E0F /* Playback.swift */,
+				92643784276FB53C00E5F1B4 /* Experience+JoliView.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -1187,6 +1196,9 @@
 			dependencies = (
 			);
 			name = SharedMacOS;
+			packageProductDependencies = (
+				9264377F276F93A100E5F1B4 /* JoliApi */,
+			);
 			productName = SharedMacOS;
 			productReference = 927914E0276F926A0043F995 /* SharedMacOS.framework */;
 			productType = "com.apple.product-type.framework";
@@ -1569,6 +1581,7 @@
 				921F6C4226BEA05C0061D236 /* CGImage+CVPixelBuffer.swift in Sources */,
 				921F6C3626BE9CCD0061D236 /* DeepLabV3.mlmodel in Sources */,
 				920264D02691D4EA005643E1 /* Restaurant.swift in Sources */,
+				92643785276FB53C00E5F1B4 /* Experience+JoliView.swift in Sources */,
 				921F6C4726BEA1610061D236 /* UIImage+CVPixelBuffer.swift in Sources */,
 				92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */,
 				922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */,
@@ -1600,6 +1613,7 @@
 				92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
 				921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
 				920264CE268FB907005643E1 /* Experience.swift in Sources */,
+				92643786276FB56200E5F1B4 /* Experience+JoliView.swift in Sources */,
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */,
 				921C300D2694B29400527D39 /* TvShowPromoView.swift in Sources */,
@@ -1664,7 +1678,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92643782276F93FD00E5F1B4 /* ExperienceData.swift in Sources */,
 				927914E4276F926A0043F995 /* SharedMacOS.docc in Sources */,
+				92643783276F94EC00E5F1B4 /* Experiences.generated.swift in Sources */,
+				92643781276F93EC00E5F1B4 /* Experience.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2914,6 +2931,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
 			productName = FBLPromises;
+		};
+		9264377F276F93A100E5F1B4 /* JoliApi */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = JoliApi;
 		};
 		9270C228252CAA3B0030E6AD /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;

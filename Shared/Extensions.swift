@@ -296,24 +296,6 @@ public extension View {
     
 }
 
-extension Color: Encodable {
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(self.hexString)
-    }
-    
-}
-
-extension Color: Decodable {
-    
-    public init(from decoder: Decoder) throws {
-        let hex = try decoder.singleValueContainer().decode(String.self)
-        self.init(hex: hex)
-    }
-    
-}
-
 extension Collection where Element: RawRepresentable {
     
     public var rawValues: [Element.RawValue] {
@@ -563,17 +545,6 @@ public final class ImageStore {
         
         images[name] = ImageStore.loadImage(name: name)
         return images.index(forKey: name)!
-    }
-}
-
-extension Data {
-    
-    mutating func append(_ string: String) {
-        guard let data = string.data(using: .utf8) else {
-          return
-        }
-        
-        self.append(data)
     }
 }
 

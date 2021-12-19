@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import SharedUI
+//import SharedUI
 import JoliCore
 import Combine
 import Promises
@@ -23,7 +23,9 @@ public protocol Experience {
     var dataModel: ExperienceData? { get nonmutating set }
     var dataModelDefault: ExperienceData.Defaults { get }
     
+    #if !os(macOS)
     var editMode: EditMode { get nonmutating set }
+    #endif
     
     static var title: String { get }
     
@@ -43,102 +45,6 @@ public extension Experience {
         return String(describing: Self.self)
     }
     
-}
-
-public extension JoliView where Self: Experience {
-    
-    static var supportedItemTypes: Set<ExperienceItemType> {
-        return []
-    }
-    
-    static var allDataKeys: [PartialKeyPath<ExperienceData>] {
-        return Self.primaryDataKeys + Self.dataKeys
-    }
-    
-    static var primaryDataKeys: [PartialKeyPath<ExperienceData>] {
-        let paths: [PartialKeyPath<ExperienceData>] = [
-            \ExperienceData.brandName,
-            \ExperienceData.logoImageUrl,
-            \ExperienceData.landingPageText,
-            \ExperienceData.socialInstagramUsername,
-            
-            \ExperienceData.brandColorPrimary,
-            \ExperienceData.brandColorSecondary,
-            \ExperienceData.brandColorAccent,
-        ]
-        
-        return paths
-    }
-    
-    var body: some View {
-        return self.contentView
-            .onReceive(appCoordinator.connectionStateSubject) { state in
-                self.onConnectionStateChange(state.state)
-            }
-            .ifLet(dataModel?.$editStartedAt) { view, editStartedAt in
-                view.onReceive(editStartedAt) { dt in
-                    self.editMode = dt != nil ? .active : .inactive
-                }
-            }
-    }
-}
-
-struct EditPencilViewModifier: ViewModifier {
-    
-    @Environment(\.safeAreaInsets) var safeAreaInsets
-    @Binding var displayMode: ViewDisplayMode
-    @State var editMode: EditMode = .inactive
-    
-    func body(content: Content) -> some View {
-        
-        let editOverlay = VStack(){
-            HStack(){
-                Spacer()
-                Group(){
-                    if editMode == EditMode.active {
-                        Text("Save")
-                            .fixedSize()
-                            .frame(width: 32, height: 32)
-                            .padding()
-                    } else {
-                        Image(systemName: "pencil")
-                            .resizable()
-                            .frame(width: 32, height: 32)
-                            .padding()
-                    }
-                }
-                .onTapGesture {
-                    self.editMode = editMode == EditMode.active ? EditMode.inactive : EditMode.active
-                }
-                .foregroundColor(.primary)
-                .background(Circle().foregroundColor(.blue).opacity(0.6))
-                .padding(.top, safeAreaInsets.top)
-                .padding(.trailing)
-            }
-            Spacer()
-        }
-        
-        return Group(){
-            if displayMode != .readonly {
-                content
-                    .environment(\.editMode, $editMode)
-                    .overlay(editOverlay)
-            } else {
-                content
-            }
-        }
-    }
-}
-
-extension View {
-    func showEditPencil(_ displayMode: Binding<ViewDisplayMode>) -> some View {
-        self.modifier(EditPencilViewModifier(displayMode: displayMode))
-    }
-}
-
-enum ViewDisplayMode {
-    case preview
-    case readonly
 }
 
 extension Color {
