@@ -125,7 +125,7 @@ public struct LiveExperiencesView: JoliView {
                     Button(){
                         appCoordinator.globalModalSubject.send(nil)
                         
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7){
                             appCoordinator.share(text: "Here's an interactive experience for you! \(url.absoluteString)", url: url){ sent in
                                 print("shared \(exp.uuid): \(sent)")
                             }
