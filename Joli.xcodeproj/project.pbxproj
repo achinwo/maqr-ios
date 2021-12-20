@@ -179,7 +179,7 @@
 		9274A81524CDB41500B45EDF /* JoliPlayground.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		927914E4276F926A0043F995 /* SharedMacOS.docc in Sources */ = {isa = PBXBuildFile; fileRef = 927914E3276F926A0043F995 /* SharedMacOS.docc */; };
 		927914E5276F926A0043F995 /* SharedMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 927914E2276F926A0043F995 /* SharedMacOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		927914F0276F929F0043F995 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927914EF276F929F0043F995 /* main.swift */; };
+		927914F0276F929F0043F995 /* Exporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927914EF276F929F0043F995 /* Exporter.swift */; };
 		927914F4276F92AC0043F995 /* SharedMacOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 927914E0276F926A0043F995 /* SharedMacOS.framework */; };
 		927914F5276F92AC0043F995 /* SharedMacOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 927914E0276F926A0043F995 /* SharedMacOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		927A7AFD276FE26D007105CC /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
@@ -555,7 +555,7 @@
 		927914E2276F926A0043F995 /* SharedMacOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SharedMacOS.h; sourceTree = "<group>"; };
 		927914E3276F926A0043F995 /* SharedMacOS.docc */ = {isa = PBXFileReference; lastKnownFileType = folder.documentationcatalog; path = SharedMacOS.docc; sourceTree = "<group>"; };
 		927914ED276F929F0043F995 /* Exports */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Exports; sourceTree = BUILT_PRODUCTS_DIR; };
-		927914EF276F929F0043F995 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		927914EF276F929F0043F995 /* Exporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exporter.swift; sourceTree = "<group>"; };
 		927AE0C02554AC020027493D /* LobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyView.swift; sourceTree = "<group>"; };
 		927E0E3524E9ADC000C8257D /* AppClip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppClip.swift; sourceTree = "<group>"; };
 		927E0E3924E9AFFF00C8257D /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
@@ -852,7 +852,7 @@
 		927914EE276F929F0043F995 /* Exports */ = {
 			isa = PBXGroup;
 			children = (
-				927914EF276F929F0043F995 /* main.swift */,
+				927914EF276F929F0043F995 /* Exporter.swift */,
 			);
 			path = Exports;
 			sourceTree = "<group>";
@@ -1772,7 +1772,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				927914F0276F929F0043F995 /* main.swift in Sources */,
+				927914F0276F929F0043F995 /* Exporter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

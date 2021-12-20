@@ -19,9 +19,11 @@ extension ExperienceItemType: Identifiable {
 }
 
 #if os(macOS)
-public enum EditingState {
+public enum EditingState: Hashable, Equatable {
     case active
     case inactive
+    case transient
+    var isEditing: Bool { self == .active }
 }
 #else
 public typealias EditingState = EditMode
@@ -50,6 +52,14 @@ public extension Experience {
     
     static var className: String {
         return String(describing: Self.self)
+    }
+    
+}
+
+public enum Experiences {
+    
+    public static func all() -> [Experience.Type] {
+        return [MealboxView.self, TvShowPromoView.self, RestaurantView.self]
     }
     
 }
