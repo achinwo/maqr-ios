@@ -56,10 +56,34 @@ public extension Experience {
     
 }
 
-public enum Experiences {
+public enum Experiences: RawRepresentable, CaseIterable {
     
-    public static func all() -> [Experience.Type] {
-        return [MealboxView.self, TvShowPromoView.self, RestaurantView.self]
+    case recipe
+    case brandPromo
+    case restaurant
+    
+    public init?(rawValue: Experience.Type) {
+        switch rawValue {
+        case is MealboxView.Type:
+            self = .recipe
+        case is TvShowPromoView.Type:
+            self = .brandPromo
+        case is RestaurantView.Type:
+            self = .restaurant
+        default:
+            return nil
+        }
+    }
+    
+    public var rawValue: Experience.Type {
+        switch self {
+        case .recipe:
+            return MealboxView.self
+        case .brandPromo:
+            return TvShowPromoView.self
+        case .restaurant:
+            return RestaurantView.self
+        }
     }
     
 }

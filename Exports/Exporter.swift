@@ -8,6 +8,7 @@
 
 import Foundation
 import SharedMacOS
+import JoliCore
 
 //public protocol Experience {
 //    var dataModel: ExperienceData? { get nonmutating set }
@@ -25,6 +26,34 @@ import SharedMacOS
 //    static var className: String { get }
 //}
 
+extension Experience {
+    
+    static func toJson() -> Json {
+        let json: Json = [
+            "basePath": basePath as AnyObject,
+            "title": title as AnyObject,
+            "dataKeys": dataKeys.compactMap() { $0.meta?.name } as AnyObject,
+            "allDataKeys": allDataKeys.compactMap() { $0.meta?.name } as AnyObject,
+            "supportedItemTypes": supportedItemTypes.map() { $0.rawValue } as AnyObject,
+            "className": className as AnyObject,
+            "attributes": allDataKeys.compactMap() { dataKey -> [String: [String: String]]? in
+                guard let meta = dataKey.meta else { return nil }
+                return [
+                    meta.name: [
+                        "type": String(describing: meta.dataType),
+                        "description": meta.description,
+                        "grouping": meta.grouping,
+                        "id": meta.id,
+                        "title": meta.title
+                    ]
+                ]
+            } as AnyObject,
+        ]
+        return json
+    }
+    
+}
+
 @main
 public struct Exporter {
     
@@ -37,15 +66,33 @@ public struct Exporter {
     public func export() -> Void {
         
         //FileManager.default.createDirectory(at: destUrl.e, withIntermediateDirectories: false, attributes: nil)
-        let lines = Experiences.all().map() { cls -> String in
-            let m = Mirror(reflecting: cls.init(nil))
-            return m.children.map({ "DATA: \(String(describing: $0.label)) - \($0.value)" }).joined(separator: "\n")
-        }.joined()
         
-        let destination = destUrl.appendingPathComponent("experiences.txt")
+        let destination = destUrl.appendingPathComponent("experiences.json")
         
         do {
-            try lines.write(to: destination, atomically: true, encoding: .utf8)
+            var attributes: [String: [String: String]] = [:]
+            var experiences: Json = [:]
+            for cls in Experiences.allCases {
+                //let m = Mirror(reflecting: cls.rawValue.init(nil))
+                //return m.children.map({ "DATA: \(String(describing: $0.label)) - \($0.value)" }).joined(separator: "\n")
+                var obj = cls.rawValue.toJson()
+                let attrs = obj.removeValue(forKey: "attributes") as? [[String: [String: String]]]
+                
+                experiences[cls.rawValue.basePath] = obj as AnyObject
+                
+                guard let attr = attrs else { continue }
+                
+                for val in attr {
+                    attributes.merge(val, uniquingKeysWith: { (_, new) in new })
+                }
+            }
+            
+            let json: Json = [
+                "attributes": attributes as AnyObject,
+                "experiences": experiences as AnyObject
+            ]
+            
+            try json.toData(writingOptions: .prettyPrinted).write(to: destination, options: .atomic)
             print("[export] wrote to \(destination)")
         } catch {
             print("[export] error: \(error)")
