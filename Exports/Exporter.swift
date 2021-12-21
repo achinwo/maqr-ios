@@ -40,7 +40,7 @@ extension Experience {
                 guard let meta = dataKey.meta else { return nil }
                 return [
                     meta.name: [
-                        "type": String(describing: meta.dataType),
+                        "type": meta.dataTypeName,
                         "description": meta.description,
                         "grouping": meta.grouping,
                         "id": meta.id,
@@ -92,7 +92,7 @@ public struct Exporter {
                 "experiences": experiences as AnyObject
             ]
             
-            try json.toData(writingOptions: .prettyPrinted).write(to: destination, options: .atomic)
+            try json.toData(writingOptions: [.prettyPrinted, .sortedKeys]).write(to: destination, options: .atomic)
             print("[export] wrote to \(destination)")
         } catch {
             print("[export] error: \(error)")

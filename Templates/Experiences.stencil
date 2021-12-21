@@ -18,6 +18,7 @@ public extension PartialKeyPath where Root == ExperienceData {
         public let description: String
         public let grouping: String
         public let dataType: Any.Type
+        public let dataTypeName: String
         public let keypath: PartialKeyPath<Root>
 
         public var id: String {
@@ -34,7 +35,8 @@ public extension PartialKeyPath where Root == ExperienceData {
                     title: "{{ variable.annotations.title }}", 
                     description: "{{ variable.annotations.description }}", 
                     grouping: "{{ variable.annotations.grouping }}", 
-                    dataType: {{ variable.typeName }}.self, 
+                    dataType: {{ variable.typeName }}.self,
+                    dataTypeName: "{{ variable.typeName }}", 
                     keypath: \Root.{{ variable.name }}
                     )
 {% endfor %}
