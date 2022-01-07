@@ -614,7 +614,7 @@ public protocol AppClip: App {
     func onInternalError(_ error: Error) -> Void
     func onNotificationRecieved(_ message: Data) -> Void
     
-    func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) -> Promise<Auth?>
+    func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) async throws -> Auth?
 }
 
 extension Bundle {
@@ -808,19 +808,16 @@ public extension AppClip {
                 return
             }
             
-            self.authenticate(.apple(data.user.displayName(), data.user.email, data.user.identifier, identityToken, authorizationCode), alertOnFail: false)
-                .then() { auth in
+            Task() {
+                
+                do {
+                    let auth = try await self.authenticate(.apple(data.user.displayName(), data.user.email, data.user.identifier, identityToken, authorizationCode), alertOnFail: false)
                     callback(auth != nil)
-                }
-                .catch() { _ in
+                } catch {
                     callback(false)
                 }
+            }
             
-//            if success {
-//                // update UI
-//            } else {
-//                // show the user an error
-//            }
         }
         
         let controller = ASAuthorizationController(authorizationRequests: requests)

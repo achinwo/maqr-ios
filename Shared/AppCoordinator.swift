@@ -11,7 +11,6 @@ import Combine
 import JoliApi
 import JoliCore
 import SwiftUI
-import Promises
 import Version
 import AlertToast
 import struct NetworkImage.NetworkImageLoader
@@ -241,25 +240,28 @@ public final class AppCoordinator: ObservableObject {
                                    })
     }
     
-    public func refreshDevices(){
+    @MainActor
+    public func refreshDevices() async {
         print("[AppCoordinator#devicesPublisher] fetching devices")
+        
+        defer { self.refreshingDevices = false }
+        
         self.refreshingDevices = true
-        api?.fetchSpotifyDevices(on: .global(qos: .userInitiated))
-            .then() { devices in
-                
-                self.devices = devices
-                let device = devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.id == self.initialActiveDeviceId }) ?? devices.first(where: { $0.type == .computer })
-                
-                guard let activeDevice = device ?? devices.last else {
-                    return
-                }
-                
-                self.activeDeviceSubject.send(activeDevice)
+        
+        do {
+            let devices = try await api?.fetchSpotifyDevices() ?? []
+            self.devices = devices
+            let device = devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.id == self.initialActiveDeviceId }) ?? devices.first(where: { $0.type == .computer })
+            
+            guard let activeDevice = device ?? devices.last else {
+                return
             }
-            .catch(self.globalErrorHandler())
-            .always {
-                self.refreshingDevices = false
-            }
+            
+            self.activeDeviceSubject.send(activeDevice)
+        } catch {
+            self.globalErrorHandler()(error)
+        }
+        
     }
     
     @Published var localPlaybackConnectRequest: Future<ConnectionState, Error>.Promise? = nil {
@@ -307,24 +309,24 @@ public final class AppCoordinator: ObservableObject {
         self.volumeCancel = self.volumeSubject
             .removeDuplicates()
             .debounce(for: 0.2, scheduler: DispatchQueue.global(qos: .userInitiated))
+            .receive(on: DispatchQueue.main)
             .sink() { value in
                 
                 guard let device = self.activeDeviceSubject.value else {
                     return
                 }
                 
-                let setVolume = { () -> Void in
-                    self.api.setVolume(value, deviceId: device.id)
-                        .then() { res in
-                            print("[AppCoord] updated volume: \(res)")
-    //                        device.volumePercent = value
-    //
-    //                        self.activeDeviceSubject.send(device)
-                        }
-                        .catch(self.globalErrorHandler())
+                Task(){
+                    do {
+                        let res = try await self.api.setVolume(value, deviceId: device.id)
+                        print("[AppCoord] updated volume: \(res)")
+                            //                        device.volumePercent = value
+                            //
+                            //                        self.activeDeviceSubject.send(device)
+                    } catch {
+                        self.globalErrorHandler()(error)
+                    }
                 }
-                
-                setVolume()
                 
 //                guard let (track, playingState) = self.playingSubject.value, playingState.deviceUid != device.id else {
 //
@@ -372,13 +374,16 @@ public final class AppCoordinator: ObservableObject {
         #endif
     }
     
-    public func synchronizePlayroom(_ playroom: Musicroom) -> Void {
+    @MainActor
+    public func synchronizePlayroom(_ playroom: Musicroom) async -> Void {
         print("[synchronizePlayroom] button clicked \"Synchronize Playlist\"")
-        HttpMethod.Fetch.get(url: "/api/musicrooms/\(playroom.id)/sync", dataType: Musicroom.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .global(qos: .userInitiated))
-            .then(on: .main){ playroom in
-                print("[synchronizePlayroom] sync completed by server \(String(describing: playroom.playlistUri))")
-            }
-            .catch(self.globalErrorHandler())
+                    
+        do {
+            let playroom = try await HttpMethod.Fetch.get(url: "/api/musicrooms/\(playroom.id)/sync", dataType: Musicroom.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            print("[synchronizePlayroom] sync completed by server \(String(describing: playroom.playlistUri))")
+        } catch {
+            self.globalErrorHandler()(error)
+        }
     }
     
     
@@ -389,114 +394,107 @@ public final class AppCoordinator: ObservableObject {
     }
     
     @discardableResult
-    public func voteTrack(_ track: QueuedTrack) -> Promise<QueuedTrackVote> {
+    public func voteTrack(_ track: QueuedTrack) async throws -> QueuedTrackVote {
         
         guard let hearts = self.userHeartsSubject.value,
               let newHearts = hearts.subtracting(HeartLevel.quarter),
               var user = self.activeAuth?.user else {
             
-            return Promise.init(ActionError.insufficientHeartPoints)
+            throw ActionError.insufficientHeartPoints
         }
         
         let builder = Builder<QueuedTrackVote>()
         self.voteRequestedSubject.send(track.id)
         
-        return builder.update(.queuedTrackId, track.id as AnyObject)
-            .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then() { vote -> Promise<QueuedTrackVote> in
-                user.heartPoints = Int(newHearts.score)
-                
-                return user.save(baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession)
-                    .then() { user -> QueuedTrackVote in
-                        self.userHeartsSubject.send(newHearts)
-                        return vote
-                    }
-            }
-            .catch(self.globalErrorHandler())
-            .always {
-                self.voteRequestedSubject.send(nil)
-            }
+        defer { self.voteRequestedSubject.send(nil) }
         
+        do {
+            let vote = try await builder.update(.queuedTrackId, track.id as AnyObject)
+                                        .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            user.heartPoints = Int(newHearts.score)
+            let _ = try await user.save(baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession)
+            
+            self.userHeartsSubject.send(newHearts)
+            return vote
+        } catch {
+            self.globalErrorHandler()(error)
+            throw error
+        }
     }
     
-    public func play(_ track: Playable, positionMs: Int? = nil, contentOffset: ContentOffset? = nil, device: Spotify.Device? = nil) -> Promise<PlayState?> {
+    public func play(_ track: Playable, positionMs: Int? = nil, contentOffset: ContentOffset? = nil, device: Spotify.Device? = nil) async -> PlayState? {
         self.playRequestedSubject.send(track.uri)
         
-        let on = DispatchQueue.global(qos: .userInitiated)
-        
-        let performPlay = { (device: Spotify.Device?) -> Promise<PlayState?>  in
+        let performPlay = { @MainActor (device: Spotify.Device?) async throws -> PlayState?  in
             
             guard let device = device, ![.smartphone, .tablet].contains(device.type) else {
                 self.localPlayRequested = (track, positionMs, contentOffset)
-                return Promise() { resolve, reject in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        resolve(nil)
-                    }
-                }
+                return nil
             }
             
             self.localPlayRequested = nil
             
-            var promise: Promise<PlayState>
+            var ps: PlayState
             
             if case let .uri(contextUri) = contentOffset {
-                promise = Track.playContent(contextUri, deviceId: device.id, positionMs: positionMs, offset: .uri(track.uri), baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession, on: on)
+                ps = try await Track.playContent(contextUri, deviceId: device.id, positionMs: positionMs, offset: .uri(track.uri), baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession)
             } else if case let .both(contextUri, _) = contentOffset {
-                promise = Track.playContent(contextUri, deviceId: device.id, positionMs: positionMs, offset: .uri(track.uri), baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession, on: on)
+                ps = try await Track.playContent(contextUri, deviceId: device.id, positionMs: positionMs, offset: .uri(track.uri), baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession)
             } else {
-                promise = track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession, on: on)
+                ps = try await track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession)
             }
             
-            return promise.then(on: on) { ps in
-                DispatchQueue.main.async() {
-                    self.playingSubject.send((track, ps))
-                }
-                return Promise(ps)
-            }
+            self.playingSubject.send((track, ps))
+            
+            return ps
         }
         
         guard let device = device else {
             
             if self.activeAuth != nil {
-                return api.fetchSpotifyDevices(on: on)
-                    .catch(self.globalErrorHandler())
-                    .then() { (devices) -> Promise<PlayState?> in
-                        logger.debug("Devices: \(devices)")
-                        return performPlay(devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }))
-                    }
-                    .always {
-                        self.playRequestedSubject.send(nil)
-                    }
+                
+                do {
+                    let devices = try await api.fetchSpotifyDevices()
+                    logger.debug("Devices: \(devices)")
+                    return try await performPlay(devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }))
+                } catch {
+                    self.globalErrorHandler()(error)
+                    return nil
+                }
             } else {
-                return performPlay(nil)
+                return try? await performPlay(nil)
             }
         }
         
-        return performPlay(device)
+        return try? await performPlay(device)
     }
     
     @discardableResult
-    func pausePlayback() -> Promise<Json> {
+    func pausePlayback() async -> Json {
         //                self.spotifyRemote.playerAPI?.pause(){ info, error in
         //                    logger.debug("[pauseTrack] \(String(describing: info)) - \(String(describing: error))")
         //
         let path = URLComponents(string: "/api/spotify/me/player/pause")!
-        return HttpMethod.put.fetchJson(urlPath: path, payload: [:], baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+        return (try? await HttpMethod.put.fetchJson(urlPath: path, payload: [:], baseUrl: api.baseUrl.http, urlSession: api.urlSession)) ?? Json()
     }
     
     @discardableResult
-    func queueTrack(_ track: Playable, playroom activeRoom: Musicroom) -> Promise<QueuedTrack> {
+    func queueTrack(_ track: Playable, playroom activeRoom: Musicroom) async throws -> QueuedTrack {
         
         self.queueRequestedSubject.send((track.uri, activeRoom))
         
-        return activeRoom.queueTrack(track, baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: nil)
-            .then() { queuedTrack in
-                logger.info("[queueTrack] queued: \(queuedTrack)")
-            }
-            .catch(self.globalErrorHandler())
-            .always {
-                self.queueRequestedSubject.send(nil)
-            }
+        defer {
+            self.queueRequestedSubject.send(nil)
+        }
+        
+        do {
+            let queuedTrack = try await activeRoom.queueTrack(track, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+            logger.info("[queueTrack] queued: \(queuedTrack)")
+            return queuedTrack
+        } catch {
+            self.globalErrorHandler()(error)
+            throw error
+        }
     }
     
     public func share(track: Playable, completionHandler: ((Bool) -> Void)? = nil){
