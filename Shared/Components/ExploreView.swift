@@ -363,46 +363,47 @@ public struct ExploreView: JoliView {
                     AnyPublisher<[SearchResult], Never> in
                     
                     return Future<[SearchResult], Never>() { promise in
-                        api.searchSpotify(q: q, categories: categories, limit: limit)
-                            .then(){ res in
-                                //let views = self.makeResultViews(q: q, res: res)
+                        
+                        Task() {
+                            do {
+                                let res = try await api.searchSpotify(q: q, categories: categories, limit: limit)
                                 promise(.success([.spotifyResult(q, spotifyEngine, res)]))
-                            }
-                            .catch() { error in
+                            } catch {
                                 promise(.success([]))
-                                
                                 logger.error("[searchSpotify] error: \(String(describing: error))")
                             }
+                        }
                     }.eraseToAnyPublisher()
                 }
                 
                 let joliPub = joliEngine.search(q, self.selectedAreas) { (q, categories, limit) in
                     
                     return Future<[SearchResult], Never>() { promise in
-                        guard var url = URLComponents(string: "/api/search") else {
-                            return promise(.success([]))
-                        }
-                        
-                        let typeStr = Array(categories).map() { $0.label.lowercased() }.joined(separator: ",")
-                        url.queryItems = [
-                            URLQueryItem(name: "q", value: q),
-                            URLQueryItem(name: "type", value: typeStr),
-                            URLQueryItem(name: "limit", value: limit.description),
-                        ]
-                        
-                        HttpMethod.Fetch.get(url: url,
-                                             dataType: [Musicroom].self,
-                                             baseUrl: api.baseUrlHttp,
-                                             urlSession: api.urlSession,
-                                             on: .global(qos: .userInitiated))
-                            .then(){ rooms in
-                                //let views = self.makeResultViews(q: q, playrooms: rooms, engine: joliEngine)
-                                promise(.success([.playrooms(q, joliEngine, rooms)]))
+                        Task() {
+                            
+                            guard var url = URLComponents(string: "/api/search") else {
+                                promise(.success([]))
+                                return
                             }
-                            .catch() { error in
+                            
+                            let typeStr = Array(categories).map() { $0.label.lowercased() }.joined(separator: ",")
+                            url.queryItems = [
+                                URLQueryItem(name: "q", value: q),
+                                URLQueryItem(name: "type", value: typeStr),
+                                URLQueryItem(name: "limit", value: limit.description),
+                            ]
+                            
+                            do {
+                                let rooms = try await HttpMethod.Fetch.get(url: url,
+                                                                           dataType: [Musicroom].self,
+                                                                           baseUrl: api.baseUrlHttp,
+                                                                           urlSession: api.urlSession)
+                                promise(.success([.playrooms(q, joliEngine, rooms)]))
+                            } catch {
                                 promise(.success([]))
                                 logger.error("[searchPlayrooms] error: \(String(describing: error))")
                             }
+                        }
                     }
                     .eraseToAnyPublisher()
                 }
@@ -524,7 +525,13 @@ public struct ExploreView: JoliView {
                                     .disabled(queueRequested != nil)
                                     .onTapGesture {
                                         print("[Search.ResultView] queue \(track.title)")
-                                        self.appCoordinator.queueTrack(track, playroom: playroom.musicroom)
+                                        Task() {
+                                            do {
+                                                try await self.appCoordinator.queueTrack(track, playroom: playroom.musicroom)
+                                            } catch {
+                                                self.appCoordinator.globalErrorHandler()(error)
+                                            }
+                                        }
                                     }
                                     .scaleEffect(x: queueRequested?.uri == track.uri ? 0.8 : 1, y: queueRequested?.uri == track.uri ? 0.8 : 1)
                             }

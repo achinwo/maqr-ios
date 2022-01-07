@@ -272,7 +272,6 @@
 		92A32DC224C79B6C007C960E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32DC024C79B6B007C960E /* Preview Assets.xcassets */; };
 		92A32DDC24C79C07007C960E /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
 		92A32DDE24C79C07007C960E /* PeopleGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC424C79C06007C960E /* PeopleGridView.swift */; };
-		92A32DE624C79C07007C960E /* ServiceAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC924C79C06007C960E /* ServiceAlert.swift */; };
 		92A32DEA24C79C07007C960E /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCB24C79C06007C960E /* App.swift */; };
 		92A32DF024C79C07007C960E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCE24C79C06007C960E /* AppDelegate.swift */; };
 		92A32DF424C79C07007C960E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD024C79C06007C960E /* Extensions.swift */; };
@@ -1786,7 +1785,6 @@
 				92A32DFC24C79C07007C960E /* ImageView.swift in Sources */,
 				92A32DB724C79B59007C960E /* UserSettings.swift in Sources */,
 				928604A1270C842200ED2E68 /* StoreKitHelper.swift in Sources */,
-				92A32DE624C79C07007C960E /* ServiceAlert.swift in Sources */,
 				92870E4A259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */,
 				92A7120F24D85EC600AD6729 /* NetworkImageView.swift in Sources */,
 				924E971826E5620800FF41E3 /* TrackView.swift in Sources */,

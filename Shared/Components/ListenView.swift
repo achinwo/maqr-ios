@@ -129,73 +129,61 @@ struct ListenView: JoliView {
     }
     @State var loadingPlayrooms = false
     
-    private func loadPlayrooms() {
+    private func loadPlayrooms() async {
         self.loadingPlayrooms = true
-        Musicroom.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
-            .then() { rooms  in
-                self.playrooms = rooms
-            }
-            .catch(appCoordinator.globalErrorHandler())
-            .always() {
-                self.loadingPlayrooms = false
-            }
+        
+        defer { self.loadingPlayrooms = false }
+        
+        do {
+            let rooms = try await Musicroom.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+            self.playrooms = rooms
+        } catch {
+            self.appCoordinator.globalErrorHandler()(error)
+        }
     }
     
-    private func loadLiveTracks() {
+    private func loadLiveTracks() async {
         
         self.loadingLiveTracks = true
-        PlayState.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
-            .then() { states -> [PlayState] in
-                //print("[PlayStates] states: \(states)")
-                let playstates = states.compactMap() { state -> PlayState? in
-                        guard state.isPlayable else { return nil }
-                        return state
-                    }
+        
+        defer {
+            loadingLiveTracks = false
+            self.refreshModel.triggeredSwipeRefresh = false
+        }
+        
+        do {
+            let states = try await PlayState.all(baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+            
+            let playstates = states.compactMap() { state -> PlayState? in
+                    guard state.isPlayable else { return nil }
+                    return state
+                }
+            
+            let tracks: [PlayState] = playstates.reduce([]) { (result, state) -> [PlayState] in
                 
-                let tracks: [PlayState] = playstates.reduce([]) { (result, state) -> [PlayState] in
-                    
-                    guard result.first(where: { $0.uri == state.uri }) == nil else {
-                        return result
-                    }
-                    
-                    return result + [state]
+                guard result.first(where: { $0.uri == state.uri }) == nil else {
+                    return result
                 }
                 
-                self.recentTracks = tracks
-                
-                let liveTracks = tracks
-                    .sorted(by: { $0.updatedAt > $1.updatedAt })
-                    .compactMap() { state -> PlayState? in
-                        guard state.playingState == .playing, let isLocal = state.trackUri?.starts(with: "spotify:local:"), !isLocal else {
-                            return nil
-                        }
-                        
-                        return state//.trackUri?.replacingOccurrences(of: "spotify:track:", with: "", options: .literal, range: nil)
+                return result + [state]
+            }
+            
+            self.recentTracks = tracks
+            
+            let liveTracks = tracks
+                .sorted(by: { $0.updatedAt > $1.updatedAt })
+                .compactMap() { state -> PlayState? in
+                    guard state.playingState == .playing, let isLocal = state.trackUri?.starts(with: "spotify:local:"), !isLocal else {
+                        return nil
                     }
-                
-                self.liveTracks = liveTracks
-                
-                return liveTracks
-//                guard var comp = URLComponents(string: "/api/spotify/tracks"), !trackUris.isEmpty else {
-//                    return Promise(nil)
-//                }
-//
-//                comp.queryItems = [
-//                    URLQueryItem(name: "ids", value: Set(trackUris).joined(separator: ","))
-//                ]
-//
-//                return HttpMethod.Fetch.get(url: comp, dataType: SpotiftyTracksResponse.self, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
-//                    .then(on: .main) { resp -> SpotiftyTracksResponse in
-//                        self.liveTracks = resp.tracks.sorted() { $0.name > $1.name }
-//                        return resp
-//                    }
-//                    .catch(appCoordinator.globalErrorHandler())
-            }
-            .catch(appCoordinator.globalErrorHandler())
-            .always() {
-                loadingLiveTracks = false
-                self.refreshModel.triggeredSwipeRefresh = false
-            }
+                    
+                    return state//.trackUri?.replacingOccurrences(of: "spotify:track:", with: "", options: .literal, range: nil)
+                }
+            
+            self.liveTracks = liveTracks
+        } catch {
+            appCoordinator.globalErrorHandler()(error)
+        }
     }
     
     
@@ -218,8 +206,8 @@ struct ListenView: JoliView {
     
     private func refreshContent(reason: String) {
         logger.debug("[loadLiveTracks] reason: \(reason)")
-        self.loadLiveTracks()
-        self.loadPlayrooms()
+        Task() { await self.loadLiveTracks() }
+        Task() { await self.loadPlayrooms() }
     }
     
     @State var voteCasted: QueuedTrackVote? = nil
@@ -307,19 +295,19 @@ struct ListenView: JoliView {
                             return
                         }
                         
-                        self.appCoordinator.voteTrack(track)
-                            .then() { vote in
+                        Task() {
+                            do {
+                                let _ = try await self.appCoordinator.voteTrack(track)
+                                
                                 guard let currentCount = self.votesByQueuedTrackId[track.id] else { return }
                                 
                                 var votes = self.votesByQueuedTrackId
                                 votes[track.id] = currentCount + 1
                                 
                                 self.votesByQueuedTrackId = votes
-                            }
-                            .catch() { voteError in
-                                
-                                guard let error = voteError as? AppCoordinator.ActionError else {
-                                    print("[ListenView] unrecognised error: \(voteError)")
+                            } catch {
+                                guard let error = error as? AppCoordinator.ActionError else {
+                                    print("[ListenView] unrecognised error: \(error)")
                                     return
                                 }
                                 
@@ -328,6 +316,7 @@ struct ListenView: JoliView {
                                     self.appCoordinator.insufficientPointsAttempt += 1
                                 }
                             }
+                        }
                     }
             }
         }
@@ -358,15 +347,17 @@ struct ListenView: JoliView {
                     AnyPublisher<Spotify.SearchResult?, Never> in
                     
                     return Future<Spotify.SearchResult?, Never>() { promise in
-                        api.searchSpotify(q: q, categories: categories, limit: limit)
-                            .then(){ res in
+                        
+                        Task(){
+                            do {
+                                let res = try await api.searchSpotify(q: q, categories: categories, limit: limit)
                                 promise(.success(res))
-                            }
-                            .catch() { error in
+                            } catch {
                                 promise(.success(nil))
                                 
                                 logger.error("[searchSpotify] error: \(String(describing: error))")
                             }
+                        }
                     }.eraseToAnyPublisher()
                 }
             }
@@ -414,21 +405,27 @@ struct ListenView: JoliView {
                         .matchedGeometryEffect(id: "entering-room", in: animation)
                 } else {
                     Button("Enter") {
-                        var entitlement = EntitlementRecord()
-                        entitlement.userId = auth.user.id
-                        entitlement.type = "musicroom"
-                        entitlement.targetRecordId = room.musicroom.id
-                        entitlement.acceptedAt = Date()
                         
                         self.creatingRoomEntitlement = true
-                        entitlement.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
-                            .then() { ent in
+                        
+                        defer { self.creatingRoomEntitlement = false }
+                        
+                        Task() {
+                            
+                            var entitlement = EntitlementRecord()
+                            entitlement.userId = auth.user.id
+                            entitlement.type = "musicroom"
+                            entitlement.targetRecordId = room.musicroom.id
+                            entitlement.acceptedAt = Date()
+                            
+                            do {
+                                let ent = try await entitlement.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
                                 logger.debug("[ListenView#lobbyView] created entitlement: \(ent)")
                                 self.preview = nil
+                            } catch {
+                                self.appCoordinator.globalErrorHandler()(error)
                             }
-                            .always {
-                                self.creatingRoomEntitlement = false
-                            }
+                        }
                     }
                     .font(Font.title)
                     .padding()
@@ -483,13 +480,15 @@ struct ListenView: JoliView {
                                     self.tracksFiltered = self.filterTracks(self.tracks, self.filterText)
                                     
                                     DispatchQueue.main.async {
-                                        playroom.fetchSpotifyTopArtists()
-                                            .then(){ artists in
+                                        Task() {
+                                            do {
+                                                let artists = try await playroom.fetchSpotifyTopArtists()
                                                 let filtered = artists.filter() { $0.imageMedium != nil }
                                                 playroom.artists = filtered
-                                                //print("[ListenView] got track artists: \(filtered)")
+                                            } catch {
+                                                self.appCoordinator.globalErrorHandler()(error)
                                             }
-                                            .catch(self.appCoordinator.globalErrorHandler())
+                                        }
                                     }
                                     
                                 }
@@ -524,7 +523,9 @@ struct ListenView: JoliView {
                                 .disabled(queueRequested != nil)
                                 .onTapGesture {
                                     print("[Search.ResultView] queue \(track.title)")
-                                    self.appCoordinator.queueTrack(track, playroom: playroom.musicroom)
+                                    Task() {
+                                        try? await self.appCoordinator.queueTrack(track, playroom: playroom.musicroom)
+                                    }
                                     playroom.recommendations = trackRecommendations.filter({ $0.uri != track.uri })
                                 }
                                 .scaleEffect(x: queueRequested?.uri == track.uri ? 0.8 : 1,
@@ -588,13 +589,14 @@ struct ListenView: JoliView {
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2){
-                
-                room.fetchSpotifyRecommendations()
-                    .then(){ tracks in
+                Task() {
+                    do {
+                        let tracks = try await room.fetchSpotifyRecommendations()
                         room.recommendations = tracks.tracks
-                        //print("[ListenView] got track recommm: \(tracks)")
+                    } catch {
+                        self.appCoordinator.globalErrorHandler()(error)
                     }
-                    .catch(self.appCoordinator.globalErrorHandler())
+                }
             }
         }
     }
@@ -646,7 +648,7 @@ struct ListenView: JoliView {
                                             .disabled(queueRequested != nil)
                                             .onTapGesture {
                                                 print("[Search.ResultView] queue \(track.title)")
-                                                self.appCoordinator.queueTrack(track, playroom: playroom.musicroom)
+                                                Task() { try? await self.appCoordinator.queueTrack(track, playroom: playroom.musicroom) }
                                             }
                                             .scaleEffect(x: queueRequested?.uri == track.uri ? 0.8 : 1,
                                                          y: queueRequested?.uri == track.uri ? 0.8 : 1)
@@ -720,7 +722,7 @@ struct ListenView: JoliView {
                     return
                 }
                 
-                room.updateQueuedTracks()
+                Task() { try? await room.updateQueuedTracks() }
             }
             .onReceive(self.appCoordinator.queueRequestedSubject) { req in
                 
@@ -729,7 +731,7 @@ struct ListenView: JoliView {
                 }
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
-                    playroom.updateQueuedTracks()
+                    Task() { try? await playroom.updateQueuedTracks() }
                 }
             }
             .zIndex(100)

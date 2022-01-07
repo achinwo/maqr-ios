@@ -140,7 +140,9 @@ public struct DevicesView: JoliView {
                 appCoordinator.activeSessionToken = auth.session.token
                 
                 DispatchQueue.main.async {
-                    appCoordinator.refreshDevices()
+                    Task(){
+                        await appCoordinator.refreshDevices()
+                    }
                 }
             }
             .onReceive(appCoordinator.authsSubject) { auths in
@@ -172,7 +174,7 @@ public struct DevicesView: JoliView {
                         .padding(.bottom, Sizing.small)
                     
                     Button() {
-                        appCoordinator.refreshDevices()
+                        Task() { await appCoordinator.refreshDevices() }
                     } label: {
                         Label("Refresh", systemImage: "arrow.clockwise")
                             .font(Font.headline.weight(.light))
@@ -253,14 +255,15 @@ public struct DevicesView: JoliView {
                 return
             }
             
-            api.fetchSpotifyUserProfile(on: .main)
-                .then(){ user in
+            Task() {
+                do {
+                    let user = try await api.fetchSpotifyUserProfile()
                     let colors = PlayState.allColors
                     self.accentColor = colors[(user.id.count + user.id.lowercased().count(of: "g")) % colors.count].opacity(0.7)
-                }
-                .catch() { error in
+                } catch {
                     self.accentColor = .primary
                 }
+            }
         }
         .onReceive(appCoordinator.activeDeviceSubject){ activeDevice in
             
@@ -275,7 +278,7 @@ public struct DevicesView: JoliView {
             self.volume = CGFloat(device.volumePercent)
         }
         .onAppear() {
-            appCoordinator.refreshDevices()
+            Task(){ await appCoordinator.refreshDevices() }
             print("[\(Self.self)] playbackControllerMetadata: \(String(describing: playbackControllerMetadata))")
         }
         
