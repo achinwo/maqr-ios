@@ -9,7 +9,6 @@
 import SwiftUI
 import JoliCore
 import JoliApi
-import Promises
 import Combine
 import UIImageColors
 //import Sourceful

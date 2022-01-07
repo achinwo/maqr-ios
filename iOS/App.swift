@@ -11,7 +11,6 @@ import UIKit
 import PartialSheet
 import JoliCore
 import JoliApi
-import Promises
 import Foundation
 import Combine
 import AuthenticationServices

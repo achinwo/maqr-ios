@@ -10,7 +10,6 @@ import SwiftUI
 import Combine
 import JoliCore
 import UIImageColors
-import Promises
 
 public extension Search.Engine {
     

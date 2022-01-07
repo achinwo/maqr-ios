@@ -9,7 +9,6 @@
 import SwiftUI
 import JoliCore
 import JoliApi
-import Promises
 
 #if os(macOS)
 import AppKit

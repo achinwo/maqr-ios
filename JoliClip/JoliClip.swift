@@ -12,7 +12,6 @@ import JoliCore
 import Combine
 import JoliApi
 //import os
-import Promises
 import Version
 import KeychainAccess
 
@@ -187,13 +186,16 @@ struct JoliClip: AppClip {
                 
                 self.activeSessionToken = token
                 api.auth = self.auth
-                
+                    
                 DispatchQueue.main.async {
-                    self.fetchSpotifyAuthToken()
-                        .then() { authToken in
+                    Task() {
+                        do {
+                            let authToken = try await self.fetchSpotifyAuthToken()
                             self.coordinator.authorizedSpotify = authToken
+                        } catch {
+                            self.coordinator.globalErrorHandler()(error)
                         }
-                        .catch(self.coordinator.globalErrorHandler())
+                    }
                 }
             }
             .onReceive(coordinator.$localPlayRequested) { localRequest in
@@ -254,7 +256,7 @@ struct JoliClip: AppClip {
                     return
                 }
                 
-                authenticate(.sessionToken(session))
+                Task() { await authenticate(.sessionToken(session)) }
             }
     }
     
@@ -264,13 +266,13 @@ struct JoliClip: AppClip {
         return auths.first() { $0.session.token == activeSessionToken }
     }
     
-    public func fetchSpotifyAuthToken() -> Promise<AuthToken> {
+    public func fetchSpotifyAuthToken() async throws -> AuthToken {
         
         guard self.auth != nil else {
-            return Promise<AuthToken>(SpotifyError.unathorized)
+            throw SpotifyError.unathorized
         }
         
-        return HttpMethod.Fetch.post(url: "/api/spotify/auth", dataType: AuthToken.self,
+        return try await HttpMethod.Fetch.post(url: "/api/spotify/auth", dataType: AuthToken.self,
                                      baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
     
@@ -288,16 +290,16 @@ struct JoliClip: AppClip {
                 return
             }
             
-            self.spotifyWebAuthorize(urlComp)
-                .then() { auth in
-                    //logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
+            Task() {
+                do {
+                    let auth = try await self.spotifyWebAuthorize(urlComp)
                     self.onLocalSpotifyAuth(auth, nil)
-                }
-                .catch() { error in
+                } catch {
                     logger.error("[SceneDelegate] spotify auth error: \(String(describing: error))")
                     self.onLocalSpotifyAuth(nil, error)
                 }
-            
+            }
+        
             self.isPresentingSheet = false
             completionHandler(.cancel)
         case .didRecieveAuthChallange(let challenge, let completionHandler):
@@ -398,24 +400,16 @@ struct JoliClip: AppClip {
             return
         }
         
-        self.authenticate(.spotifyRefreshToken(auth.refreshToken))
+        Task() { await self.authenticate(.spotifyRefreshToken(auth.refreshToken)) }
     }
     
-    func spotifyWebAuthorize(_ urlPath: URLComponents) -> Promise<AuthToken> {
+    func spotifyWebAuthorize(_ urlPath: URLComponents) async throws -> AuthToken {
         //spotifyAuthorizationInProgress = true
         
-        return HttpMethod.Fetch.get(url: urlPath,
+        return try await HttpMethod.Fetch.get(url: urlPath,
                                     dataType: AuthToken.self,
                                     baseUrl: api.baseUrl.rawValue.http,
                                     urlSession: api.urlSession)
-            .then(){ auth -> Promise<AuthToken> in
-                //self.spotifyWebAuthorized = !auth.isExpired
-                return Promise(auth)
-            }
-            .catch(coordinator.globalErrorHandler())
-            .always() {
-                //self.spotifyAuthorizationInProgress = false
-            }
     }
     
     func resolveSpotifyRedirectUrl(_ url: URL, redirect: String? = nil, allowSchemes: [String] = []) -> URL? {
@@ -457,15 +451,16 @@ struct JoliClip: AppClip {
         logger.info("[SceneDelegate] url: \(url)")
         
         if let redirectUrl = resolveSpotifyRedirectUrl(url), let urlComp = URLComponents(url: redirectUrl, resolvingAgainstBaseURL: false) {
-            spotifyWebAuthorize(urlComp)
-                .then() { auth in
-                    //logger.info("[SceneDelegate] spotify auth recieved: \(auth)")
+            
+            Task() {
+                do {
+                    let auth = try await spotifyWebAuthorize(urlComp)
                     self.onLocalSpotifyAuth(auth, nil)
-                }
-                .catch() { error in
+                } catch {
                     logger.error("[SceneDelegate] spotify auth error: \(String(describing: error))")
                     self.onLocalSpotifyAuth(nil, error)
                 }
+            }
             return
         }
         

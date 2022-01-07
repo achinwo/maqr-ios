@@ -10,7 +10,6 @@ import SwiftUI
 import JoliApi
 import JoliCore
 import Combine
-import Promises
 import AlertToast
 
 public struct AppView2<PlaybackControllerType: PlaybackController>: JoliContentView {

@@ -95,21 +95,22 @@ public struct UserProfileView2: JoliView {
         
         let imageCallback = { (img: UIImage?, imgName: String?, error: Error?) in
             print("image: \(String(describing: img)), error: \(String(describing: error))")
-            
-            guard var user = user as? User,
-                  let image = img?.resizeImage(CGSize(width: 640, height: 640)) else {
-                return
-            }
-            
-            isUploadingImage = true
-            
-            defer {
-                DispatchQueue.main.async {
-                    isUploadingImage = false
+            Task() {
+                
+                guard var user = user as? User,
+                      let image = img?.resizeImage(CGSize(width: 640, height: 640)) else {
+                    return
                 }
-            }
+                
+                isUploadingImage = true
+                
+                defer {
+                    DispatchQueue.main.async {
+                        isUploadingImage = false
+                    }
+                }
             
-            do {
+            
                 let res: URL = try await JoliApi.upload(image, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
                 print("Result: \(res.absoluteString) - \(user)")
                 
@@ -118,8 +119,6 @@ public struct UserProfileView2: JoliView {
                 print("UpdatedUser: \(updatedUser)")
                 
                 self.user = updatedUser
-            } catch {
-                print("uploadImage: \(error)")
             }
         }
         

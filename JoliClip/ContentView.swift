@@ -14,7 +14,6 @@ import AlertToast
 //import StoreKit
 //#endif
 
-import Promises
 import UIImageColors
 import Combine
 
@@ -197,36 +196,34 @@ public struct PlayroomView: JoliView {
                             return
                         }
                         
-                        let performVote = { () -> Void in
+                        let performVote = { () async -> Void in
                             
-                            self.appCoordinator.voteTrack(track)
-                                .then() { vote in
-                                    guard let currentCount = self.votesByQueuedTrackId[track.id] else { return }
-                                    
-                                    var votes = self.votesByQueuedTrackId
-                                    votes[track.id] = currentCount + 1
-                                    
-                                    self.votesByQueuedTrackId = votes
+                            do {
+                                let _ = try await self.appCoordinator.voteTrack(track)
+                                guard let currentCount = self.votesByQueuedTrackId[track.id] else { return }
+                                
+                                var votes = self.votesByQueuedTrackId
+                                votes[track.id] = currentCount + 1
+                                
+                                self.votesByQueuedTrackId = votes
+                            } catch {
+                                guard let error = error as? AppCoordinator.ActionError else {
+                                    print("[ListenView] unrecognised error: \(error)")
+                                    return
                                 }
-                                .catch() { voteError in
-                                    
-                                    guard let error = voteError as? AppCoordinator.ActionError else {
-                                        print("[ListenView] unrecognised error: \(voteError)")
-                                        return
-                                    }
-                                    
-                                    switch error {
-                                        case .insufficientHeartPoints:
-                                            self.appCoordinator.insufficientPointsAttempt += 1
-                                    }
+                                
+                                switch error {
+                                    case .insufficientHeartPoints:
+                                        self.appCoordinator.insufficientPointsAttempt += 1
                                 }
+                            }
                         }
                         
                         guard appCoordinator.activeAuth != nil else {
                             let message = "Voting requires a verified identity, sign in with Spotify?"
                             appCoordinator.withAlert("Sign-In Required", message: message, label: "Sign In") {
                                 self.pendingAction = {
-                                    performVote()
+                                    Task() { await performVote() }
                                     self.pendingAction = nil
                                 }
                                 authcallback()
@@ -234,7 +231,7 @@ public struct PlayroomView: JoliView {
                             return
                         }
                         
-                        performVote()
+                        Task() { await performVote() }
                     }
             }
         }
@@ -286,7 +283,8 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                 return
             }
             
-            self.fetchPlayroomByInviteId(inviteId)
+            Task() { try? await self.fetchPlayroomByInviteId(inviteId) }
+            
         } label: {
             Label("Refresh", systemImage: "arrow.clockwise")
         }
@@ -355,12 +353,18 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             print("LOACTION Changed: \(location)")
             switch location {
                 case .invited(let inviteId):
-                    self.fetchPlayroomByInviteId(inviteId)
+                    Task() { try? await self.fetchPlayroomByInviteId(inviteId) }
                 case .rsvp(let eventUid):
                 //   self.errorMessage = Self.GENERIC_ERROR_MESSAGE
-                    self.fetchPlayroomByEventId(eventUid)
+                    Task() {
+                        do {
+                            try await self.fetchPlayroomByEventId(eventUid)
+                        } catch {
+                            self.appCoordinator.globalErrorHandler()(error)
+                        }
+                    }
                 default:
-                    self.fetchPlayroomByInviteId("mnsv9A") // Joli Live
+                    Task() { try? await self.fetchPlayroomByInviteId("mnsv9A") } // Joli Live
             }
         }
         .onReceive(appCoordinator.connectionStateSubject) { info in
@@ -380,7 +384,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         }
         .onAppear() {
             if [.home, .unset].contains(appCoordinator.currentLocation) {
-                self.fetchPlayroomByInviteId("mnsv9A")
+                Task() { try? await self.fetchPlayroomByInviteId("mnsv9A") }
             }
             
             print("Location: \(currentLocation)")
@@ -400,99 +404,74 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         return "An error occured while loading your Playroom invitation, please try again later."
     }
     
-    func fetchPlayroomByEventId(_ eventUid: String) -> Void { //Promise<(event: Event, room: Musicroom)?> {
+    func fetchPlayroomByEventId(_ eventUid: String) async throws -> Void { //Promise<(event: Event, room: Musicroom)?> {
         self.loadingView = true
-        Event.all(where: [.uuid: eventUid as AnyObject],
-                         limit: 1, baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
-            .then() { events -> Promise<(room: Musicroom, event: Event)?> in
-                guard let event = events.first else {
-                    return Promise(nil)
-                }
+        
+        defer {
+            self.loadingView = false
+        }
+        
+        let events = try await Event.all(where: [.uuid: eventUid as AnyObject],
+                                              limit: 1, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+        guard let event = events.first else {
+            return
+        }
+        
+        let room = try await Musicroom.findById(id: event.roomId, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+        guard let room = room else { return }
+        
+        
+        let ents = try await Entitlement.all(where: [.type: "event" as AnyObject], baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+        
+        guard let entitlement = ents.first(where: { $0.userId == appCoordinator.activeAuth?.user.id && $0.targetRecordId == event.id }) else {
+            return
+        }
+        
+        
+        let play = Playroom(musicroom: room, socket: websocket, api: api)
+        self.playroom = play
+        self.event = event
+        self.eventEntitlement = entitlement
                 
-                return Musicroom.findById(id: event.roomId, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-                    .then() { room -> (room: Musicroom, event: Event)? in
-                        guard let room = room else { return nil }
-                        
-                        return (room, event)
-                    }
-                    .catch(self.appCoordinator.globalErrorHandler())
-            }
-            .then() { roomData -> Promise<(room: Musicroom, event: Event, eventEntitlement: Entitlement?)?> in
-                guard let roomData = roomData else { return Promise(nil) }
-                
-                return Entitlement.all(where: [.type: "event" as AnyObject], baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
-                    .then(){ (ents: [Entitlement]) -> (room: Musicroom, event: Event, eventEntitlement: Entitlement?)? in
-                        
-                        guard let entitlement = ents.first(where: { $0.userId == appCoordinator.activeAuth?.user.id && $0.targetRecordId == roomData.event.id }) else {
-                            return (roomData.room, roomData.event, nil)
-                        }
-                        
-                        return (roomData.room, roomData.event, entitlement)
-                    }
-                    .catch() { error in
-                        print("[fetchPlayroomByEventId] error fetching: \(error)")
-                        self.appCoordinator.globalErrorHandler()(error)
-                    }
-            }
-            .then() { data in
-                
-                guard let data = data else { return }
-                
-                let play = Playroom(musicroom: data.room, socket: websocket, api: api)
-                self.playroom = play
-                self.event = data.event
-                self.eventEntitlement = data.eventEntitlement
-                
-                play.updateQueuedTracks()
-                    .then(){ _ in
-                        play.fetchSpotifyTopArtists()
-                            .then(){ artists in
-                                let filtered = artists.filter() { $0.imageMedium != nil }
-                                play.artists = filtered
-                            }
-                            .catch(self.appCoordinator.globalErrorHandler())
-                    }
-                    .catch(self.appCoordinator.globalErrorHandler())
-            }
-            .catch(self.appCoordinator.globalErrorHandler())
-            .always {
-                self.loadingView = false
-            }
+        let _ = try await play.updateQueuedTracks()
+        let artists = try await play.fetchSpotifyTopArtists()
+        let filtered = artists.filter() { $0.imageMedium != nil }
+        
+        play.artists = filtered
     }
     
     @discardableResult
-    func fetchPlayroomByInviteId(_ inviteId: String) -> Promise<Entitlement> {
+    func fetchPlayroomByInviteId(_ inviteId: String) async throws -> Entitlement {
         let url = "/i/\(inviteId)"
         self.loadingView = true
-        return HttpMethod.Fetch.get(url: url, dataType: Entitlement.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then(){ entitlement -> Entitlement in
-                
-                self.errorMessage = nil
-                guard let musicroom = entitlement.musicroom else {
-                    return entitlement
-                }
-                
-                let play = Playroom(musicroom: musicroom, socket: websocket, api: api)
-                self.playroom = play
-                play.updateQueuedTracks()
-                    .then(){ _ in
-                        play.fetchSpotifyTopArtists()
-                            .then(){ artists in
-                                let filtered = artists.filter() { $0.imageMedium != nil }
-                                play.artists = filtered
-                            }
-                            .catch(self.appCoordinator.globalErrorHandler())
-                    }
-                
+        
+        defer {
+            self.loadingView = false
+        }
+        
+        do {
+            let entitlement = try await HttpMethod.Fetch.get(url: url, dataType: Entitlement.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            self.errorMessage = nil
+            guard let musicroom = entitlement.musicroom else {
                 return entitlement
             }
-            .catch() { error in
-                print("[fetchPlayroomByInviteId] error: \(error)")
-                self.errorMessage = Self.GENERIC_ERROR_MESSAGE
-            }
-            .always {
-                self.loadingView = false
-            }
+            
+            let play = Playroom(musicroom: musicroom, socket: websocket, api: api)
+            self.playroom = play
+            
+            let _ = try await play.updateQueuedTracks()
+            let artists = try await play.fetchSpotifyTopArtists()
+            let filtered = artists.filter() { $0.imageMedium != nil }
+            play.artists = filtered
+            
+            return entitlement
+        } catch {
+            self.appCoordinator.globalErrorHandler()(error)
+            print("[fetchPlayroomByInviteId] error: \(error)")
+            self.errorMessage = Self.GENERIC_ERROR_MESSAGE
+            
+            throw error
+        }
         
     }
     

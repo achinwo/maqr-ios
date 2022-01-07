@@ -11,7 +11,6 @@ import UIKit
 
 import SwiftUI
 import JoliCore
-import Promises
 
 
 
@@ -156,21 +155,21 @@ public struct EventView: JoliView {
         return ent
     }
     
-    private func saveEntitlement(_ entitlement: EntitlementRecord) {
-        entitlement.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
-            .then() { e in
-                self.entitlement = e
-                
-                guard e.rejectedAt != nil else {
-                    return
-                }
-                
-                self.callback(e)
+    @MainActor
+    private func saveEntitlement(_ entitlement: EntitlementRecord) async {
+        do {
+            let e = try await entitlement.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            self.entitlement = e
+            
+            guard e.rejectedAt != nil else {
+                return
             }
-            .catch() { error in
-                self.presentToast("Unable to action", subTitle: "An error occured, try terminating and restarting the App", type: .error(.red), onDismiss: { _ in })
-                appCoordinator.globalErrorHandler()(error)
-            }
+            
+            self.callback(e)
+        } catch {
+            self.presentToast("Unable to action", subTitle: "An error occured, try terminating and restarting the App", type: .error(.red), onDismiss: { _ in })
+            self.appCoordinator.globalErrorHandler()(error)
+        }
     }
     
     func authenticateAndPerform(_ callback: @escaping (Bool) -> Void){
@@ -197,10 +196,12 @@ public struct EventView: JoliView {
                 return
             }
             
-            var rec = entitlementRecord
-            rec.acceptedAt = Date()
-            self.saveEntitlement(rec)
-            self.loadFoodAndDrinks()
+            Task() {
+                var rec = entitlementRecord
+                rec.acceptedAt = Date()
+                await self.saveEntitlement(rec)
+                await self.loadFoodAndDrinks()
+            }
             
             DispatchQueue.main.async(){
                 scrollProxy?.scrollTo("food", anchor: .top)
@@ -234,9 +235,11 @@ public struct EventView: JoliView {
                 return
             }
             
-            var rec = entitlementRecord
-            rec.rejectedAt = Date()
-            self.saveEntitlement(rec)
+            Task() {
+                var rec = entitlementRecord
+                rec.acceptedAt = Date()
+                await self.saveEntitlement(rec)
+            }
             
 #if !os(macOS)
             DispatchQueue.main.async {
@@ -254,28 +257,26 @@ public struct EventView: JoliView {
         
     }
     
-    private func loadFoodAndDrinks() {
+    private func loadFoodAndDrinks() async {
         self.loadingDietaryChoices = true
         
-        let p1 = Food.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then(on: .main){ foods in
-                self.foods = foods
-            }
-            .catch(self.appCoordinator.globalErrorHandler())
+        defer {
+            self.loadingDietaryChoices = false
+        }
         
-        let p2 = Drink.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then(on: .main){ drinks in
-                self.drinks = drinks.sorted(by: { $0.alcoholContent ?? 0 > $1.alcoholContent ?? 0})
-            }
-            .catch(self.appCoordinator.globalErrorHandler())
+        do {
+            self.foods = try await Food.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+        } catch {
+            self.appCoordinator.globalErrorHandler()(error)
+        }
         
-        Promises.all(p1, p2)
-            .then() { (_, _) in
-                updateSelections()
-            }
-            .always {
-                self.loadingDietaryChoices = false
-            }
+        do {
+            self.drinks = try await Drink.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession).sorted(by: { $0.alcoholContent ?? 0 > $1.alcoholContent ?? 0})
+        } catch {
+            self.appCoordinator.globalErrorHandler()(error)
+        }
+        
+        await self.updateSelections()
     }
     
     @State var foods: [Food] = []
@@ -395,11 +396,11 @@ public struct EventView: JoliView {
             let toDelete = self.choicesIds.drinks.filter({ !drinks.contains($0) })
             
             if !toCreated.isEmpty {
-                self.selectItem(type: "drink", ids: toCreated)
+                Task() { await self.selectItem(type: "drink", ids: toCreated) }
             }
             
             if !toDelete.isEmpty {
-                self.removeItem(type: "drink", ids: toDelete)
+                Task() { await self.removeItem(type: "drink", ids: toDelete) }
             }
         }
         .onChange(of: selectedFoods) { foods in
@@ -407,26 +408,25 @@ public struct EventView: JoliView {
             let toDelete = self.choicesIds.foods.filter({ !foods.contains($0) })
             
             if !toCreated.isEmpty {
-                self.selectItem(type: "food", ids: toCreated)
+                Task() { await self.selectItem(type: "food", ids: toCreated) }
             }
             
             if !toDelete.isEmpty {
-                self.removeItem(type: "food", ids: toDelete)
+                Task() { await self.removeItem(type: "food", ids: toDelete) }
             }
         }
     }
     
-    func removeItem(type: String, ids: [Int]) {
+    @MainActor
+    func removeItem(type: String, ids: [Int]) async {
         let allChoices = self.allChoices
         var toRemove = [MealChoice]()
         
         for meal in allChoices {
             guard meal.createdById == appCoordinator.activeAuth?.user.id, let mealId = meal.targetId, meal.type.rawValue == type, ids.contains(mealId) else { continue }
             
-            meal.delete(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-                .then(on: .main){ _ in
-                    toRemove.append(meal)
-                }
+            let _ = try? await meal.delete(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            toRemove.append(meal)
         }
         
         self.allChoices = self.allChoices.filter() { !toRemove.contains($0) }
@@ -436,11 +436,11 @@ public struct EventView: JoliView {
         self.selectedFoods = userChoices.foods
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.updateSelections()
+            Task() { await self.updateSelections() }
         }
     }
     
-    func selectItem(type: String, ids: [Int]) {
+    func selectItem(type: String, ids: [Int]) async {
         for elemId in ids {
             
             guard allChoices.first(where: { $0.targetId == elemId && $0.type.rawValue == type && $0.createdById == appCoordinator.activeAuth?.user.id }) == nil else {
@@ -453,28 +453,28 @@ public struct EventView: JoliView {
             ch.type = type
             ch.targetId = elemId
             
-            ch.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-                .then(on: .main) { choice in
-                    allChoices.append(choice)
-                }
+            guard let choice = try? await ch.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession) else { continue }
+            allChoices.append(choice)
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.updateSelections()
+            Task() { await self.updateSelections() }
         }
     }
     
-    private func updateSelections(){
-        MealChoice.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-        .then(on: .main){ choices in
+    private func updateSelections() async {
+        
+        do {
+            let choices = try await MealChoice.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             self.allChoices = choices.filter() { $0.deletedAt == nil }
             
             let userChoices = self.choicesIds
             
             self.selectedDrinks = userChoices.drinks
             self.selectedFoods = userChoices.foods
+        } catch {
+            self.appCoordinator.globalErrorHandler()(error)
         }
-        .catch(self.appCoordinator.globalErrorHandler())
     }
     
     public var contentView: some View {
@@ -607,7 +607,7 @@ public struct EventView: JoliView {
             
             guard entitlement != nil else { return }
             
-            self.loadFoodAndDrinks()
+            Task() { await self.loadFoodAndDrinks() }
         }
     }
     

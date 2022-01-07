@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Promises
 import Combine
 
 #if os(macOS)
@@ -128,10 +127,10 @@ public class ServerDestination: BaseDestination, ObservableObject {
     
     /// appends a string as line to a file.
     /// returns boolean about success
-    func writeToEndpoint(str: String) -> Promise<String?> {
+    func writeToEndpoint(str: String) -> String? {
         self.bufferedLines.append(str)
         self.flushSubject.send(str)
-        return Promise(nil) //write(data: data, to: url)
+        return nil //write(data: data, to: url)
     }
     
 }

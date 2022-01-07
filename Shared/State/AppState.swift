@@ -11,7 +11,6 @@ import JoliApi
 import JoliCore
 import SwiftUI
 import Combine
-import Promises
 import Version
 
 enum FetchError: Error {

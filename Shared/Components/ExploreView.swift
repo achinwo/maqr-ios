@@ -11,8 +11,6 @@ import Combine
 import JoliCore
 import JoliApi
 
-//
-import Promises
 #if os(macOS)
 import Sourceful
 #else

@@ -10,7 +10,6 @@ import UIKit
 import AVKit
 import JoliApi
 import UserNotifications
-import Promises
 import Combine
 
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {

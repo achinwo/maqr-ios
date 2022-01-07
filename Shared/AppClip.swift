@@ -612,7 +612,7 @@ public protocol AppClip: App {
     func onConnectionStateChange(_ state: ConnectionState) -> Void
     
     func onInternalError(_ error: Error) -> Void
-    func onNotificationRecieved(_ message: Data) -> Void
+    func onNotificationRecieved(_ message: Data) async -> Void
     
     func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) async throws -> Auth?
 }
@@ -884,7 +884,7 @@ public extension AppClip {
                     return
                 }
                 
-                self.onNotificationRecieved(data)
+                Task() { await self.onNotificationRecieved(data) }
             }
             .modifier(AppCoordinator.Modifier(coordinator))
             .environment(\.safeAreaInsets, safeAreaInsets)
