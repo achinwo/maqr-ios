@@ -21,19 +21,18 @@ import JoliCore
 public extension Array where Element: Persistable {
     
     @discardableResult
-    func saveAll(baseUrl: URL, urlSession: URLSession, on: DispatchQueue? = nil) -> Promise<[Element.PersistedType]> {
+    func saveAll(baseUrl: URL, urlSession: URLSession, on: DispatchQueue? = nil) async throws -> [Element.PersistedType] {
         guard !isEmpty else {
-            return Promise([])
+            return []
         }
         
         let urlComp = "/api/db/\(Element.PersistedType.className())"
         //"/api/db/\(T.className())", on: DispatchQueue?
-        return HttpMethod.Fetch.post(url: urlComp,
+        return try await HttpMethod.Fetch.post(url: urlComp,
                                      dataType: [Element.PersistedType].self,
                                      payload: .jsons(self.map(){ $0.json }),
                                      baseUrl: baseUrl,
-                                     urlSession: urlSession,
-                                     on: on)
+                                     urlSession: urlSession)
     }
     
 }
@@ -77,10 +76,14 @@ public class ServerDestination: BaseDestination, ObservableObject {
         
         self.linePublisherCancel = self.flushSubject
             .debounce(for: 2.0, scheduler: DispatchQueue.global(qos: .background))
-            .sink(receiveValue: self.flushLines)
+            .sink() { val in
+                Task() {
+                    await self.flushLines(val)
+                }
+            }
     }
     
-    public func flushLines(_ line: String? = nil){
+    public func flushLines(_ line: String? = nil) async {
         
         guard !self.bufferedLines.isEmpty else {
             return
@@ -91,7 +94,7 @@ public class ServerDestination: BaseDestination, ObservableObject {
         
         
         #if !os(macOS)
-        let deviceName: String = UIDevice.current.name
+        let deviceName: String = await UIDevice.current.name
         #else
         let deviceName: String = Host.current().localizedName ?? "Mac"
         #endif
@@ -107,7 +110,8 @@ public class ServerDestination: BaseDestination, ObservableObject {
             return LogEntryRecord(properties: props)
         }
         
-        logLines.saveAll(baseUrl: self.baseUrl, urlSession: self.urlSession)
+        
+        let _ = try? await logLines.saveAll(baseUrl: self.baseUrl, urlSession: self.urlSession)
     }
     
     // append to file. uses full base class functionality

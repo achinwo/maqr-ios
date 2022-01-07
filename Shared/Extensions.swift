@@ -10,7 +10,6 @@ import Foundation
 import JoliApi
 import SwiftUI
 import JoliCore
-import Promises
 
 #if os(macOS)
 import AppKit
@@ -365,18 +364,18 @@ extension Spotify.Device {
 extension JoliApi {
     
     @discardableResult
-    func playMusicroom(_ room: Musicroom, device: Spotify.Device, on: DispatchQueue? = nil) -> Promise<Musicroom> {
-        return HttpMethod.Fetch.post(url: "/api/musicrooms/\(room.id)/play?deviceId=\(device.id)", dataType: Musicroom.self, baseUrl: self.baseUrl.http, urlSession: self.urlSession, on: on)
+    func playMusicroom(_ room: Musicroom, device: Spotify.Device, on: DispatchQueue? = nil) async throws -> Musicroom {
+        return try await HttpMethod.Fetch.post(url: "/api/musicrooms/\(room.id)/play?deviceId=\(device.id)", dataType: Musicroom.self, baseUrl: self.baseUrl.http, urlSession: self.urlSession)
     }
     
     //fetch<T: Codable>(urlString: String, dataType: T.Type, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil)
     
-    public func save<T>(_ model: T, on: DispatchQueue? = nil) -> Promise<T.PersistedType> where T: Persistable {
-        return model.save(baseUrl: self.baseUrl.rawValue.http, urlSession: urlSession, on: on)
+    public func save<T>(_ model: T, on: DispatchQueue? = nil) async throws -> T.PersistedType where T: Persistable {
+        return try await model.save(baseUrl: self.baseUrl.rawValue.http, urlSession: urlSession)
     }
     
-    func fetchQueuedTracks(room: Musicroom, on: DispatchQueue? = nil) -> Promise<[QueuedTrack]> {
-        return HttpMethod.Fetch.get(url: "/api/musicrooms/\(room.id)/queued", dataType: [QueuedTrack].self, baseUrl: self.baseUrl.http, urlSession: self.urlSession, on: on)
+    func fetchQueuedTracks(room: Musicroom, on: DispatchQueue? = nil) async throws -> [QueuedTrack] {
+        return try await HttpMethod.Fetch.get(url: "/api/musicrooms/\(room.id)/queued", dataType: [QueuedTrack].self, baseUrl: self.baseUrl.http, urlSession: self.urlSession)
     }
     
 }

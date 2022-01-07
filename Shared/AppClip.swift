@@ -10,7 +10,6 @@ import Foundation
 import SwiftUI
 import JoliApi
 import JoliCore
-import Promises
 import Combine
 import AuthenticationServices
 import Version
@@ -644,81 +643,83 @@ public extension AppClip {
     }
     // MARK: - authenticate
     @discardableResult
-    func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool = true) -> Promise<Auth?> {
+    func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool = true) async -> Auth? {
         
-        if case let .sessionToken(token) = credentials, token.isEmpty {
-            logger.error("[\(Self.self)#authentication] call aborted, empty token")
-            return Promise<Auth?>(nil)
-        }
-        
-        return coordinator.api.authenticate(credentials)
-            .then() { auth -> Auth? in
-                
-                guard let auth = auth else {
-                    return nil
-                }
-                
-                var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
-                newAuths.append(auth)
-                
-                self.auths = newAuths
-                
-                self.activeSessionToken = auth.session.token
-                
-                storeToKeychain(newAuths)
-                self.coordinator.api.auth = auth
-                
-                self.coordinator.authsSubject.send(newAuths)
-                self.coordinator.activeSessionToken = self.activeSessionToken
-                
-                let points = CGFloat(auth.user.heartPoints ?? 375)
-                self.coordinator.userHeartsSubject.send(Hearts(score: points <= HeartLevel.empty.rawValue ? HeartLevel.quarter.rawValue : points))
-                
-                //logger.debug("[App#authentication] activeSessionToken: \(String(describing: self.activeSessionToken))")
-                
-                DispatchQueue.main.async { // Hack - authentication sideeffect needs refactoring
-                    if case .spotifyRefreshToken(_) = credentials, let pendingCallback = self.coordinator.pendingSpotifyAuthCallback.value {
-                        pendingCallback(true)
-                    }
-                }
-                
-                return auth
-            }
-            .catch() { error in
-                logger.error("[App#authentication] creds: \(String(describing: credentials)), error: \(String(describing: error))")
-                
-                DispatchQueue.main.async { // Hack - authentication sideeffect needs refactoring
-                    if case .spotifyRefreshToken(_) = credentials, let pendingCallback = self.coordinator.pendingSpotifyAuthCallback.value {
-                        pendingCallback(false)
-                    }
-                }
-                
-                guard case let .sessionToken(token) = credentials, let error = error as? SpotifyError, error != SpotifyError.unathorized else {
-                    
-                    
-                    if alertOnFail {
-                        let message = "If the issue persists, try closing and re-launching the app"
-                        coordinator.withAlert("Unable to complete Sign In", message: message)
-                    }
-                    
-                    return
-                }
-                
-                let auths = self.auths.filter() { $0.session.token != token}.sorted(by: { $0.user.name < $1.user.name })
-                storeToKeychain(auths)
-            }
-            .always {
-                
-                defer {
-                    websocket.connect()
-                }
-                
-                guard let token = activeSessionToken, !self.websocket.isConnected else { return }
-                
+        defer {
+            
+            if let token = activeSessionToken, !self.websocket.isConnected {
                 var req = Self.wssUrlRequest
                 req.addValue(token, forHTTPHeaderField: "X-SESSION-ID")
                 websocket.request = req
+                
+                websocket.connect()
             }
+            
+        }
+        
+        if case let .sessionToken(token) = credentials, token.isEmpty {
+            logger.error("[\(Self.self)#authentication] call aborted, empty token")
+            return nil
+        }
+        
+        do {
+            let auth = try await coordinator.api.authenticate(credentials)
+            
+            guard let auth = auth else {
+                return nil
+            }
+            
+            var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
+            newAuths.append(auth)
+            
+            self.auths = newAuths
+            
+            self.activeSessionToken = auth.session.token
+            
+            storeToKeychain(newAuths)
+            self.coordinator.api.auth = auth
+            
+            self.coordinator.authsSubject.send(newAuths)
+            self.coordinator.activeSessionToken = self.activeSessionToken
+            
+            let points = CGFloat(auth.user.heartPoints ?? 375)
+            self.coordinator.userHeartsSubject.send(Hearts(score: points <= HeartLevel.empty.rawValue ? HeartLevel.quarter.rawValue : points))
+            
+                //logger.debug("[App#authentication] activeSessionToken: \(String(describing: self.activeSessionToken))")
+            
+            DispatchQueue.main.async { // Hack - authentication sideeffect needs refactoring
+                if case .spotifyRefreshToken(_) = credentials, let pendingCallback = self.coordinator.pendingSpotifyAuthCallback.value {
+                    pendingCallback(true)
+                }
+            }
+            
+            return auth
+        } catch {
+            logger.error("[App#authentication] creds: \(String(describing: credentials)), error: \(String(describing: error))")
+            
+            DispatchQueue.main.async { // Hack - authentication sideeffect needs refactoring
+                if case .spotifyRefreshToken(_) = credentials, let pendingCallback = self.coordinator.pendingSpotifyAuthCallback.value {
+                    pendingCallback(false)
+                }
+            }
+            
+            guard case let .sessionToken(token) = credentials, let error = error as? SpotifyError, error != SpotifyError.unathorized else {
+                
+                
+                if alertOnFail {
+                    let message = "If the issue persists, try closing and re-launching the app"
+                    coordinator.withAlert("Unable to complete Sign In", message: message)
+                }
+                
+                return nil
+            }
+            
+            let auths = self.auths.filter() { $0.session.token != token}.sorted(by: { $0.user.name < $1.user.name })
+            storeToKeychain(auths)
+            
+            return nil
+        }
+        
     }
     
     static var wssUrlRequest: URLRequest {
@@ -898,14 +899,16 @@ public extension AppClip {
                 self.window = SafeAreaInsetsKey.defaultWindow
                 self.updateEdgeInsets()
                 
-                JoliApi.resolveServer(self.coordinator.api.baseUrl.http)
-                    .timeout(3.0)
-                    .then(on: .main) { info in
+                Task() {
+                    do {
+                        let info = try await JoliApi.resolveServer(self.coordinator.api.baseUrl.http)
                         logger.info("[\(Self.self)] server info: host=\(self.coordinator.api.baseUrl.http), version=\(info.version), features: \(info.feature)")
                         self.serverInfo = info
                         self.coordinator.serverInfo = info
+                    } catch {
+                        self.coordinator.globalErrorHandler()(error)
                     }
-                    .catch(self.coordinator.globalErrorHandler())
+                }
             }
         }
     }
@@ -953,15 +956,17 @@ public extension AppClip {
                                                file: #file, function: #function, line: #line)
     }
     
-    func onNotificationRecieved(_ deviceToken: Data) {
+    @MainActor
+    func onNotificationRecieved(_ deviceToken: Data) async {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         let token = tokenParts.joined()
         
-        self.coordinator.api.setNotificationToken(token)
-            .then() { device in
-                logger.info("Token Saved: \(device)")
-            }
-            .catch(self.coordinator.globalErrorHandler())
+        do {
+            let device = try await self.coordinator.api.setNotificationToken(token)
+            logger.info("Token Saved: \(device)")
+        } catch {
+            self.coordinator.globalErrorHandler()(error)
+        }
     }
     
     func storeToKeychain(_ auths: [Auth]) {

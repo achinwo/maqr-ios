@@ -16,8 +16,6 @@ import UIKit
 import AppKit
 #endif
 
-import Promises
-
 struct ProfileEditView: View {
     
     @Environment(\.presentationMode) var presentationMode
@@ -105,23 +103,24 @@ public struct UserProfileView2: JoliView {
             
             isUploadingImage = true
             
-            JoliApi.upload(image, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-                .then() { (res: URL) -> Promise<User> in
-                    print("Result: \(res.absoluteString) - \(user)")
-                    
-                    user.imageLarge = res.lastPathComponent
-                    return user.save()
-                }
-                .then() { updatedUser in
-                    print("UpdatedUser: \(updatedUser)")
-                    self.user = updatedUser
-                }
-                .catch { error in
-                    print("uploadImage: \(error)")
-                }
-                .always() {
+            defer {
+                DispatchQueue.main.async {
                     isUploadingImage = false
                 }
+            }
+            
+            do {
+                let res: URL = try await JoliApi.upload(image, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                print("Result: \(res.absoluteString) - \(user)")
+                
+                user.imageLarge = res.lastPathComponent
+                let updatedUser = try await user.save()
+                print("UpdatedUser: \(updatedUser)")
+                
+                self.user = updatedUser
+            } catch {
+                print("uploadImage: \(error)")
+            }
         }
         
         let onSelectedCallback = user.isOwnDevice ? imageCallback : nil
