@@ -8,7 +8,6 @@
 
 import SwiftUI
 import JoliCore
-import Promises
 
 public struct PlayroomView: JoliView {
     
@@ -62,7 +61,9 @@ public struct PlayroomView: JoliView {
                     
                     Spacer()
                     Button() {
-                        self.appCoordinator.synchronizePlayroom(playroom.musicroom)
+                        Task(){
+                            await self.appCoordinator.synchronizePlayroom(playroom.musicroom)
+                        }
                     } label: {
                         Text("Synchronize Playlist")
                     }
@@ -238,7 +239,9 @@ public struct PlayroomCreateView: JoliView {
                             )
                             
                             Button(){
-                                self.createMusicroom()
+                                Task() {
+                                    await self.createMusicroom()
+                                }
                             } label: {
                                 HStack(){
                                     
@@ -336,7 +339,7 @@ public struct PlayroomCreateView: JoliView {
     @State var eventStartsAt = Date()
     @State var eventEndsAt = Date()
     
-    private func createEvent(_ room: Musicroom) -> Promise<Event> {
+    private func createEvent(_ room: Musicroom) async throws -> Event {
         
         var event = EventRecord()
         event.endsAt = eventEndsAt
@@ -345,12 +348,16 @@ public struct PlayroomCreateView: JoliView {
         event.subtitle = self.description.trimmingCharacters(in: .whitespacesAndNewlines)
         event.roomId = room.id
         
-        return event
-            .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
-            .catch(self.appCoordinator.globalErrorHandler())
+        do {
+            let saved = try await event.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            return saved
+        } catch {
+            self.appCoordinator.globalErrorHandler()(error)
+            throw error
+        }
     }
     
-    private func createMusicroom() {
+    private func createMusicroom() async {
         print("Creating playroom...")
         
         let name = self.name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -362,31 +369,33 @@ public struct PlayroomCreateView: JoliView {
         ]
         
         self.creatingPlayroom = true
-        MusicroomRecord(properties: props)
-            .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
-            .then() { room in
-                logger.debug("[PlayroomCreate] created: \(room)")
-                
-                let onComplete = {
-                    presentToast("\(name) created", type: .complete(.green)) { _ in
-                        self.appCoordinator.globalPreviewSubject.send(nil)
-                    }
+        
+        defer {
+            self.creatingPlayroom = false
+        }
+        
+        do {
+            let room = try await MusicroomRecord(properties: props)
+                .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            
+            logger.debug("[PlayroomCreate] created: \(room)")
+            
+            let onComplete = {
+                presentToast("\(name) created", type: .complete(.green)) { _ in
+                    self.appCoordinator.globalPreviewSubject.send(nil)
                 }
-                
-                guard !eventEnabled else {
-                    self.createEvent(room)
-                        .then(){ event in
-                            onComplete()
-                        }
-                    return
-                }
-                
+            }
+            
+            guard !eventEnabled else {
+                let _ = try? await self.createEvent(room)
                 onComplete()
+                return
             }
-            .catch(self.appCoordinator.globalErrorHandler())
-            .always {
-                self.creatingPlayroom = false
-            }
+            
+            onComplete()
+        } catch {
+            self.appCoordinator.globalErrorHandler()(error)
+        }
     }
 }
 

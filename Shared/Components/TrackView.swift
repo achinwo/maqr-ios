@@ -316,7 +316,9 @@ public struct TrackView2<AddonView: View>: JoliView {
                     
                     if let state = self.userPlayState, state.playingState == .playing && !menuEnabled {
                         PauseButton() {
-                                self.appCoordinator.pausePlayback()
+                                Task(){
+                                    await self.appCoordinator.pausePlayback()
+                                }
                             }
                             .foregroundColor(Color.primary)
                             .font(Font.title)
