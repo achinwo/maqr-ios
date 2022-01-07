@@ -10,7 +10,6 @@ import SwiftUI
 import Combine
 import JoliCore
 import UIImageColors
-import Promises
 
 public struct PauseButton: View {
     
@@ -108,7 +107,9 @@ public struct TrackView2<AddonView: View>: JoliView {
             
             Button(){
                 print("Play track: \(track.title)")
-                self.play(true)
+                Task(){
+                    await self.play(true)
+                }
             } label: {
                 Image(systemName: "play")
                     .padding(Sizing.small)
@@ -147,7 +148,9 @@ public struct TrackView2<AddonView: View>: JoliView {
                 //Image(systemName: "info.circle").padding(.vertical, Sizing.small)
                 Divider().padding(.horizontal, 2)
                 Button(){
-                    self.appCoordinator.pausePlayback()
+                    Task(){
+                        await self.appCoordinator.pausePlayback()
+                    }
                 } label: {
                     Image(systemName: "pause")
                         .padding(Sizing.small)
@@ -172,41 +175,39 @@ public struct TrackView2<AddonView: View>: JoliView {
     
     @Environment(\.colorScheme) public var colorScheme
     
-    private func play(_ fromBegining: Bool = false) {
+    @MainActor
+    private func play(_ fromBegining: Bool = false) async {
         self.requestingPlay = true
         let progress: Int? = fromBegining ? nil : self.playStatebyUsername.first?.value.progressMs
         
-        let playFunc = { (offset: ContentOffset?) in
-            appCoordinator.play(track, positionMs: progress, contentOffset: offset, device: activeDevice)
-                .then(){ playState in
+        defer { self.requestingPlay = false }
+        
+        let playFunc = { (offset: ContentOffset?) async in
+            
+            let playState = await appCoordinator.play(track, positionMs: progress, contentOffset: offset, device: activeDevice)
                     
-                    guard var playState = playState else {
-                        return
-                    }
-                    
-                    playState.progressMs = progress
-                    playState.durationMs = self.playStatebyUsername[playState.userName]?.durationMs
-                    
-                    self.playStatebyUsername[playState.userName] = playState
-                }
-                .catch() { error in
-                    print("[PlayTrack] error: \(error)")
-                    invalidPlayAttempts += 1
-                }
-                .always {
-                    self.requestingPlay = false
-                }
+            guard var playState = playState else {
+                return
+            }
+            
+            playState.progressMs = progress
+            playState.durationMs = self.playStatebyUsername[playState.userName]?.durationMs
+            
+            self.playStatebyUsername[playState.userName] = playState
+        
+            //print("[PlayTrack] error: \(error)")
+            //invalidPlayAttempts += 1
         }
         
         guard let playroom = playroom, let track = track as? QueuedTrack, let playlistUri = playroom.playlistUri else {
-            let _ = playFunc(nil)
+            let _ = await playFunc(nil)
             return
         }
         
         if let position = playroom.queue.firstIndex(where: { $0.id == track.id }) {
-            let _ = playFunc(.both(playlistUri, position))
+            let _ = await playFunc(ContentOffset.both(playlistUri, position))
         } else if let contextUri = contextUri {
-            let _ = playFunc(.uri(contextUri))
+            let _ = await playFunc(ContentOffset.uri(contextUri))
         }
         
     }
@@ -265,8 +266,13 @@ public struct TrackView2<AddonView: View>: JoliView {
             }
             .frame(width: 64, height: 64, alignment: .center)
             //.clipShape(RoundedRectangle(cornerRadius: 2.36, style: .continuous))
-            .onTapGesture(count: 1) { self.play(false) }
-            .onTapGesture(count: 2) { self.play(true) }
+            .onTapGesture(count: 1) {
+                Task() { await self.play(false) }
+            }
+            .onTapGesture(count: 2) {
+                Task() { await self.play(true) }
+                
+            }
             .onReceive(appCoordinator.$playStatePublisher, perform: setupPublisher)
             .onReceive(appCoordinator.voteRequestedSubject) { requested in
                 self.requestingVoteTrackId = requested
@@ -361,7 +367,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                     .font(Font.headline.weight(.light))
                     .lineLimit(1)
                     .onTapGesture() {
-                        self.play(false)
+                        Task() { await self.play(false) }
                     }
                 
                 HStack(spacing: .zero) {
@@ -394,7 +400,7 @@ public struct TrackView2<AddonView: View>: JoliView {
                     Spacer()
                 }
                 .onTapGesture() {
-                    self.play(false)
+                    Task() { await self.play(false) }
                 }
                 Spacer()
                 

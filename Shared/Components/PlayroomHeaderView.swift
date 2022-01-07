@@ -316,11 +316,14 @@ public struct PlayroomHeaderView: JoliView {
             self.connectionState = conn.state
         }
         .onAppear(){
-            self.playroom?.fetchThemeTracks()
-                .then() { tracks in
-                    self.playroom?.themeTracks = tracks
+            Task() { @MainActor in
+                do {
+                    let tracks = try await self.playroom?.fetchThemeTracks()
+                    self.playroom?.themeTracks = tracks ?? []
+                } catch {
+                    self.appCoordinator.globalErrorHandler()(error)
                 }
-                .catch(appCoordinator.globalErrorHandler())
+            }
         }
     }
     

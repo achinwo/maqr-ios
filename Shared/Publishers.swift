@@ -10,7 +10,6 @@ import JoliCore
 import JoliApi
 import Combine
 import Starscream
-import Promises
 import CommonCrypto
 import SwiftUI
 import Foundation
@@ -52,17 +51,17 @@ public extension String {
 
 extension Track {
     
-    public static func fetchByUris(_ uris: [String], baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[Track]> {
+    public static func fetchByUris(_ uris: [String], baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) async throws -> [Track] {
         
         let props: Track.PropertiesDict = [.uri: uris as AnyObject]
         print("URIS: \(uris)")
         
         guard !uris.isEmpty else {
-            return Promise([])
+            return []
         }
 
-        return Track.all(where: props, limit: uris.count,
-                         baseUrl: baseUrl, urlSession: urlSession, on: on)
+        return try await Track.all(where: props, limit: uris.count,
+                         baseUrl: baseUrl, urlSession: urlSession)
     }
 }
 
@@ -82,7 +81,7 @@ public class Playroom: ObservableObject, Room, Equatable {
     
     @Published public var entitlements: [Entitlement]? = nil {
         didSet {
-            self.updateMembership()
+            Task() { await self.updateMembership() }
         }
     }
     
@@ -111,10 +110,10 @@ public class Playroom: ObservableObject, Room, Equatable {
     }
     
     @discardableResult
-    public func fetchSpotifyTopArtists(limit: Int = 6) -> Promise<[Artist]> {
+    public func fetchSpotifyTopArtists(limit: Int = 6) async throws -> [Artist] {
         
         var path = URLComponents(string: "/api/db/\(Artist.self)")!
-        var prom1: Promise<[Artist]>
+        var artists1: [Artist] = []
         
         if let uris = themeArtistIds, !uris.isEmpty {
             
@@ -124,13 +123,11 @@ public class Playroom: ObservableObject, Room, Equatable {
             
             logger.debug("[fetchSpotifyRecommendations] getting suggestion: \(path)")
             
-            prom1 = HttpMethod.Fetch.get(url: path, dataType: [Artist].self,
-                                         baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
-        } else {
-            prom1 = .init([])
+            artists1 = (try? await HttpMethod.Fetch.get(url: path, dataType: [Artist].self,
+                                         baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)) ?? []
         }
         
-        var prom2: Promise<[Artist]>
+        var artists2: [Artist] = []
         
         if !queue.isEmpty {
             let names = queue.prefix(limit).map() { $0.artistName }
@@ -138,20 +135,15 @@ public class Playroom: ObservableObject, Room, Equatable {
                 URLQueryItem(name: "names", value: names.joined(separator: ",")),
             ]
             
-            prom2 = HttpMethod.Fetch.get(url: path, dataType: [Artist].self,
-                                         baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
-        } else {
-            prom2 = .init([])
+            artists2 = (try? await HttpMethod.Fetch.get(url: path, dataType: [Artist].self,
+                                         baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)) ?? []
         }
         
-        return Promises.all(prom1, prom2)
-            .then() { (artists1, artists2) -> [Artist] in
-                return Array(Set(artists1 + artists2))
-            }
+        return Array(Set(artists1 + artists2))
     }
     
     @discardableResult
-    public func fetchSpotifyRecommendations(limit: Int = 6) -> Promise<Spotify.Recommendation> {
+    public func fetchSpotifyRecommendations(limit: Int = 6) async throws -> Spotify.Recommendation {
         var path = URLComponents(string: "/api/spotify/recommendations")!
         let trackIds = queue.prefix(5).map({ $0.uri.replacingOccurrences(of: "spotify:track:", with: "") })
         let artistIds = themeArtistIds?.split(separator: ",").map({ String($0).replacingOccurrences(of: "spotify:artist:", with: "") }) ?? []
@@ -184,106 +176,110 @@ public class Playroom: ObservableObject, Room, Equatable {
         }
         
         logger.debug("[fetchSpotifyRecommendations] getting suggestion: \(path)")
-        return HttpMethod.Fetch.get(url: path, dataType: Spotify.Recommendation.self,
-                                    baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+        
+        return try await HttpMethod.Fetch.get(url: path, dataType: Spotify.Recommendation.self,
+                                                  baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
     }
     
-    public func fetchThemeTracks() -> Promise<[Track]> {
+    public func fetchThemeTracks() async throws -> [Track] {
         let themeTrackUris: [String] = [self.themeTrackUri2, self.themeTrackUri].compactMap({ $0 })
         
-        return Track.fetchByUris(themeTrackUris, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+        return try await Track.fetchByUris(themeTrackUris, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
     }
     
     @discardableResult
-    public func updateQueuedTracks(additions: [QueuedTrack] = []) -> Promise<[QueuedTrack]> {
+    public func updateQueuedTracks(additions: [QueuedTrack] = []) async throws -> [QueuedTrack] {
         self.loadingRoomTracks = true
-        return self.fetchQueuedTracks()
-            .then() { tracks in
-                self.queue = tracks
-                
-                var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
-                var allVotes: [QueuedTrackVote] = []
-                var votesById: [Int: Int] = [:]
-                
-                let themeTrackUris = [self.themeTrackUri2, self.themeTrackUri].compactMap({ $0 })
-                
-                for track in tracks.filter({ $0.isPlayable }) {
-                    var roomTracks = tracksByMusicrooms[track.roomId] ?? []
-                    
-                    guard !roomTracks.map({ $0.uri }).contains(track.uri) else {
-                        continue
-                    }
-                    
-                    roomTracks.append(track)
-                    tracksByMusicrooms[track.roomId] = roomTracks
-                    votesById[track.id] = track.voteCount ?? 0
-                    
-                    if let trackObj = track.track,
-                       themeTrackUris.contains(track.uri),
-                       !self.themeTracks.map({ $0.uri }).contains(track.uri) {
-                        
-                        self.themeTracks.append(trackObj)
-                    }
-                    
-                    guard let votes = track.votes, track.roomId == self.musicroom.id else {
-                        continue
-                    }
-                    
-                    allVotes.append(contentsOf: votes)
-                }
-                
-                self.votesByQueuedTrackId = votesById
-                self.votes = allVotes
-                
-                self.strip = (
-                    playing: tracks.first,
-                    next: tracks.count > 1 ? tracks[1] : nil,
-                    runnerup: tracks.count > 2 ? tracks[2] : nil
-                )
+        
+        defer {
+            self.loadingRoomTracks = false
+        }
+        
+        let tracks = await self.fetchQueuedTracks()
+        self.queue = tracks
+        
+        var tracksByMusicrooms: [Int: [QueuedTrack]] = [:]
+        var allVotes: [QueuedTrackVote] = []
+        var votesById: [Int: Int] = [:]
+        
+        let themeTrackUris = [self.themeTrackUri2, self.themeTrackUri].compactMap({ $0 })
+        
+        for track in tracks.filter({ $0.isPlayable }) {
+            var roomTracks = tracksByMusicrooms[track.roomId] ?? []
+            
+            guard !roomTracks.map({ $0.uri }).contains(track.uri) else {
+                continue
             }
-            .always {
-                self.loadingRoomTracks = false
+            
+            roomTracks.append(track)
+            tracksByMusicrooms[track.roomId] = roomTracks
+            votesById[track.id] = track.voteCount ?? 0
+            
+            if let trackObj = track.track,
+               themeTrackUris.contains(track.uri),
+               !self.themeTracks.map({ $0.uri }).contains(track.uri) {
+                
+                self.themeTracks.append(trackObj)
             }
+            
+            guard let votes = track.votes, track.roomId == self.musicroom.id else {
+                continue
+            }
+            
+            allVotes.append(contentsOf: votes)
+        }
+        
+        self.votesByQueuedTrackId = votesById
+        self.votes = allVotes
+        
+        self.strip = (
+            playing: tracks.first,
+            next: tracks.count > 1 ? tracks[1] : nil,
+            runnerup: tracks.count > 2 ? tracks[2] : nil
+        )
+        
+        return tracks
     }
     
-    public func fetchQueuedTracks(limit: Int? = nil, includePlayed: Bool = false) -> Promise<[QueuedTrack]> {
+    public func fetchQueuedTracks(limit: Int? = nil, includePlayed: Bool = false) async -> [QueuedTrack] {
         var uri = "/api/musicrooms/\(musicroom.id)/queued?includePlayed=\(includePlayed)"
         
         if let limit = limit {
             uri = "\(uri)&limit=\(limit)"
         }
         
-        return HttpMethod.Fetch.get(url: uri, dataType: [QueuedTrack].self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
-            .catch() { error in
-                logger.error("[fetchTracks] error fetching tracks for \(self.musicroom.name): \(String(describing: error))")
-            }
+        do {
+            return try await HttpMethod.Fetch.get(url: uri, dataType: [QueuedTrack].self, baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+        } catch {
+            logger.error("[fetchTracks] error fetching tracks for \(self.musicroom.name): \(String(describing: error))")
+            return []
+        }
     }
     
-    public func updateMembership() {
+    public func updateMembership() async {
         
         guard let userIds = entitlements?.compactMap({ $0.userId }), !userIds.isEmpty else { return }
         
-        User.findByIds(ids: userIds, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then(on: .main) { users in
-                print("[Playroom] fetched \(users.count) users for \(String(describing: self.entitlements?.count)) entitlements")
-                let userMap = Dictionary(uniqueKeysWithValues: users.map() { ($0.id, $0) })
+        do {
+            let users = try await User.findByIds(ids: userIds, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            print("[Playroom] fetched \(users.count) users for \(String(describing: self.entitlements?.count)) entitlements")
+            let userMap = Dictionary(uniqueKeysWithValues: users.map() { ($0.id, $0) })
+            
+            self.membership = (self.entitlements ?? []).compactMap() { entitlement in
                 
-                self.membership = (self.entitlements ?? []).compactMap() { entitlement in
-                    
-                    guard let user = userMap[entitlement.userId] else {
-                        return nil
-                    }
-                    
-                    return PlayroomMembership(inviteStatus: entitlement.acceptedAt == nil ? .pending : .accepted,
-                                              activityStatus: self.userStatus[user.email] ?? .offline,
-                                              playroom: self.musicroom, user: user)
+                guard let user = userMap[entitlement.userId] else {
+                    return nil
                 }
+                
+                return PlayroomMembership(inviteStatus: entitlement.acceptedAt == nil ? .pending : .accepted,
+                                          activityStatus: self.userStatus[user.email] ?? .offline,
+                                          playroom: self.musicroom, user: user)
             }
-            .catch() { error in
-                self.membership = self.membership.map() { mem in
-                    return PlayroomMembership(inviteStatus: mem.inviteStatus, activityStatus: .offline, playroom: self.musicroom, user: mem.user)
-                }
+        } catch {
+            self.membership = self.membership.map() { mem in
+                return PlayroomMembership(inviteStatus: mem.inviteStatus, activityStatus: .offline, playroom: self.musicroom, user: mem.user)
             }
+        }
     }
     
     let queueUpdateRequest = PassthroughSubject<String, Never>()
@@ -297,7 +293,7 @@ public class Playroom: ObservableObject, Room, Equatable {
         queueUpdateRequest
             .debounce(for: 2.16, scheduler: DispatchQueue.global(qos: .background))
             .sink() { _ in
-                self.updateQueuedTracks()
+                Task() { try? await self.updateQueuedTracks() }
             }
             .store(in: &cancellationSet)
         
@@ -309,7 +305,7 @@ public class Playroom: ObservableObject, Room, Equatable {
                 }
                 
                 self.userStatus.removeAll()
-                self.updateMembership()
+                Task() { await self.updateMembership() }
             }
             .store(in: &cancellationSet)
         
@@ -384,7 +380,7 @@ public class Playroom: ObservableObject, Room, Equatable {
             }
             .store(in: &cancellationSet)
         
-        updateMembership()
+        Task() { await updateMembership() }
     }
     
     deinit {
@@ -583,14 +579,15 @@ public extension JoliApi {
         print("[play] playing track: \(track.title)")
         
         return Future<PlayState?, Error>() { promise in
-            track.play(deviceId: device?.id, positionMs: positionMs, baseUrl: self.baseUrl.http, urlSession: self.urlSession, on: on)
-                .then() { res in
+            Task() {
+                do {
+                    let res = try await track.play(deviceId: device?.id, positionMs: positionMs, baseUrl: self.baseUrl.http, urlSession: self.urlSession)
                     print("[playTrack] \(res)")
                     promise(.success(nil))
-                }
-                .catch() { error in
+                } catch {
                     promise(.failure(error))
                 }
+            }
         }
         .eraseToAnyPublisher()
     }
