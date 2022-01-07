@@ -266,12 +266,8 @@
 		92A32DA524C79B3D007C960E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9424C79B3D007C960E /* Assets.xcassets */; };
 		92A32DAD24C79B3D007C960E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9924C79B3D007C960E /* Localizable.strings */; };
 		92A32DAE24C79B3D007C960E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9924C79B3D007C960E /* Localizable.strings */; };
-		92A32DB524C79B59007C960E /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DB024C79B59007C960E /* AppState.swift */; };
 		92A32DB724C79B59007C960E /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DB124C79B59007C960E /* UserSettings.swift */; };
 		92A32DB824C79B59007C960E /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DB124C79B59007C960E /* UserSettings.swift */; };
-		92A32DB924C79B59007C960E /* AppState+Spotify.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DB224C79B59007C960E /* AppState+Spotify.swift */; };
-		92A32DBB24C79B59007C960E /* AppState+Methods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DB324C79B59007C960E /* AppState+Methods.swift */; };
-		92A32DBD24C79B59007C960E /* AppState+Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DB424C79B59007C960E /* AppState+Publisher.swift */; };
 		92A32DC124C79B6C007C960E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32DC024C79B6B007C960E /* Preview Assets.xcassets */; };
 		92A32DC224C79B6C007C960E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92A32DC024C79B6B007C960E /* Preview Assets.xcassets */; };
 		92A32DDC24C79C07007C960E /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
@@ -1796,18 +1792,15 @@
 				924E971826E5620800FF41E3 /* TrackView.swift in Sources */,
 				928E7B522704A6D90052E5A9 /* Logging.swift in Sources */,
 				9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */,
-				92A32DBB24C79B59007C960E /* AppState+Methods.swift in Sources */,
 				928F75F524F7B13400CF708B /* SearchView.swift in Sources */,
 				926DB4C92638BDD000D62912 /* ActivityIndicator.swift in Sources */,
 				922989AD26491F0E00FDD58F /* MailView.swift in Sources */,
 				928A392524E9E2FA00A029A1 /* JoyMeterView.swift in Sources */,
 				92A32DF624C79C07007C960E /* TrackList.swift in Sources */,
-				92A32DB924C79B59007C960E /* AppState+Spotify.swift in Sources */,
 				92A32DF024C79C07007C960E /* AppDelegate.swift in Sources */,
 				927AE0C22554AC020027493D /* LobbyView.swift in Sources */,
 				92A32DF424C79C07007C960E /* Extensions.swift in Sources */,
 				92A32DEA24C79C07007C960E /* App.swift in Sources */,
-				92A32DB524C79B59007C960E /* AppState.swift in Sources */,
 				92A32DDE24C79C07007C960E /* PeopleGridView.swift in Sources */,
 				92A32DDC24C79C07007C960E /* ImagePicker.swift in Sources */,
 				928E7B542704A70F0052E5A9 /* BaseDestination.swift in Sources */,
@@ -1827,7 +1820,6 @@
 				927E0E3724E9ADC000C8257D /* AppClip.swift in Sources */,
 				9257430826304BA400B518EA /* SkipVoteView.swift in Sources */,
 				92A32E0024C79C07007C960E /* AppView.swift in Sources */,
-				92A32DBD24C79B59007C960E /* AppState+Publisher.swift in Sources */,
 				9252603D261B376F00316AE1 /* SpotifyConnectButton.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
