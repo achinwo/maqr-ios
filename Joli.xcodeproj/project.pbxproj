@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		920250BF26E5650800725A80 /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 920250BE26E5650800725A80 /* Promises */; };
 		920250C026E565C900725A80 /* SharedUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; };
 		920250C126E565C900725A80 /* SharedUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		920250C526E5665F00725A80 /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
@@ -718,7 +717,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				92CC32B026E55B6200178465 /* JoliApi in Frameworks */,
-				920250BF26E5650800725A80 /* Promises in Frameworks */,
 				924E96FC26E55DC100FF41E3 /* AlertToast in Frameworks */,
 				9280818527046B6F001120ED /* NetworkImage in Frameworks */,
 				924E96FA26E55D8800FF41E3 /* KeychainAccess in Frameworks */,
@@ -1360,7 +1358,6 @@
 				924E96F926E55D8800FF41E3 /* KeychainAccess */,
 				924E96FB26E55DC100FF41E3 /* AlertToast */,
 				924E96FD26E55DD700FF41E3 /* PartialSheet */,
-				920250BE26E5650800725A80 /* Promises */,
 				9280818427046B6F001120ED /* NetworkImage */,
 			);
 			productName = SharedUI;
@@ -2955,11 +2952,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		920250BE26E5650800725A80 /* Promises */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
-			productName = Promises;
-		};
 		921F6C2D26BB28090061D236 /* QRCode */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 921F6C2C26BB28090061D236 /* XCRemoteSwiftPackageReference "QRCode" */;

@@ -8,7 +8,6 @@
 
 import Foundation
 import JoliCore
-import Promises
 
 protocol Priceable {
     var defaultPrice: Decimal? { get }

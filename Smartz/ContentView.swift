@@ -547,23 +547,26 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                 
                 self.selectedTab = .appClipCreator
                 
-                guard let receiptData = appCoordinator.storeKitHelper.retreiveReceipt() else {
-                    appCoordinator.serverLogDestination.send(.info, msg: "No receipt found!", thread: Thread.current.description,
-                                                             file: #file, function: #function, line: #line)
-                    return
-                }
-                
-                let json: Json = [
-                    "receiptData": receiptData as AnyObject,
-                ]
-                
-                HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/process-transaction")!, payload: json, baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: .main)
-                    .then(){ res in
-                        print("[RECEIPT] \(res)")
+                Task() {
+                    guard let receiptData = appCoordinator.storeKitHelper.retreiveReceipt() else {
+                        appCoordinator.serverLogDestination.send(.info, msg: "No receipt found!", thread: Thread.current.description,
+                                                                 file: #file, function: #function, line: #line)
+                        return
                     }
-                    .catch(){ error in
+                    
+                    let json: Json = [
+                        "receiptData": receiptData as AnyObject,
+                    ]
+                    
+                    do {
+                        let res = try await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/process-transaction")!, payload: json, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+                        print("[RECEIPT] \(res)")
+                    } catch {
                         print("[RECEIPT] error: \(error)")
                     }
+                            
+                }
+                
             } label: {
                 HStack(){
                     Spacer()

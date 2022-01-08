@@ -10,7 +10,6 @@ import SwiftUI
 //import SharedUI
 import JoliCore
 import Combine
-import Promises
 
 extension ExperienceItemType: Identifiable {
     public var id: String {

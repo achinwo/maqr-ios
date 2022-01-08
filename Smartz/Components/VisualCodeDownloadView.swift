@@ -74,23 +74,22 @@ struct VisualCodeDownloadView: JoliView {
                 Button(){
                     self.performSubscribe()
                     
-                    guard let receiptData = appCoordinator.storeKitHelper.retreiveReceipt() else {
-                        return
-                    }
-                    
-                    
-                    let json: Json = [
-                        "receiptData": receiptData as AnyObject,
-                    ]
-                    
-                    HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/process-transaction")!, payload: json, baseUrl: api.baseUrl.http, urlSession: api.urlSession, on: .main)
-                        .then(){ res in
-                            print("[RECEIPT] \(res)")
+                    Task() {
+                        guard let receiptData = appCoordinator.storeKitHelper.retreiveReceipt() else {
+                            return
                         }
-                        .catch(){ error in
+                        
+                        let json: Json = [
+                            "receiptData": receiptData as AnyObject,
+                        ]
+                    
+                        do {
+                            let res = try await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/process-transaction")!, payload: json, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+                            print("[RECEIPT] result: \(res)")
+                        } catch {
                             print("[RECEIPT] error: \(error)")
                         }
-                    
+                    }
 //                    guard !downloaded else {
 //                        appCoordinator.share(text: "Your file", url: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/austin-chan-ukzHlkoz1IE-unsplash.jpg"))
 //                        return

@@ -13,7 +13,6 @@ import os
 import Foundation
 import JoliCore
 import JoliApi
-import Promises
 
 extension Array where Element == ExperienceDataKeyPath.Metadata {
     
@@ -354,7 +353,7 @@ public struct CodeDesignerView: JoliView {
         
         let codeView = VisualCodeView(code: $visualCode, submitEnabled: $submitEnabled){ visualCode in
             print("Submitting: \(visualCode.properties)")
-            self.submitOrPurchase(expData, codes: [visualCode])
+            Task() { await self.submitOrPurchase(expData, codes: [visualCode]) }
         } label: {
             if expData.uuid == nil {
                 let newTxt: (String, String) = appCoordinator.isPaymentEnabled && !self.hasSubscription ? ("Purchase", "cart") : ("Submit", "arrow.up")
@@ -392,53 +391,47 @@ public struct CodeDesignerView: JoliView {
     }
     
     @discardableResult
-    func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) -> Promise<StikrExperienceData> {
+    @MainActor
+    func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) async throws -> StikrExperienceData {
         self.submitting = true
         let expType = self.selectedExperience ?? TvShowPromoView.self
         expData.experienceTypeName = String(describing: expType)
         
-        return expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then(){ saved -> Promise<StikrExperienceData> in
-                print("SAVE experience: \(saved)")
+        defer {
+            self.submitting = false
+            self.requestStoredExperienceRefreshAt = Date()
+        }
+        
+        do {
+            let saved = try await expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                    print("SAVE experience: \(saved)")
+                    
+            for var code in codes {
+                // temporarily hardcoding user id until sign in is implemented
+                code.createdById = 17
+                code.updatedById = 17
                 
-                let promises = codes.map(){ code -> Promise<VisualCode.PersistedType> in
-                    var code = code
-                    
-                    // temporarily hardcoding user id until sign in is implemented
-                    code.createdById = 17
-                    code.updatedById = 17
-                    
-                    code.url = JoliApi.BaseUrl.prod.rawValue.http.appendingPathComponent(expType.basePath).appendingPathComponent(saved.uuid).standardized.absoluteString
-                    code.experienceId = saved.id
-                    code.style = code.style ?? Style.appclip.rawValue
-                    
-                    return code.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                code.url = JoliApi.BaseUrl.prod.rawValue.http.appendingPathComponent(expType.basePath).appendingPathComponent(saved.uuid).standardized.absoluteString
+                code.experienceId = saved.id
+                code.style = code.style ?? Style.appclip.rawValue
+                let _ = try await code.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            }
+            
+            defer {
+                DispatchQueue.main.async(){
+                    self.experienceData = ExperienceData.fromExperienceData(saved, baseUrl: api.baseUrlHttp)
+                    onExperinceDataChanged(self.experienceData)
                 }
-                
-                return Promises.all(promises)
-                    .then(){ savedCodes -> StikrExperienceData in
-                        print("SAVED Code: \(savedCodes)")
-                        return saved
-                    }
-                    .catch(){ error in
-                        print("error saving code: \(error)")
-                    }
-                    .always {
-                        
-                        DispatchQueue.main.async(){
-                            self.experienceData = ExperienceData.fromExperienceData(saved, baseUrl: api.baseUrlHttp)
-                            onExperinceDataChanged(self.experienceData)
-                        }
-                    }
-                
             }
-            .catch() { error in
-                print("Save error: \(error)")
-            }
-            .always {
-                self.submitting = false
-                self.requestStoredExperienceRefreshAt = Date()
-            }
+                    
+                    
+            return saved
+        } catch {
+            print("Save error: \(error)")
+            throw error
+        }
+        
+        
     }
     
     @State public var scrollProxy: ScrollViewProxy? = nil
@@ -455,18 +448,16 @@ public struct CodeDesignerView: JoliView {
     
     @State public var visualCode = VisualCodeRecord()
     
-    func updateStoredExperiences(){
-        StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then(on: .main){ exps in
-                self.storedExperiences = exps
-                //print("[updateStoredExperiences] fetched experiences: \(exps)")
-            }
-            .catch(){ error in
-                print("Unable to fetch exps: \(error)")
-            }
-            .always(){
-                isRefreshingHistory = false
-            }
+    @MainActor
+    func updateStoredExperiences() async {
+        defer { isRefreshingHistory = false }
+        
+        do {
+            let exps = try await StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            self.storedExperiences = exps
+        } catch {
+            print("Unable to fetch exps: \(error)")
+        }
     }
     
     public var historyView: some View {
@@ -597,14 +588,14 @@ public struct CodeDesignerView: JoliView {
         return !subscriptionPurchases.isEmpty
     }
     
-    public func submitOrPurchase(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) {
+    public func submitOrPurchase(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) async {
         
         guard let expCls = selectedExperience else {
             return
         }
         
         guard appCoordinator.isPaymentEnabled, !self.hasSubscription, expData.uuid == nil else {
-            self.submitExperience(expData, codes: codes)
+            let _ = try? await self.submitExperience(expData, codes: codes)
             return
         }
         
@@ -612,16 +603,19 @@ public struct CodeDesignerView: JoliView {
             NavigationView(){
                 ExperiencePurchaseView() { _ in
                     self.appCoordinator.globalModalSubject.send(nil)
-                    self.submitExperience(expData, codes: codes)
-                        .always(){
-                            self.updateStoredExperiences()
-                            
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
-                                withAnimation(){
-                                    self.selectedTab = 0
-                                }
+                    
+                    defer {
+                        
+                        Task() { await self.updateStoredExperiences() }
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
+                            withAnimation(){
+                                self.selectedTab = 0
                             }
                         }
+                    }
+                    
+                    Task() { try? await self.submitExperience(expData, codes: codes) }
                 }
                 .navigationBarTitle(Text("Purchase \(expCls.title) Experience"), displayMode: .inline)
             }
@@ -688,7 +682,7 @@ public struct CodeDesignerView: JoliView {
                                 return
                             }
                             
-                            self.submitOrPurchase(expData, codes: [visualCode])
+                            Task() { await self.submitOrPurchase(expData, codes: [visualCode]) }
                             
                         } label: {
                             
@@ -745,7 +739,7 @@ public struct CodeDesignerView: JoliView {
                 
                 guard requestedAt != nil else { return }
                 
-                self.updateStoredExperiences()
+                Task() { await self.updateStoredExperiences() }
                 self.requestStoredExperienceRefreshAt = nil
             }
             .onAppear() {

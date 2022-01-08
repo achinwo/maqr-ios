@@ -386,10 +386,14 @@ struct ExperiencePurchaseView: JoliView {
             
             print("Falling back to database products...")
             
-            ProductSummary.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-                .then(on: .main){ summaries in
+            DispatchQueue.main.async() {
+                Task() {
+                    guard let summaries = try? await ProductSummary.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession) else { return }
+                    
                     self.products = summaries.sorted(by: { $0.id < $1.id }).compactMap(){ Product.fromProductSummary($0) }
                 }
+            }
+            
         }
         .onReceive(appCoordinator.storeKitHelper.$isLoadingProducts, assign: \.isLoadingProducts, target: self)
 //        .onReceive(appCoordinator.storeKitHelper.$products) { products in
