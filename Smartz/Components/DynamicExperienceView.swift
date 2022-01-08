@@ -58,23 +58,21 @@ struct DynamicExperienceView<PlaybackControllerType: PlaybackController>: JoliCo
         self.appLocation = location
     }
     
-    private func loadExperienceData() {
+    @MainActor
+    private func loadExperienceData() async {
         guard let expId = appLocation.experienceId else { return }
         
         self.loadingData = true
-        StikrExperienceData.all(where: [.uuid: expId as AnyObject], limit: 1, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            .then() { dataList in
-                guard let data = dataList.first else { return }
-                
-                self.experienceData = ExperienceData.fromExperienceData(data, baseUrl: api.baseUrlHttp)
-            }
-            .catch() { error in
-                print("[error] \(error)")
-                appCoordinator.globalErrorHandler()(error)
-            }
-            .always {
-                self.loadingData = false
-            }
+        defer { self.loadingData = false }
+        
+        do {
+            let dataList = try await StikrExperienceData.all(where: [.uuid: expId as AnyObject], limit: 1, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            guard let data = dataList.first else { return }
+            
+            self.experienceData = ExperienceData.fromExperienceData(data, baseUrl: api.baseUrlHttp)
+        } catch {
+            self.appCoordinator.globalErrorHandler()(error)
+        }
     }
     
     var contentView: some View {
@@ -86,7 +84,7 @@ struct DynamicExperienceView<PlaybackControllerType: PlaybackController>: JoliCo
                     .font(.title.weight(.light))
             } else {
                 Button(){
-                    self.loadExperienceData()
+                    Task() { await self.loadExperienceData() }
                 } label: {
                     Label("Tap to refresh", systemImage: "arrow.clockwise.circle.fill")
                 }
@@ -97,7 +95,7 @@ struct DynamicExperienceView<PlaybackControllerType: PlaybackController>: JoliCo
         .backgroundColor(.fixedWhite)
         .onAppear(){
             guard !loadingData else { return }
-            self.loadExperienceData()
+            Task() { await self.loadExperienceData() }
         }
     }
 }

@@ -8,7 +8,6 @@
 
 import Foundation
 import JoliCore
-import Promises
 import SwiftUI
 //import SharedUI
 import JoliApi
@@ -130,49 +129,45 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         ]
     }
     
-    public func save(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<PersistedType> {
+    @MainActor
+    public func save(baseUrl: URL? = nil, urlSession: URLSession? = nil) async throws -> PersistedType {
         
-        return self.uploadImages(baseUrl: baseUrl, urlSession: urlSession, on: on)
-            .then(on: .main) { urls -> Promise<PersistedType> in
+        let urls = await self.uploadImages(baseUrl: baseUrl, urlSession: urlSession)
                 
-                print("[uploadImages] URLs: \(urls)")
-                
-                for keyPath in Self.imageAttributes() {
-                    guard let currentValue = self[keyPath: keyPath],
-                          let newUrl = urls.first(where: { $0.original == currentValue })?.saved else { continue }
-                    
-                    self[keyPath: keyPath] = baseUrl?.appendingPathComponent("images").appendingPathComponent(newUrl.lastPathComponent)
-                    //print("[uploadImages] updated url: \(currentValue) -> \(self[keyPath: keyPath])")
-                }
-                
-                let enc = Musicroom.jsonEncoder()
-                guard let data = try? enc.encode(self) else {
-                    return Promise.init(NetworkError.badRequest("Unable to serialize \(Self.self) instance"))
-                }
-                
-                let urlComp = "/api/db/experiences"
-                let promise = HttpMethod.Fetch.post(url: urlComp,
-                                                    dataType: PersistedType.self,
-                                                    payload: .data(data),
-                                                    baseUrl: baseUrl,
-                                                    urlSession: urlSession,
-                                                    on: on)
-                
-                return promise.then(on: on ?? .main){ object -> PersistedType in
-                    DispatchQueue.main.async() {
-                        self.stored = object
-                        self.uuid = object.uuid
-                    }
-                    return object
-                }
-            }
+        print("[uploadImages] URLs: \(urls)")
+        
+        for keyPath in Self.imageAttributes() {
+            guard let currentValue = self[keyPath: keyPath],
+                  let newUrl = urls.first(where: { $0.original == currentValue })?.saved else { continue }
+            
+            self[keyPath: keyPath] = baseUrl?.appendingPathComponent("images").appendingPathComponent(newUrl.lastPathComponent)
+            //print("[uploadImages] updated url: \(currentValue) -> \(self[keyPath: keyPath])")
+        }
+        
+        let enc = Musicroom.jsonEncoder()
+        guard let data = try? enc.encode(self) else {
+            throw NetworkError.badRequest("Unable to serialize \(Self.self) instance")
+        }
+        
+        let urlComp = "/api/db/experiences"
+        let object = try await HttpMethod.Fetch.post(url: urlComp,
+                                            dataType: PersistedType.self,
+                                            payload: .data(data),
+                                            baseUrl: baseUrl,
+                                            urlSession: urlSession)
+            
+        self.stored = object
+        self.uuid = object.uuid
+        return object
     }
     
-    func uploadImages(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) -> Promise<[(original: URL, saved: URL)]> {
-        var promises: [Promise<(original: URL, saved: URL)>] = []
+    func uploadImages(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) async -> [(original: URL, saved: URL)] {
+        var imgs: [(URL, URL)] = []
         
         let imageUrls: [URL] = Self.imageAttributes().compactMap() { self[keyPath: $0] }
         
+        //let taskGroup = await withTaskGroup(of: (URL, URL).self, returning: [(original: URL, saved: URL)]) { grp in
+            
         for imgUrl in Set(imageUrls) {
             
             guard imgUrl.isFileURL else {
@@ -188,19 +183,17 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
                 }
                 
                 let ext: ImageExtension = imgUrl.pathExtension.lowercased() == "png" ? .png : .jpeg
-                let uploadPromise = JoliApi.upload(image, fileName: imgUrl.lastPathComponent, ext: ext, baseUrl: baseUrl, urlSession: urlSession, on: on)
-                    .then(on: on ?? .promises) { (original: imgUrl, saved: $0) }
                 
-                promises.append(uploadPromise)
+                let savedImgUrl = try await JoliApi.upload(image, fileName: imgUrl.lastPathComponent, ext: ext, baseUrl: baseUrl, urlSession: urlSession)
+                imgs.append((imgUrl, savedImgUrl))
                 
             } catch {
                 print("[uploadImages] error uploading \(imgUrl): \(error)")
             }
             
-            
         }
-        
-        return Promises.all(promises)
+       // }
+        return imgs
     }
     
     static let DEFAULT_BRAND_NAME = "SmartStikr"
