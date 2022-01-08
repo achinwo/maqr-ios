@@ -441,6 +441,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     }
     
     @discardableResult
+    @MainActor
     func fetchPlayroomByInviteId(_ inviteId: String) async throws -> Entitlement {
         let url = "/i/\(inviteId)"
         self.loadingView = true

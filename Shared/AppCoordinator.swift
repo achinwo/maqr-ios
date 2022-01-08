@@ -166,7 +166,9 @@ public final class AppCoordinator: ObservableObject {
     
     public func globalErrorHandler(file: String = #file, function: String = #function, line: Int = #line) -> (Error) -> Void {
         return { (error: Error) -> Void in
-            self.internalErrorSubject.send((error, file, function, line))
+            DispatchQueue.main.async() {
+                self.internalErrorSubject.send((error, file, function, line))
+            }
         }
     }
     
@@ -394,6 +396,7 @@ public final class AppCoordinator: ObservableObject {
     }
     
     @discardableResult
+    @MainActor
     public func voteTrack(_ track: QueuedTrack) async throws -> QueuedTrackVote {
         
         guard let hearts = self.userHeartsSubject.value,

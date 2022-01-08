@@ -188,6 +188,7 @@ public class Playroom: ObservableObject, Room, Equatable {
     }
     
     @discardableResult
+    @MainActor
     public func updateQueuedTracks(additions: [QueuedTrack] = []) async throws -> [QueuedTrack] {
         self.loadingRoomTracks = true
         
@@ -256,6 +257,7 @@ public class Playroom: ObservableObject, Room, Equatable {
         }
     }
     
+    @MainActor
     public func updateMembership() async {
         
         guard let userIds = entitlements?.compactMap({ $0.userId }), !userIds.isEmpty else { return }

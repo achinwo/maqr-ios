@@ -128,7 +128,6 @@
 		92595B4E253A1AD200609558 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
 		925B40352621B6A6009BD781 /* TrackSuggestionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925B40342621B6A6009BD781 /* TrackSuggestionsListView.swift */; };
 		925B40362621B6A6009BD781 /* TrackSuggestionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925B40342621B6A6009BD781 /* TrackSuggestionsListView.swift */; };
-		925C6FF324CB722A0016963F /* FBLPromises in Frameworks */ = {isa = PBXBuildFile; productRef = 925C6FF224CB722A0016963F /* FBLPromises */; };
 		9263B87924F080E6008962EC /* ListenTabbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9263B87724F080E6008962EC /* ListenTabbarView.swift */; };
 		92643780276F93A100E5F1B4 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 9264377F276F93A100E5F1B4 /* JoliApi */; };
 		92643781276F93EC00E5F1B4 /* Experience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CA268FAE06005643E1 /* Experience.swift */; };
@@ -646,7 +645,6 @@
 				9280818327046B5E001120ED /* NetworkImage in Frameworks */,
 				922BFD33263757F8007CAF36 /* AlertToast in Frameworks */,
 				92EDE41226193AE000688802 /* PartialSheet in Frameworks */,
-				925C6FF324CB722A0016963F /* FBLPromises in Frameworks */,
 				92A0713926ECB9D7006AAED1 /* LetterAvatarKit in Frameworks */,
 				9203B31924CB079200F465CC /* JoliApi in Frameworks */,
 			);
@@ -1187,7 +1185,6 @@
 			name = JoliPlayground;
 			packageProductDependencies = (
 				9203B31824CB079200F465CC /* JoliApi */,
-				925C6FF224CB722A0016963F /* FBLPromises */,
 				92EDE41126193AE000688802 /* PartialSheet */,
 				92EDE43926193DFA00688802 /* KeychainAccess */,
 				922BFD32263757F8007CAF36 /* AlertToast */,
@@ -2171,7 +2168,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = JoliClip/JoliClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2191,7 +2188,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.9;
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2210,7 +2207,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = JoliClip/JoliClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"JoliClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2225,7 +2222,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.9;
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2343,7 +2340,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2357,7 +2354,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.9;
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli;
 				PRODUCT_NAME = Joli;
@@ -2380,7 +2377,7 @@
 				CODE_SIGN_ENTITLEMENTS = Joli.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2393,7 +2390,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.9;
 				"OTHER_CFLAGS[arch=*]" = "-DTARGET_OS_IPHONE";
 				PRODUCT_BUNDLE_IDENTIFIER = app.jolimc.Joli;
 				PRODUCT_NAME = Joli;
@@ -3007,11 +3004,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 923C2B0224CC7506009E2380 /* XCRemoteSwiftPackageReference "PartialSheet" */;
 			productName = PartialSheet;
-		};
-		925C6FF224CB722A0016963F /* FBLPromises */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 925C6FF124CB722A0016963F /* XCRemoteSwiftPackageReference "promises" */;
-			productName = FBLPromises;
 		};
 		9264377F276F93A100E5F1B4 /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;

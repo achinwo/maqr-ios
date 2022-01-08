@@ -643,6 +643,7 @@ public extension AppClip {
     }
     // MARK: - authenticate
     @discardableResult
+    @MainActor
     func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool = true) async -> Auth? {
         
         defer {

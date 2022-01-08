@@ -98,7 +98,9 @@ struct JoliApp: AppClip {
     
     @State var auths: [Auth] = [] {
         didSet {
-            self.coordinator.authsSubject.send(auths)
+            DispatchQueue.main.async {
+                self.coordinator.authsSubject.send(auths)
+            }
         }
     }
     

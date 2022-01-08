@@ -142,6 +142,7 @@ struct ListenView: JoliView {
         }
     }
     
+    @MainActor
     private func loadLiveTracks() async {
         
         self.loadingLiveTracks = true
@@ -551,7 +552,7 @@ struct ListenView: JoliView {
                     self.refreshContent(reason: "swipe to refresh")
                 }
             }
-            .animation(.easeInOut)
+            //.animation(.easeInOut)
             .onAppear() {
                 self.scrollProxy = scrollProxy //
                 self.needsRefreshSubject.send("listenview appeared")
