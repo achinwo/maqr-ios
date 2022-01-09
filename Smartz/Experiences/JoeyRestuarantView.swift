@@ -316,8 +316,8 @@ struct RestaurantView: Experience, JoliView {
                     }
                     
                     Spacer()
-                    Link("Restaurant Menu Icon by Icons8", destination: URL(string: "https://icons8.com/icon/tmr075NtT7e6/restaurant-menu")!)
-                        .font(.caption)
+//                    Link("Restaurant Menu Icon by Icons8", destination: URL(string: "https://icons8.com/icon/tmr075NtT7e6/restaurant-menu")!)
+//                        .font(.caption)
                 }
                 .frame(minHeight: screenHeight * 1.2)
                 .padding(.bottom, max(100, safeAreaInsets.bottom))
@@ -376,17 +376,8 @@ struct RestaurantMenuButtonView: JoliView {
             
             appCoordinator.globalModalSubject.send(preview)
         } label: {
-            Label(){
-                Text("View our menu")
-                
-            } icon: {
-                Image("restaurant_menu")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 48)
-                
-            }
-            .font(.title3)
+            Label("View our menu", systemImage: "menucard")
+                .font(.title3)
         }
     }
     

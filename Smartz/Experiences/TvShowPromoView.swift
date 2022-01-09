@@ -310,8 +310,7 @@ public struct TvShowPromoView: Experience, JoliView {
                     .padding(.bottom)
                     
                     Spacer()
-//                    Link("Restaurant Menu Icon by Icons8", destination: URL(string: "https://icons8.com/icon/tmr075NtT7e6/restaurant-menu")!)
-//                        .font(.caption)
+
                 }
                 .frame(minHeight: screenHeight * 1.6)
                 .padding(.bottom, max(100, safeAreaInsets.bottom))
