@@ -137,6 +137,15 @@
         }
       },
       {
+        "package": "SpotifyiOS",
+        "repositoryURL": "https://github.com/achinwo/SpotifyiOS.git",
+        "state": {
+          "branch": null,
+          "revision": "4b2cd473720227553b64bd935cde290a2c65fd72",
+          "version": "1.3.3"
+        }
+      },
+      {
         "package": "Starscream",
         "repositoryURL": "https://github.com/daltoniam/Starscream.git",
         "state": {

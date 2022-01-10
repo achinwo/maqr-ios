@@ -9,6 +9,7 @@
 import Foundation
 import JoliCore
 import Combine
+import SpotifyiOS
 
 public struct SpotifyPlaybackState: PlaybackState, CustomStringConvertible, CustomDebugStringConvertible {
     

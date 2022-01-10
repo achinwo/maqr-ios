@@ -34,8 +34,6 @@
 		920958AB25601EE10014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		9209B1E12629E32500786A6A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9209B1E02629E32500786A6A /* LaunchScreen.storyboard */; };
 		9217905026C9832A009FC4CE /* VisualCodeDownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9217904F26C9832A009FC4CE /* VisualCodeDownloadView.swift */; };
-		921ADE92265E759E0023DC87 /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
-		921ADE93265E759E0023DC87 /* SpotifyiOS.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* TvShowPromoView.swift */; };
 		921C300D2694B29400527D39 /* TvShowPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* TvShowPromoView.swift */; };
 		921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */; };
@@ -59,8 +57,6 @@
 		921F6C4726BEA1610061D236 /* UIImage+CVPixelBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4626BEA1610061D236 /* UIImage+CVPixelBuffer.swift */; };
 		921F6C4926BEA1C00061D236 /* Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4826BEA1C00061D236 /* Math.swift */; };
 		922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922223E226A2E368007BD0D3 /* CodeDesignerView.swift */; };
-		922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; };
-		922260F9265E72F00064BC6F /* SpotifyiOS.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 922260F5265E72D50064BC6F /* SpotifyiOS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
 		9228F86C26C07A310053DC04 /* ExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9228F86B26C07A310053DC04 /* ExperienceData.swift */; };
 		9228F86D26C07A310053DC04 /* ExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9228F86B26C07A310053DC04 /* ExperienceData.swift */; };
@@ -245,6 +241,7 @@
 		928E7B532704A6DB0052E5A9 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		928E7B542704A70F0052E5A9 /* BaseDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928E7B4E2704A4B80052E5A9 /* BaseDestination.swift */; };
 		928E7B552704A7110052E5A9 /* BaseDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928E7B4E2704A4B80052E5A9 /* BaseDestination.swift */; };
+		928F078F278B9FA90032BFAA /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = 928F078E278B9FA90032BFAA /* SpotifyiOS */; };
 		928F75F424F7B13400CF708B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F75F324F7B13400CF708B /* SearchView.swift */; };
 		928F75F524F7B13400CF708B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F75F324F7B13400CF708B /* SearchView.swift */; };
 		929BF21A275D411600F850F7 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9217905526CC51DA009FC4CE /* MessageView.swift */; };
@@ -434,7 +431,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				921ADE93265E759E0023DC87 /* SpotifyiOS.xcframework in Embed Frameworks */,
 				9274A81524CDB41500B45EDF /* JoliPlayground.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -467,7 +463,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */,
-				922260F9265E72F00064BC6F /* SpotifyiOS.xcframework in CopyFiles */,
 				923C2B0624CC752E009E2380 /* JoliPlayground.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -639,6 +634,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				928A392A24E9EB5A00A029A1 /* MapKit.framework in Frameworks */,
+				928F078F278B9FA90032BFAA /* SpotifyiOS in Frameworks */,
 				9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */,
 				92EDE43A26193DFA00688802 /* KeychainAccess in Frameworks */,
 				9280818327046B5E001120ED /* NetworkImage in Frameworks */,
@@ -653,7 +649,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				921ADE92265E759E0023DC87 /* SpotifyiOS.xcframework in Frameworks */,
 				9274A81424CDB41500B45EDF /* JoliPlayground.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -683,7 +678,6 @@
 			files = (
 				92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */,
 				923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */,
-				922260F8265E72F00064BC6F /* SpotifyiOS.xcframework in Frameworks */,
 				92E62CFF2701D169002008A0 /* GradientLoadingBar in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1188,6 +1182,7 @@
 				92A0713826ECB9D7006AAED1 /* LetterAvatarKit */,
 				9280818227046B5E001120ED /* NetworkImage */,
 				92EBAF52278967C400478958 /* JoliApi */,
+				928F078E278B9FA90032BFAA /* SpotifyiOS */,
 			);
 			productName = JoliPlayground;
 			productReference = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */;
@@ -1444,6 +1439,7 @@
 				927A7B20276FE7A0007105CC /* XCRemoteSwiftPackageReference "Sourceful" */,
 				9278E2F8278A073D00868722 /* XCRemoteSwiftPackageReference "Version" */,
 				9278E2FB278A076600868722 /* XCRemoteSwiftPackageReference "Starscream" */,
+				928F078D278B9FA90032BFAA /* XCRemoteSwiftPackageReference "SpotifyiOS" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -2924,6 +2920,14 @@
 				minimumVersion = 3.1.1;
 			};
 		};
+		928F078D278B9FA90032BFAA /* XCRemoteSwiftPackageReference "SpotifyiOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/achinwo/SpotifyiOS.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.3.3;
+			};
+		};
 		929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vpeschenkov/LetterAvatarKit.git";
@@ -3044,6 +3048,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9280818127046B5E001120ED /* XCRemoteSwiftPackageReference "NetworkImage" */;
 			productName = NetworkImage;
+		};
+		928F078E278B9FA90032BFAA /* SpotifyiOS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 928F078D278B9FA90032BFAA /* XCRemoteSwiftPackageReference "SpotifyiOS" */;
+			productName = SpotifyiOS;
 		};
 		92A0713826ECB9D7006AAED1 /* LetterAvatarKit */ = {
 			isa = XCSwiftPackageProductDependency;

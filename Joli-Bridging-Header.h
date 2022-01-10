@@ -7,11 +7,11 @@
 //
 #import "TargetConditionals.h"
 
-#if TARGET_OS_IPHONE
-#import <SpotifyiOS/SpotifyiOS.h>
-#else
+//#if TARGET_OS_IPHONE
+//#import <SpotifyiOS/SpotifyiOS.h>
+//#else
 //
-#endif
+//#endif
 
 
 #ifndef Joli_Bridging_Header_h

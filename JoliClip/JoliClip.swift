@@ -11,6 +11,7 @@ import JoliPlayground
 import JoliCore
 import Combine
 import JoliApi
+import SpotifyiOS
 //import os
 import Version
 import KeychainAccess
