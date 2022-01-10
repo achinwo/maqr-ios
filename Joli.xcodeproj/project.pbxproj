@@ -2943,8 +2943,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/achinwo/SpotifyiOS.git";
 			requirement = {
-				kind = exactVersion;
-				version = 1.3.3;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.4;
 			};
 		};
 		929BD6D524C4DF9400446DBE /* XCRemoteSwiftPackageReference "LetterAvatarKit" */ = {
