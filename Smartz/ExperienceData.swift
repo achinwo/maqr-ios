@@ -19,6 +19,7 @@ public protocol ExperienceDataItem: Codable {
     var duration: Int? { get set }
     var imageName: String? { get set }
     var isOptional: Bool? { get set }
+    var itemNo: Int? { get set }
     var itemGrouping: String? { get set }
     var itemSubgrouping: String? { get set }
     var experienceItemType: ExperienceItemType { get set }
@@ -103,6 +104,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         public var isOptional: Bool?
         public var itemGrouping: String?
         public var itemSubgrouping: String?
+        public var itemNo: Int?
         public var spicy: Spicy?
         public var subtitle: String?
         public var title: String?
@@ -221,6 +223,9 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Brand Name", description = "Name of your company or brand", default = ""Your Brand""
     @Published var brandName: String
     
+    // sourcery: title = "Brand Email", description = "Contact email for enquiries and support", default = ""Your Brand""
+    @Published var brandContactEmail: String?
+    
     // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience", default = ""Describe \nyour brand \nexperience""
     @Published var landingPageText: MultilineString
     
@@ -232,6 +237,15 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     // sourcery: title = "Instagram", description = "Instagram account username", default = ""smartstikr""
     @Published var socialInstagramUsername: String?
+    
+    // sourcery: title = "Instagram Tag", description = "Instagram tag", default = ""smartstikr""
+    @Published var socialInstagramTag: String?
+    
+    // sourcery: title = "Facebook", description = "Facebook Page", default = ""smartstikr""
+    @Published var socialFacebookPage: String?
+    
+    // sourcery: title = "TikTok", description = "TikTok username", default = ""smartstikr""
+    @Published var socialTiktokUsername: String?
     
     // sourcery: title = "Release Date", description = "Product release date", default = "Date().advanced(by: 604800)"
     @Published var releaseDate: Date?
@@ -289,9 +303,15 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         res.productImageUrl = URL.fromString(experienceData.productImageUrl)
         res.productDescription = experienceData.productDescription
         
+        res.brandContactEmail = experienceData.brandContactEmail
+        
         res.brandName = experienceData.brandName
         res.landingPageText = experienceData.landingPageText ?? res.landingPageText
         res.socialInstagramUsername = experienceData.socialInstagramUsername
+        
+        res.socialInstagramTag = experienceData.socialInstagramTag
+        res.socialFacebookPage = experienceData.socialFacebookPage
+        res.socialTiktokUsername = experienceData.socialTiktokUsername
         
         res.releaseDate = experienceData.releaseDate
         res.releasePlatformName = experienceData.releasePlatformName
@@ -335,10 +355,14 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         backgroundImageUrl = try container.decode(URL?.self, forKey: .backgroundImageUrl)
         productImageUrl = try container.decode(URL?.self, forKey: .productImageUrl)
         brandName = try container.decode(String.self, forKey: .brandName)
+        brandContactEmail = try container.decode(String?.self, forKey: .brandContactEmail)
         landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
         productName = try container.decode(String?.self, forKey: .productName)
         productDescription = try container.decode(MultilineString?.self, forKey: .productDescription)
         socialInstagramUsername = try container.decode(String?.self, forKey: .socialInstagramUsername)
+        socialInstagramTag = try container.decode(String?.self, forKey: .socialInstagramTag)
+        socialFacebookPage = try container.decode(String?.self, forKey: .socialFacebookPage)
+        socialTiktokUsername = try container.decode(String?.self, forKey: .socialTiktokUsername)
         releaseDate = try container.decode(Date?.self, forKey: .releaseDate)
         releasePlatformName = try container.decode(String?.self, forKey: .releasePlatformName)
         releasePlatformLogoUrl = try container.decode(URL?.self, forKey: .releasePlatformLogoUrl)

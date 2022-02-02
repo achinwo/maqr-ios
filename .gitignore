@@ -6,7 +6,7 @@
 build/
 DerivedData/
 Generated/
-
+.vscode
 .DS_Store
 **/.DS_Store
 Joli.xcodeproj/xcuserdata/
