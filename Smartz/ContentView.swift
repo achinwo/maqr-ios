@@ -391,7 +391,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     Button(){
                         print("submitted help!")
                         let subject = "SmartStikr iOS App Feedback - \(AppCoordinator.version)"
-                        self.appCoordinator.mailOptions = .init(subject: subject, recipients: [Strings.appSupportEmail], body: feebackText)
+                        self.appCoordinator.modal.presentMailComposer(.init(subject: subject, recipients: [Strings.appSupportEmail], body: feebackText))
                     } label: {
                         HStack(){
                             Spacer()
@@ -686,11 +686,6 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
             }
         )
         .onAppear(){
-            self.videoUrl = Bundle.main.url(forResource: "demo_sise_intro", withExtension: "mov")
-            
-            guard let url = self.videoUrl else { return }
-            
-            //self.player = AVPlayer(url: url)
         }
     }
     

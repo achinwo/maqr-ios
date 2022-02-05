@@ -26,6 +26,76 @@ public enum AuthenticationFlow {
 }
 
 
+public class ModalCoordinator {
+    
+    public typealias CloseCallback = () -> Void
+    
+    public enum Item {
+        case view(AppPreview)
+        case mailOptions(MailView.Options)
+    }
+    
+    public struct Modal: Identifiable, Equatable {
+        
+        public static func == (lhs: ModalCoordinator.Modal, rhs: ModalCoordinator.Modal) -> Bool {
+            lhs.id == rhs.id
+        }
+        
+        public let id: UUID = UUID()
+        public let item: Item
+        public let onClose: () -> Void
+    }
+    
+    private var modal: Modal? = nil {
+        didSet {
+            self.publisher.send(modal)
+        }
+    }
+    
+    public let publisher = PassthroughSubject<Modal?, Never>()
+    
+    private var pendingCompletions: [(() throws -> Void)] = []
+
+    public func present(onClose: (() -> Void)? = nil, _ content: () -> AppPreview) {
+        
+        self.modal = .init(item: Item.view(content()), onClose: { [weak self] in
+            self?.modal = nil
+            onClose?()
+            
+            guard let self = self, !self.pendingCompletions.isEmpty else { return }
+            
+            for closure in self.pendingCompletions {
+                try? closure()
+            }
+            
+            self.pendingCompletions = []
+        })
+    }
+    
+    public func presentMailComposer(_ options: MailView.Options, onClose: (() -> Void)? = nil) {
+        
+        self.modal = .init(item: Item.mailOptions(options), onClose: {
+            self.modal = nil
+            onClose?()
+        })
+    }
+    
+    public func close(_ completion: (() -> Void)? = nil) {
+        
+        self.publisher.send(nil)
+        
+        guard let completion = completion, self.modal != nil else {
+            print("[CLOSE] modal is nil")
+            self.modal?.onClose()
+            return
+        }
+        
+        print("[CLOSE] modal is NOT nil")
+        self.pendingCompletions.append(completion)
+    }
+    
+}
+
 // MARK: - AppCoordinator
 public final class AppCoordinator: ObservableObject {
     
@@ -43,7 +113,7 @@ public final class AppCoordinator: ObservableObject {
     private var cancellableSet: Set<AnyCancellable> = []
     
     lazy var imageLoader: NetworkImageLoader = {
-        let memoryCapacity = 10 * 1024 * 1024
+        let memoryCapacity = 25 * 1024 * 1024
         let diskCapacity = 100 * 1024 * 1024
         
         let configuration = api.urlSession.configuration
@@ -111,7 +181,7 @@ public final class AppCoordinator: ObservableObject {
     public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
     public let queueRequestedSubject = CurrentValueSubject<(uri: String, room: Musicroom)?, Never>(nil)
     
-    public let globalModalSubject = PassthroughSubject<AppPreview?, Never>()
+    public let modal = ModalCoordinator() //PassthroughSubject<AppPreview?, Never>()
     public let globalPreviewSubject = PassthroughSubject<AppPreview?, Never>()
     
     public let globalAlertSubject = PassthroughSubject<Alert, Never>()
@@ -147,7 +217,6 @@ public final class AppCoordinator: ObservableObject {
     
     public var appViewScrollPosition = PassthroughSubject<ScrollPosition, Never>()
     
-    @Published public var mailOptions: MailView.Options? = nil
     @Published var refreshingDevices = false
     
     private var localPlaybackConnect: (deferred: Deferred<Future<ConnectionState, Error>>, createdAt: Date)? = nil
@@ -329,20 +398,6 @@ public final class AppCoordinator: ObservableObject {
                         self.globalErrorHandler()(error)
                     }
                 }
-                
-//                guard let (track, playingState) = self.playingSubject.value, playingState.deviceUid != device.id else {
-//
-//                    return
-//                }
-//
-//                self.play(track, positionMs: playingState.progressMs, device: device)
-//                    .then() { _ in
-//                        print("[AppCordinator] auto switching device: \(playingState.deviceUid) -> \(device.id)")
-//                        setVolume()
-//                    }
-//                    .catch() { error in
-//                        print("[AppCoord] auto switching device: \(error)")
-//                    }
             }
         
         let notificationCenter = NotificationCenter.default

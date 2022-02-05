@@ -602,7 +602,7 @@ public struct CodeDesignerView: JoliView {
         let view: AppPreview = .view2(){
             NavigationView(){
                 ExperiencePurchaseView() { _ in
-                    self.appCoordinator.globalModalSubject.send(nil)
+                    self.appCoordinator.modal.close()
                     
                     defer {
                         
@@ -624,7 +624,9 @@ public struct CodeDesignerView: JoliView {
             .eraseToAnyView()
         }
         
-        self.appCoordinator.globalModalSubject.send(view)
+        self.appCoordinator.modal.present() {
+            view
+        }
     }
     
     public var contentView: some View {

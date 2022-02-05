@@ -391,14 +391,14 @@ struct TvShowCastButtonView: JoliView {
     var contentView: some View {
         Button(){
             
-            let preview: AppPreview = .view2(){
-                TvShowCastView(menu: menu)
-                    .frame(width: screenWidth)
-                    //.frame(minHeight: screenHeight - safeAreaInsets.top)
-                    .eraseToAnyView()
+            appCoordinator.modal.present() {
+                .view2(){
+                    TvShowCastView(menu: menu)
+                        .frame(width: screenWidth)
+                        //.frame(minHeight: screenHeight - safeAreaInsets.top)
+                        .eraseToAnyView()
+                }
             }
-            
-            appCoordinator.globalModalSubject.send(preview)
         } label: {
             Label(){
                 Text(" Meet The Cast")

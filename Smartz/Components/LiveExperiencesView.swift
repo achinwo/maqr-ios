@@ -123,9 +123,8 @@ public struct LiveExperiencesView: JoliView {
             .toolbar(id: "experience-actions-\(exp.uuid)") {
                 ToolbarItem(id: "share-experience-\(exp.uuid)", placement: .navigationBarLeading, showsByDefault: true){
                     Button(){
-                        appCoordinator.globalModalSubject.send(nil)
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7){
+                        appCoordinator.modal.close() {
+                            print("Presenting share view!")
                             appCoordinator.share(text: "Here's an interactive experience for you! \(url.absoluteString)", url: url){ sent in
                                 print("shared \(exp.uuid): \(sent)")
                             }
@@ -167,13 +166,13 @@ public struct LiveExperiencesView: JoliView {
                     if let (img, url) = self.makeQrCode(exp) {
                         
                         Button(){
-                            let preview: AppPreview = .view2(){
-                                prepareCodeModal(exp, img, url)
-                                    .frame(width: screenWidth)
-                                    .eraseToAnyView()
+                            appCoordinator.modal.present() {
+                                return .view2(){
+                                    prepareCodeModal(exp, img, url)
+                                        .frame(width: screenWidth)
+                                        .eraseToAnyView()
+                                }
                             }
-                            
-                            appCoordinator.globalModalSubject.send(preview)
                         } label: {
                             Label("View Code", systemImage: "qrcode").padding([.horizontal, .bottom]).padding(.top, 2)
                         }

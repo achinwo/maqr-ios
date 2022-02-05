@@ -229,7 +229,7 @@ public struct MealboxView: Experience, JoliView {
                     Button(){
                         print("submitted help!")
                         let subject = "Sísè Food Help - \(AppCoordinator.version)"
-                        self.appCoordinator.mailOptions = .init(subject: subject, recipients: ["order@sisefood.com"], body: helpText)
+                        self.appCoordinator.modal.presentMailComposer(.init(subject: subject, recipients: ["order@sisefood.com"], body: helpText))
                     } label: {
                         HStack(){
                             Spacer()

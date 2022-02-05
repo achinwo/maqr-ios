@@ -368,13 +368,13 @@ struct RestaurantMenuButtonView: JoliView {
                 return
             }
             
-            let preview: AppPreview = .view2(){
-                RestaurantMenuView(menu: menu)
-                    .frame(width: screenWidth)
-                    .eraseToAnyView()
+            appCoordinator.modal.present() {
+                return .view2(){
+                    RestaurantMenuView(menu: menu)
+                        .frame(width: screenWidth)
+                        .eraseToAnyView()
+                }
             }
-            
-            appCoordinator.globalModalSubject.send(preview)
         } label: {
             Label("View our menu", systemImage: "menucard")
                 .font(.title3)
