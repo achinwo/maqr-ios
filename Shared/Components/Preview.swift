@@ -79,7 +79,24 @@ struct SignInSheetView: JoliView {
     }
 }
 
-public enum AppPreview: View, Equatable {
+public enum AppPreview: View, Equatable, Identifiable {
+    
+    public var id: String {
+        switch self {
+            case .userAccount:
+                return "userAccount"
+            case .userProfile(let userIdentifiable):
+                return "\(userIdentifiable.emailAddress.email ?? "<anonymous>")"
+            case .track(let track):
+                return "\(track.trackId)"
+            case .event(let event, let optional, _):
+                return "\(event.id);\(optional?.id.description ?? "<no entitlement>")"
+            case .playroomCreate:
+                return String(describing: PlayroomCreateView.self)
+            default:
+                return "\(String(describing: self)):\(UUID().description)"
+        }
+    }
     
     public static func == (lhs: AppPreview, rhs: AppPreview) -> Bool {
         switch (lhs, rhs) {

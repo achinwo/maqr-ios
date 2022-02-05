@@ -16,7 +16,12 @@ import MessageUI
 
 import AVFoundation
 
-public struct MailViewOptions: Equatable {
+public struct MailViewOptions: Equatable, Identifiable {
+    
+    public var id: String {
+        return "subject:\(subject);recipeints:\(self.recipients.description);body:\(body ?? "<empty>")"
+    }
+    
     
     public init(subject: String, recipients: [String], body: String? = nil) {
         self.subject = subject
