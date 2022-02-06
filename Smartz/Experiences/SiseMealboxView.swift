@@ -135,7 +135,7 @@ public struct MealboxView: Experience, JoliView {
     enum Tab: Int, Identifiable, CaseIterable {
         case information
         case steps
-        case gallery
+        //case gallery
         case help
         
         var id: Int {
@@ -144,8 +144,8 @@ public struct MealboxView: Experience, JoliView {
         
         var label: String {
             switch self {
-                case .gallery:
-                    return "Gallery"
+//                case .gallery:
+//                    return "Gallery"
                 case .help:
                     return "Help"
                 case .steps:
@@ -157,8 +157,8 @@ public struct MealboxView: Experience, JoliView {
         
         var color: Color {
             switch self {
-                case .gallery:
-                    return .orange
+//                case .gallery:
+//                    return .orange
                 case .help:
                     return Color.systemIndigo
                 case .steps:
@@ -170,8 +170,8 @@ public struct MealboxView: Experience, JoliView {
         
         var emoji: (default: String, active: String) {
             switch self {
-                case .gallery:
-                    return (default: "photo.on.rectangle", active: "photo.on.rectangle.angled")
+//                case .gallery:
+//                    return (default: "photo.on.rectangle", active: "photo.on.rectangle.angled")
                 case .help:
                     return (default: "questionmark.circle", active: "questionmark.circle.fill")
                 case .steps:
@@ -256,8 +256,9 @@ public struct MealboxView: Experience, JoliView {
                 .overlay(
                     GeometryReader(){ _ in
                         VStack(){
-                            Image("sise_logo")
-                                .resizable()
+                            NetworkImage(url: dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl) {
+                                    ProgressView()
+                                }
                                 .frame(width: screenWidth / 6, height: screenWidth / 6)
                                 .background(Color.white)
                                 .clipShape(Circle())
@@ -287,9 +288,14 @@ public struct MealboxView: Experience, JoliView {
             .padding(.vertical, max(40, safeAreaInsets.top) * 2)
         }
         .frame(width: screenWidth, height: screenHeight)
-        .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
+        .background(
+            Group(){
+                NetworkImage(url: dataModel?.backgroundImageUrl){
+                    Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                }
+            }
         )
         .simultaneousGesture(
             TapGesture()
@@ -327,14 +333,19 @@ public struct MealboxView: Experience, JoliView {
 
                         HStack(){
                             NetworkImage(string: ing.imageName){
-                                EmptyView()
+                                ProgressView()
                             }
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 100, height: 100)
                                 //.resizable()
                             VStack(alignment: .leading){
                                 Text(ing.title ?? "").font(.subheadline)
-                                Text(ing.subtitle ?? "").font(.caption).foregroundColor(.secondaryLabel)
+                                Text(ing.subtitle ?? "")
+                                    .font(.caption)
+                                    .foregroundColor(.secondaryLabel)
+                                    .multilineTextAlignment(.leading)
+                                    .lineLimit(nil)
+                                    .fixedSize(horizontal: false, vertical: true)
                                     //.fixedSize(horizontal: false, vertical: true)
                             }
                         }
@@ -458,7 +469,7 @@ public struct MealboxView: Experience, JoliView {
                         VStack(){
                             //Image("food_ofada").data(url: dataModel?.productImageUrl ?? URL(string: "https://picsum.photos/200")!)
                             NetworkImage(url: dataModel?.productImageUrl ?? dataModelDefault.productImageUrl){
-                                    EmptyView()
+                                    ProgressView()
                                 }
                                 //.resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -498,6 +509,7 @@ public struct MealboxView: Experience, JoliView {
             .navigationTitle("Preparing \(dataModel?.productName ?? dataModelDefault.productName)")
             
         }
+        .frame(maxWidth: screenWidth)
         .onReceive(self.autoResetting) { value in
             self.tappedStepId = value
         }
@@ -511,6 +523,31 @@ public struct MealboxView: Experience, JoliView {
         
         return ForEach(Array(steps.enumerated()), id: \.element) { itm in
             let isChecked = self.lastStepId >= itm.offset
+            
+            let onCheck = {
+                self.lastStepId = self.lastStepId == 0 && itm.offset == 0 ? -1 : itm.offset
+                
+                let feeback: FeedbackStyle = self.lastStepId == steps.count - 1 ? .heavy : .light
+                
+                withImpact(feeback, animated: .easeInOut){
+                    self.autoResetting.send(itm.offset)
+                    
+                    guard self.lastStepId == steps.count - 1 else { return }
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3){
+                        withAnimation(){
+                            self.completed = true
+                            
+                            guard selectedTab == .steps else { return }
+                            
+                            proxy.scrollTo("share-section", anchor: .center)
+                        }
+                    }
+                    
+                    self.presentToast("All done!", subTitle: "Enoy your meal", type: .image("confetti", .clear), displayMode: .alert) { _ in }
+                }
+                
+            }
             
             HStack(alignment: .top){
                 VStack(){
@@ -528,6 +565,15 @@ public struct MealboxView: Experience, JoliView {
                             .font(.body)
                             .fixedSize(horizontal: false, vertical: true)
                             .foregroundColor(isChecked ? .secondaryLabel : .primary)
+                    }
+                    
+                    if let subtitle = itm.element.subtitle, itm.offset == self.lastStepId + 1 {
+                        Text(subtitle)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .font(.caption)
+                            .foregroundColor(.secondaryLabel)
+                            .padding(.bottom, 1)
                     }
                     
                     HStack() {
@@ -561,34 +607,11 @@ public struct MealboxView: Experience, JoliView {
                 
                 Spacer()
                 
-                Button() {
-                    self.lastStepId = self.lastStepId == 0 && itm.offset == 0 ? -1 : itm.offset
-                    
-                    let feeback: FeedbackStyle = self.lastStepId == steps.count - 1 ? .heavy : .light
-                    
-                    withImpact(feeback, animated: .easeInOut){
-                        self.autoResetting.send(itm.offset)
-                        
-                        guard self.lastStepId == steps.count - 1 else { return }
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3){
-                            withAnimation(){
-                                self.completed = true
-                                
-                                guard selectedTab == .steps else { return }
-                                
-                                proxy.scrollTo("share-section", anchor: .center)
-                            }
-                        }
-                        
-                        self.presentToast("All done!", subTitle: "Enoy your meal", type: .image("confetti", .clear), displayMode: .alert) { _ in }
-                    }
-                    
-                } label: {
+                Button(action: onCheck) {
                     let active = self.tappedStepId == itm.offset
                     Image(systemName: isChecked ? "checkmark.circle" : "circle.dashed")
                         .foregroundColor(isChecked ? .green : Color.secondaryLabel)
-                        .padding()
+                        .padding(.horizontal)
                         .font(.title.weight(.light))
                         .scaleEffect(x: active ? 1.5 : 1, y: active ? 1.5 : 1)
                         .animation(.easeInOut)
@@ -596,6 +619,7 @@ public struct MealboxView: Experience, JoliView {
                 
             }
             .padding([.bottom, .horizontal])
+            .onTapGesture(perform: onCheck)
         }
     }
     
@@ -745,9 +769,11 @@ public struct MealboxView: Experience, JoliView {
             Group(){
                 if self.selectedTab == .steps {
                     stepsView
-                } else if self.selectedTab == .gallery {
-                    galleryView
-                } else if self.selectedTab == .information {
+                }
+//                else if self.selectedTab == .gallery {
+//                    galleryView
+//                }
+                else if self.selectedTab == .information {
                     infoView
                 } else if self.selectedTab == .help {
                     helpView
