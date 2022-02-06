@@ -30,18 +30,9 @@ public class ModalCoordinator {
     
     public typealias CloseCallback = () -> Void
     
-    public enum Item: Identifiable {
+    public enum Item {
         case view(AppPreview)
         case mailOptions(MailView.Options)
-        
-        public var id: String {
-            switch self {
-                case .view(let appPreview):
-                    return appPreview.id
-                case .mailOptions(let opts):
-                    return opts.id
-            }
-        }
     }
     
     public struct Modal: Identifiable, Equatable {

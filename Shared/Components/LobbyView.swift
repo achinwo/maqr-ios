@@ -216,7 +216,7 @@ public struct LobbyView: JoliView {
                     
                     Button(){
                         let subject = "Joli iOS App Feedback - \(AppCoordinator.version)"
-                        self.appCoordinator.mailOptions = .init(subject: subject, recipients: [Strings.appSupportEmail])
+                        self.appCoordinator.modal.presentMailComposer(.init(subject: subject, recipients: [Strings.appSupportEmail]))
                     } label: {
                         Text("Submit").foregroundColor(.systemIndigo)
                     }

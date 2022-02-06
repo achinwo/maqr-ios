@@ -59,8 +59,12 @@ struct SmartzClipApp: AppClip {
     @State var currentUser: User? = nil
     let videoController = VideoPlaybackController()
     
-    @State var isSheetPresented: Bool = false
-    @State var result: Result<MFMailComposeResult, Error>? = nil
+    @State var mailComposeResult: Result<MFMailComposeResult, Error>? = nil
+    
+    @State var modalItem: ModalCoordinator.Modal? = nil
+    @State var modalItemOnClose: ModalCoordinator.CloseCallback? = nil
+    
+    var modalItemBinding: Binding<ModalCoordinator.Modal?> { $modalItem }
     
     init() {
         //let a = AttributedString()
@@ -83,8 +87,6 @@ struct SmartzClipApp: AppClip {
         self.coordinator.api = api
     }
     
-    @State var modalItem: ModalCoordinator.Modal? = nil
-    
     var contentView: some View {
         Group(){
                 if case let AppLocation.product(storeId, _) = currentLocation,
@@ -104,46 +106,25 @@ struct SmartzClipApp: AppClip {
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true
             }
-            .sheet(item: self.$modalItem){
-                defer { self.modalItem = nil }
-                
-                self.modalItem?.onClose()
-            } content: { modalItem in
-                
-                if case let .mailOptions(opts) = modalItem.item {
-                    MailView(result: $result, subject: opts.subject, recipients: opts.recipients, body: opts.body)
-                } else if case let .view(view) = modalItem.item {
-                    GeometryReader() { proxy in
-                        AppPreviewView(preview: .constant(view), currentUser: self.$currentUser, animation: namespace)
-                            .frame(width: proxy.size.width, height: proxy.size.height + proxy.safeAreaInsets.bottom)
-                            .animation(.spring())
-                            .edgesIgnoringSafeArea([.bottom])
-                    }
-                    .environmentObject(coordinator)
-                }
-            }
-            .onReceive(coordinator.modal.publisher) { modalItem in
-                
-                guard let modalItem = modalItem else {
-                    self.modalItem = nil
-                    return
-                }
-                
-                if case let .mailOptions(opts) = modalItem.item, !MFMailComposeViewController.canSendMail() {
-                    
-                    guard let encoded = opts.subject.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
-                          let validUrl = URL(string: "mailto:\(Strings.appSupportEmail)?subject=\(encoded)") else {
-                              coordinator.serverLogDestination.send(.error, msg: "[\(Self.self)] unable to send mail: subject=\(opts.subject)",
-                                                                    thread: Thread.current.debugDescription, file: #file, function: #function, line: #line)
-                              return
-                          }
-                    
-                    UIApplication.shared.open(validUrl)
-                } else {
-                    self.modalItem = modalItem
-                }
-            }
     }
+    
+    func modalView(_ item: ModalCoordinator.Item) -> some View {
+        Group(){
+            if case let .mailOptions(opts) = item {
+                MailView(result: self.$mailComposeResult, subject: opts.subject, recipients: opts.recipients, body: opts.body)
+            } else if case let .view(view) = item {
+                GeometryReader() { proxy in
+                    AppPreviewView(preview: .constant(view), currentUser: self.$currentUser, animation: namespace)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .animation(.spring())
+                        .edgesIgnoringSafeArea([.bottom])
+                        //.background(Color.yellow)
+                }
+                .environmentObject(coordinator)
+            }
+        }
+    }
+    
 }
 
 extension Strings {

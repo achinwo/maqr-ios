@@ -15,6 +15,7 @@ import AuthenticationServices
 import Version
 import KeychainAccess
 import AlertToast
+import MessageUI
 
 #if os(macOS)
 import AppKit
@@ -583,6 +584,7 @@ private extension UIEdgeInsets {
 
 public protocol AppClip: App {
     associatedtype Content: View
+    associatedtype ModalView: View
     
     var env: JoliApi.Environment { get }
     var contentView: Content { get }
@@ -597,6 +599,12 @@ public protocol AppClip: App {
     var window: UIWindow? { get nonmutating set }
     var safeAreaInsets: EdgeInsets { get nonmutating set }
     
+    var mailComposeResult: Result<MFMailComposeResult, Error>? { get nonmutating set }
+    
+    var modalItem: ModalCoordinator.Modal? { get nonmutating set }
+    var modalItemBinding: Binding<ModalCoordinator.Modal?> { get }
+    var modalItemOnClose: ModalCoordinator.CloseCallback? { get nonmutating set }
+    
     var keychain: Keychain { get }
     var auths: [Auth] { get nonmutating set }
     var activeSessionToken: String? { get nonmutating set }
@@ -605,6 +613,8 @@ public protocol AppClip: App {
     static var isAppclip: Bool { get }
     static var debug: Bool { get }
     static var defaultHeaders: [String: String] { get }
+    
+    func modalView(_ item: ModalCoordinator.Item) -> ModalView
     
     func onUserActivity(_ activity: NSUserActivity) -> Void
     func onScenePhaseChange(_ phase: ScenePhase) -> Void
@@ -864,9 +874,45 @@ public extension AppClip {
                         #endif
                     }
             }
+            .sheet(item: self.modalItemBinding){
+                DispatchQueue.main.async {
+                    defer { self.modalItemOnClose = nil }
+                    self.modalItemOnClose?()
+                }
+            } content: { modalItem in
+                GeometryReader() { proxy in
+                    self.modalView(modalItem.item)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                }
+                .edgesIgnoringSafeArea(.all)
+            }
             .onOpenURL(perform: self.onOpenUrl)
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: self.onUserActivity)
             .onChange(of: scenePhase, perform: self.onScenePhaseChange)
+            .onReceive(coordinator.modal.publisher) { modalItem in
+                
+                guard let modalItem = modalItem else {
+                    self.modalItem = nil
+                    return
+                }
+                
+                if case let .mailOptions(opts) = modalItem.item, !MFMailComposeViewController.canSendMail() {
+                    
+                    defer { self.modalItem = nil }
+                    
+                    guard let encoded = opts.subject.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
+                          let validUrl = URL(string: "mailto:\(Strings.appSupportEmail)?subject=\(encoded)") else {
+                              coordinator.serverLogDestination.send(.error, msg: "[\(Self.self)] unable to send mail: subject=\(opts.subject)",
+                                                                    thread: Thread.current.debugDescription, file: #file, function: #function, line: #line)
+                              return
+                          }
+                    
+                    UIApplication.shared.open(validUrl)
+                } else {
+                    self.modalItem = modalItem
+                    self.modalItemOnClose = modalItem.onClose
+                }
+            }
             .onReceive(coordinator.requestedSignIn) { authFlow in
                 switch authFlow {
                     case .apple(let cb):

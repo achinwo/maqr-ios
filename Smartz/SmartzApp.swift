@@ -87,11 +87,12 @@ struct SmartzApp: AppClip {
         self.coordinator.api = api
     }
     
-    @State var isSheetPresented: Bool = false
-    @State var result: Result<MFMailComposeResult, Error>? = nil
+    @State var mailComposeResult: Result<MFMailComposeResult, Error>? = nil
     
-    @State var modalItem: ModalCoordinator.Item? = nil
+    @State var modalItem: ModalCoordinator.Modal? = nil
     @State var modalItemOnClose: ModalCoordinator.CloseCallback? = nil
+    
+    var modalItemBinding: Binding<ModalCoordinator.Modal?> { $modalItem }
     
     @State var trialData: TrialInfo? = nil
     
@@ -101,6 +102,18 @@ struct SmartzApp: AppClip {
     
     public var screenHeight: CGFloat {
         UIScreen.main.bounds.height
+    }
+    
+    func modalView(_ item: ModalCoordinator.Item) -> some View {
+        Group(){
+            //Text("Hello world")
+            if case let .mailOptions(opts) = item {
+                MailView(result: self.$mailComposeResult, subject: opts.subject, recipients: opts.recipients, body: opts.body)
+            } else if case let .view(view) = item {
+                AppPreviewView(preview: .constant(view), currentUser: self.$currentUser, animation: namespace)
+            }
+        }
+        .edgesIgnoringSafeArea(.all)
     }
         
     var contentView: some View {
@@ -171,50 +184,6 @@ struct SmartzApp: AppClip {
             .onReceive(coordinator.globalAlertSubject) { alertInfo in
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true
-            }
-            .sheet(item: self.$modalItem){
-                DispatchQueue.main.async {
-                    defer { self.modalItemOnClose = nil }
-                    self.modalItemOnClose?()
-                }
-            } content: { modalItem in
-
-                if case let .mailOptions(opts) = modalItem {
-                    MailView(result: $result, subject: opts.subject, recipients: opts.recipients, body: opts.body)
-                } else if case let .view(view) = modalItem {
-                    GeometryReader() { proxy in
-                        AppPreviewView(preview: .constant(view), currentUser: self.$currentUser, animation: namespace)
-                            .frame(width: proxy.size.width, height: proxy.size.height)
-                            .animation(.spring())
-                        //.background(Color.yellow)
-                    }
-                    .edgesIgnoringSafeArea(.all)
-                    .environmentObject(coordinator)
-                }
-            }
-            .onReceive(coordinator.modal.publisher) { modalItem in
-
-                guard let modalItem = modalItem else {
-                    self.modalItem = nil
-                    return
-                }
-
-                if case let .mailOptions(opts) = modalItem.item, !MFMailComposeViewController.canSendMail() {
-
-                    defer { self.modalItem = nil }
-
-                    guard let encoded = opts.subject.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
-                       let validUrl = URL(string: "mailto:\(Strings.appSupportEmail)?subject=\(encoded)") else {
-                        coordinator.serverLogDestination.send(.error, msg: "[\(Self.self)] unable to send mail: subject=\(opts.subject)",
-                                                                 thread: Thread.current.debugDescription, file: #file, function: #function, line: #line)
-                        return
-                    }
-
-                    UIApplication.shared.open(validUrl)
-                } else {
-                    self.modalItem = modalItem.item
-                    self.modalItemOnClose = modalItem.onClose
-                }
             }
     }
 }

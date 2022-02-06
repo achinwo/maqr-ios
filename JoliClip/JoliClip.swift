@@ -15,6 +15,7 @@ import SpotifyiOS
 //import os
 import Version
 import KeychainAccess
+import MessageUI
 
 #if canImport(StoreKit)
 import StoreKit
@@ -261,6 +262,13 @@ struct JoliClip: AppClip {
             }
     }
     
+    @State var mailComposeResult: Result<MFMailComposeResult, Error>? = nil
+    
+    @State var modalItem: ModalCoordinator.Item? = nil
+    @State var modalItemOnClose: ModalCoordinator.CloseCallback? = nil
+    
+    var modalItemBinding: Binding<ModalCoordinator.Item?> { $modalItem }
+    
     @State var isActionSheetPresented = false
     
     var auth: Auth? {
@@ -275,6 +283,23 @@ struct JoliClip: AppClip {
         
         return try await HttpMethod.Fetch.post(url: "/api/spotify/auth", dataType: AuthToken.self,
                                      baseUrl: api.baseUrl.rawValue.http, urlSession: api.urlSession)
+    }
+    
+    func modalView(_ item: ModalCoordinator.Item) -> some View {
+        Group(){
+            if case let .mailOptions(opts) = modalItem {
+                MailView(result: self.$mailComposeResult, subject: opts.subject, recipients: opts.recipients, body: opts.body)
+            } else if case let .view(view) = modalItem {
+                GeometryReader() { proxy in
+                    AppPreviewView(preview: .constant(view), currentUser: self.$currentUser, animation: namespace)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .animation(.spring())
+                        //.background(Color.yellow)
+                }
+                .edgesIgnoringSafeArea(.all)
+                .environmentObject(coordinator)
+            }
+        }
     }
     
     func onWebViewNavigation(_ navigationAction: WebView.NavigationAction) -> Void {

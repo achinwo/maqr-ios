@@ -127,11 +127,21 @@ struct JoliApp: AppClip {
     @State var authPublishCancel: AnyCancellable? = nil
     
     @Environment(\.scenePhase) var scenePhase
-    @State var isSheetPresented: Bool = false
-    @State var modalView: AppPreview? = nil
     @State var window: UIWindow?
     @State var appleSignInDelegates: SignInWithAppleDelegates? = nil
     @State var safeAreaInsets: EdgeInsets = EdgeInsets()
+    
+    var auth: Auth? {
+        return auths.first() { $0.session.token == activeSessionToken }
+    }
+    
+    @State var mailComposeResult: Result<MFMailComposeResult, Error>? = nil
+    @State var modalItem: ModalCoordinator.Item? = nil
+    @State var modalItemOnClose: ModalCoordinator.CloseCallback? = nil
+    
+    var modalItemBinding: Binding<ModalCoordinator.Item?> { $modalItem }
+    
+    @State var isActionSheetPresented: Bool = false
     
     let apnTokenPublisher: NotificationCenter.Publisher = NotificationCenter.default.publisher(for: Notifications.apnToken)
     
@@ -239,13 +249,22 @@ struct JoliApp: AppClip {
         }
     }
     
-    var auth: Auth? {
-        return auths.first() { $0.session.token == activeSessionToken }
+    func modalView(_ item: ModalCoordinator.Item) -> some View {
+        Group(){
+            if case let .mailOptions(opts) = modalItem {
+                MailView(result: self.$mailComposeResult, subject: opts.subject, recipients: opts.recipients, body: opts.body)
+            } else if case let .view(view) = modalItem {
+                GeometryReader() { proxy in
+                    AppPreviewView(preview: .constant(view), currentUser: self.$currentUser, animation: namespace)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .animation(.spring())
+                        .edgesIgnoringSafeArea([.bottom])
+                        //.background(Color.yellow)
+                }
+                .environmentObject(coordinator)
+            }
+        }
     }
-    
-    @State var result: Result<MFMailComposeResult, Error>? = nil
-    @State var mailOptions: MailView.Options? = nil
-    @State var isActionSheetPresented: Bool = false
     
     func signOut(_ auth: Auth) -> Void {
         let newAuths = self.auths.filter() { $0.session.token != auth.session.token}
@@ -290,24 +309,6 @@ struct JoliApp: AppClip {
                 }
                 .opacity(.zero)
             )
-            .sheet(isPresented: $isSheetPresented){
-                self.modalView = nil
-                self.mailOptions = nil
-            } content: {
-                
-                if let opts = self.mailOptions {
-                    MailView(result: $result, subject: opts.subject, recipients: opts.recipients, body: opts.body)
-                } else {
-                    GeometryReader() { proxy in
-                        AppPreviewView(preview: self.$modalView, currentUser: self.$currentUser, animation: namespace)
-                            .frame(width: proxy.size.width, height: proxy.size.height + proxy.safeAreaInsets.bottom)
-                            .animation(.spring())
-                            .edgesIgnoringSafeArea([.bottom])
-                        //.background(Color.yellow)
-                    }
-                    .environmentObject(coordinator)
-                }
-            }
             .alert(isPresented: self.$isActionSheetPresented) {
                 guard let alert = self.alertInfo else {
                     return Alert(title: Text("Oops - Something is quite right"),
@@ -317,18 +318,12 @@ struct JoliApp: AppClip {
                 
                 return alert
             }
-            .onChange(of: self.modalView) { modal in
-                isSheetPresented = self.modalView != nil
-            }
             .onChange(of: self.currentPlayroom) { room in
                 guard room == nil else {
                     return
                 }
                 
                 self.currentLocation = currentLocation == .unset ? activeLocationFromAppclip : .home
-            }
-            .onChange(of: self.mailOptions) { opts in
-                isSheetPresented = self.mailOptions != nil
             }
             .onReceive(coordinator.internalErrorSubject, perform: self.onInternalError)
             .onReceive(coordinator.signoutSubject, perform: self.signOut)
@@ -361,34 +356,9 @@ struct JoliApp: AppClip {
                 
                 self.spotify.requestSpotifyAccess()
             }
-            .onReceive(coordinator.globalModalSubject) { view in
-                self.modalView = view
-            }
             .onReceive(coordinator.globalAlertSubject) { alertInfo in
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true
-            }
-            .onReceive(coordinator.$mailOptions) { opts in
-                
-                guard let opts = opts else {
-                    self.mailOptions = nil
-                    return
-                }
-                
-                guard MFMailComposeViewController.canSendMail() else {
-                    
-                    if let encoded = opts.subject.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
-                        let validUrl = URL(string: "mailto:\(Strings.appSupportEmail)?subject=\(encoded)") {
-                        UIApplication.shared.open(validUrl)
-                    } else {
-                        coordinator.serverLogDestination.send(.error, msg: "[\(Self.self)] unable to send mail: subject=\(opts.subject)",
-                                                               thread: Thread.current.debugDescription, file: #file, function: #function, line: #line)
-                    }
-                    
-                    return
-                }
-                
-                self.mailOptions = opts
             }
             .onReceive(coordinator.activeDeviceSubject) { (device: Spotify.Device?) in
                 
