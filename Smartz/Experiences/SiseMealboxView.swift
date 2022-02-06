@@ -334,7 +334,8 @@ public struct MealboxView: Experience, JoliView {
                                 //.resizable()
                             VStack(alignment: .leading){
                                 Text(ing.title ?? "").font(.subheadline)
-                                Text(ing.subtitle ?? "").font(.caption).foregroundColor(.secondaryLabel).fixedSize(horizontal: false, vertical: true)
+                                Text(ing.subtitle ?? "").font(.caption).foregroundColor(.secondaryLabel)
+                                    //.fixedSize(horizontal: false, vertical: true)
                             }
                         }
                         .padding(.horizontal)
@@ -482,8 +483,8 @@ public struct MealboxView: Experience, JoliView {
                                     Divider().padding(.vertical)
                                     shareView
                                     
-                                    Divider().padding()
-                                    reorderView
+                                    //Divider().padding()
+                                    //reorderView
                                 }
                             }
                             .padding(.bottom, safeAreaInsets.bottom)
@@ -643,8 +644,10 @@ public struct MealboxView: Experience, JoliView {
         ScrollViewReader() { proxy in
             ScrollView(){
                 VStack(spacing: .zero){
-                    Image("sise_cover")
-                        .resizable()
+                    NetworkImage(url: dataModel?.bannerImageUrl ?? dataModelDefault.bannerImageUrl){
+                            ProgressView()
+                        }
+                        //.resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: screenWidth, height: screenWidth / 2)
                         //.clipped()
@@ -661,8 +664,9 @@ public struct MealboxView: Experience, JoliView {
                         )
                     
                     Divider()
-                    Image("sise_logo")
-                        .resizable()
+                    NetworkImage(url: dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl) {
+                            ProgressView()
+                        }
                         .frame(width: screenWidth / 2, height: screenWidth / 2)
                         .background(Color.white)
                         .clipShape(Circle())
@@ -714,9 +718,14 @@ public struct MealboxView: Experience, JoliView {
                 .frame(minHeight: screenHeight * 1.2)
                 .padding(.bottom, max(100, safeAreaInsets.bottom))
             }
-            .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
+            .background(
+                Group(){
+                    NetworkImage(url: dataModel?.backgroundImageUrl){
+                        Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                    }
+                }
             )
             .onAppear(){
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {

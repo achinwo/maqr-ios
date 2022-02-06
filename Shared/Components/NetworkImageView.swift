@@ -63,7 +63,7 @@ public struct NetworkImage<PlaceHolderContent: SwiftUI.View>: JoliView {
     
     public var contentView: some SwiftUI.View {
         
-        return ZStack(){
+        return Group(){
                 if let image = image {
                     #if os(macOS)
                     SwiftUI.Image(nsImage: image)
