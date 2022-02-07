@@ -798,6 +798,9 @@ public struct CodeDesignerView: JoliView {
                     return newItem
                 }
                 
+                self.brandName = expData.brandName
+                self.landingPageText = expData.landingPageText
+                
                 self.experienceData = expData
                 self.onExperinceDataChanged(expData)
                 

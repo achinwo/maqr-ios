@@ -113,8 +113,17 @@ struct SmartzClipApp: AppClip {
             if case let .mailOptions(opts) = item {
                 MailView(result: self.$mailComposeResult, subject: opts.subject, recipients: opts.recipients, body: opts.body)
             } else if case let .view(view) = item {
+                
+                let preview = Binding<AppPreview?>() {
+                    return view
+                } set: { dismiss in
+                    guard dismiss == nil else { return }
+                    
+                    self.modalItem = nil
+                }
+                
                 GeometryReader() { proxy in
-                    AppPreviewView(preview: .constant(view), currentUser: self.$currentUser, animation: namespace)
+                    AppPreviewView(preview: preview, currentUser: self.$currentUser, animation: namespace)
                         .frame(width: proxy.size.width, height: proxy.size.height)
                         .animation(.spring())
                         .edgesIgnoringSafeArea([.bottom])

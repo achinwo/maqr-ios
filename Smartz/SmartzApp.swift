@@ -110,7 +110,18 @@ struct SmartzApp: AppClip {
             if case let .mailOptions(opts) = item {
                 MailView(result: self.$mailComposeResult, subject: opts.subject, recipients: opts.recipients, body: opts.body)
             } else if case let .view(view) = item {
-                AppPreviewView(preview: .constant(view), currentUser: self.$currentUser, animation: namespace)
+                
+                let preview = Binding<AppPreview?>() {
+                    return view
+                } set: { dismiss in
+                    guard dismiss == nil else { return }
+                    
+                    self.modalItem = nil
+                }
+                
+                AppPreviewView(preview: preview,
+                               currentUser: self.$currentUser,
+                               animation: namespace)
             }
         }
         .edgesIgnoringSafeArea(.all)

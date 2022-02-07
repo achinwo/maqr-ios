@@ -209,7 +209,7 @@ public struct ExperienceDataView: JoliView {
             ImageView(url: data[keyPath: meta.keypath] as? URL, isCircular: false, onSelected: imageCallback) { (image, imgName, error) in
                 
             } content: {
-                EmptyView()
+                Color.clear
             }
             .frame(width: screenWidth / 3, height: screenWidth / 3)
             .overlay(
@@ -219,7 +219,7 @@ public struct ExperienceDataView: JoliView {
                             .progressViewStyle(CircularProgressViewStyle())
                             .foregroundColor(.primary)
                     } else {
-                        EmptyView()
+                        Color.clear
                     }
                 }
             )
@@ -269,32 +269,42 @@ public struct ExperienceDataView: JoliView {
                 ImageView(urlString: element.imageName, isCircular: false, onSelected: onSelected) { (image, imgName, error) in
                     
                 } content: {
-                    EmptyView()
+                    Color.clear
                 }
                 .frame(width: screenWidth / 5, height: screenWidth / 5)
             }
             
             VStack(alignment: .leading){
                 TextField("Title", text: makeBinding(element, \.title))
-                TextField("Subtitle", text: makeBinding(element, \.subtitle))
+                    .padding([.bottom, .leading, .top])
+                    .background(RoundedRectangle(cornerRadius: 8)
+                                    .foregroundColor(.tertiarySystemGroupedBackground.opacity(0.2))
+                    )
+                TextField("Subtitle", text: makeBinding(element, \.subtitle)).lineLimit(nil)
+                    .padding([.bottom, .leading, .top])
+                    .background(RoundedRectangle(cornerRadius: 8)
+                                    .foregroundColor(.tertiarySystemGroupedBackground.opacity(0.2))
+                    )
                 Spacer()
             }
         }
         .overlay(HStack(){
-            Spacer()
-            Button(){
-                self.appCoordinator.withAlert("Remove \(element.experienceItemType.label)?", message: "Permanent delete this item", destructive: true, label: "Remove") {
-                    self.data.items = self.data.items.filter() { $0.id != element.id }
+                    Spacer()
+                    Button(){
+                        self.appCoordinator.withAlert("Remove \(element.experienceItemType.label)?", message: "Permanent delete this item", destructive: true, label: "Remove") {
+                            self.data.items = self.data.items.filter() { $0.id != element.id }
+                        }
+                    } label: {
+                        Image(systemName: "minus")
+                    }
+                    .frame(width: 24, height: 24)
+                    .backgroundColor(.red.opacity(0.7))
+                    .foregroundColor(.fixedWhite)
+                    .font(.body.weight(.bold))
+                    .clipShape(Circle())
                 }
-            } label: {
-                Image(systemName: "minus")
-            }
-            .frame(width: 24, height: 24)
-            .backgroundColor(.red.opacity(0.7))
-            .foregroundColor(.fixedWhite)
-            .font(.body.weight(.bold))
-            .clipShape(Circle())
-        })
+                .offset(x: 14, y: 0)
+        )
         .id(element.id)
     }
     

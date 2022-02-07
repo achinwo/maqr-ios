@@ -367,21 +367,25 @@ public struct MealboxView: Experience, JoliView {
                 
                 HStack(){
                     Spacer()
-                    Link(destination: URL(string: "https://www.instagram.com/ashabismeals/")!) {
+                    
+                    let instaUser = SocialLink.instagramUser(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername)
+                    let instaHashtag = SocialLink.instagramHashtag("https://www.instagram.com/explore/tags/madewithsise/")
+                    
+                    Link(destination: instaUser.url) {
                         VStack(){
                             Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
                             Text("Tag us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-                            Text("@ashabismeals").font(.body.weight(.semibold)).foregroundColor(.primary)
+                            Text(instaUser.description).font(.body.weight(.semibold)).foregroundColor(.primary)
                         }
                     }
                     .padding()
                     //https://www.instagram.com/explore/tags/madewithsise/
                     
-                    Link(destination: URL(string: "https://www.instagram.com/explore/tags/madewithsise/")!) {
+                    Link(destination: instaHashtag.url) {
                         VStack(){
                             Image("fbk_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
                             Text("Share us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-                            Text("#madewithsise").font(.body.weight(.semibold)).foregroundColor(.primary)
+                            Text(instaHashtag.description).font(.body.weight(.semibold)).foregroundColor(.primary)
                         }
                     }
                     .padding()
@@ -507,12 +511,12 @@ public struct MealboxView: Experience, JoliView {
                 }
             }
             .navigationTitle("Preparing \(dataModel?.productName ?? dataModelDefault.productName)")
-            
         }
         .frame(maxWidth: screenWidth)
         .onReceive(self.autoResetting) { value in
             self.tappedStepId = value
         }
+        .navigationViewStyle(.stack)
     }
     
     func stepItemsView(_ proxy: ScrollViewProxy) -> some View {
@@ -560,6 +564,7 @@ public struct MealboxView: Experience, JoliView {
                     
                     if let text = itm.element.title ?? itm.element.subtitle {
                         Text(text)
+                            .fontWeight(itm.offset == self.lastStepId + 1 ? .semibold : nil)
                             .strikethrough(isChecked, color: .secondaryLabel)
                             .lineLimit(nil)
                             .font(.body)
