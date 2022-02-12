@@ -151,6 +151,8 @@ open class YouTubePlayerView: UIView, WKNavigationDelegate {
     fileprivate func buildWebView(_ parameters: [String: AnyObject]) {
         let configuration = WKWebViewConfiguration()
         
+        //configuration.userContentController.add(self, name: String(describing: self.buildInfo.self))
+        
         #if !os(macOS)
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaPlaybackRequiresUserAction = false
@@ -408,6 +410,16 @@ open class YouTubePlayerView: UIView, WKNavigationDelegate {
         }
     }
 }
+
+extension YouTubePlayerView: WKScriptMessageHandler {
+    
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        
+        print("[YouTubePlayerView#userContentController] message: \(message.name), body: \(message.body as? [String: AnyObject])")
+    }
+    
+}
+
 
 private func printLog(_ strings: CustomStringConvertible...) {
     let toPrint = ["[YouTubePlayer]"] + strings

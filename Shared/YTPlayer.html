@@ -42,6 +42,8 @@
             
             function onReady(event) {
                  window.location.href = 'ytplayer://onReady?data=' + event.data;
+                 
+                 window.webkit.messageHandlers.buildInfo.postMessage({param1: 'something1', param2: 'something2'})
             }
 
         function onStateChange(event) {

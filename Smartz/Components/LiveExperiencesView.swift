@@ -140,14 +140,15 @@ public struct LiveExperiencesView: JoliView {
     }
     
     private func experienceView(_ exp: StikrExperienceData) -> some View {
-        
+        let fifthScreenWidth = screenWidth / 5
         return HStack(){
             NetworkImage(string: exp.logoImageUrl){
                 ProgressView().progressViewStyle(CircularProgressViewStyle())
             }
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 64, height: 64, alignment: .center)
-            .padding()
+            .aspectRatio(contentMode: .fill)
+            .frame(maxWidth: fifthScreenWidth, alignment: .center)
+            .clipped()
+            .padding(.trailing)
             
             VStack(alignment: .leading){
                 
@@ -155,10 +156,11 @@ public struct LiveExperiencesView: JoliView {
                 
                 if let txt = exp.landingPageText {
                     Text(txt)
-                        .lineLimit(3)
+                        .lineLimit(2)
                         .truncationMode(.tail)
-                        .font(.body)
+                        .font(.caption)
                         .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 
                 HStack(){
@@ -182,6 +184,7 @@ public struct LiveExperiencesView: JoliView {
             }
             Spacer()
         }
+        .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.green.opacity(exp.uuid == self.selectedExperienceUuid ? 0.6 : 0), lineWidth: 1)
@@ -193,26 +196,26 @@ public struct LiveExperiencesView: JoliView {
     
     public var contentView: some View {
         VStack(){
-            let headerMyExperiences = HStack(alignment: .center){
-//                Image(systemName: "bookmark")
-//                    .font(Font.title.weight(.thin))
-                VStack(alignment: .leading){
-                    Text("Live Experiences").font(.title)
-                    Text("Your active brand experiences.").font(.caption) + Text(" Pull down to refresh.").font(.caption.weight(.semibold))
-                }
-                Spacer()
-            }
-            .foregroundColor(.secondary)
-            .font(Font.largeTitle.weight(.thin))
-            .padding()
+//            let headerMyExperiences = HStack(alignment: .center){
+////                Image(systemName: "bookmark")
+////                    .font(Font.title.weight(.thin))
+//                VStack(alignment: .leading){
+//                    Text("Live Experiences").font(.title)
+//                    Text("Your active brand experiences.").font(.caption) + Text(" Pull down to refresh.").font(.caption.weight(.semibold))
+//                }
+//                Spacer()
+//            }
+//            .foregroundColor(.secondary)
+//            .font(Font.largeTitle.weight(.thin))
+//            .padding()
             
-            Section(header: headerMyExperiences) {
+            //Section(header: headerMyExperiences) {
                 ForEach(experiences){ exp in
                     self.experienceView(exp)
                         .id("experience-\(exp.uuid)")
                 }
                 .padding(.horizontal)
-            }
+            //}
             Spacer()
         }
     }

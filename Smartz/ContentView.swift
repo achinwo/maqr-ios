@@ -113,10 +113,10 @@ public let products: [ProductOffering] = [
 struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {
     
     enum Tab: Int, Identifiable, CaseIterable {
-        case information
+        case home
         case appClipCreator
         //        case gallery
-        case feedback
+        case about
         
         var id: Int {
             rawValue
@@ -124,40 +124,34 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         
         var label: String {
             switch self {
-                //                case .gallery:
-                //                    return "Gallery"
-            case .feedback:
-                return "Feedback"
+            case .about:
+                return "About"
             case .appClipCreator:
-                return "Codes"
-            case .information:
-                return "Welcome"
+                return "Design"
+            case .home:
+                return "Home"
             }
         }
         
         var color: Color {
             switch self {
-                //                case .gallery:
-                //                    return .orange
-            case .feedback:
+            case .about:
                 return Color.systemIndigo
             case .appClipCreator:
                 return .pink
-            case .information:
+            case .home:
                 return .green
             }
         }
         
         var emoji: (default: String, active: String) {
             switch self {
-                //                case .gallery:
-                //                    return (default: "photo.on.rectangle", active: "photo.on.rectangle.angled")
-            case .feedback:
-                return (default: "envelope", active: "envelope.fill")
+            case .about:
+                return (default: "info.circle", active: "info.circle.fill")
             case .appClipCreator:
                 return (default: "qrcode", active: "qrcode.viewfinder")
-            case .information:
-                return (default: "info", active: "info")
+            case .home:
+                return (default: "house", active: "house.fill")
             }
         }
     }
@@ -190,151 +184,13 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         self.init(currentUser: currentUser, websocket: websocket, localPlaybackController: localPlaybackController, trialInfo: .constant(nil))
     }
     
-    let sections: [ProductSection] = [
-        ProductSection(asset: .image("sise_box_ofada"),
-                       title: "Services",
-                       //subtitle: "Reasons To Choose SmartStikr",
-                       subtitle: "No matter your e-commerce business type, SmartStikr has an innovative solution for you. Our App clips can be used for anything from welcoming guests to your restaurant or business place, providing options for customers to reach waiting staff during the dine-in process and check out with apple pay, providing interactive step by step instructions for your meal prep boxes and even up to solutions for AirBnB and Uber guests and many more. There is no limit to our innovative and interactive solutions for SmartStikr. In all of these we limit and sometimes eliminate the need for paper and we streamline the process of doing business with your business, ultimately saving you money, time and eliminating redundancy.",
-                       bulletpoints: [
-                        "Organised and Impressive dine-In check in processes",
-                        "Seamlessly Interact with customers",
-                        "Curate more intimate relationships with customers",
-                        "Easily direct and improve re-order percentage",
-                        "Easy & Quick “jump-to” opportunities for specific product categories that can be tailored to different groups",
-                        "AirBnB Check-in and Check out processes",
-                       ]
-                      ),
-        
-        ProductSection(asset: .image("app_clip_choices"),
-                       title: "The Technology - Automatically Downloading Codes",
-                       subtitle: "Apple’s App Clips technology was introduced to the world in May 2020. The technology behind these scannable codes give them a notable advantage over traditional QR codes. Whereas QR Codes redirect customers to the App Store to download the app, App Clip codes take customers directly to the experience by automating the download step on the customers behalf, significantly improving convenience, driving engagement and reducing session abandonment.",
-                       learnMore: URL(string: "https://developer.apple.com/app-clips/")!
-                      ),
-        
-        ProductSection(asset: .youtube(.url(URL(staticString: "https://youtu.be/P4016ZGlbVc"))),
-                       title: "Rich Customer Experience",
-                       subtitle: "Our mission here at SmartStikr is simple. We want to give e-commerce businesses the ability to seamlessly organise, market and streamline their business processes and interact with customers in the language they speak using impressive user friendly technology while saving our planet at the same time."),
-        
-        ProductSection(asset: .youtube(.url(URL(staticString: "https://youtu.be/_Ly3UEV9NnE"))),
-                       title: "Go Contactless",
-                       subtitle: "Stikrs support NFC for a contactless experience."),
-        
-        ProductSection(asset: .symbol("leaf.fill"),
-                       title: "Want to Help go Sustainable",
-                       subtitle: "SmartStikr is committed to creating a greener planet by reducing paper waste and taking advantage of technology that will propel e-commerce industry to the future and forefront of technological advancement. Join us in our green earth commitment"),
-        
-        
-        
-    ]
-    
     @State var activeSectionIdx: Int? = nil
     
     @Namespace var animation
     
-    func sectionView(_ section: ProductSection) -> some View {
-        let groupView = Group(){
-            if case let .video(player) = section.asset {
-                VideoPlayer(player: player)
-                    .frame(height: screenWidth - 100)
-                //                                        .onTapGesture {
-                //                                            print("Tapped Video")
-                //                                            maximised.toggle()
-                //
-                //                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                //                                                if maximised {
-                //                                                    player.play()
-                //                                                } else {
-                //                                                    player.pause()
-                //                                                }
-                //                                            }
-                //                                        }
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.secondaryLabel, lineWidth: 1))
-            } else if case let .image(imageName) = section.asset {
-                Image(imageName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: screenWidth - 100)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-            } else if case let .symbol(systemName) = section.asset {
-                Image(systemName: systemName)
-                    .resizable()
-                    .renderingMode(.original)
-                    .aspectRatio(contentMode: .fit)
-                    .font(.largeTitle)
-                    .frame(maxWidth: screenWidth / 2)
-            } else if case let .youtube(youtubeId) = section.asset {
-                
-                GeometryReader(){ proxy in
-                    YouTubeView(playerState: YouTubeControlState(youtubeId), autoplay: false)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: proxy.size.width)
-                        .frame(height: screenWidth)
-                }
-                .frame(height: screenWidth)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-        }
-        .padding(.vertical)
-        .frame(maxWidth: screenWidth - 20)
-        
-        return Section(header: Text(section.title).font(.title2)){
-            VStack(){
-                Text(section.subtitle)
-                    .multilineTextAlignment(.center)
-                    .font(.subheadline.weight(.light))
-                    .foregroundColor(.secondaryLabel)
-                    .lineLimit(nil)
-                //.fixedSize(horizontal: false, vertical: true)
-                
-                if let learnMore = section.learnMore {
-                    Link("Learn More...", destination: learnMore).padding()
-                }
-                
-                if let bullets = section.bulletpoints {
-                    VStack(alignment: .leading) {
-                        ForEach(bullets, id: \.self) { bulletpoint in
-                            HStack(){
-                                Image(systemName: "circlebadge.fill").renderingMode(.original)
-                                Text(bulletpoint)
-                            }
-                            .font(Font.subheadline)
-                            .padding(.vertical, 2)
-                            .padding(.leading, Sizing.small)
-                        }
-                    }
-                    .padding(.vertical)
-                }
-                
-                groupView
-                
-                if let subtitle2 = section.subtitle2 {
-                    Text(subtitle2)
-                        .multilineTextAlignment(.center)
-                        .font(.subheadline.weight(.light))
-                        .foregroundColor(.secondaryLabel)
-                        .lineLimit(nil)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-        }
-    }
-    
-    var mainView: some View {
-        VStack(){
-            ForEach(sections){ section in
-                self.sectionView(section)
-                    .padding([.bottom, .horizontal])
-                
-            }
-        }
-    }
-    
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.safeAreaInsets) var safeAreaInsets
-    @AppStorage("active-tab") var selectedTab: Tab = .information
-    
-    @State var feebackText: String = .empty
+    @AppStorage("active-tab") var selectedTab: Tab = .home
     
     @State var experienceType: Experience.Type?
     
@@ -364,83 +220,6 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         //.padding(.bottom, safeAreaInsets.bottom * 4)
     }
     
-    var feedbackView: some View {
-        ScrollView(){
-            VStack(){
-                VStack(){
-                    
-                    
-                    Section(header: Text("Get in Touch").font(.largeTitle)) {
-                        Text("We'd love to hear from you!").font(.subheadline.weight(.light)).padding(.bottom).multilineTextAlignment(.center).lineLimit(5)
-                        
-                        TextEditor(text: self.$feebackText)
-                            .frame(height: screenWidth / 2)
-                            .overlay(
-                                VStack(alignment: .leading){
-                                    if feebackText.isEmpty {
-                                        Text("Enter your message here").padding().foregroundColor(.tertiaryLabel)
-                                        Spacer()
-                                    }
-                                }
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                        
-                    }
-                    .padding()
-                    
-                    Button(){
-                        print("submitted help!")
-                        let subject = "SmartStikr iOS App Feedback - \(AppCoordinator.version)"
-                        self.appCoordinator.modal.presentMailComposer(.init(subject: subject, recipients: [Strings.appSupportEmail], body: feebackText))
-                    } label: {
-                        HStack(){
-                            Spacer()
-                            Text("Send Message")
-                                .font(.title3)
-                                .foregroundColor(.label)
-                            Spacer()
-                        }
-                    }
-                    .background(Color.systemIndigo)
-                    .clipShape(RoundedRectangle(
-                        cornerRadius: 8,
-                        style: .continuous
-                    ))
-                    .frame(width: screenWidth - 150, height: 60)
-                    .accentColor(.white)
-                    .buttonStyle(OutlineButton())
-                    .padding()
-                }
-                .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
-                .clipShape(RoundedRectangle(cornerRadius: 24))
-                .padding(.bottom)
-                .padding(.bottom)
-                .overlay(
-                    GeometryReader(){ _ in
-                        VStack(){
-                            Image("smartz_logo")
-                                .resizable()
-                                .frame(width: screenWidth / 6, height: screenWidth / 6)
-                                .clipShape(Circle())
-                                .offset(x: 0, y: (screenWidth / 24) * -1)
-                                .shadow(radius: 1)
-                            Spacer()
-                        }
-                    }
-                )
-                
-                Link("Privacy Policy", destination: URL(staticString: "https://smartstikr.com/uk/legal/privacy-policy/")).padding()
-                Link("Our Terms of Use", destination: URL(staticString: "https://smartstikr.com/uk/legal/terms_and_conditions/")).padding(.bottom)
-                Link("License Agreement", destination: URL(staticString: "https://smartstikr.com/uk/legal/end_user_license_agreement/")).padding(.bottom)
-                
-            }
-            .frame(width: screenWidth - 100)
-            .padding(.top, safeAreaInsets.top * 2)
-        }
-        .frame(minWidth: screenWidth, minHeight: screenHeight)
-        
-    }
-    
     //    var whoWeAreText: String {
     //        """
     //Ditch all that paper & give your customers a more customised and streamlined experience for their meal prep boxes by digitizing through Smart Stikr App clip. The experience will be completely customised to your company style and offerings and your customers will have options to reorder or just browse your menu for other ideas and seamlessly place the order from you directly with one click through apple pay.
@@ -450,13 +229,9 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     //"""
     //    }
     
-    var whoWeAreText: String {
-        """
-SmartStikr was created with the end user in mind, to fill a gaping hole in the e-commerce consumer experience by streamlining inefficient processes to create futuristic and seamless experiences. Our App clips curates novel experiences for your business which allows customers to interact with your business on an intimate level designed to nurture that customer service relationship from a different angle that is guaranteed to expand your business reach and make your customers Stik with you.
-"""
-    }
-    
     @Namespace var namespace
+    @Debounced(delay: 0.3) public var requestStoredExperienceRefreshAt: Date? = nil
+    @Debounced(delay: 1.3) public var requestExperiencePersistAt: Date? = nil
     
     var tabView: some View {
         let keyboardHidden = keyboardHeight == 0
@@ -511,124 +286,87 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
         .animation(.easeInOut)
     }
     
-    var infoView: some View {
-        VStack(){
-            Image("smartz_logo")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: screenWidth / 3, maxHeight: screenWidth / 3)
-            Text("Smart Stikr").font(.headline.weight(.light)).foregroundColor(.tertiaryLabel).padding([.bottom])
-            (Text("Welcome to the ").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)
-             + Text("Paperless ").font(.title.weight(.light)).foregroundColor(.secondaryLabel)
-             + Text("Future").font(.title.weight(.light)).foregroundColor(.tertiaryLabel))
-                .multilineTextAlignment(.center)
+    var codeDesignerButton: some View {
+        Button(){
+            self.selectedTab = .appClipCreator
             
-            Text(whoWeAreText)
-                .font(.subheadline)
-                .foregroundColor(.primary)
-                .multilineTextAlignment(.center)
-                .padding()
-            
-            GeometryReader(){ proxy in
-                YouTubeView(playerState: YouTubeControlState(.url(URL(staticString: "https://youtu.be/JjwIdYIFSSo"))), autoplay: false)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: proxy.size.width)
-                    .frame(height: screenWidth)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .frame(height: screenWidth)
-            .frame(maxWidth: screenWidth - 20)
-            
-            Divider().padding()
-            self.mainView
-            Divider().padding()
-            
-            Button(){
-                
-                self.selectedTab = .appClipCreator
-                
-                Task() {
-                    guard let receiptData = appCoordinator.storeKitHelper.retreiveReceipt() else {
-                        appCoordinator.serverLogDestination.send(.info, msg: "No receipt found!", thread: Thread.current.description,
-                                                                 file: #file, function: #function, line: #line)
-                        return
-                    }
-                    
-                    let json: Json = [
-                        "receiptData": receiptData as AnyObject,
-                    ]
-                    
-                    do {
-                        let res = try await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/process-transaction")!, payload: json, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
-                        print("[RECEIPT] \(res)")
-                    } catch {
-                        print("[RECEIPT] error: \(error)")
-                    }
-                            
+            Task() {
+                guard let receiptData = appCoordinator.storeKitHelper.retreiveReceipt() else {
+                    appCoordinator.serverLogDestination.send(.info, msg: "No receipt found!", thread: Thread.current.description,
+                                                             file: #file, function: #function, line: #line)
+                    return
                 }
                 
-            } label: {
-                HStack(){
-                    Spacer()
-                    HStack(){
-                        Text("Create & Download Codes")
-                        Image(systemName: "qrcode")
-                    }
-                    .font(.title3)
-                    .foregroundColor(.label)
-                    Spacer()
+                let json: Json = [
+                    "receiptData": receiptData as AnyObject,
+                ]
+                
+                do {
+                    let res = try await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/process-transaction")!, payload: json, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
+                    print("[RECEIPT] \(res)")
+                } catch {
+                    print("[RECEIPT] error: \(error)")
                 }
+                
             }
-            .background(Color.pink)
-            .clipShape(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-            )
-//            .overlay(
-//                GeometryReader() { proxy in
-//                    HStack(){
-//                        Spacer()
-//                        Text("Coming Soon")
-//                            .fixedSize(horizontal: true, vertical: true)
-//                            .font(.subheadline.weight(.semibold))
-//                            .foregroundColor(.fixedWhite)
-//                            .padding(2)
-//                            .background(Color.fixedGray)
-//                            .clipShape(RoundedRectangle(cornerRadius: 6))
-//                            .offset(x: proxy.size.height / 4, y: proxy.size.height / 12 * -1)
-//                            .rotationEffect(.degrees(15))
-//                        //.rotationEffect(.degres(15))
-//                    }
-//                }
-//            )
-            .frame(width: screenWidth - 100, height: 60)
-            .accentColor(.orange)
-            .buttonStyle(OutlineButton())
-            .padding(.top, safeAreaInsets.top)
             
+        } label: {
             HStack(){
                 Spacer()
-                
-                Link(destination: URL(social: .instagramUser("smartstikr"))) {
-                    VStack(){
-                        Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
-                        Text("Follow Us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-                        Text("@smartstikr").font(.body.weight(.semibold)).foregroundColor(.primary)
-                    }
-                    .padding()
+                HStack(){
+                    Text("Create & Download Codes")
+                    Image(systemName: "qrcode")
                 }
-                
-                //                                        VStack(){
-                //                                            Image("fbk_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
-                //                                            Text("Share us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-                //                                            Text("#madewithsise").font(.body.weight(.semibold)).foregroundColor(.primary)
-                //                                        }
-                //                                        .padding()
-                
+                .font(.title3)
+                .foregroundColor(.label)
                 Spacer()
             }
-            .padding(.top, safeAreaInsets.top)
-            .padding(.bottom, safeAreaInsets.bottom * 4)
-            .animation(.easeInOut)
+        }
+        .background(Color.pink)
+        .clipShape(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+        )
+        .frame(width: screenWidth - 100, height: 60)
+        .accentColor(.orange)
+        .buttonStyle(OutlineButton())
+        .padding(.top, safeAreaInsets.top)
+    }
+    
+    public var historyView: some View {
+        
+        let binding = Binding<String?>() {
+            return self.experienceData?.uuid
+        } set: { newValue in
+            print("[historyView] ignoring set: \(String(describing: newValue))")
+        }
+        
+        return LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: binding){ stikrExp in
+            self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
+            
+//            DispatchQueue.main.async(){
+//                onExperinceDataChanged(self.experienceData)
+//            }
+            
+            guard let visualCode = stikrExp.visualcodes?.last else { return }
+            
+            self.visualCode = visualCode.builder()
+        }
+        .padding(.top)
+    }
+    
+    @State public var visualCode = VisualCodeRecord()
+    @State var isRefreshingHistory = false
+    @State public var storedExperiences: [StikrExperienceData] = []
+    
+    @MainActor
+    func updateStoredExperiences() async {
+        defer { isRefreshingHistory = false }
+        
+        do {
+            let exps = try await StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            self.storedExperiences = exps
+        } catch {
+            print("Unable to fetch exps: \(error)")
         }
     }
     
@@ -638,19 +376,37 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
             ZStack(){
                 
                 VStack(){
-                    if self.selectedTab == .information {
-                        ScrollView(.vertical){
-                            infoView
+                    if self.selectedTab == .home {
+                        Group(){
+                            RefreshableScrollView(refreshing: $isRefreshingHistory){
+                                ScrollViewReader() { proxy in
+                                    VStack(){
+                                        historyView.frame(minHeight: screenHeight / 2)
+                                        codeDesignerButton
+                                            .padding()
+                                            .padding(.bottom, safeAreaInsets.bottom * 4)
+                                        
+                                        Spacer()
+                                    }
+                                    .frame(minHeight: screenHeight * 0.5)
+                                    
+                                }
+                            }
                         }
                         .navigationBarTitleDisplayMode(.inline)
-                        //.navigationBarTitle(Text(String.empty))
-                        .navigationBarHidden(true)
+                            //.navigationBarTitle()
                         .toolbar() {
-                            EmptyView()
+                            ToolbarItem(placement: .principal) {
+                                VStack(alignment: .center) {
+                                    Text("Live Experiences").font(.headline)
+                                    Text("Your active brand experiences").font(.subheadline).foregroundColor(.secondaryLabel)
+                                }
+                            }
                         }
-                    } else if self.selectedTab == .feedback {
+                        
+                    } else if self.selectedTab == .about {
                         ScrollView(.vertical){
-                            feedbackView
+                            AboutView()
                         }
                         .navigationBarHidden(true)
                         .toolbar() {
@@ -676,7 +432,7 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
         .frame(minWidth: screenWidth, idealHeight: screenHeight - safeAreaInsets.top)
         .background(
             Group(){
-                if self.selectedTab == .feedback {
+                if self.selectedTab == .about {
                     Image(colorScheme == .dark ? "bg_dark" : "bg_white")
                         .resizable()
                         .aspectRatio(contentMode: .fill)
@@ -685,7 +441,21 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                 }
             }
         )
+        .onReceive(self.$requestStoredExperienceRefreshAt){ requestedAt in
+            print("Requested refresh: \(String(describing: requestedAt))")
+            
+            guard requestedAt != nil else { return }
+            
+            Task() { await self.updateStoredExperiences() }
+            self.requestStoredExperienceRefreshAt = nil
+        }
+        .onChange(of: self.isRefreshingHistory) { refreshing in
+            print("REFRESHING: \(refreshing)")
+            guard refreshing else { return }
+            self.requestStoredExperienceRefreshAt = Date()
+        }
         .onAppear(){
+            Task() { await self.updateStoredExperiences() }
         }
     }
     

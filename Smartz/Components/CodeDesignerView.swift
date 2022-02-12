@@ -435,7 +435,6 @@ public struct CodeDesignerView: JoliView {
     }
     
     @State public var scrollProxy: ScrollViewProxy? = nil
-    @State public var storedExperiences: [StikrExperienceData] = []
     
     @Debounced(delay: 0.3) public var requestStoredExperienceRefreshAt: Date? = nil
     @Debounced(delay: 1.3) public var requestExperiencePersistAt: Date? = nil
@@ -448,82 +447,41 @@ public struct CodeDesignerView: JoliView {
     
     @State public var visualCode = VisualCodeRecord()
     
-    @MainActor
-    func updateStoredExperiences() async {
-        defer { isRefreshingHistory = false }
-        
-        do {
-            let exps = try await StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            self.storedExperiences = exps
-        } catch {
-            print("Unable to fetch exps: \(error)")
-        }
-    }
-    
-    public var historyView: some View {
-        
-        let binding = Binding<String?>() {
-            return self.experienceData?.uuid
-        } set: { newValue in
-            print("[historyView] ignoring set: \(String(describing: newValue))")
-        }
-        
-        return LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: binding){ stikrExp in
-            self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
-            
-            DispatchQueue.main.async(){
-                onExperinceDataChanged(self.experienceData)
-            }
-            
-            guard let visualCode = stikrExp.visualcodes?.last else { return }
-            
-            self.visualCode = visualCode.builder()
-        }
-        .padding(.top)
-    }
-    
-    @State var isRefreshingHistory = false
-    
     public var tabView: some View {
         TabView(selection: $selectedTab) {
             ForEach(self.views, id: \.index){ item in
                 
                 Group(){
                     if item.index == 0 {
-                        RefreshableScrollView(refreshing: $isRefreshingHistory){
-                            ScrollViewReader() { proxy in
-                                //creator
+                        ScrollViewReader() { proxy in
+                            //creator
+                            VStack(){
+                                //historyView.frame(minHeight: screenHeight / 2)
+                                
                                 VStack(){
-                                    historyView.frame(minHeight: screenHeight / 2)
-                                    
+                                    Divider()
+                                        .padding(.bottom)
                                     VStack(){
-                                        Divider()
-                                            .padding(.bottom)
-                                        VStack(){
-                                            Text(tabNames[selectedTab])
-                                                .font(.largeTitle.weight(.light))
-                                            Text("Design an engaging branded experience in \(tabNames.count) easy steps")
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondaryLabel)
-                                            //.padding()
-                                            item.view
-                                        }
+                                        Text(tabNames[selectedTab])
+                                            .font(.largeTitle.weight(.light))
+                                        Text("Design an engaging branded experience in \(tabNames.count) easy steps")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondaryLabel)
+                                        //.padding()
+                                        item.view
                                     }
-                                    .id("section-creator")
-                                    .padding(.bottom, 250)
-                                    
-                                    Spacer()
                                 }
-                                .frame(minHeight: screenHeight)
-                                .onAppear(){
-                                    //guard scrollProxy == nil else { return }
-                                    self.scrollProxy = proxy
-                                }
+                                .id("section-creator")
+                                .padding(.bottom, 250)
+                                
+                                Spacer()
+                            }
+                            .frame(minHeight: screenHeight)
+                            .onAppear(){
+                                //guard scrollProxy == nil else { return }
+                                self.scrollProxy = proxy
                             }
                         }
-//                        ScrollView(.vertical, showsIndicators: true) {
-//
-//                        }
                     } else {
                         item.view
                     }
@@ -546,11 +504,6 @@ public struct CodeDesignerView: JoliView {
                 //                        .environmentObject(appCoordinator)
                 //                    )
             }
-        }
-        .onChange(of: self.isRefreshingHistory) { refreshing in
-            print("REFRESHING: \(refreshing)")
-            guard refreshing else { return }
-            self.requestStoredExperienceRefreshAt = Date()
         }
     }
     
@@ -606,7 +559,7 @@ public struct CodeDesignerView: JoliView {
                     
                     defer {
                         
-                        Task() { await self.updateStoredExperiences() }
+                        //Task() { await self.updateStoredExperiences() }
                         
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
                             withAnimation(){
@@ -702,16 +655,17 @@ public struct CodeDesignerView: JoliView {
                             //Label("Try It", systemImage: "arrow.forward")
                         }
                         .disabled(brandName.isEmpty || landingPageText.isEmpty || submitting)
-                    } else {
-                        Button(){
-                            print("scroll: section-creator - \(String(describing: self.scrollProxy))")
-                            withAnimation(){
-                                self.scrollProxy?.scrollTo("section-creator", anchor: .top)
-                            }
-                        } label: {
-                            Image(systemName: "plus")
-                        }
                     }
+//                    else {
+//                        Button(){
+//                            print("scroll: section-creator - \(String(describing: self.scrollProxy))")
+//                            withAnimation(){
+//                                self.scrollProxy?.scrollTo("section-creator", anchor: .top)
+//                            }
+//                        } label: {
+//                            Image(systemName: "plus")
+//                        }
+//                    }
                 }
             }
             .id("code-designer-tabview")
@@ -735,14 +689,6 @@ public struct CodeDesignerView: JoliView {
                 guard persistRequestedAt != nil else { return }
                 self.updateStoredExperience()
                 self.requestExperiencePersistAt = nil
-            }
-            .onReceive(self.$requestStoredExperienceRefreshAt){ requestedAt in
-                print("Requested refresh: \(requestedAt)")
-                
-                guard requestedAt != nil else { return }
-                
-                Task() { await self.updateStoredExperiences() }
-                self.requestStoredExperienceRefreshAt = nil
             }
             .onAppear() {
                 

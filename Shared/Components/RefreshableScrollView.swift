@@ -32,6 +32,7 @@ public struct RefreshableScrollView<Content: View>: View {
     }
     
     public var body: some View {
+        let thresholdPct = self.threshold * 0.4
         return VStack {
             ScrollView(.vertical, showsIndicators: self.showsIndicators) {
                 ZStack(alignment: .top) {
@@ -45,6 +46,8 @@ public struct RefreshableScrollView<Content: View>: View {
                     }
                     
                     SymbolView(height: self.threshold, loading: self.refreshing, frozen: self.frozen, rotation: self.rotation)
+                        .opacity(min(scrollOffset / thresholdPct, 1))
+                        .animation(.easeInOut, value: scrollOffset)
                 }
             }
             .background(FixedView())

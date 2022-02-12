@@ -222,6 +222,7 @@
 		9280818327046B5E001120ED /* NetworkImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9280818227046B5E001120ED /* NetworkImage */; };
 		9280818527046B6F001120ED /* NetworkImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9280818427046B6F001120ED /* NetworkImage */; };
 		9280818727046B7D001120ED /* NetworkImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9280818627046B7D001120ED /* NetworkImage */; };
+		9285148C27B8291600380CF7 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9285148B27B8291600380CF7 /* AboutView.swift */; };
 		9286049B2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
 		9286049C2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
 		928604A1270C842200ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
@@ -546,6 +547,7 @@
 		927AE0C02554AC020027493D /* LobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyView.swift; sourceTree = "<group>"; };
 		927E0E3524E9ADC000C8257D /* AppClip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppClip.swift; sourceTree = "<group>"; };
 		927E0E3924E9AFFF00C8257D /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
+		9285148B27B8291600380CF7 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitHelper.swift; sourceTree = "<group>"; };
 		928604A3270CA80D00ED2E68 /* ExperiencePurchaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperiencePurchaseView.swift; sourceTree = "<group>"; };
 		92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayroomHeaderView.swift; sourceTree = "<group>"; };
@@ -809,6 +811,7 @@
 				9217904F26C9832A009FC4CE /* VisualCodeDownloadView.swift */,
 				928604A3270CA80D00ED2E68 /* ExperiencePurchaseView.swift */,
 				929BF21B275D6B4600F850F7 /* DynamicExperienceView.swift */,
+				9285148B27B8291600380CF7 /* AboutView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1613,6 +1616,7 @@
 				920264CB268FAE06005643E1 /* Experience.swift in Sources */,
 				921F6C4326BEA05C0061D236 /* MLMultiArray+Image.swift in Sources */,
 				921F6C4226BEA05C0061D236 /* CGImage+CVPixelBuffer.swift in Sources */,
+				9285148C27B8291600380CF7 /* AboutView.swift in Sources */,
 				921F6C3626BE9CCD0061D236 /* DeepLabV3.mlmodel in Sources */,
 				920264D02691D4EA005643E1 /* Restaurant.swift in Sources */,
 				92643785276FB53C00E5F1B4 /* Experience+JoliView.swift in Sources */,
