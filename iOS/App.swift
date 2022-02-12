@@ -136,10 +136,10 @@ struct JoliApp: AppClip {
     }
     
     @State var mailComposeResult: Result<MFMailComposeResult, Error>? = nil
-    @State var modalItem: ModalCoordinator.Item? = nil
+    @State var modalItem: ModalCoordinator.Modal? = nil
     @State var modalItemOnClose: ModalCoordinator.CloseCallback? = nil
     
-    var modalItemBinding: Binding<ModalCoordinator.Item?> { $modalItem }
+    var modalItemBinding: Binding<ModalCoordinator.Modal?> { $modalItem }
     
     @State var isActionSheetPresented: Bool = false
     
@@ -251,9 +251,9 @@ struct JoliApp: AppClip {
     
     func modalView(_ item: ModalCoordinator.Item) -> some View {
         Group(){
-            if case let .mailOptions(opts) = modalItem {
+            if case let .mailOptions(opts) = item {
                 MailView(result: self.$mailComposeResult, subject: opts.subject, recipients: opts.recipients, body: opts.body)
-            } else if case let .view(view) = modalItem {
+            } else if case let .view(view) = item {
                 
                 let preview = Binding<AppPreview?>() {
                     return view

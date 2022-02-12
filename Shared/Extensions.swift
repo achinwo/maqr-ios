@@ -25,8 +25,8 @@ import Combine
 import UIImageColors
 
 
-public typealias Color = SwiftUI.Color
-public typealias View = SwiftUI.View
+//public typealias Color = SwiftUI.Color
+//public typealias View = SwiftUI.View
 
 fileprivate var emptyData = Data()
 

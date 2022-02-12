@@ -230,8 +230,6 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     //    }
     
     @Namespace var namespace
-    @Debounced(delay: 0.3) public var requestStoredExperienceRefreshAt: Date? = nil
-    @Debounced(delay: 1.3) public var requestExperiencePersistAt: Date? = nil
     
     var tabView: some View {
         let keyboardHidden = keyboardHeight == 0
@@ -332,43 +330,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         .padding(.top, safeAreaInsets.top)
     }
     
-    public var historyView: some View {
-        
-        let binding = Binding<String?>() {
-            return self.experienceData?.uuid
-        } set: { newValue in
-            print("[historyView] ignoring set: \(String(describing: newValue))")
-        }
-        
-        return LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: binding){ stikrExp in
-            self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
-            
-//            DispatchQueue.main.async(){
-//                onExperinceDataChanged(self.experienceData)
-//            }
-            
-            guard let visualCode = stikrExp.visualcodes?.last else { return }
-            
-            self.visualCode = visualCode.builder()
-        }
-        .padding(.top)
-    }
-    
     @State public var visualCode = VisualCodeRecord()
-    @State var isRefreshingHistory = false
-    @State public var storedExperiences: [StikrExperienceData] = []
-    
-    @MainActor
-    func updateStoredExperiences() async {
-        defer { isRefreshingHistory = false }
-        
-        do {
-            let exps = try await StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            self.storedExperiences = exps
-        } catch {
-            print("Unable to fetch exps: \(error)")
-        }
-    }
     
     var contentView: some View {
         NavigationView(){
@@ -377,21 +339,27 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                 
                 VStack(){
                     if self.selectedTab == .home {
-                        Group(){
-                            RefreshableScrollView(refreshing: $isRefreshingHistory){
-                                ScrollViewReader() { proxy in
-                                    VStack(){
-                                        historyView.frame(minHeight: screenHeight / 2)
-                                        codeDesignerButton
-                                            .padding()
-                                            .padding(.bottom, safeAreaInsets.bottom * 4)
-                                        
-                                        Spacer()
-                                    }
-                                    .frame(minHeight: screenHeight * 0.5)
-                                    
-                                }
-                            }
+                        
+                        let binding = Binding<String?>() {
+                            return self.experienceData?.uuid
+                        } set: { newValue in
+                            print("[historyView] ignoring set: \(String(describing: newValue))")
+                        }
+                        
+                        HomeView(selectedExperienceUuid: binding) { stikrExp in
+                            self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
+
+                                //            DispatchQueue.main.async(){
+                                //                onExperinceDataChanged(self.experienceData)
+                                //            }
+
+                            guard let visualCode = stikrExp.visualcodes?.last else { return }
+
+                            self.visualCode = visualCode.builder()
+                        } footer: {
+                            codeDesignerButton
+                                .padding()
+                                .padding(.bottom, safeAreaInsets.bottom)
                         }
                         .navigationBarTitleDisplayMode(.inline)
                             //.navigationBarTitle()
@@ -401,6 +369,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                                     Text("Live Experiences").font(.headline)
                                     Text("Your active brand experiences").font(.subheadline).foregroundColor(.secondaryLabel)
                                 }
+                                .frame(minWidth: screenWidth / 4)
                             }
                         }
                         
@@ -427,6 +396,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                 .frame(maxHeight: screenHeight - safeAreaInsets.top)
             }
         }
+        .navigationViewStyle(.stack)
         .edgesIgnoringSafeArea(.bottom)
         .onReceive(appCoordinator.$keyboardHeight, assign: \.keyboardHeight, target: self)
         .frame(minWidth: screenWidth, idealHeight: screenHeight - safeAreaInsets.top)
@@ -441,22 +411,6 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                 }
             }
         )
-        .onReceive(self.$requestStoredExperienceRefreshAt){ requestedAt in
-            print("Requested refresh: \(String(describing: requestedAt))")
-            
-            guard requestedAt != nil else { return }
-            
-            Task() { await self.updateStoredExperiences() }
-            self.requestStoredExperienceRefreshAt = nil
-        }
-        .onChange(of: self.isRefreshingHistory) { refreshing in
-            print("REFRESHING: \(refreshing)")
-            guard refreshing else { return }
-            self.requestStoredExperienceRefreshAt = Date()
-        }
-        .onAppear(){
-            Task() { await self.updateStoredExperiences() }
-        }
     }
     
     @State var keyboardHeight: CGFloat = 0
