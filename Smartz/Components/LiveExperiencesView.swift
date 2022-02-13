@@ -29,14 +29,15 @@ public final class ImageSaver: NSObject {
 public struct LiveExperiencesView: JoliView {
     
     public enum Action {
-        case selected(StikrExperienceData)
-        case launch(StikrExperienceData)
+        case selected
+        case launch
+        case edit
     }
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @Binding public var experiences: [StikrExperienceData]
     @Binding public var selectedExperienceUuid: String?
-    public var onSelect: (Action) -> Void
+    public var onSelect: (Action, StikrExperienceData) -> Void
     @Namespace var namespace
     
     private func makeQrCode(_ data: StikrExperienceData) -> (UIImage, URL)? {
@@ -180,13 +181,17 @@ public struct LiveExperiencesView: JoliView {
             
         }
         //.frame(idealHeight: screenWidth / 6)
-        .overlay(self.iconImage(exp).id("\(exp.uuid)-exp-icon"))
+        .overlay(self.iconImage(exp)
+                    .padding(.trailing)
+                    .id("\(exp.uuid)-exp-icon"))
     }
     
     func experienceViewExpanded(_ exp: StikrExperienceData) -> some View {
         
         VStack(alignment: .leading){
+            
             let fifthScreenWidth = screenWidth / 5
+            let isSelected = exp.uuid == self.selectedExperienceUuid
             
             HStack(){
                 self.experienceImage(exp.logoImageUrl)
@@ -201,7 +206,7 @@ public struct LiveExperiencesView: JoliView {
                 
                 
             }
-            .backgroundColor(Color.systemGroupedBackground.opacity(exp.uuid == self.selectedExperienceUuid ? 0.6 : 0))
+            .backgroundColor(Color.systemGroupedBackground.opacity(isSelected ? 0.6 : 0))
             .background(
                 GeometryReader() { proxy in
                     NetworkImage(string: exp.bannerImageUrl) {
@@ -213,7 +218,9 @@ public struct LiveExperiencesView: JoliView {
                 }.clipped()
             )
             .overlay(
-                self.iconImage(exp).id("\(exp.uuid)-exp-icon")
+                self.iconImage(exp)
+                    .padding()
+                    .id("\(exp.uuid)-exp-icon")
             )
             
             if let txt = exp.landingPageText {
@@ -231,8 +238,12 @@ public struct LiveExperiencesView: JoliView {
             
             HStack(){
                 Spacer()
+                self.editBtn(exp)
+                Spacer()
                 self.viewCodeBtn(exp)
+                Spacer()
                 self.launchBtn(exp)
+                Spacer()
             }
             .padding()
         }
@@ -245,7 +256,9 @@ public struct LiveExperiencesView: JoliView {
                 VStack(){
                     HStack(alignment: .top){
                         Spacer()
-                        Image(systemName: cls.iconName).font(.headline).padding().foregroundColor(.secondaryLabel)
+                        Image(systemName: cls.iconName)
+                            .font(.headline)
+                            .foregroundColor(.secondaryLabel)
                     }
                     Spacer()
                 }
@@ -267,7 +280,7 @@ public struct LiveExperiencesView: JoliView {
                         }
                     }
                 } label: {
-                    Label("View Code", systemImage: "qrcode").padding([.horizontal, .bottom]).padding(.top, 2)
+                    Label("QR Code", systemImage: "qrcode")//.padding([.horizontal, .bottom]).padding(.top, 2)
                 }
                 .id(url)
                 
@@ -278,9 +291,17 @@ public struct LiveExperiencesView: JoliView {
     
     func launchBtn(_ exp: StikrExperienceData) -> some View {
         Button(){
-            self.onSelect(.launch(exp))
+            self.onSelect(.launch, exp)
         } label: {
-            Label("Launch", systemImage: "arrow.up.left.and.arrow.down.right").padding([.horizontal, .bottom]).padding(.top, 2)
+            Label("Launch", systemImage: "arrow.up.left.and.arrow.down.right")//.padding([.horizontal, .bottom]).padding(.top, 2)
+        }
+    }
+    
+    func editBtn(_ exp: StikrExperienceData) -> some View {
+        Button(){
+            self.onSelect(.edit, exp)
+        } label: {
+            Label("Edit", systemImage: "pencil")//.padding([.horizontal, .bottom]).padding(.top, 2)
         }
     }
     
@@ -295,7 +316,7 @@ public struct LiveExperiencesView: JoliView {
                 }
             }
             .onTapGesture() {
-                self.onSelect(.selected(exp))
+                self.onSelect(.selected, exp)
             }
             .id("experience-\(exp.uuid)")
             .clipShape(RoundedRectangle(cornerRadius: 16))

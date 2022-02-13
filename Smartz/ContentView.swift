@@ -276,88 +276,138 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     }
     
     @State public var visualCode = VisualCodeRecord()
+    @State public var isEditingExperience = false
+    @State public var submitting = false
+    
+    @discardableResult
+    @MainActor
+    func submitExperience(_ expData: ExperienceData) async throws -> StikrExperienceData {
+        self.submitting = true
+        
+        defer {
+            self.submitting = false
+        }
+        
+        do {
+            let saved = try await expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            print("[HomeView] SAVE experience: \(saved)")
+            return saved
+        } catch {
+            self.appCoordinator.globalErrorHandler()(error)
+            throw error
+        }
+    }
     
     var contentView: some View {
         NavigationView(){
-            
-            ZStack(){
-                
-                VStack(){
-                    if self.selectedTab == .home {
+            VStack(){
+                if self.selectedTab == .home {
+                    
+                    let binding = Binding<String?>() {
+                        return self.experienceData?.uuid
+                    } set: { newValue in
+                        print("[historyView] ignoring set: \(String(describing: newValue))")
+                    }
+                    
+                    if let expData = self.experienceData, let stikrExp = expData.stored, let typeName = expData.experienceTypeName, let typeInfo = Experiences(typeName: typeName) {
                         
-                        let binding = Binding<String?>() {
-                            return self.experienceData?.uuid
-                        } set: { newValue in
-                            print("[historyView] ignoring set: \(String(describing: newValue))")
-                        }
+                        let expCopy = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
                         
-                        HomeView(selectedExperienceUuid: binding) { action in
+                        let experienceDataView = ExperienceDataView(typeInfo.rawValue, expCopy){ data in
+                                self.experienceData = data
+                                self.isEditingExperience = false
                             
-                            switch action {
-                                case .selected(let stikrExp):
-                                    self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
-                                    
-                                        //            DispatchQueue.main.async(){
-                                        //                onExperinceDataChanged(self.experienceData)
-                                        //            }
-                                    
-                                    guard let visualCode = stikrExp.visualcodes?.last else { return }
-                                    
-                                    self.visualCode = visualCode.builder()
-                                    
-                                case .launch(let stikrExp):
-                                    guard let typeName = stikrExp.experienceTypeName, let typeInfo = Experiences(typeName: typeName) else {
-                                        return
-                                    }
-                                    
-                                    self.trialInfo = (typeInfo, ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp))
-                            }
-                            
-                            
-                        } footer: {
-                            codeDesignerButton
-                                .padding()
-                                .padding(.bottom, safeAreaInsets.bottom * 2)
-                        }
-                        .navigationBarTitleDisplayMode(.inline)
-                            //.navigationBarTitle()
-                        .toolbar() {
-                            ToolbarItem(placement: .principal) {
-                                VStack(alignment: .center) {
-                                    Text("Live Experiences").font(.headline)
-                                    Text("Your active brand experiences").font(.subheadline).foregroundColor(.secondaryLabel)
+                                Task() {
+                                    let saved = try await self.submitExperience(data)
+                                    print("[ExperienceDataView] edited data - \(saved)")
                                 }
-                                .frame(minWidth: screenWidth / 4)
+                            
                             }
-                        }
+                            .navigationBarTitle(expData.brandName)
+                            .navigationBarItems(trailing: Button(){
+                                appCoordinator.dismissKeyboard()
+                                self.trialInfo = (typeInfo, expCopy)
+                            } label: {
+                                Text("Try It!")
+                            })
                         
-                    } else if self.selectedTab == .about {
-                        ScrollView(.vertical){
-                            AboutView()
-                        }
-                        .navigationBarHidden(true)
-                        .toolbar() {
+                        NavigationLink(destination: experienceDataView, isActive: self.$isEditingExperience) {
                             EmptyView()
                         }
-                    } else if self.selectedTab == .appClipCreator {
-                        ScrollView(.vertical){
-                            appclipsCodesView
+                        .hidden()
+                    }
+                    
+                    HomeView(selectedExperienceUuid: binding) { (action, stikrExp) in
+                        
+                        switch action {
+                            case .selected:
+                                self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
+                                
+                                    //            DispatchQueue.main.async(){
+                                    //                onExperinceDataChanged(self.experienceData)
+                                    //            }
+                                
+                                guard let visualCode = stikrExp.visualcodes?.last else { return }
+                                
+                                self.visualCode = visualCode.builder()
+                                
+                            case .launch:
+                                guard let typeName = stikrExp.experienceTypeName, let typeInfo = Experiences(typeName: typeName) else {
+                                    return
+                                }
+                                
+                                self.trialInfo = (typeInfo, ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp))
+                            case .edit:
+                                print("[Home] editing experience")
+                                isEditingExperience = true
+                        }
+                        
+                        
+                    } footer: {
+                        codeDesignerButton
+                            .padding()
+                            .padding(.bottom, safeAreaInsets.bottom * 2)
+                    }
+                    .navigationBarTitleDisplayMode(.inline)
+                        //.navigationBarTitle()
+                    .toolbar() {
+                        ToolbarItem(placement: .principal) {
+                            VStack(alignment: .center) {
+                                Text("Live Experiences").font(.headline)
+                                Text("Your active brand experiences").font(.subheadline).foregroundColor(.secondaryLabel)
+                            }
+                            .frame(minWidth: screenWidth / 4)
                         }
                     }
+                    
+                } else if self.selectedTab == .about {
+                    ScrollView(.vertical){
+                        AboutView()
+                    }
+                    .navigationBarHidden(true)
+                    .toolbar() {
+                        EmptyView()
+                    }
+                } else if self.selectedTab == .appClipCreator {
+                    ScrollView(.vertical){
+                        appclipsCodesView
+                    }
                 }
-                
-                VStack(){
-                    Spacer()
-                    //                Picker(selection: self.$selectedTab, label: Text("Users")) {
-                    self.tabView
-                }
-                .frame(maxHeight: screenHeight - safeAreaInsets.top)
             }
         }
         .navigationViewStyle(.stack)
         .edgesIgnoringSafeArea(.bottom)
         .onReceive(appCoordinator.$keyboardHeight, assign: \.keyboardHeight, target: self)
         .frame(minWidth: screenWidth, idealHeight: screenHeight - safeAreaInsets.top)
+        .overlay(
+        
+            VStack(){
+                Spacer()
+                    //                Picker(selection: self.$selectedTab, label: Text("Users")) {
+                self.tabView
+            }
+            .frame(maxHeight: screenHeight - safeAreaInsets.top)
+        )
         .background(
             Group(){
                 if self.selectedTab == .about {

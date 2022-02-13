@@ -24,7 +24,7 @@ struct HomeView<Footer: View>: JoliView {
     @State var isRefreshingHistory = false
     @State public var storedExperiences: [StikrExperienceData] = []
     @Binding var selectedExperienceUuid: String?
-    public var onSelect: (LiveExperiencesView.Action) -> Void
+    public var onSelect: (LiveExperiencesView.Action, StikrExperienceData) -> Void
     
     @MainActor
     func updateStoredExperiences() async {
@@ -38,7 +38,7 @@ struct HomeView<Footer: View>: JoliView {
         }
     }
     
-    public init(selectedExperienceUuid: Binding<String?>, onSelect: @escaping (LiveExperiencesView.Action) -> Void, @ViewBuilder footer: () -> Footer) {
+    public init(selectedExperienceUuid: Binding<String?>, onSelect: @escaping (LiveExperiencesView.Action, StikrExperienceData) -> Void, @ViewBuilder footer: () -> Footer) {
         self.footerView = footer()
         self._selectedExperienceUuid = selectedExperienceUuid
         self.onSelect = onSelect
@@ -52,6 +52,7 @@ struct HomeView<Footer: View>: JoliView {
                         LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: $selectedExperienceUuid, onSelect: onSelect)
                     }
                     .padding([.top, .horizontal])
+                    .padding(.top)
                     .frame(minHeight: screenHeight / 2)
                     footerView
                     Spacer()

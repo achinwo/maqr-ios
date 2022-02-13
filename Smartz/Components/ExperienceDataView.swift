@@ -497,10 +497,12 @@ public struct ExperienceDataView: JoliView {
             }
             .animation(.easeInOut)
             
+            let isNew = data.uuid == nil
+            
             let onTap: () -> Void = {
                 print("hit continue!")
                 
-                guard data.isValid(for: experienceType.allDataKeys) else {
+                guard (isNew && data.isValid(for: experienceType.allDataKeys)) || !isNew else {
                     return
                 }
                 
@@ -514,9 +516,9 @@ public struct ExperienceDataView: JoliView {
                         onTap()
                     } label: {
                         // activate theme!
-                        Label("Save & Continue", systemImage: "arrow.forward").padding()
+                        Label(isNew ? "Save & Continue" : "Save Changes", systemImage: "arrow.forward").padding()
                     }
-                    .disabled(!data.isValid(for: experienceType.allDataKeys))
+                    .disabled(isNew && !data.isValid(for: experienceType.allDataKeys))
                     Spacer()
                 }
             }

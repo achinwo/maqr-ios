@@ -154,7 +154,7 @@ public struct CodeDesignerView: JoliView {
                         .aspectRatio(contentMode: .fit)
                         .font(.largeTitle)
                         .frame(maxWidth: screenWidth / 5)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        //.clipShape(RoundedRectangle(cornerRadius: 16))
                         
                         Text(product.isComingSoon ? "Coming Soon" : "Try It!")
                             .multilineTextAlignment(.center)
