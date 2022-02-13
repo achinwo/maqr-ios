@@ -48,9 +48,11 @@ struct HomeView<Footer: View>: JoliView {
         RefreshableScrollView(refreshing: $isRefreshingHistory){
             ScrollViewReader() { proxy in
                 VStack(){
-                    LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: $selectedExperienceUuid, onSelect: onSelect)
-                        .padding(.top)
-                        .frame(minHeight: screenHeight / 2)
+                    VStack(){
+                        LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: $selectedExperienceUuid, onSelect: onSelect)
+                    }
+                    .padding([.top, .horizontal])
+                    .frame(minHeight: screenHeight / 2)
                     footerView
                     Spacer()
                 }
