@@ -35,12 +35,12 @@ public struct LiveExperiencesView: JoliView {
     @Namespace var namespace
     
     private func makeQrCode(_ data: StikrExperienceData) -> (UIImage, URL)? {
-
+        
         guard let vizCode = data.visualcodes?.last,
               let url = URL(string: vizCode.url),
               let img = try? QRCode(url: url, color: UIColor(hex: "#29304B"), backgroundColor: UIColor(hex: "#E1E5EE"), size: CGSize(width: screenWidth - 100, height: screenWidth - 100))?.image() else {
-            return nil
-        }
+                  return nil
+              }
         return (img, url)
     }
     
@@ -149,13 +149,13 @@ public struct LiveExperiencesView: JoliView {
     }
     
     private func experienceView(_ exp: StikrExperienceData) -> some View {
-        let fifthScreenWidth = screenWidth / 5
-        return HStack(){
+        HStack(){
+            let fifthScreenWidth = screenWidth / 5
             self.experienceImage(exp.logoImageUrl)
                 .frame(maxWidth: fifthScreenWidth, alignment: .center)
-            .clipped()
-            .padding(.trailing)
-            .matchedGeometryEffect(id: "\(exp.uuid)-logoImageUrl", in: namespace)
+                .clipped()
+                .padding(.trailing)
+                .matchedGeometryEffect(id: "\(exp.uuid)-logoImageUrl", in: namespace)
             
             VStack(alignment: .leading){
                 
@@ -175,11 +175,57 @@ public struct LiveExperiencesView: JoliView {
                     Spacer()
                     self.viewCodeBtn(exp)
                 }
-                
             }
             Spacer()
         }
         //.frame(maxHeight: screenWidth / 4)
+    }
+    
+    func experienceViewExpanded(_ exp: StikrExperienceData) -> some View {
+        
+        VStack(alignment: .leading){
+            let fifthScreenWidth = screenWidth / 5
+            HStack(){
+                self.experienceImage(exp.logoImageUrl)
+                    .frame(width: fifthScreenWidth, height: fifthScreenWidth, alignment: .center)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(radius: 2)
+                    .padding()
+                //.padding([.bottom, .trailing])
+                    .matchedGeometryEffect(id: "\(exp.uuid)-logoImageUrl", in: namespace)
+                Text(exp.brandName).font(.headline)
+                Spacer()
+            }
+            .backgroundColor(Color.systemGroupedBackground.opacity(exp.uuid == self.selectedExperienceUuid ? 0.6 : 0))
+            .background(
+                GeometryReader() { proxy in
+                    NetworkImage(string: exp.bannerImageUrl) {
+                        Color.clear
+                    }
+                    .allowsHitTesting(false)
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
+                }.clipped())
+            
+            if let txt = exp.landingPageText {
+                Text(txt)
+                    .lineLimit(nil)
+                    .truncationMode(.tail)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding([.horizontal, .bottom])
+                    .matchedGeometryEffect(id: "\(exp.uuid)-landingPageText", in: namespace)
+            }
+            
+            Spacer()
+            
+            HStack(){
+                Spacer()
+                self.viewCodeBtn(exp)
+            }
+        }
+        .frame(maxHeight: screenHeight * 0.4)
     }
     
     func viewCodeBtn(_ exp: StikrExperienceData) -> some View {
@@ -204,76 +250,28 @@ public struct LiveExperiencesView: JoliView {
         .matchedGeometryEffect(id: "\(exp.uuid)-view-btn", in: namespace)
     }
     
-    func experienceViewExpanded(_ exp: StikrExperienceData) -> some View {
-        
-        VStack(alignment: .leading){
-            let fifthScreenWidth = screenWidth / 5
-            HStack(){
-                self.experienceImage(exp.logoImageUrl)
-                    .frame(width: fifthScreenWidth, height: fifthScreenWidth, alignment: .center)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .shadow(radius: 2)
-                    .padding()
-                    //.padding([.bottom, .trailing])
-                    .matchedGeometryEffect(id: "\(exp.uuid)-logoImageUrl", in: namespace)
-                Text(exp.brandName).font(.headline)
-                Spacer()
-            }
-            .backgroundColor(Color.systemGroupedBackground.opacity(exp.uuid == self.selectedExperienceUuid ? 0.6 : 0))
-            .background(
-                GeometryReader() { proxy in
-                    NetworkImage(string: exp.bannerImageUrl) {
-                        Color.clear
-                    }
-                    .aspectRatio(contentMode: .fill)
-                    .frame(minWidth: proxy.size.width, minHeight: proxy.size.height)
-                    .clipped()
-                }
-            )
-            
-            if let txt = exp.landingPageText {
-                Text(txt)
-                    .lineLimit(nil)
-                    .truncationMode(.tail)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding([.horizontal, .bottom])
-                    .matchedGeometryEffect(id: "\(exp.uuid)-landingPageText", in: namespace)
-            }
-            
-            Spacer()
-            
-            HStack(){
-                Spacer()
-                self.viewCodeBtn(exp)
-            }
-        }
-        .frame(maxHeight: screenHeight * 0.4)
-    }
-    
     public var contentView: some View {
         ForEach(experiences){ exp in
             let isSelected = exp.uuid == self.selectedExperienceUuid
-            Group(){
+            ZStack(){
                 if let selectedUid = self.selectedExperienceUuid, selectedUid == exp.uuid {
                     self.experienceViewExpanded(exp)
                 } else {
                     self.experienceView(exp)
                 }
             }
+            .onTapGesture() {
+                self.onSelect(exp)
+            }
+            .id("experience-\(exp.uuid)")
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(Color.secondaryLabel.opacity(isSelected ? 0.6 : 0), lineWidth: 1)
             )
-            .onTapGesture() {
-                self.onSelect(exp)
-            }
-            .padding(.vertical, isSelected ? 4 : 0)
-            .id("experience-\(exp.uuid)")
+            //.padding(.vertical, isSelected ? 4 : 0)
         }
         .animation(.easeInOut, value: self.selectedExperienceUuid)
     }
-
+    
 }
