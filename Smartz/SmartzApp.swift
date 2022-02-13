@@ -136,15 +136,16 @@ struct SmartzApp: AppClip {
                         currentLocation = .home
                         trialData = nil
                     } label: {
-                        Image("smartz_logo")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 48, height: 48)
-                            .padding(4)
+                        Image(systemName: "arrow.down.right.and.arrow.up.left.circle.fill")
+                            .font(.largeTitle)
+                            //.resizable()
+                            //.aspectRatio(contentMode: .fit)
+                            //.frame(width: 48, height: 48)
                             .opacity(0.4)
-                            .grayscale(0.8)
+                            //.grayscale(0.8)
                             .shadow(color: Color.secondaryLabel, radius: 1, x: 0.2, y: 0.2)
                     }
+                    .padding(.horizontal)
                     .clipShape(Circle())
                     Spacer()
                 }
@@ -158,7 +159,7 @@ struct SmartzApp: AppClip {
                     //let isVisible = trialData != nil || ![AppLocation.home, AppLocation.unset].contains(currentLocation)
                     Group(){
                         if let trial = trialData {
-                            trial.trialType.toView(trial.data).overlay(exitButton)
+                            trial.experience.toView(trial.data).overlay(exitButton)
                         } else if ![AppLocation.home, AppLocation.unset].contains(currentLocation) {
                             Group(){
                                 if case let AppLocation.product(storeId, _) = currentLocation,
@@ -199,21 +200,4 @@ struct SmartzApp: AppClip {
     }
 }
 
-public enum ExperienceTrialType {
-    case mealboxPrep
-    case restaurantCheckin
-    case brandPromotion
-    
-    func toView(_ data: ExperienceData) -> some View {
-        switch self {
-            case .mealboxPrep:
-                return MealboxView(data).eraseToAnyView()
-            case .restaurantCheckin:
-                return RestaurantView(data).eraseToAnyView()
-            case .brandPromotion:
-                return TvShowPromoView(data).eraseToAnyView()
-        }
-    }
-}
-
-public typealias TrialInfo = (trialType: ExperienceTrialType, data: ExperienceData)
+public typealias TrialInfo = (experience: Experiences, data: ExperienceData)

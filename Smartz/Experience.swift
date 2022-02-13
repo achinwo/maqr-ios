@@ -36,6 +36,7 @@ public protocol Experience {
     var editMode: EditingState { get nonmutating set }
     
     static var title: String { get }
+    static var iconName: String { get }
     
     static var dataKeys: [PartialKeyPath<ExperienceData>] { get }
     static var allDataKeys: [PartialKeyPath<ExperienceData>] { get }
@@ -74,6 +75,16 @@ public enum Experiences: RawRepresentable, CaseIterable {
         }
     }
     
+    public init?(typeName: String) {
+        for caz in Self.allCases {
+            guard caz.rawValue.className.lowercased() == typeName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() else { continue }
+            
+            self = caz
+            return
+        }
+        return nil
+    }
+    
     public var rawValue: Experience.Type {
         switch self {
         case .recipe:
@@ -83,6 +94,31 @@ public enum Experiences: RawRepresentable, CaseIterable {
         case .restaurant:
             return RestaurantView.self
         }
+    }
+    
+    func toView(_ data: ExperienceData) -> some View {
+        switch self {
+            case .recipe:
+                return MealboxView(data).eraseToAnyView()
+            case .restaurant:
+                return RestaurantView(data).eraseToAnyView()
+            case .brandPromo:
+                return TvShowPromoView(data).eraseToAnyView()
+        }
+    }
+    
+}
+
+extension StikrExperienceData {
+    
+    var type: Experience.Type? {
+        return typeInfo?.rawValue
+    }
+    
+    var typeInfo: Experiences? {
+        guard let typeName = self.experienceTypeName else { return nil }
+        
+        return Experiences(typeName: typeName)
     }
     
 }

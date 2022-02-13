@@ -67,38 +67,6 @@ public struct ProductOffering: Identifiable {
     public var id: String { name }
 }
 
-public struct ReorderNowView: Experience, JoliView {
-    
-    public static var title: String = "Re-order Now"
-    public static var basePath: String = "p"
-    
-    @EnvironmentObject public var appCoordinator: AppCoordinator
-    
-    @State public var dataModel: ExperienceData?
-    public let dataModelDefault = ExperienceData.Defaults()
-    
-    @State public var editMode: EditMode = .inactive
-    
-    public init(_ data: ExperienceData? = nil) {
-        self._dataModel = State(initialValue: data)
-    }
-    
-    public static var dataKeys: [PartialKeyPath<ExperienceData>] {
-        return []
-    }
-    
-    public static var supportedItemTypes: Set<ExperienceItemType> {
-        return []
-    }
-    
-    public var contentView: some View {
-        VStack(){
-            Text("ReorderNow")
-        }
-    }
-    
-}
-
 public let products: [ProductOffering] = [
     ProductOffering(companyName: "Receipe Instructions", name: "Meal Preparations", description: "Interactive meal preparation guides", location: .product("sise", "ofada"), companyLogoName: nil, companyDescription: "Meal box delivery", isComingSoon: false, experienceCls: MealboxView.self, iconName: "list.bullet.rectangle"),
     ProductOffering(companyName: "The Restaurant", name: "Reservation Check-in", description: "Seamless restaurant check-ins and menu browser", location: .product("joey", "sherman"), companyLogoName: nil, companyDescription: "Restaurant", isComingSoon: false, experienceCls: RestaurantView.self, iconName: "calendar.circle.fill"),
@@ -187,6 +155,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     @State var activeSectionIdx: Int? = nil
     
     @Namespace var animation
+    @Namespace var namespace
     
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.safeAreaInsets) var safeAreaInsets
@@ -199,37 +168,13 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     var appclipsCodesView: some View {
         CodeDesignerView($experienceType, $experienceData) {
             
-            guard let data = experienceData else {
+            guard let data = experienceData, let typeName = data.experienceTypeName, let typeInfo = Experiences(typeName: typeName) else {
                 return
             }
             
-            switch experienceType?.title {
-            case MealboxView.title:
-                self.trialInfo = (.mealboxPrep, data)
-            case RestaurantView.title:
-                self.trialInfo = (.restaurantCheckin, data)
-            case TvShowPromoView.title:
-                self.trialInfo = (.brandPromotion, data)
-            default:
-                print("Unknown")
-            }
-            
+            self.trialInfo = (typeInfo, data)
         }
-        //.padding()
-        //.padding(.top, safeAreaInsets.top)
-        //.padding(.bottom, safeAreaInsets.bottom * 4)
     }
-    
-    //    var whoWeAreText: String {
-    //        """
-    //Ditch all that paper & give your customers a more customised and streamlined experience for their meal prep boxes by digitizing through Smart Stikr App clip. The experience will be completely customised to your company style and offerings and your customers will have options to reorder or just browse your menu for other ideas and seamlessly place the order from you directly with one click through apple pay.
-    //
-    //By simply attaching one or few of the below app clips on the box delivered to the clients, you take away the need for paper instructions and
-    //give your customers a more involved experience to Meal Prep with you and your company.
-    //"""
-    //    }
-    
-    @Namespace var namespace
     
     var tabView: some View {
         let keyboardHidden = keyboardHeight == 0
@@ -346,20 +291,33 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             print("[historyView] ignoring set: \(String(describing: newValue))")
                         }
                         
-                        HomeView(selectedExperienceUuid: binding) { stikrExp in
-                            self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
-
-                                //            DispatchQueue.main.async(){
-                                //                onExperinceDataChanged(self.experienceData)
-                                //            }
-
-                            guard let visualCode = stikrExp.visualcodes?.last else { return }
-
-                            self.visualCode = visualCode.builder()
+                        HomeView(selectedExperienceUuid: binding) { action in
+                            
+                            switch action {
+                                case .selected(let stikrExp):
+                                    self.experienceData = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
+                                    
+                                        //            DispatchQueue.main.async(){
+                                        //                onExperinceDataChanged(self.experienceData)
+                                        //            }
+                                    
+                                    guard let visualCode = stikrExp.visualcodes?.last else { return }
+                                    
+                                    self.visualCode = visualCode.builder()
+                                    
+                                case .launch(let stikrExp):
+                                    guard let typeName = stikrExp.experienceTypeName, let typeInfo = Experiences(typeName: typeName) else {
+                                        return
+                                    }
+                                    
+                                    self.trialInfo = (typeInfo, ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp))
+                            }
+                            
+                            
                         } footer: {
                             codeDesignerButton
                                 .padding()
-                                .padding(.bottom, safeAreaInsets.bottom)
+                                .padding(.bottom, safeAreaInsets.bottom * 2)
                         }
                         .navigationBarTitleDisplayMode(.inline)
                             //.navigationBarTitle()

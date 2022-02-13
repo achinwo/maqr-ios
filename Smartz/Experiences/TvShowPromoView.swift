@@ -46,6 +46,7 @@ public struct TvShowPromoView: Experience, JoliView {
     
     public static var title: String = "Trailer"
     public static var basePath = "ebrand"
+    public static var iconName: String = "star.bubble"
     
     public static var dataKeys: [PartialKeyPath<ExperienceData>] {
         return [

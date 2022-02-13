@@ -194,6 +194,7 @@ struct RestaurantView: Experience, JoliView {
     
     static var title: String = "Restaurant"
     static var basePath = "emeal"
+    public static var iconName: String = "menucard"
     
     @Binding var editMode: EditingState
     

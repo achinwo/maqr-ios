@@ -28,10 +28,15 @@ public final class ImageSaver: NSObject {
 
 public struct LiveExperiencesView: JoliView {
     
+    public enum Action {
+        case selected(StikrExperienceData)
+        case launch(StikrExperienceData)
+    }
+    
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @Binding public var experiences: [StikrExperienceData]
     @Binding public var selectedExperienceUuid: String?
-    public var onSelect: (StikrExperienceData) -> Void
+    public var onSelect: (Action) -> Void
     @Namespace var namespace
     
     private func makeQrCode(_ data: StikrExperienceData) -> (UIImage, URL)? {
@@ -159,7 +164,7 @@ public struct LiveExperiencesView: JoliView {
             
             VStack(alignment: .leading){
                 
-                Text(exp.brandName).font(.headline)
+                Text(exp.brandName).font(.headline).padding(.bottom, 2)
                 
                 if let txt = exp.landingPageText {
                     Text(txt)
@@ -170,31 +175,31 @@ public struct LiveExperiencesView: JoliView {
                         .fixedSize(horizontal: false, vertical: true)
                         .matchedGeometryEffect(id: "\(exp.uuid)-landingPageText", in: namespace)
                 }
-                
-                HStack(){
-                    Spacer()
-                    self.viewCodeBtn(exp)
-                }
             }
             Spacer()
+            
         }
-        //.frame(maxHeight: screenWidth / 4)
+        //.frame(idealHeight: screenWidth / 6)
+        .overlay(self.iconImage(exp).id("\(exp.uuid)-exp-icon"))
     }
     
     func experienceViewExpanded(_ exp: StikrExperienceData) -> some View {
         
         VStack(alignment: .leading){
             let fifthScreenWidth = screenWidth / 5
+            
             HStack(){
                 self.experienceImage(exp.logoImageUrl)
                     .frame(width: fifthScreenWidth, height: fifthScreenWidth, alignment: .center)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .shadow(radius: 2)
                     .padding()
-                //.padding([.bottom, .trailing])
+                    //.padding([.bottom, .trailing])
                     .matchedGeometryEffect(id: "\(exp.uuid)-logoImageUrl", in: namespace)
                 Text(exp.brandName).font(.headline)
                 Spacer()
+                
+                
             }
             .backgroundColor(Color.systemGroupedBackground.opacity(exp.uuid == self.selectedExperienceUuid ? 0.6 : 0))
             .background(
@@ -205,13 +210,17 @@ public struct LiveExperiencesView: JoliView {
                     .allowsHitTesting(false)
                     .aspectRatio(contentMode: .fill)
                     .frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
-                }.clipped())
+                }.clipped()
+            )
+            .overlay(
+                self.iconImage(exp).id("\(exp.uuid)-exp-icon")
+            )
             
             if let txt = exp.landingPageText {
                 Text(txt)
                     .lineLimit(nil)
                     .truncationMode(.tail)
-                    .font(.caption)
+                    .font(.body)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding([.horizontal, .bottom])
@@ -223,9 +232,26 @@ public struct LiveExperiencesView: JoliView {
             HStack(){
                 Spacer()
                 self.viewCodeBtn(exp)
+                self.launchBtn(exp)
+            }
+            .padding()
+        }
+        .frame(idealHeight: screenHeight * 0.4)
+    }
+    
+    func iconImage(_ exp: StikrExperienceData) -> some View {
+        GeometryReader() { proxy in
+            if let cls = exp.type {
+                VStack(){
+                    HStack(alignment: .top){
+                        Spacer()
+                        Image(systemName: cls.iconName).font(.headline).padding().foregroundColor(.secondaryLabel)
+                    }
+                    Spacer()
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
             }
         }
-        .frame(maxHeight: screenHeight * 0.4)
     }
     
     func viewCodeBtn(_ exp: StikrExperienceData) -> some View {
@@ -250,6 +276,14 @@ public struct LiveExperiencesView: JoliView {
         .matchedGeometryEffect(id: "\(exp.uuid)-view-btn", in: namespace)
     }
     
+    func launchBtn(_ exp: StikrExperienceData) -> some View {
+        Button(){
+            self.onSelect(.launch(exp))
+        } label: {
+            Label("Launch", systemImage: "arrow.up.left.and.arrow.down.right").padding([.horizontal, .bottom]).padding(.top, 2)
+        }
+    }
+    
     public var contentView: some View {
         ForEach(experiences){ exp in
             let isSelected = exp.uuid == self.selectedExperienceUuid
@@ -261,7 +295,7 @@ public struct LiveExperiencesView: JoliView {
                 }
             }
             .onTapGesture() {
-                self.onSelect(exp)
+                self.onSelect(.selected(exp))
             }
             .id("experience-\(exp.uuid)")
             .clipShape(RoundedRectangle(cornerRadius: 16))

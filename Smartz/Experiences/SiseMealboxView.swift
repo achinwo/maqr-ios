@@ -102,6 +102,7 @@ public struct MealboxView: Experience, JoliView {
     
     public static var title: String = "Mealbox Prep"
     public static var basePath = "ecook"
+    public static var iconName: String = "fork.knife"
     
     @State public var dataModel: ExperienceData?
     

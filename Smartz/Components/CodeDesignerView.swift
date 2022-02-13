@@ -146,24 +146,14 @@ public struct CodeDesignerView: JoliView {
                             if let name = product.companyLogoName {
                                 Image(name)
                                     .resizable()
-                                    .aspectRatio(contentMode: .fit)
                             } else {
-                                let iconName = product.iconName ?? "calendar.circle.fill"
-                                Image(systemName: iconName)
-                                    .resizable()
+                                Image(systemName: product.experienceCls.iconName)
                                     .renderingMode(.original)
-                                    .aspectRatio(contentMode: .fill)
-                                    .font(.title3)
-                                    .if(iconName != "calendar.circle.fill") { view in
-                                        view.padding()
-                                    }
-                                    .if(iconName == "calendar.circle.fill") { view in
-                                        view.padding(-10)
-                                    }
                             }
                         }
-                        .frame(width: 64, height: 64)
-                        .background(Color.fixedWhite)
+                        .aspectRatio(contentMode: .fit)
+                        .font(.largeTitle)
+                        .frame(maxWidth: screenWidth / 5)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                         
                         Text(product.isComingSoon ? "Coming Soon" : "Try It!")

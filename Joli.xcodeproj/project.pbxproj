@@ -207,7 +207,7 @@
 		927A7B1F276FE52A007105CC /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
 		927A7B22276FE7A0007105CC /* Sourceful in Frameworks */ = {isa = PBXBuildFile; productRef = 927A7B21276FE7A0007105CC /* Sourceful */; };
 		927A7B23276FEA82007105CC /* SiseMealboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92562E2F266D3C38004972E6 /* SiseMealboxView.swift */; };
-		927A7B24276FEA85007105CC /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
+		927A7B24276FEA85007105CC /* RestaurantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* RestaurantView.swift */; };
 		927A7B25276FEA88007105CC /* Restaurant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CF2691D4EA005643E1 /* Restaurant.swift */; };
 		927A7B26276FEA8B007105CC /* TvShowPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* TvShowPromoView.swift */; };
 		927A7B2A276FEE92007105CC /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
@@ -224,6 +224,7 @@
 		9280818727046B7D001120ED /* NetworkImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9280818627046B7D001120ED /* NetworkImage */; };
 		9285148C27B8291600380CF7 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9285148B27B8291600380CF7 /* AboutView.swift */; };
 		9285148E27B83FDE00380CF7 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9285148D27B83FDE00380CF7 /* HomeView.swift */; };
+		9285149027B9758C00380CF7 /* ReorderNowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9285148F27B9758C00380CF7 /* ReorderNowView.swift */; };
 		9286049B2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
 		9286049C2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
 		928604A1270C842200ED2E68 /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */; };
@@ -302,8 +303,8 @@
 		92CC32B526E55CDF00178465 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
 		92CC32B626E55CE300178465 /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
 		92CC32B726E55CE800178465 /* YTPlayer.html in Resources */ = {isa = PBXBuildFile; fileRef = 921CAFAA26B5F4F10078A394 /* YTPlayer.html */; };
-		92DD6554267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
-		92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */; };
+		92DD6554267E6104007E22F0 /* RestaurantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* RestaurantView.swift */; };
+		92DD6555267E6104007E22F0 /* RestaurantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* RestaurantView.swift */; };
 		92E0C68E24CAFE72001E1B7F /* JoliApi in CopyFiles */ = {isa = PBXBuildFile; fileRef = 929BA5CA24C7925F00B11188 /* JoliApi */; };
 		92E62CFF2701D169002008A0 /* GradientLoadingBar in Frameworks */ = {isa = PBXBuildFile; productRef = 92E62CFE2701D169002008A0 /* GradientLoadingBar */; };
 		92EBAF53278967C400478958 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92EBAF52278967C400478958 /* JoliApi */; };
@@ -550,6 +551,7 @@
 		927E0E3924E9AFFF00C8257D /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
 		9285148B27B8291600380CF7 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		9285148D27B83FDE00380CF7 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		9285148F27B9758C00380CF7 /* ReorderNowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReorderNowView.swift; sourceTree = "<group>"; };
 		9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitHelper.swift; sourceTree = "<group>"; };
 		928604A3270CA80D00ED2E68 /* ExperiencePurchaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperiencePurchaseView.swift; sourceTree = "<group>"; };
 		92870E48259CF4EC00780CE6 /* PlayroomHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayroomHeaderView.swift; sourceTree = "<group>"; };
@@ -606,7 +608,7 @@
 		92CC32A326E55B3100178465 /* SharedUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SharedUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		92CC32A526E55B3200178465 /* SharedUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SharedUI.h; sourceTree = "<group>"; };
 		92CC32A626E55B3200178465 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeyRestuarantView.swift; sourceTree = "<group>"; };
+		92DD6553267E6104007E22F0 /* RestaurantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestaurantView.swift; sourceTree = "<group>"; };
 		92ECCEDC26C0543F009A2B75 /* LiveExperiencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveExperiencesView.swift; sourceTree = "<group>"; };
 		92F1D5FA2708CF7A00D0743B /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1014,9 +1016,10 @@
 			isa = PBXGroup;
 			children = (
 				92562E2F266D3C38004972E6 /* SiseMealboxView.swift */,
-				92DD6553267E6104007E22F0 /* JoeyRestuarantView.swift */,
+				92DD6553267E6104007E22F0 /* RestaurantView.swift */,
 				920264CF2691D4EA005643E1 /* Restaurant.swift */,
 				921C300B2694B29400527D39 /* TvShowPromoView.swift */,
+				9285148F27B9758C00380CF7 /* ReorderNowView.swift */,
 			);
 			path = Experiences;
 			sourceTree = "<group>";
@@ -1612,6 +1615,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				929BF21C275D6B4600F850F7 /* DynamicExperienceView.swift in Sources */,
+				9285149027B9758C00380CF7 /* ReorderNowView.swift in Sources */,
 				921CAFA826B5F4730078A394 /* YouTubePlayer.swift in Sources */,
 				9217905026C9832A009FC4CE /* VisualCodeDownloadView.swift in Sources */,
 				9228F86C26C07A310053DC04 /* ExperienceData.swift in Sources */,
@@ -1639,7 +1643,7 @@
 				921F6C4926BEA1C00061D236 /* Math.swift in Sources */,
 				921F6C4126BEA05C0061D236 /* UIImage+Extensions.swift in Sources */,
 				92562E30266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
-				92DD6554267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
+				92DD6554267E6104007E22F0 /* RestaurantView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1652,7 +1656,7 @@
 				929BF21D275D6B4600F850F7 /* DynamicExperienceView.swift in Sources */,
 				9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */,
 				920264D12691D4EA005643E1 /* Restaurant.swift in Sources */,
-				92DD6555267E6104007E22F0 /* JoeyRestuarantView.swift in Sources */,
+				92DD6555267E6104007E22F0 /* RestaurantView.swift in Sources */,
 				921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
 				920264CE268FB907005643E1 /* Experience.swift in Sources */,
 				92643786276FB56200E5F1B4 /* Experience+JoliView.swift in Sources */,
@@ -1727,7 +1731,7 @@
 				927A7B11276FE450007105CC /* GridChooserView.swift in Sources */,
 				927A7B05276FE304007105CC /* Consts.swift in Sources */,
 				927A7B26276FEA8B007105CC /* TvShowPromoView.swift in Sources */,
-				927A7B24276FEA85007105CC /* JoeyRestuarantView.swift in Sources */,
+				927A7B24276FEA85007105CC /* RestaurantView.swift in Sources */,
 				927A7B02276FE2E4007105CC /* StoreKitHelper.swift in Sources */,
 				927A7B23276FEA82007105CC /* SiseMealboxView.swift in Sources */,
 				927A7B0C276FE3E8007105CC /* User.swift in Sources */,
@@ -1990,7 +1994,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2018,7 +2022,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2044,7 +2048,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2072,7 +2076,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
