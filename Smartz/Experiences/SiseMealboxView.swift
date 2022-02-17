@@ -113,9 +113,12 @@ public struct MealboxView: Experience, JoliView {
     public static var dataKeys: [PartialKeyPath<ExperienceData>] {
         return [
             \ExperienceData.bannerImageUrl,
+            \ExperienceData.backgroundImageUrl,
+            \ExperienceData.productName,
+            \ExperienceData.brandContactEmail,
             \ExperienceData.socialInstagramUsername,
             \ExperienceData.productImageUrl,
-             \ExperienceData.productDescription,
+            \ExperienceData.productDescription,
         ]
     }
     
@@ -479,6 +482,7 @@ public struct MealboxView: Experience, JoliView {
                                 //.resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: screenWidth - 100, height: screenWidth - 100)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
                                 .padding(.top)
                             
                             Text(dataModel?.productDescription ??  dataModelDefault.productDescription) //.fontWeight(.semibold) )

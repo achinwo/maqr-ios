@@ -181,14 +181,25 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
             
             do {
                 let data = try Data(contentsOf: cachedUrl)
-                guard let image = UIImage(data: data) else {
+                guard var image = UIImage(data: data) else {
                     print("[uploadImages] unable to convert to UIImage: \(imgUrl)")
                     continue
                 }
                 
-                let ext: ImageExtension = imgUrl.pathExtension.lowercased() == "png" ? .png : .jpeg
+                let fileName: String
+                let ext: ImageExtension
                 
-                let savedImgUrl = try await JoliApi.upload(image, fileName: imgUrl.lastPathComponent, ext: ext, baseUrl: baseUrl, urlSession: urlSession)
+                if ["png", "jpg", "jpeg"].contains(imgUrl.pathExtension.lowercased()){
+                    ext = imgUrl.pathExtension.lowercased() == "png" ? .png : .jpeg
+                    fileName = imgUrl.lastPathComponent
+                } else {
+                    ext = .jpeg
+                    image = UIImage(data: image.jpegData(compressionQuality: 1.0) ?? data) ?? image
+                    print("[imageUpload] converting \(imgUrl.pathExtension) to jpeg...")
+                    fileName = imgUrl.deletingPathExtension().appendingPathExtension("jpg").lastPathComponent
+                }
+                
+                let savedImgUrl = try await JoliApi.upload(image, fileName: fileName, ext: ext, baseUrl: baseUrl, urlSession: urlSession)
                 imgs.append((imgUrl, savedImgUrl))
                 
             } catch {
@@ -198,6 +209,15 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         }
        // }
         return imgs
+    }
+    
+    func fromHeicToJpg(heicPath: String, jpgPath: String) -> UIImage? {
+        guard let heicImage = UIImage(named: heicPath) else { return nil }
+        
+        let jpgImageData = heicImage.jpegData(compressionQuality: 1.0)
+        FileManager.default.createFile(atPath: jpgPath, contents: jpgImageData, attributes: nil)
+        let jpgImage = UIImage(named: jpgPath)
+        return jpgImage
     }
     
     public var isNew: Bool {
