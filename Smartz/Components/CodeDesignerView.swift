@@ -57,25 +57,38 @@ public struct CodeDesignerView: JoliView {
     
     let trialActivateCallback: () -> Void
     
+    
+    
+    @State public var scrollProxy: ScrollViewProxy? = nil
+    @AppStorage(key: .purchasesIdsForTesting) var purchasesIdsForTesting: String = .empty
+    
+    @Debounced(delay: 0.3) public var requestStoredExperienceRefreshAt: Date? = nil
+    @Debounced(delay: 1.3) public var requestExperiencePersistAt: Date? = nil
+    
+    @State public var submitting = false {
+        didSet {
+            self.submitEnabled = !submitting
+        }
+    }
+    
+    @State public var visualCode = VisualCodeRecord()
+    
+    @State var submitEnabled = true
+    
+    public var isNewExperience: Bool {
+        return self.experienceData?.isNew ?? true
+    }
+    
     public init(_ experienceType: Binding<Experience.Type?>, _ data: Binding<ExperienceData?>, onActiveTrial: @escaping () -> Void){
         self._experienceData = data
         self._selectedExperience = experienceType
         self.trialActivateCallback = onActiveTrial
     }
     
-    static func experienceClasses() -> [Experience.Type] {
-        return [
-            RestaurantView.self,
-            TvShowPromoView.self,
-            MealboxView.self,
-            ReorderNowView.self,
-        ]
-    }
-    
     var tabNames: [String] {
         var names = ["Pick a Brand Experience"]
         
-        let verb = self.experienceData?.uuid == nil ? "Customise" : "Edit"
+        let verb = isNewExperience ? "Customise" : "Edit"
         
         if let expCls = self.selectedExperience {
             names.append("\(verb) \(expCls.title) Experience")
@@ -223,22 +236,21 @@ public struct CodeDesignerView: JoliView {
         let brandName = brandName.trimmingCharacters(in: .whitespacesAndNewlines)
         let landingPageText = landingPageText.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard !brandName.isEmpty && !landingPageText.isEmpty, self.experienceData == nil else { return }
+        guard let typeName = self.selectedExperience, let exp = Experiences(rawValue: typeName), !brandName.isEmpty && !landingPageText.isEmpty, self.experienceData == nil else { return }
         
-        self.experienceData = ExperienceData(brandName: brandName, landingPageText: landingPageText)
+        self.experienceData = ExperienceData(exp, brandName: brandName, landingPageText: landingPageText)
     }
     
     func customiseExperienceView(_ experienceClass: Experience.Type) -> some View {
         VStack(){
             if let experienceData = self.experienceData {
-                ExperienceDataView(experienceClass, experienceData) { data in
+                ExperienceDataView(experienceData) { data in
                     self.experienceData = data
                     self.selectedTab = 2
                     
                     self.brandName = data.brandName
                 }
                 .padding(.bottom, safeAreaInsets.bottom * 2)
-                //.padding(.top, safeAreaInsets.top)
             } else {
                 VStack(){
                     Text("What's Your Brand Name?")
@@ -290,44 +302,16 @@ public struct CodeDesignerView: JoliView {
                     .disabled(brandName.isEmpty || landingPageText.isEmpty)
                     .padding()
                     .padding(.top)
-                    
-                    //                    Button(){
-                    //                        self.readyToDownload = true
-                    //                        self.trialActivateCallback()
-                    //                    } label: {
-                    //                        Label("Try It", systemImage: "arrow.forward")
-                    //                    }
-                    //                    .disabled(brandName.isEmpty || landingPageText.isEmpty)
-                    //                    .padding()
-                    //                    .padding(.top)
                 }
                 .padding()
-                //                .simultaneousGesture(
-                //                    TapGesture()
-                //                        .onEnded() { value in
-                //                            guard appCoordinator.keyboardHeight > 0 else {
-                //                                return
-                //                            }
-                //
-                //                            appCoordinator.dismissKeyboard()
-                //                        }
-                //                )
             }
             Spacer()
         }
     }
     
-    var confirmAndPayView: some View {
-        VisualCodeDownloadView()
-    }
-    
-    @State var submitEnabled = true
-    //@State private var isShowingMessages = false
-    
     var views: [(view: AnyView, index: Int)] {
         var vs: [(view: AnyView, index: Int)] = [
             (pickExperienceView
-                //.background(Color.blue)
                 .eraseToAnyView(), 0),
         ]
         
@@ -335,7 +319,6 @@ public struct CodeDesignerView: JoliView {
         
         vs.append((
             customiseExperienceView(selectedExperience)
-                //.background(Color.green)
                 .eraseToAnyView(), 1
         ))
         
@@ -354,29 +337,7 @@ public struct CodeDesignerView: JoliView {
         }
         .id("\(String(describing: expData.uuid))-\(String(describing: expData.stored?.updatedAt))-\(String(describing: expData.stored?.visualcodes?.last?.updatedAt))")
         
-//        .sheet(isPresented: self.$isShowingMessages) {
-//            MessageView(recipient: "+447884873600")
-//                .ignoresSafeArea()
-//        }
-//        .overlay(
-//            Button("Show Messages") {
-//                self.isShowingMessages = true
-//            }
-//        )
-        
         vs.append((codeView.eraseToAnyView(), 2))
-        
-        //}
-        
-//        if readyToDownload {
-//            vs.append((
-//                confirmAndPayView
-//                    //.background(Color.purple)
-//                    .eraseToAnyView(), 3
-//            ))
-//        }
-        //UIImageWriteToSavedPhotosAlbum
-        //print("Views count: \(vs.count)")
         return vs
     }
     
@@ -424,19 +385,6 @@ public struct CodeDesignerView: JoliView {
         
     }
     
-    @State public var scrollProxy: ScrollViewProxy? = nil
-    
-    @Debounced(delay: 0.3) public var requestStoredExperienceRefreshAt: Date? = nil
-    @Debounced(delay: 1.3) public var requestExperiencePersistAt: Date? = nil
-    
-    @State public var submitting = false {
-        didSet {
-            self.submitEnabled = !submitting
-        }
-    }
-    
-    @State public var visualCode = VisualCodeRecord()
-    
     public var tabView: some View {
         TabView(selection: $selectedTab) {
             ForEach(self.views, id: \.index){ item in
@@ -479,26 +427,8 @@ public struct CodeDesignerView: JoliView {
                 .frame(width: screenWidth)
                 .tag(item.index)
                 .id("code-designer-tabview-\(item.index)")
-                
-                //                    .overlay(
-                //                        VStack(){
-                //                            Spacer()
-                //
-                //                            Button("Save to image") {
-                //                                let image = item.view.environmentObject(appCoordinator).snapshot(.systemBackground)
-                //
-                //                                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-                //                            }
-                //                            Spacer()
-                //                        }
-                //                        .environmentObject(appCoordinator)
-                //                    )
             }
         }
-    }
-    
-    public static func experienceClsByName(_ typeName: String) -> Experience.Type? {
-        return Self.experienceClasses().first() { String(describing: $0) == typeName }
     }
     
     private func onExperinceDataChanged(_ value: ExperienceData?) {
@@ -506,20 +436,15 @@ public struct CodeDesignerView: JoliView {
         self.brandName = value?.brandName ?? self.brandName
         self.landingPageText = value?.landingPageText ?? self.landingPageText
         
-        print("[Experience#onChange] \(value)")
+        print("[Experience#onChange] \(String(describing: value))")
         
-        guard let expTypeName = value?.experienceTypeName else { return }
+        guard let expTypeName = value?.experienceTypeName, let expCls = Experiences(typeName: expTypeName)?.rawValue else { return }
         
-        self.selectedExperience = Self.experienceClsByName(expTypeName)
+        self.selectedExperience = expCls
         self.visualCode = value?.stored?.visualcodes?.last?.builder() ?? self.visualCode
         
-        print("[Experience#onChange] EXP: \(self.selectedExperience)")
+        print("[Experience#onChange] EXP: \(String(describing: self.selectedExperience))")
     }
-    
-//    public static func experienceClsByName(_ typeName: String) -> Experience.Type? {
-//        return Self.experienceClasses().first() { String(describing: $0) == typeName }
-//    }
-    @AppStorage(key: .purchasesIdsForTesting) var purchasesIdsForTesting: String = .empty
     
     var hasSubscription: Bool {
         
@@ -562,8 +487,6 @@ public struct CodeDesignerView: JoliView {
                 }
                 .navigationBarTitle(Text("Purchase \(expCls.title) Experience"), displayMode: .inline)
             }
-                //                                    .environment(\.colorScheme, .dark)
-                //                                    .backgroundColor(.fixedGray)
             .eraseToAnyView()
         }
         
@@ -573,7 +496,6 @@ public struct CodeDesignerView: JoliView {
     }
     
     public var contentView: some View {
-        //return //ZStack(alignment: .top){
         return self.tabView
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .interactive))
@@ -646,32 +568,21 @@ public struct CodeDesignerView: JoliView {
                         }
                         .disabled(brandName.isEmpty || landingPageText.isEmpty || submitting)
                     }
-//                    else {
-//                        Button(){
-//                            print("scroll: section-creator - \(String(describing: self.scrollProxy))")
-//                            withAnimation(){
-//                                self.scrollProxy?.scrollTo("section-creator", anchor: .top)
-//                            }
-//                        } label: {
-//                            Image(systemName: "plus")
-//                        }
-//                    }
                 }
             }
             .id("code-designer-tabview")
             .onChange(of: self.experienceData) { value in
                 self.updateStoredExperience()
-                print("[Experience#onChange] \(value)")
+                print("[Experience#onChange] \(String(describing: value))")
                 
                 guard let expTypeName = value?.experienceTypeName else { return }
                 
-                self.selectedExperience = Self.experienceClsByName(expTypeName)
+                self.selectedExperience = Experiences(typeName: expTypeName)?.rawValue
             }
             .ifLet(self.experienceData) { view, experience in
                 view.onReceive(experience.objectWillChange) { value in
                     DispatchQueue.main.async {
                         requestExperiencePersistAt = Date()
-                        //
                     }
                 }
             }
@@ -715,25 +626,28 @@ public struct CodeDesignerView: JoliView {
                     return
                 }
                 
-                self.selectedExperience = Self.experienceClsByName(exp.experienceTypeName)
+                self.selectedExperience = Experiences(typeName: exp.experienceTypeName)?.rawValue
                 
                 let expData = exp.experienceData
-                expData.logoImageUrl = rewriteCachesUrl(exp.experienceData.logoImageUrl)
-                expData.bannerImageUrl = rewriteCachesUrl(exp.experienceData.bannerImageUrl)
-                expData.bannerVideoUrl = rewriteCachesUrl(exp.experienceData.bannerVideoUrl)
-                expData.backgroundImageUrl = rewriteCachesUrl(exp.experienceData.backgroundImageUrl)
-                expData.productImageUrl = rewriteCachesUrl(exp.experienceData.productImageUrl)
+                expData.experienceTypeName = exp.experienceTypeName
+                expData.logoImageUrl = exp.experienceData.logoImageUrl?.cached
+                expData.bannerImageUrl = exp.experienceData.bannerImageUrl?.cached
+                expData.bannerVideoUrl = exp.experienceData.bannerVideoUrl?.cached
+                expData.backgroundImageUrl = exp.experienceData.backgroundImageUrl?.cached
+                expData.productImageUrl = exp.experienceData.productImageUrl?.cached
                 
                 expData.items = expData.items.map() { item -> ExperienceData.Item in
+                    
                     guard let imageUrl = item.imageName, let url = URL(string: imageUrl) else {
                         return item
                     }
                     
                     var newItem = item
-                    newItem.imageName = rewriteCachesUrl(url)?.absoluteString
+                    newItem.imageName = url.cached.absoluteString
+                    
                     return newItem
                 }
-                
+                print("[LOADING] event type: \(expData.experienceTypeName) - \(exp.experienceTypeName)")
                 self.brandName = expData.brandName
                 self.landingPageText = expData.landingPageText
                 
@@ -765,25 +679,12 @@ public struct CodeDesignerView: JoliView {
         //.navigationBarTitle(Text(tabNames[selectedTab]).multilineTextAlignment(.leading))
     }
     
-    private func rewriteCachesUrl(_ url: URL?) -> URL? {
-        
-        guard let url = url,
-              let cachesDirUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first, url.isFileURL else {
-            return url
-        }
-        
-        let newUrl = cachesDirUrl.appendingPathComponent(url.lastPathComponent)
-        print("[Test] \(url) --> \(newUrl) [\(Bundle.main.bundlePath)]")
-        return newUrl
-    }
-    
     func updateStoredExperience() {
         
         guard let experience = self.experienceData else { return }
         
-        let expClsName = selectedExperience?.className ?? TvShowPromoView.className
         let localData = LocalExperienceData(appVersion: AppCoordinator.version.description,
-                                            experienceTypeName: expClsName,
+                                            experienceTypeName: experience.typeInfo?.rawValue.className ?? TvShowPromoView.className,
                                             experienceData: experience)
         
         let encoder = experience.jsonEncoder

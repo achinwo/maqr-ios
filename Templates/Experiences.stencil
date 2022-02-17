@@ -50,8 +50,8 @@ public extension PartialKeyPath where Root == ExperienceData {
 
 public extension ExperienceData {
 
-    static func fromDefaults(_ defaults: Defaults = .init()) -> Self {
-        let data = Self.init()
+    static func fromDefaults(_ defaults: Defaults = .init(), type: Experiences) -> Self {
+        let data = Self.init(type)
     {% for variable in type.ExperienceData.storedVariables|annotated: "default" %}
         data.{{ variable.name }}{#
         #} = {#

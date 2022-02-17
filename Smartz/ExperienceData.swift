@@ -177,8 +177,10 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
                 continue
             }
             
+            let cachedUrl = imgUrl.cached
+            
             do {
-                let data = try Data(contentsOf: imgUrl)
+                let data = try Data(contentsOf: cachedUrl)
                 guard let image = UIImage(data: data) else {
                     print("[uploadImages] unable to convert to UIImage: \(imgUrl)")
                     continue
@@ -196,6 +198,10 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         }
        // }
         return imgs
+    }
+    
+    public var isNew: Bool {
+        return uuid == nil
     }
     
     static let DEFAULT_BRAND_NAME = "SmartStikr"
@@ -275,23 +281,22 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Items", description = "List brand experience items", default = "[]"
     @Published var items: [ExperienceData.Item] = []
     
-    convenience init<ExpCls: Experience>(_ typeCls: ExpCls.Type? = nil, brandName: String? = nil, landingPageText: MultilineString? = nil) {
+    public convenience init<ExpCls: Experience>(type typeCls: ExpCls.Type?, brandName: String? = nil, landingPageText: MultilineString? = nil) {
         if let cls =  typeCls {
-            self.init(String(describing: cls), brandName: brandName, landingPageText: landingPageText)
+            self.init(Experiences(rawValue: cls), brandName: brandName, landingPageText: landingPageText)
         } else {
-            
             self.init(nil, brandName: brandName, landingPageText: landingPageText)
         }
     }
     
-    required init(_ typeName: String? = nil, brandName: String? = nil, landingPageText: MultilineString? = nil) {
-        self.experienceTypeName = typeName
+    required init(_ typeName: Experiences?, brandName: String? = nil, landingPageText: MultilineString? = nil) {
+        self.experienceTypeName = typeName?.rawValue.className
         self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
         self.landingPageText = landingPageText ?? "Welcome to YOUR brand"
     }
     
     static func fromExperienceData(_ experienceData: PersistedType, baseUrl: URL) -> ExperienceData {
-        let res = ExperienceData.init(experienceData.experienceTypeName, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+        let res = ExperienceData.init(Experiences.fromTypeName(experienceData.experienceTypeName), brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
         res.uuid = experienceData.uuid
         
         res.logoImageUrl = URL.fromString(experienceData.logoImageUrl)
@@ -376,6 +381,10 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
 }
 
 extension ExperienceData {
+    
+    public var typeInfo: Experiences? {
+        return Experiences.fromTypeName(self.experienceTypeName)
+    }
     
     static func unwrap(_ value: Any) -> Any? {
         let mirror = Mirror(reflecting: value)

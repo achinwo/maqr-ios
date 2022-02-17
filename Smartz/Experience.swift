@@ -109,6 +109,19 @@ public enum Experiences: RawRepresentable, CaseIterable {
     
 }
 
+extension Experiences {
+    
+    public static func fromTypeName(_ typeName: String?) -> Experiences? {
+        guard let typeName = typeName, let typeInfo = Experiences(typeName: typeName) else {
+            //print("No type info: \(typeName)")
+            return nil
+        }
+        
+        return typeInfo
+    }
+    
+}
+
 extension StikrExperienceData {
     
     var type: Experience.Type? {

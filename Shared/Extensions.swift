@@ -570,3 +570,17 @@ public extension View {
     }
     
 }
+
+
+public extension URL {
+    
+    var cached: URL {
+        
+        guard let cachesDirUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first, self.isFileURL else {
+            return self
+        }
+        
+        return cachesDirUrl.appendingPathComponent(self.lastPathComponent)
+    }
+    
+}

@@ -95,7 +95,7 @@ let crazyworldDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(staticS
                                                         ExperienceData.Item.makeCastmember("Aret Edet", subtitle: "Don’s younger sister who frowns at his polygamous ways. She considers the first wife Adaeze the only wife and says the others are illegitimate. She is always at logger heads with Meks and Kemi", alias: "Aunty Frances", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.21.38.png"),
                                                         ExperienceData.Item.makeCastmember("John Owotorufa", subtitle: "Sammy is the first son of Adaeze, and in the university. He is very flirtatious like his father and doesn’t have issues with his father’s mistresses.", alias: "Sammy", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.21.57.png"),
                                                        ]
-))
+                                                      ), type: .brandPromo)
 
 let siseMealboxDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/sise_logo_full.png"),
                                                        bannerImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/sise_meal_banner.jpg"),
@@ -129,7 +129,7 @@ let siseMealboxDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(static
                                                         .makeMealStep("Cover and leave to simmer", description: "Cover and leave to simmer for 6-10mins on medium heat", duration: 60 * 10),
                                                         .makeMealStep("Serve warn and enjoy", description: "Serve warn and enjoy your meal"),
                                                        ]
-                                                      )
+                                                       ), type: .recipe
 )
 
 //

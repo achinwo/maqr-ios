@@ -6,9 +6,7 @@ import SwiftUI
 import JoliPlayground
 import JoliCore
 import JoliApi
-import Promises
 import PartialSheet
-import CancellationToken
 import Combine
 import Starscream
 
@@ -16,20 +14,21 @@ var soc: Socket!
 var cancellable: AnyCancellable? = nil
 
 func logicMain() -> Void {
-    print("Logic main triggered")
-    let track:Track = SEED_DATA.tracks.first!
-    
-    soc = Socket()
-    soc.connect()
-    cancellable = soc
-        .sink(){ completion in
-            print("completion: \(completion)")
-        } receiveValue: { value in
-            print("value: \(value)")
-        }
-    
-//    let liveTrack: LiveTrack = track.play()
-    PlaygroundPage.current.needsIndefiniteExecution = true
+    let url = URL(fileURLWithPath: "myImage.png")
+    print("Logic main triggered - \(url.absoluteString)")
+//    let track:Track = SEED_DATA.tracks.first!
+//
+//    soc = Socket()
+//    soc.connect()
+//    cancellable = soc
+//        .sink(){ completion in
+//            print("completion: \(completion)")
+//        } receiveValue: { value in
+//            print("value: \(value)")
+//        }
+//
+////    let liveTrack: LiveTrack = track.play()
+//    PlaygroundPage.current.needsIndefiniteExecution = true
 }
 
 struct MasterView: View {
@@ -78,7 +77,7 @@ func uiMain() -> Void {
 }
 
 
-let main: () -> Void = uiMain
+let main: () -> Void = logicMain
 
 main()
 

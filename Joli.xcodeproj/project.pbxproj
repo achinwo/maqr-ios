@@ -48,7 +48,6 @@
 		921F6C3026BE81C00061D236 /* VisualCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C2F26BE81C00061D236 /* VisualCodeView.swift */; };
 		921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
 		921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
-		921F6C3626BE9CCD0061D236 /* DeepLabV3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3526BE9CCD0061D236 /* DeepLabV3.mlmodel */; settings = {ATTRIBUTES = (codegen, ); }; };
 		921F6C3926BE9DF80061D236 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 921F6C3826BE9DF80061D236 /* Preview Assets.xcassets */; };
 		921F6C4126BEA05C0061D236 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3E26BEA05C0061D236 /* UIImage+Extensions.swift */; };
 		921F6C4226BEA05C0061D236 /* CGImage+CVPixelBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3F26BEA05C0061D236 /* CGImage+CVPixelBuffer.swift */; };
@@ -503,7 +502,6 @@
 		921CAFAA26B5F4F10078A394 /* YTPlayer.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = YTPlayer.html; sourceTree = "<group>"; };
 		921F6C2F26BE81C00061D236 /* VisualCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualCodeView.swift; sourceTree = "<group>"; };
 		921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticExperienceData.swift; sourceTree = "<group>"; };
-		921F6C3526BE9CCD0061D236 /* DeepLabV3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = DeepLabV3.mlmodel; sourceTree = "<group>"; };
 		921F6C3826BE9DF80061D236 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		921F6C3E26BEA05C0061D236 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 		921F6C3F26BEA05C0061D236 /* CGImage+CVPixelBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGImage+CVPixelBuffer.swift"; sourceTree = "<group>"; };
@@ -740,7 +738,6 @@
 				921F6C3D26BE9F880061D236 /* CoreMlHelpers */,
 				921F6C3726BE9DF80061D236 /* Preview Content */,
 				9202D3DD2659B6E900D5974F /* Info.plist */,
-				921F6C3526BE9CCD0061D236 /* DeepLabV3.mlmodel */,
 				920264DB26924653005643E1 /* joey_sherway_data.json */,
 				9202D4022659B7CD00D5974F /* Smartz.entitlements */,
 				9202D3D82659B6E900D5974F /* Assets.xcassets */,
@@ -1624,7 +1621,6 @@
 				921F6C4326BEA05C0061D236 /* MLMultiArray+Image.swift in Sources */,
 				921F6C4226BEA05C0061D236 /* CGImage+CVPixelBuffer.swift in Sources */,
 				9285148C27B8291600380CF7 /* AboutView.swift in Sources */,
-				921F6C3626BE9CCD0061D236 /* DeepLabV3.mlmodel in Sources */,
 				920264D02691D4EA005643E1 /* Restaurant.swift in Sources */,
 				92643785276FB53C00E5F1B4 /* Experience+JoliView.swift in Sources */,
 				9285148E27B83FDE00380CF7 /* HomeView.swift in Sources */,

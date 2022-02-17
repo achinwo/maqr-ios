@@ -313,7 +313,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         
                         let expCopy = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
                         
-                        let experienceDataView = ExperienceDataView(typeInfo.rawValue, expCopy){ data in
+                        let experienceDataView = ExperienceDataView(expCopy){ data in
                                 self.experienceData = data
                                 self.isEditingExperience = false
                             
