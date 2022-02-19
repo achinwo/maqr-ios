@@ -296,27 +296,24 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     @Published var uuid: String? = nil
     
-    var experienceTypeName: String? = nil
+    var experienceTypeInfo: Experiences
+    
+    var experienceTypeName: String { experienceTypeInfo.rawValue.className }
     
     // sourcery: title = "Items", description = "List brand experience items", default = "[]"
     @Published var items: [ExperienceData.Item] = []
     
-    public convenience init<ExpCls: Experience>(type typeCls: ExpCls.Type?, brandName: String? = nil, landingPageText: MultilineString? = nil) {
-        if let cls =  typeCls {
-            self.init(Experiences(rawValue: cls), brandName: brandName, landingPageText: landingPageText)
-        } else {
-            self.init(nil, brandName: brandName, landingPageText: landingPageText)
-        }
-    }
-    
-    required init(_ typeName: Experiences?, brandName: String? = nil, landingPageText: MultilineString? = nil) {
-        self.experienceTypeName = typeName?.rawValue.className
+    required init(_ typeInfo: Experiences, brandName: String? = nil, landingPageText: MultilineString? = nil) {
+        self.experienceTypeInfo = typeInfo
         self.brandName = brandName ?? Self.DEFAULT_BRAND_NAME
         self.landingPageText = landingPageText ?? "Welcome to YOUR brand"
     }
     
-    static func fromExperienceData(_ experienceData: PersistedType, baseUrl: URL) -> ExperienceData {
-        let res = ExperienceData.init(Experiences.fromTypeName(experienceData.experienceTypeName), brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
+    static func fromExperienceData(_ experienceData: PersistedType, baseUrl: URL) -> ExperienceData? {
+        
+        guard let typeInfo = Experiences(typeName: experienceData.experienceTypeName) else { return nil }
+        
+        let res = ExperienceData.init(typeInfo, brandName: experienceData.brandName, landingPageText: experienceData.landingPageText)
         res.uuid = experienceData.uuid
         
         res.logoImageUrl = URL.fromString(experienceData.logoImageUrl)
@@ -371,7 +368,13 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         uuid = try container.decode(String?.self, forKey: .uuid)
-        experienceTypeName = try container.decode(String?.self, forKey: .experienceTypeName)
+        let experienceTypeName = try container.decode(String.self, forKey: .experienceTypeName)
+
+        guard let experienceTypeInfo = Experiences(typeName: experienceTypeName) else {
+            throw SerializationError.invalidData("Unable resolve type for '\(experienceTypeName)'")
+        }
+
+        self.experienceTypeInfo = experienceTypeInfo
         stored = try container.decode(PersistedType?.self, forKey: .stored)
 
         logoImageUrl = try container.decode(URL?.self, forKey: .logoImageUrl)
@@ -401,10 +404,6 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
 }
 
 extension ExperienceData {
-    
-    public var typeInfo: Experiences? {
-        return Experiences.fromTypeName(self.experienceTypeName)
-    }
     
     static func unwrap(_ value: Any) -> Any? {
         let mirror = Mirror(reflecting: value)
@@ -441,4 +440,8 @@ extension ExperienceData {
         return missingValues.isEmpty
     }
     
+}
+
+public enum SerializationError: Error {
+    case invalidData(String)
 }

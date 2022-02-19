@@ -683,22 +683,20 @@ public struct MealboxView: Experience, JoliView {
                         }
                         //.resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: screenWidth, height: screenWidth / 2)
-                        //.clipped()
+                        .frame(width: screenWidth)
+                        .frame(maxHeight: screenWidth / 2)
+                        .clipped()
                         .overlay(
                             GeometryReader(){ proxy in
-                                ZStack(){
-                                    
-                                    
-                                    LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .top, endPoint: .bottom)
-                                        .frame(width: proxy.size.width, height: proxy.size.height)
-                                    
-                                }
+                                LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .top, endPoint: .bottom)
+                                    .frame(width: proxy.size.width, height: proxy.size.height)
                             }
                         )
                     
                     Divider()
-                    NetworkImage(url: dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl) {
+                    
+                    VStack() {
+                        NetworkImage(url: dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl) {
                             ProgressView()
                         }
                         .frame(width: screenWidth / 2, height: screenWidth / 2)
@@ -706,46 +704,47 @@ public struct MealboxView: Experience, JoliView {
                         .clipShape(Circle())
                         .overlay(Circle()
                                     .stroke(Color.secondaryLabel, lineWidth: 1))
-                        .offset(x: 0, y: (screenWidth / 24) * -1)
                         .shadow(radius: 1)
-                        .id("brand")
-                    //
-                    
-                    VStack(){
-                    
-                        Section(header: Text("HELLO & WELCOME").font(.title3)) {
-                            Text(dataModel?.brandName ?? dataModelDefault.brandName).font(.subheadline.weight(.semibold))
-                            Text(dataModel?.landingPageText ?? dataModelDefault.landingPageText)
-                                .font(.body.weight(.light))
-                                .multilineTextAlignment(.center)
-                        }
                         .padding()
-                    }
-                    .frame(width: screenWidth - 100)
-                    .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .padding(.bottom)
-                    .id("body")
-                    
-                    Button(){
-                        self.selectedTab = .steps
-                    } label: {
-                        HStack(){
-                            Spacer()
-                            Text("Get to Cooking! 🧑🏾‍🍳")
-                                .font(.title3)
-                                .foregroundColor(.label)
-                            Spacer()
+                        .id("brand")
+                        
+                        VStack(){
+                            
+                            Section(header: Text("HELLO & WELCOME").font(.title3)) {
+                                Text(dataModel?.brandName ?? dataModelDefault.brandName).font(.subheadline.weight(.semibold))
+                                Text(dataModel?.landingPageText ?? dataModelDefault.landingPageText)
+                                    .font(.body.weight(.light))
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding()
                         }
+                        .frame(width: screenWidth - 100)
+                        .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .padding(.bottom)
+                        .id("body")
+                        
+                        Button(){
+                            self.selectedTab = .steps
+                        } label: {
+                            HStack(){
+                                Spacer()
+                                Text("Get to Cooking! 🧑🏾‍🍳")
+                                    .font(.title3)
+                                    .foregroundColor(.label)
+                                Spacer()
+                            }
+                        }
+                        .background(Color.pink)
+                        .clipShape(RoundedRectangle(
+                            cornerRadius: 8,
+                            style: .continuous
+                        ))
+                        .frame(width: screenWidth - 100, height: 60)
+                        .accentColor(.orange)
+                        .buttonStyle(OutlineButton())
                     }
-                    .background(Color.pink)
-                    .clipShape(RoundedRectangle(
-                        cornerRadius: 8,
-                        style: .continuous
-                    ))
-                    .frame(width: screenWidth - 100, height: 60)
-                    .accentColor(.orange)
-                    .buttonStyle(OutlineButton())
+                    .offset(x: 0, y: (screenWidth / 5.0) * -1)
                     
                     Spacer()
                 }
@@ -761,15 +760,6 @@ public struct MealboxView: Experience, JoliView {
                     }
                 }
             )
-            .onAppear(){
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    withAnimation(){
-                        guard selectedTab == .information else { return }
-                        
-                        proxy.scrollTo("body", anchor: .center)
-                    }
-                }
-            }
         }
     }
     
@@ -779,11 +769,7 @@ public struct MealboxView: Experience, JoliView {
             Group(){
                 if self.selectedTab == .steps {
                     stepsView
-                }
-//                else if self.selectedTab == .gallery {
-//                    galleryView
-//                }
-                else if self.selectedTab == .information {
+                } else if self.selectedTab == .information {
                     infoView
                 } else if self.selectedTab == .help {
                     helpView

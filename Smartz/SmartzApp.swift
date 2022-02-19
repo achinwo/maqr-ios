@@ -159,7 +159,7 @@ struct SmartzApp: AppClip {
                     //let isVisible = trialData != nil || ![AppLocation.home, AppLocation.unset].contains(currentLocation)
                     Group(){
                         if let trial = trialData {
-                            trial.experience.toView(trial.data).overlay(exitButton)
+                            trial.experienceTypeInfo.toView(trial).overlay(exitButton)
                         } else if ![AppLocation.home, AppLocation.unset].contains(currentLocation) {
                             Group(){
                                 if case let AppLocation.product(storeId, _) = currentLocation,
@@ -200,4 +200,4 @@ struct SmartzApp: AppClip {
     }
 }
 
-public typealias TrialInfo = (experience: Experiences, data: ExperienceData)
+public typealias TrialInfo = ExperienceData

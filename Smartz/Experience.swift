@@ -129,9 +129,7 @@ extension StikrExperienceData {
     }
     
     var typeInfo: Experiences? {
-        guard let typeName = self.experienceTypeName else { return nil }
-        
-        return Experiences(typeName: typeName)
+        return Experiences(typeName: self.experienceTypeName)
     }
     
 }

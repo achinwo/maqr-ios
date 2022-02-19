@@ -116,7 +116,13 @@ extension ExperienceData: Encodable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         uuid = try container.decode(String?.self, forKey: .uuid)
-        experienceTypeName = try container.decode(String?.self, forKey: .experienceTypeName)
+        let experienceTypeName = try container.decode(String.self, forKey: .experienceTypeName)
+
+        guard let experienceTypeInfo = Experiences(typeName: experienceTypeName) else {
+            throw SerializationError.invalidData("Unable resolve type for '\(experienceTypeName)'")
+        }
+
+        self.experienceTypeInfo = experienceTypeInfo
         stored = try container.decode(PersistedType?.self, forKey: .stored)
 
     {% for variable in type.ExperienceData.storedVariables|annotated: "default" %}    {#

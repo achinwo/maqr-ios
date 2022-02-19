@@ -167,12 +167,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     var appclipsCodesView: some View {
         CodeDesignerView($experienceType, $experienceData) {
-            
-            guard let data = experienceData, let typeName = data.experienceTypeName, let typeInfo = Experiences(typeName: typeName) else {
-                return
-            }
-            
-            self.trialInfo = (typeInfo, data)
+            self.trialInfo = experienceData
         }
     }
     
@@ -309,9 +304,9 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         print("[historyView] ignoring set: \(String(describing: newValue))")
                     }
                     
-                    if let expData = self.experienceData, let stikrExp = expData.stored, let typeName = expData.experienceTypeName, let typeInfo = Experiences(typeName: typeName) {
+                    if let stikrExp = self.experienceData?.stored, let expCopy = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp) {
                         
-                        let expCopy = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
+                        
                         
                         let experienceDataView = ExperienceDataView(expCopy){ data in
                                 self.experienceData = data
@@ -323,10 +318,10 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                                 }
                             
                             }
-                            .navigationBarTitle(expData.brandName)
+                            .navigationBarTitle(expCopy.brandName)
                             .navigationBarItems(trailing: Button(){
                                 appCoordinator.dismissKeyboard()
-                                self.trialInfo = (typeInfo, expCopy)
+                                self.trialInfo = expCopy
                             } label: {
                                 Text("Try It!")
                             })
@@ -352,11 +347,8 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                                 self.visualCode = visualCode.builder()
                                 
                             case .launch:
-                                guard let typeName = stikrExp.experienceTypeName, let typeInfo = Experiences(typeName: typeName) else {
-                                    return
-                                }
+                                self.trialInfo = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp)
                                 
-                                self.trialInfo = (typeInfo, ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp))
                             case .edit:
                                 print("[Home] editing experience")
                                 isEditingExperience = true

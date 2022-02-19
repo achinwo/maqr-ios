@@ -24,7 +24,6 @@ extension Array where Element == ExperienceDataKeyPath.Metadata {
 
 public struct LocalExperienceData: Codable {
     let appVersion: String
-    let experienceTypeName: String
     let experienceData: ExperienceData
 }
 
@@ -345,8 +344,6 @@ public struct CodeDesignerView: JoliView {
     @MainActor
     func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) async throws -> StikrExperienceData {
         self.submitting = true
-        let expType = self.selectedExperience ?? TvShowPromoView.self
-        expData.experienceTypeName = String(describing: expType)
         
         defer {
             self.submitting = false
@@ -362,7 +359,7 @@ public struct CodeDesignerView: JoliView {
                 code.createdById = 17
                 code.updatedById = 17
                 
-                code.url = JoliApi.BaseUrl.prod.rawValue.http.appendingPathComponent(expType.basePath).appendingPathComponent(saved.uuid).standardized.absoluteString
+                code.url = JoliApi.BaseUrl.prod.rawValue.http.appendingPathComponent(expData.experienceTypeInfo.rawValue.basePath).appendingPathComponent(saved.uuid).standardized.absoluteString
                 code.experienceId = saved.id
                 code.style = code.style ?? Style.appclip.rawValue
                 let _ = try await code.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
@@ -626,10 +623,10 @@ public struct CodeDesignerView: JoliView {
                     return
                 }
                 
-                self.selectedExperience = Experiences(typeName: exp.experienceTypeName)?.rawValue
-                
                 let expData = exp.experienceData
-                expData.experienceTypeName = exp.experienceTypeName
+                
+                self.selectedExperience = expData.experienceTypeInfo.rawValue
+                
                 expData.logoImageUrl = exp.experienceData.logoImageUrl?.cached
                 expData.bannerImageUrl = exp.experienceData.bannerImageUrl?.cached
                 expData.bannerVideoUrl = exp.experienceData.bannerVideoUrl?.cached
@@ -647,7 +644,7 @@ public struct CodeDesignerView: JoliView {
                     
                     return newItem
                 }
-                print("[LOADING] event type: \(expData.experienceTypeName) - \(exp.experienceTypeName)")
+                
                 self.brandName = expData.brandName
                 self.landingPageText = expData.landingPageText
                 
@@ -683,9 +680,7 @@ public struct CodeDesignerView: JoliView {
         
         guard let experience = self.experienceData else { return }
         
-        let localData = LocalExperienceData(appVersion: AppCoordinator.version.description,
-                                            experienceTypeName: experience.typeInfo?.rawValue.className ?? TvShowPromoView.className,
-                                            experienceData: experience)
+        let localData = LocalExperienceData(appVersion: AppCoordinator.version.description, experienceData: experience)
         
         let encoder = experience.jsonEncoder
         guard let val = try? encoder.encode(localData) else {
