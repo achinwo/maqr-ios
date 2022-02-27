@@ -73,7 +73,25 @@ public struct TvShowPromoView: Experience, JoliView {
     @State var arrivedAt: Date? = Date()
 //    @State var trailerUrl = URL(string: "https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4")!
     //"https://drive.google.com/uc?export=download&id=1thleK6efGtQ_hzTinD6jgHryLnkWBnHC")!
-    @State var menu: [TvShowCastInfo] = []
+    var castMembers: [TvShowCastInfo] {
+        var castMembers: [TvShowCastInfo] = []
+        
+        for itm in self.dataModel?.items ?? [] {
+            
+            guard let title = itm.title,
+                  let subtitle = itm.subtitle,
+                  let alias = itm.aliasTitle,
+                  let imgName = itm.imageName,
+                  let url = URL(string: imgName) else {
+                continue
+            }
+            
+            castMembers.append(TvShowCastInfo(name: title, characterName: alias, imageUrl: url, bio: subtitle))
+        }
+        
+        return castMembers
+    }
+    
     @AppStorage("isvideomuted-crazyworld") var isVideoMuted = false
     
     public init(_ data: ExperienceData? = nil, editMode: Binding<EditingState> = .constant(.inactive)){
@@ -97,40 +115,6 @@ public struct TvShowPromoView: Experience, JoliView {
         let cachesDirectoryUrl = urls[0]
         let fileUrl = cachesDirectoryUrl.appendingPathComponent("crazyworld_netflix_trailer_saved.mp4")
         return fileUrl
-    }
-    
-    func fetchVideo(_ force: Bool = false){
-        print("[fetchVideo] loading video...")
-            
-        if force && FileManager.default.fileExists(atPath: cacheFileUrl.path) {
-            try? FileManager.default.removeItem(atPath: cacheFileUrl.path)
-        }
-        
-        guard !FileManager.default.fileExists(atPath: cacheFileUrl.path) else {
-            self.videoLocalUrl = cacheFileUrl
-            return
-        }
-        
-        DispatchQueue.global(qos: .background).async {
-            guard let data = try? Data(contentsOf: dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl) else {
-                print("Video fetch failed!")
-                return
-            }
-            
-            guard Int(data.count) / (1000 * 1000) > 0 else {
-                print("Video file size is too small")
-                return
-            }
-            
-            FileManager.default.createFile(atPath: cacheFileUrl.path, contents: data)
-            
-            let bcf = ByteCountFormatter()
-            bcf.allowedUnits = [.useMB] // optional: restricts the units to MB only
-            bcf.countStyle = .file
-            let string = bcf.string(fromByteCount: Int64(data.count))
-            //https://storage.googleapis.com/joli-app-bucket/images/crazyworld_netflix_trailer.mp4
-            print("Wrote video to cache: \(cacheFileUrl.path) (\(string))")
-        }
     }
     
     @State var videoLocalUrl: URL? = nil
@@ -191,33 +175,7 @@ public struct TvShowPromoView: Experience, JoliView {
                         .aspectRatio(contentMode: .fill)
                     .frame(height: screenWidth / 1.2)
                     .frame(maxWidth: screenWidth)
-                    //, maxHeight: UIScreen.main.bounds.width / 0.9)
-                        .clipped()
-//                        .overlay(
-//                            GeometryReader(){ proxy in
-//                                VStack(){
-//                                    Spacer()
-//                                    HStack(){
-//                                        Spacer()
-//                                        Button(){
-//                                            isVideoMuted.toggle()
-//                                        } label: {
-//                                            Image(systemName: isVideoMuted ? "speaker.slash.circle.fill" : "speaker.wave.2.circle.fill")
-//                                                .resizable()
-//                                                .frame(width: 32, height: 32)
-//                                                .foregroundColor(.primary.opacity(0.5))
-//                                                .padding(8)
-//                                        }
-//                                        .background(
-//                                            BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight)
-//                                        )
-//                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-//                                        .padding()
-//                                    }
-//                                }
-//                            }
-//                        )
-                        //.fixedSize()
+                    .clipped()
                     
                     NetworkImage(url: dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl){
                             EmptyView()
@@ -267,12 +225,33 @@ public struct TvShowPromoView: Experience, JoliView {
                         .padding()
                         .multilineTextAlignment(.center)
                         
-                        if !menu.isEmpty {
+                        if !castMembers.isEmpty {
                             Divider().padding(.vertical)
                             
-                            TvShowCastButtonView(menu: $menu)
-                                .frame(height: 60)
-                                .padding(.bottom)
+                            Button(){
+                                appCoordinator.modal.present() {
+                                    .view2(){
+                                        TvShowCastTabView(menu: castMembers)
+                                            .frame(width: screenWidth)
+                                            .eraseToAnyView()
+                                    }
+                                }
+                            } label: {
+                                Label(){
+                                    Text(" Meet The Cast")
+                                } icon: {
+                                    Image(systemName: "rectangle.stack.person.crop")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .foregroundColor(.orange)
+                                        .frame(height: 24)
+                                    
+                                }
+                                .font(.title3.weight(.light))
+                                .accentColor(Color.yellow)
+                            }
+                            .frame(height: 60)
+                            .padding(.bottom)
                         }
                     }
                     .frame(width: screenWidth - 100)
@@ -325,39 +304,11 @@ public struct TvShowPromoView: Experience, JoliView {
                 .aspectRatio(contentMode: .fill)
             )
             .onAppear(){
-                //self.menu = (try? TvShowCastInfo.load()) ?? []
                 let url = dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl
                 
                 if self.youtube.videoId != .url(url) {
                     self.youtube = YouTubeControlState(.url(url))
                 }
-                
-                var castMembers: [TvShowCastInfo] = []
-                
-                for itm in self.dataModel?.items ?? [] {
-                    
-                    guard let title = itm.title,
-                          let subtitle = itm.subtitle,
-                          let alias = itm.aliasTitle,
-                          let imgName = itm.imageName,
-                          let url = URL(string: imgName) else {
-                        continue
-                    }
-                    
-                    castMembers.append(TvShowCastInfo(name: title, characterName: alias, imageUrl: url, bio: subtitle))
-                }
-                
-                self.menu = castMembers
-                
-//                var str = ""
-//                for cast in self.menu {
-//                    str += "StikrExperienceDataItem.makeCastmember(\"\(cast.name)\", subtitle: \"\(cast.bio)\", alias: \"\(cast.characterName)\", imageUrlString: \"\(cast.imageUrl)\")\n"
-//                }
-//
-//                print(str)
-                guard self.videoLocalUrl == nil else { return }
-                
-                //fetchVideo()
             }
         }
     }
@@ -383,43 +334,8 @@ public struct TvShowPromoView: Experience, JoliView {
     
 }
 
-struct TvShowCastButtonView: JoliView {
-    
-    @Binding var menu: [TvShowCastInfo]
-    @EnvironmentObject var appCoordinator: AppCoordinator
-    @Environment(\.safeAreaInsets) var safeAreaInsets
-    
-    var contentView: some View {
-        Button(){
-            
-            appCoordinator.modal.present() {
-                .view2(){
-                    TvShowCastView(menu: menu)
-                        .frame(width: screenWidth)
-                        //.frame(minHeight: screenHeight - safeAreaInsets.top)
-                        .eraseToAnyView()
-                }
-            }
-        } label: {
-            Label(){
-                Text(" Meet The Cast")
-            } icon: {
-                Image(systemName: "rectangle.stack.person.crop")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .foregroundColor(.orange)
-                    .frame(height: 24)
-                
-            }
-            .font(.title3.weight(.light))
-            .accentColor(Color.yellow)
-        }
-    }
-    
-}
 
-
-struct TvShowCastView: View {
+struct TvShowCastTabView: View {
     
     @State var menu: [TvShowCastInfo]
     @State private var selectedTab: Int = 0

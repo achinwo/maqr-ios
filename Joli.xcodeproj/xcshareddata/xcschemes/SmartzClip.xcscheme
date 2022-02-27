@@ -59,8 +59,13 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "_XCAppClipURL"
-            value = "https://smartstikr.com/ecook/EaBCv1"
+            value = "https://smartstikr.com/ebrand/2lBvON"
             isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "_XCAppClipURL"
+            value = "https://smartstikr.com/ecook/EaBCv1"
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "_XCAppClipURL"

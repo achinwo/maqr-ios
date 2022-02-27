@@ -8,9 +8,14 @@
 
 import SwiftUI
 
-public struct ImageView<Content: View>: View {
+public struct ImageView<Content: View>: JoliView {
+    
+    @EnvironmentObject public var appCoordinator: AppCoordinator
     
     public typealias Callback = (UIImage?, String?, Error?) -> Void
+    
+    
+    @State var imgUrlString: String = .empty
     
     #if !os(macOS)
     var buttons: [ActionSheet.Button] {
@@ -25,12 +30,18 @@ public struct ImageView<Content: View>: View {
                 self.imageChooserPresented = true
                 print("[ImageView] sourceType: \(self.sourceType)")
             },
+            .default(Text("🔗 From URL")) {
+                self.isLocalSheetPresenting = true
+                self.imageChooserPresented = true
+                print("[ImageView] fetch from link!")
+            },
             .cancel(Text("Cancel"))
         ]
         return buttons
     }
     
     @State private var sourceType: UIImagePickerController.SourceType = .photoLibrary
+    @State private var isLocalSheetPresenting = false
     
     #endif
     
@@ -79,7 +90,7 @@ public struct ImageView<Content: View>: View {
 //        self.callback = callback
 //    }
     
-    public var body: some View {
+    public var contentView: some View {
         return VStack(alignment: .center) {
                     self.imageView
             }.overlay(
@@ -109,6 +120,8 @@ public struct ImageView<Content: View>: View {
             )
         
     }
+    
+    @State var imageFromWeb: UIImage? = nil
     
     var imageView: some View {
         
@@ -159,12 +172,51 @@ public struct ImageView<Content: View>: View {
             EmptyView()
                 .sheet(isPresented: self.$imageChooserPresented) {
                     print("thing is dismissed!")
+                    self.isLocalSheetPresenting = false
                 } content: {
                     #if os(macOS)
                     Text("Unsupported!")
                     #else
-                    
-                    if sourceType == .camera {
+                    if isLocalSheetPresenting {
+                        NavigationView(){
+                            VStack(){
+                                
+                                //Text("Enter Image URL").font(.title).padding()
+                                let url = URL(string: imgUrlString)
+                                
+                                if let url = url, !imgUrlString.isEmpty {
+                                    NetworkImage(url: url) { img, error in
+                                        self.imageFromWeb = img
+                                    } content: {
+                                        ProgressView()
+                                    }
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(maxWidth: screenWidth - 100, maxHeight: screenHeight / 2)
+                                }
+                                TextField("Image URL", text: $imgUrlString)
+                                    .padding()
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.secondaryLabel, lineWidth: 1)
+                                            .allowsHitTesting(false)
+                                    )
+                                Button() {
+                                    onSelectedCb(self.imageFromWeb, url?.lastPathComponent, nil)
+                                } label: {
+                                    Label("Use Image", systemImage: "hand.thumbsup")
+                                }
+                                //.buttonStyle()
+                                .disabled(imageFromWeb == nil)
+                                .padding()
+                                Spacer()
+                            }
+                            .padding()
+                            .navigationTitle("Fetch Image from URL")
+                            .navigationBarTitleDisplayMode(.large)
+                            .navigationViewStyle(.stack)
+                        }
+                        .id(imgUrlString)
+                    } else if sourceType == .camera {
                         CameraImagePicker(callback: onSelectedCb)
                             .edgesIgnoringSafeArea(.bottom)
                     } else {
