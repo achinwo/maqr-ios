@@ -128,6 +128,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
             \.logoImageUrl,
             \.bannerImageUrl,
             \.backgroundImageUrl,
+             \.productImageUrl,
         ]
     }
     
