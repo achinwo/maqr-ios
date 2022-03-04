@@ -74,6 +74,8 @@ struct DynamicExperienceView<PlaybackControllerType: PlaybackController>: JoliCo
             self.appCoordinator.globalErrorHandler()(error)
         }
     }
+    // URL(staticString: "https://169.254.249.58:3000/public/icon-192_smartz.png")
+    //@State var selectedImageUrl: URL? = nil //URL(staticString: "https://localhost:3000/public/icon-192_smartz.png")
     
     var contentView: some View {
         VStack(){
@@ -83,6 +85,18 @@ struct DynamicExperienceView<PlaybackControllerType: PlaybackController>: JoliCo
                 ProgressView("Loading experience...")
                     .font(.title.weight(.light))
             } else {
+                
+//                let imageCallback = { (img: UIImage?, imgName: String?, error: Error?) in
+//                    print("selected image: \(String(describing: imgName))")
+//                }
+//
+//                ImageView(url: selectedImageUrl, isCircular: false, onSelected: imageCallback) { (image, imgName, error) in
+//
+//                } content: {
+//                    Color.clear
+//                }
+//                .frame(width: screenWidth / 3, height: screenWidth / 3)
+                
                 Button(){
                     Task() { await self.loadExperienceData() }
                 } label: {

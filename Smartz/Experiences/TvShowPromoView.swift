@@ -19,6 +19,7 @@ struct TvShowCastInfo: Codable, Identifiable {
     let characterName: String
     let imageUrl: URL
     let bio: String
+    let dataType: ExperienceItemType
     
     var id: String {
         return name
@@ -58,7 +59,7 @@ public struct TvShowPromoView: Experience, JoliView {
     }
     
     public static var supportedItemTypes: Set<ExperienceItemType> {
-        return [.person]
+        return [.person, .product]
     }
     
     @Binding public var editMode: EditingState
@@ -86,7 +87,7 @@ public struct TvShowPromoView: Experience, JoliView {
                 continue
             }
             
-            castMembers.append(TvShowCastInfo(name: title, characterName: alias, imageUrl: url, bio: subtitle))
+            castMembers.append(TvShowCastInfo(name: title, characterName: alias, imageUrl: url, bio: subtitle, dataType: itm.experienceItemType))
         }
         
         return castMembers
@@ -134,95 +135,115 @@ public struct TvShowPromoView: Experience, JoliView {
     
     @State var youtube: YouTubeControlState = .init()
     
+    var productItems: [ExperienceDataItem] {
+        return dataModel?.items.filter() { $0.experienceItemType == .product } ?? []
+    }
+    
     var infoView: some View {
         ScrollViewReader() { proxy in
             ScrollView(showsIndicators: false){
                 VStack(spacing: .zero){
                     //PlayerView(url: videoLocalUrl ?? dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl, isMuted: self.isVideoMuted)
-                    GeometryReader(){ proxy in
-                            YouTubeView(playerState: youtube)
-                        }
-                        .onAppear(){
-                            youtube.playVideo()
-                        }
-                        .background(
-                            VStack(){
-                                NetworkImage(url: dataModelDefault.bannerImageUrl){
-                                        EmptyView()
+                    // FIXME: dbindex stikr_experience_data_item_experience_item_type_check
+                    let bannerImageView = NetworkImage(url: dataModel?.bannerImageUrl ?? dataModelDefault.bannerImageUrl){
+                        ProgressView()
+                    }
+                    
+                    Group(){
+                        
+                        if dataModel?.bannerVideoUrl == nil {
+                            bannerImageView
+                        }  else {
+                            GeometryReader(){ proxy in
+                                    YouTubeView(playerState: youtube)
+                                }
+                                .onAppear(){
+                                    youtube.playVideo()
+                                }
+                                .background(
+                                    VStack(){
+                                        bannerImageView
+                                            .aspectRatio(contentMode: .fill)
+                                            .overlay(
+                                                VStack(){
+                                                    ProgressView()
+                                                        .progressViewStyle(CircularProgressViewStyle())
+                                                        .shadow(radius: 10)
+                                                    Text("Loading trailer...")
+                                                        .font(.caption2.weight(.light))
+                                                        .padding(.top)
+                                                        .shadow(radius: 10)
+                                                }
+                                                .foregroundColor(.primary)
+                                                .padding()
+                                                .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                            )
+                                        Spacer()
                                     }
-                                    //.resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .overlay(
-                                        VStack(){
-                                            ProgressView()
-                                                .progressViewStyle(CircularProgressViewStyle())
-                                                .shadow(radius: 10)
-                                            Text("Loading trailer...")
-                                                .font(.caption2.weight(.light))
-                                                .padding(.top)
-                                                .shadow(radius: 10)
-                                        }
-                                        .foregroundColor(.primary)
-                                        .padding()
-                                        .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
-                                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                                    )
-                                Spacer()
-                            }
-                            .frame(maxHeight: PlayerView.bounds.width / 2)
-                            .clipped()
-                        )
-                        .aspectRatio(contentMode: .fill)
-                    .frame(height: screenWidth / 1.2)
+                                    .frame(maxHeight: PlayerView.bounds.width / 2)
+                                    .clipped()
+                                )
+                        }
+                    }
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: screenWidth * 0.8)
                     .frame(maxWidth: screenWidth)
                     .clipped()
                     
                     NetworkImage(url: dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl){
-                            EmptyView()
+                            ProgressView()
                         }
                         //.resizable()
                         .aspectRatio(contentMode: .fit)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                         //.frame(width: screenWidth * 0.7)
-                        .frame(maxHeight: screenWidth / 6)
+                        .frame(maxHeight: screenWidth / (productItems.isEmpty ? 5 : 2))
                         .padding()
+                        .padding(.top)
                         .padding(.bottom)
                         //.offset(x: 0, y: -200)
                         .id(dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl)
                         //.backgroundColor(.green)
                     
                     //
-                    let instaUsername = dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername
-                    Link(destination: URL(social: .instagramUser(instaUsername))) {
-                        HStack(alignment: .center, spacing: .zero){
-                            (Text(releaseText).font(.subheadline.weight(.semibold)))
-                                .lineLimit(2)
-                                .multilineTextAlignment(.trailing)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .foregroundColor(.primary)
-                                .padding(.trailing)
-                                .lineLimit(1)
-                                .fixedSize()
+                    if productItems.isEmpty {
+                        let instaUsername = dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername
+                        Link(destination: URL(social: .instagramUser(instaUsername))) {
+                            HStack(alignment: .center, spacing: .zero){
+                                (Text(releaseText).font(.subheadline.weight(.semibold)))
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.trailing)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .foregroundColor(.primary)
+                                    .padding(.trailing)
+                                    .lineLimit(1)
+                                    .fixedSize()
 
-                            RoundedRectangle(cornerRadius: 4).frame(width: 1.5, height: screenWidth / 10).foregroundColor(.primary)
+                                RoundedRectangle(cornerRadius: 4).frame(width: 1.5, height: screenWidth / 10).foregroundColor(.primary)
 
-                            NetworkImage(url: dataModel?.releasePlatformLogoUrl ?? dataModelDefault.releasePlatformLogoUrl){
-                                EmptyView()
+                                let url = dataModel?.releasePlatformLogoUrl ?? dataModelDefault.releasePlatformLogoUrl
+                                NetworkImage(url: url){
+                                    ProgressView()
+                                }
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: screenWidth / 8)
+                                .padding(4)
+                                .id(url)
+                                //.background(Color.pink)
                             }
-                            .aspectRatio(contentMode: .fit)
-                            .frame(height: screenWidth / 8)
-                            .padding(4)
-                            //.background(Color.pink)
                         }
+                        .frame(maxHeight: screenWidth / 8)
+                        .padding(.bottom)
                     }
-                    .frame(maxHeight: screenWidth / 8)
-                    .padding(.bottom)
                     
                     VStack(){
                         (Text(dataModel?.landingPageText ?? dataModelDefault.landingPageText)
                             .font(.subheadline.weight(.light))
-                            .foregroundColor(dataModel?.brandColorAccent ?? dataModelDefault.brandColorAccent)
+                            //.foregroundColor(dataModel?.brandColorSecondary ?? dataModelDefault.brandColorSecondary)
                         )
                         .padding()
+                        .padding(.top)
                         .multilineTextAlignment(.center)
                         
                         if !castMembers.isEmpty {
@@ -231,24 +252,24 @@ public struct TvShowPromoView: Experience, JoliView {
                             Button(){
                                 appCoordinator.modal.present() {
                                     .view2(){
-                                        TvShowCastTabView(menu: castMembers)
+                                        TvShowCastTabView(menu: castMembers, dividerColor: dataModel?.brandColorAccent ?? .yellow)
                                             .frame(width: screenWidth)
                                             .eraseToAnyView()
                                     }
                                 }
                             } label: {
                                 Label(){
-                                    Text(" Meet The Cast")
+                                    Text(productItems.isEmpty ? " Meet The Cast" : " See Our Products")
                                 } icon: {
-                                    Image(systemName: "rectangle.stack.person.crop")
+                                    Image(systemName: productItems.isEmpty ? "rectangle.stack.person.crop" : "bag.fill")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
-                                        .foregroundColor(.orange)
+                                        .foregroundColor(dataModel?.brandColorAccent ?? Color.yellow)
                                         .frame(height: 24)
                                     
                                 }
                                 .font(.title3.weight(.light))
-                                .accentColor(Color.yellow)
+                                .accentColor(dataModel?.brandColorAccent ?? Color.yellow)
                             }
                             .frame(height: 60)
                             .padding(.bottom)
@@ -263,19 +284,21 @@ public struct TvShowPromoView: Experience, JoliView {
                     .id("body")
                     
                     VStack(){
-                        Link(destination: URL(social: .instagramUser(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername))) {
-                            VStack(){
-                                NetworkImage(url: dataModel?.releasePlatformLogoUrl ?? dataModelDefault.releasePlatformLogoUrl){
-                                    EmptyView()
-                                }
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: screenWidth / 3)
-                                .frame(maxHeight: screenWidth / 6)
-                                Text(releaseText.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "\n", with: " ")).font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
-                                Text("@\(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername)").font(.body.weight(.semibold)).foregroundColor(.primary)
-                            }//@naijaonnetflix itsacrazyworld_tvseries
+                        if productItems.isEmpty {
+                            Link(destination: URL(social: .instagramUser(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername))) {
+                                VStack(){
+                                    NetworkImage(url: dataModel?.releasePlatformLogoUrl ?? dataModelDefault.releasePlatformLogoUrl){
+                                        ProgressView()
+                                    }
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: screenWidth / 3)
+                                    .frame(maxHeight: screenWidth / 6)
+                                    Text(releaseText.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "\n", with: " ")).font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
+                                    Text("@\(dataModel?.releasePlatformInstaUsername ?? dataModelDefault.releasePlatformInstaUsername)").font(.body.weight(.semibold)).foregroundColor(.primary)
+                                }//@naijaonnetflix itsacrazyworld_tvseries
+                            }
+                            .padding(.bottom)
                         }
-                        .padding(.bottom)
                         
                         Link(destination: URL(social: .instagramUser(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername))) {
                             VStack(){
@@ -292,7 +315,7 @@ public struct TvShowPromoView: Experience, JoliView {
                     Spacer()
 
                 }
-                .frame(minHeight: screenHeight * 1.6)
+                //.frame(idealHeight: screenHeight * 1.5)
                 .padding(.bottom, max(100, safeAreaInsets.bottom))
                 //.padding(.top, safeAreaInsets.top)
             }
@@ -338,6 +361,7 @@ public struct TvShowPromoView: Experience, JoliView {
 struct TvShowCastTabView: View {
     
     @State var menu: [TvShowCastInfo]
+    @State var dividerColor: Color
     @State private var selectedTab: Int = 0
     
     var tabNames: [String] {
@@ -349,16 +373,22 @@ struct TvShowCastTabView: View {
     
     func castView(_ info: TvShowCastInfo) -> some View {
         VStack(alignment: .leading){
+            let isProduct = info.dataType == .product
             Spacer()
             Spacer()
+            
+            if isProduct {
+                Spacer()
+            }
+            
             VStack(){
                 
                 let header = VStack(){
                     Text(info.name).font(.largeTitle.weight(.ultraLight))
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
-                    Text("as ").font(.callout).foregroundColor(.secondaryLabel) + Text(info.characterName).font(.title3)
-                    Rectangle().frame(height: 1).foregroundColor(.yellow.opacity(0.7)).padding(.horizontal)
+                    (isProduct ? Text("") : Text("as ").font(.callout).foregroundColor(.secondaryLabel) ) + Text(info.characterName).font(.title3)
+                    Rectangle().frame(height: 1).foregroundColor(dividerColor.opacity(0.7)).padding(.horizontal)
                 }
                 
                 VStack(spacing: .zero){
@@ -381,7 +411,11 @@ struct TvShowCastTabView: View {
         .background(
             ZStack(){
                 NetworkImage(url: info.imageUrl){
-                    ProgressView()
+                    VStack(){
+                        ProgressView()
+                        Spacer()
+                        Spacer()
+                    }
                 }
                 .aspectRatio(contentMode: .fill)
                 .frame(minHeight: screenHeight)

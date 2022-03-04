@@ -52,6 +52,8 @@ extension ExperienceItemType {
                 return "Skill"
             case .menuFoodItem:
                 return "Food Item"
+            case .product:
+                return "Product"
         }
     }
     

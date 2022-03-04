@@ -8,6 +8,7 @@
 
 import Foundation
 import JoliCore
+import SwiftUI
 
 public extension Spicy {
     
@@ -83,6 +84,7 @@ let crazyworldDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(staticS
                                                        releasePlatformName: "Netflix",
                                                        releasePlatformLogoUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/logo_netflix.png"),
                                                        releasePlatformInstaUsername: "naijaonnetflix",
+                                                       brandColorAccent: Color.orange,
                                                        items: [
                                                         ExperienceData.Item.makeCastmember("Bob Manuel Udokwu", subtitle: "Husband to Adaeze Okpalla, a smooth talker that knows how to get his way with women. He presently has two other women living with him too because once a woman gets pregnant for him, he brings her in because he wants all his children under one roof but he never marries them eventually.", alias: "Don Chukwunma Okpalla", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.58-1.png"),
                                                         ExperienceData.Item.makeCastmember("Kunle Coker", subtitle: "A Yoruba businessman, and Don’s friend and confidant. The wives don’t like him because they feel he’s a bad influence on Don, after all, rumor has it he has a wife in all 36 states in Nigeria.", alias: "Chief Balogun", imageUrlString: "https://www.bellanaija.com/wp-content/uploads/2020/04/Screen-Shot-2020-04-25-at-15.20.38.png"),
