@@ -29,6 +29,15 @@
         }
       },
       {
+        "package": "EFQRCode",
+        "repositoryURL": "https://github.com/EFPrefix/EFQRCode.git",
+        "state": {
+          "branch": null,
+          "revision": "bebbd09eaf28243ec576f6d53cbf9cc5b10eaffb",
+          "version": "6.2.1"
+        }
+      },
+      {
         "package": "GradientLoadingBar",
         "repositoryURL": "https://github.com/fxm90/GradientLoadingBar",
         "state": {
@@ -101,15 +110,6 @@
         }
       },
       {
-        "package": "QRCode",
-        "repositoryURL": "https://github.com/dmrschmidt/QRCode.git",
-        "state": {
-          "branch": null,
-          "revision": "a23c2d2b77483c5ce20ffaf4e68fef2d1a0bbca9",
-          "version": "1.1.0"
-        }
-      },
-      {
         "package": "SFSafeSymbols",
         "repositoryURL": "https://github.com/piknotech/SFSafeSymbols.git",
         "state": {
@@ -161,6 +161,15 @@
           "branch": null,
           "revision": "75e60475d9d8fd5bbc16a12e0eaa2cb01b0c322e",
           "version": "0.50500.0"
+        }
+      },
+      {
+        "package": "swift_qrcodejs",
+        "repositoryURL": "https://github.com/ApolloZhu/swift_qrcodejs.git",
+        "state": {
+          "branch": null,
+          "revision": "374dc7f7b9e76c6aeb393f6a84590c6d387e1ecb",
+          "version": "2.2.2"
         }
       },
       {

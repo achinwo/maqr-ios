@@ -82,8 +82,15 @@ public enum Experiences: RawRepresentable, CaseIterable {
     }
     
     public init?(typeName: String) {
+        let typeNameLower = typeName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        
+        guard typeNameLower != "tvshowpromoview" else { // backwards compatibility
+            self = .brandPromo
+            return
+        }
+        
         for caz in Self.allCases {
-            guard caz.rawValue.className.lowercased() == typeName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() else { continue }
+            guard caz.rawValue.className.lowercased() == typeNameLower else { continue }
             
             self = caz
             return

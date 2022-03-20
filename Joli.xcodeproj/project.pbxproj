@@ -23,6 +23,7 @@
 		9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D40D2659BC0E00D5974F /* Assets.xcassets */; };
 		9202D4112659BC0E00D5974F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D4102659BC0E00D5974F /* Preview Assets.xcassets */; };
 		9202D42C2659BC0E00D5974F /* SmartzClip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 9202D4072659BC0B00D5974F /* SmartzClip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9203410327E78BD8002BC9E0 /* EFQRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 9203410227E78BD8002BC9E0 /* EFQRCode */; };
 		9203B31324CB06C900F465CC /* JoliPlayground.h in Headers */ = {isa = PBXBuildFile; fileRef = 9203B31124CB06C900F465CC /* JoliPlayground.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9203B32724CB07EE00F465CC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92A32D9924C79B3D007C960E /* Localizable.strings */; };
 		9203B32824CB07F200F465CC /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD024C79C06007C960E /* Extensions.swift */; };
@@ -44,7 +45,6 @@
 		921CAFAB26B5F4F10078A394 /* YTPlayer.html in Resources */ = {isa = PBXBuildFile; fileRef = 921CAFAA26B5F4F10078A394 /* YTPlayer.html */; };
 		921CAFAC26B5F4F10078A394 /* YTPlayer.html in Resources */ = {isa = PBXBuildFile; fileRef = 921CAFAA26B5F4F10078A394 /* YTPlayer.html */; };
 		921CAFAD26B5F4F10078A394 /* YTPlayer.html in Resources */ = {isa = PBXBuildFile; fileRef = 921CAFAA26B5F4F10078A394 /* YTPlayer.html */; };
-		921F6C2E26BB28090061D236 /* QRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 921F6C2D26BB28090061D236 /* QRCode */; };
 		921F6C3026BE81C00061D236 /* VisualCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C2F26BE81C00061D236 /* VisualCodeView.swift */; };
 		921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
 		921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
@@ -624,7 +624,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				92CC32AA26E55B3200178465 /* SharedUI.framework in Frameworks */,
-				921F6C2E26BB28090061D236 /* QRCode in Frameworks */,
+				9203410327E78BD8002BC9E0 /* EFQRCode in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1143,7 +1143,7 @@
 			);
 			name = Smartz;
 			packageProductDependencies = (
-				921F6C2D26BB28090061D236 /* QRCode */,
+				9203410227E78BD8002BC9E0 /* EFQRCode */,
 			);
 			productName = Smartz;
 			productReference = 9202D3D22659B6E700D5974F /* Smartz.app */;
@@ -1443,13 +1443,13 @@
 				9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */,
 				92E74FEB25E665A50010286C /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 				922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */,
-				921F6C2C26BB28090061D236 /* XCRemoteSwiftPackageReference "QRCode" */,
 				92E62CFD2701D169002008A0 /* XCRemoteSwiftPackageReference "GradientLoadingBar" */,
 				9280818127046B5E001120ED /* XCRemoteSwiftPackageReference "NetworkImage" */,
 				927A7B20276FE7A0007105CC /* XCRemoteSwiftPackageReference "Sourceful" */,
 				9278E2F8278A073D00868722 /* XCRemoteSwiftPackageReference "Version" */,
 				9278E2FB278A076600868722 /* XCRemoteSwiftPackageReference "Starscream" */,
 				928F078D278B9FA90032BFAA /* XCRemoteSwiftPackageReference "SpotifyiOS" */,
+				9203410127E78BD8002BC9E0 /* XCRemoteSwiftPackageReference "EFQRCode" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -1998,7 +1998,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2009,7 +2009,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.19;
+				MARKETING_VERSION = 1.20;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_INSTALL_OBJC_HEADER = NO;
@@ -2026,7 +2026,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2036,7 +2036,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.19;
+				MARKETING_VERSION = 1.20;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_INSTALL_OBJC_HEADER = NO;
@@ -2052,7 +2052,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2063,7 +2063,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.19;
+				MARKETING_VERSION = 1.20;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG APPCLIP";
@@ -2080,7 +2080,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2090,7 +2090,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.19;
+				MARKETING_VERSION = 1.20;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APPCLIP;
@@ -2891,12 +2891,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		921F6C2C26BB28090061D236 /* XCRemoteSwiftPackageReference "QRCode" */ = {
+		9203410127E78BD8002BC9E0 /* XCRemoteSwiftPackageReference "EFQRCode" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/dmrschmidt/QRCode.git";
+			repositoryURL = "https://github.com/EFPrefix/EFQRCode.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.0;
+				minimumVersion = 6.2.0;
 			};
 		};
 		922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
@@ -3006,10 +3006,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		921F6C2D26BB28090061D236 /* QRCode */ = {
+		9203410227E78BD8002BC9E0 /* EFQRCode */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 921F6C2C26BB28090061D236 /* XCRemoteSwiftPackageReference "QRCode" */;
-			productName = QRCode;
+			package = 9203410127E78BD8002BC9E0 /* XCRemoteSwiftPackageReference "EFQRCode" */;
+			productName = EFQRCode;
 		};
 		922BFD32263757F8007CAF36 /* AlertToast */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -9,7 +9,7 @@
 import SwiftUI
 import SharedUI
 import JoliCore
-import QRCode
+import EFQRCode
 
 public final class ImageSaver: NSObject {
     
@@ -44,10 +44,14 @@ public struct LiveExperiencesView: JoliView {
         
         guard let vizCode = data.visualcodes?.last,
               let url = URL(string: vizCode.url),
-              let img = try? QRCode(url: url, color: UIColor(hex: "#29304B"), backgroundColor: UIColor(hex: "#E1E5EE"), size: CGSize(width: screenWidth - 100, height: screenWidth - 100))?.image() else {
+              let img = EFQRCode.generate(for: url.absoluteString,
+                                           size: EFIntSize(width: Int(screenWidth - 100), height: Int(screenWidth - 100)),
+                                           backgroundColor: UIColor(hex: "#E1E5EE").cgColor,
+                                           foregroundColor: UIColor(hex: "#29304B").cgColor) else {
                   return nil
               }
-        return (img, url)
+        
+        return (UIImage(cgImage: img), url)
     }
     
     @State var isShowingMessages = false
