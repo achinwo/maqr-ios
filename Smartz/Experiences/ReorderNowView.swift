@@ -13,6 +13,7 @@ import JoliCore
 public struct ReorderNowView: Experience, JoliView {
     
     public static var title: String = "Re-order Now"
+    public static var subtitle: String = "Turn purchasing essentials into a subscription"
     public static var basePath: String = "p"
     public static var iconName: String = "creditcard"
     

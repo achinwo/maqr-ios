@@ -74,6 +74,8 @@ public extension ExperienceData.Item {
     
 }
 
+let hospitalPharmacy = ExperienceData.fromDefaults(ExperienceData.Defaults(), type: .inventory)
+
 let crazyworldDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/logo_crazyworld.png"),
                                                        bannerImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/poster_crazy_world_lowres.jpg"),
                                                        bannerVideoUrl: URL(staticString: "https://www.youtube.com/watch?v=qXGTihe9OHM"),

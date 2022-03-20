@@ -34,8 +34,8 @@
 		920958AB25601EE10014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		9209B1E12629E32500786A6A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9209B1E02629E32500786A6A /* LaunchScreen.storyboard */; };
 		9217905026C9832A009FC4CE /* VisualCodeDownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9217904F26C9832A009FC4CE /* VisualCodeDownloadView.swift */; };
-		921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* TvShowPromoView.swift */; };
-		921C300D2694B29400527D39 /* TvShowPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* TvShowPromoView.swift */; };
+		921C300C2694B29400527D39 /* BrandPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* BrandPromoView.swift */; };
+		921C300D2694B29400527D39 /* BrandPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* BrandPromoView.swift */; };
 		921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */; };
 		921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */; };
 		921CAFA726B5F4730078A394 /* YouTubePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921CAFA626B5F4730078A394 /* YouTubePlayer.swift */; };
@@ -208,7 +208,7 @@
 		927A7B23276FEA82007105CC /* SiseMealboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92562E2F266D3C38004972E6 /* SiseMealboxView.swift */; };
 		927A7B24276FEA85007105CC /* RestaurantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DD6553267E6104007E22F0 /* RestaurantView.swift */; };
 		927A7B25276FEA88007105CC /* Restaurant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920264CF2691D4EA005643E1 /* Restaurant.swift */; };
-		927A7B26276FEA8B007105CC /* TvShowPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* TvShowPromoView.swift */; };
+		927A7B26276FEA8B007105CC /* BrandPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921C300B2694B29400527D39 /* BrandPromoView.swift */; };
 		927A7B2A276FEE92007105CC /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
 		927A7B2B276FF323007105CC /* YouTubePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921CAFA626B5F4730078A394 /* YouTubePlayer.swift */; };
 		927A7B2C276FF327007105CC /* YTPlayer.html in Resources */ = {isa = PBXBuildFile; fileRef = 921CAFAA26B5F4F10078A394 /* YTPlayer.html */; };
@@ -283,6 +283,9 @@
 		92A32E3224CA22FA007C960E /* Publishers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* Publishers.swift */; };
 		92A7120D24D85EC500AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
 		92A7120F24D85EC600AD6729 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
+		92A9A34127E652D70008FE32 /* InventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A9A34027E652D70008FE32 /* InventoryView.swift */; };
+		92A9A34227E652E90008FE32 /* InventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A9A34027E652D70008FE32 /* InventoryView.swift */; };
+		92A9A34327E652EA0008FE32 /* InventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A9A34027E652D70008FE32 /* InventoryView.swift */; };
 		92ACFCAB278BB33D000B5AFC /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = 92ACFCAA278BB33D000B5AFC /* SpotifyiOS */; };
 		92ACFCAD278BB34D000B5AFC /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = 92ACFCAC278BB34D000B5AFC /* SpotifyiOS */; };
 		92BD11CE24CB0BCB00AAB7DE /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
@@ -496,7 +499,7 @@
 		9209B1E02629E32500786A6A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9217904F26C9832A009FC4CE /* VisualCodeDownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualCodeDownloadView.swift; sourceTree = "<group>"; };
 		9217905526CC51DA009FC4CE /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
-		921C300B2694B29400527D39 /* TvShowPromoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvShowPromoView.swift; sourceTree = "<group>"; };
+		921C300B2694B29400527D39 /* BrandPromoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandPromoView.swift; sourceTree = "<group>"; };
 		921CAFA226AEF2CB0078A394 /* ExperienceDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceDataView.swift; sourceTree = "<group>"; };
 		921CAFA626B5F4730078A394 /* YouTubePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubePlayer.swift; sourceTree = "<group>"; };
 		921CAFAA26B5F4F10078A394 /* YTPlayer.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = YTPlayer.html; sourceTree = "<group>"; };
@@ -602,6 +605,7 @@
 		92A32E2B24C7BB53007C960E /* Consts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Consts.swift; sourceTree = "<group>"; };
 		92A32E3024CA22FA007C960E /* Publishers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Publishers.swift; sourceTree = "<group>"; };
 		92A7120C24D85EC500AD6729 /* NetworkImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageView.swift; sourceTree = "<group>"; };
+		92A9A34027E652D70008FE32 /* InventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryView.swift; sourceTree = "<group>"; };
 		92C1A24D26626D5B00A11E0F /* Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playback.swift; sourceTree = "<group>"; };
 		92CC32A326E55B3100178465 /* SharedUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SharedUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		92CC32A526E55B3200178465 /* SharedUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SharedUI.h; sourceTree = "<group>"; };
@@ -1015,8 +1019,9 @@
 				92562E2F266D3C38004972E6 /* SiseMealboxView.swift */,
 				92DD6553267E6104007E22F0 /* RestaurantView.swift */,
 				920264CF2691D4EA005643E1 /* Restaurant.swift */,
-				921C300B2694B29400527D39 /* TvShowPromoView.swift */,
+				921C300B2694B29400527D39 /* BrandPromoView.swift */,
 				9285148F27B9758C00380CF7 /* ReorderNowView.swift */,
+				92A9A34027E652D70008FE32 /* InventoryView.swift */,
 			);
 			path = Experiences;
 			sourceTree = "<group>";
@@ -1631,7 +1636,8 @@
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */,
 				928604A4270CA80D00ED2E68 /* ExperiencePurchaseView.swift in Sources */,
-				921C300C2694B29400527D39 /* TvShowPromoView.swift in Sources */,
+				921C300C2694B29400527D39 /* BrandPromoView.swift in Sources */,
+				92A9A34127E652D70008FE32 /* InventoryView.swift in Sources */,
 				921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
 				92ECCEDD26C0543F009A2B75 /* LiveExperiencesView.swift in Sources */,
@@ -1658,7 +1664,8 @@
 				92643786276FB56200E5F1B4 /* Experience+JoliView.swift in Sources */,
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */,
-				921C300D2694B29400527D39 /* TvShowPromoView.swift in Sources */,
+				92A9A34327E652EA0008FE32 /* InventoryView.swift in Sources */,
+				921C300D2694B29400527D39 /* BrandPromoView.swift in Sources */,
 				9228F86D26C07A310053DC04 /* ExperienceData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1723,10 +1730,11 @@
 				927A7B18276FE4D7007105CC /* ImageView.swift in Sources */,
 				927A7AFD276FE26D007105CC /* AppCoordinator.swift in Sources */,
 				927A7B17276FE4D2007105CC /* NetworkImageView.swift in Sources */,
+				92A9A34227E652E90008FE32 /* InventoryView.swift in Sources */,
 				927A7B0A276FE3D9007105CC /* Publishers+Playback.swift in Sources */,
 				927A7B11276FE450007105CC /* GridChooserView.swift in Sources */,
 				927A7B05276FE304007105CC /* Consts.swift in Sources */,
-				927A7B26276FEA8B007105CC /* TvShowPromoView.swift in Sources */,
+				927A7B26276FEA8B007105CC /* BrandPromoView.swift in Sources */,
 				927A7B24276FEA85007105CC /* RestaurantView.swift in Sources */,
 				927A7B02276FE2E4007105CC /* StoreKitHelper.swift in Sources */,
 				927A7B23276FEA82007105CC /* SiseMealboxView.swift in Sources */,

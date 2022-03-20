@@ -36,6 +36,7 @@ public protocol Experience {
     var editMode: EditingState { get nonmutating set }
     
     static var title: String { get }
+    static var subtitle: String { get }
     static var iconName: String { get }
     
     static var dataKeys: [PartialKeyPath<ExperienceData>] { get }
@@ -61,17 +62,22 @@ public enum Experiences: RawRepresentable, CaseIterable {
     case recipe
     case brandPromo
     case restaurant
+    case inventory
     
     public init?(rawValue: Experience.Type) {
         switch rawValue {
-        case is MealboxView.Type:
-            self = .recipe
-        case is TvShowPromoView.Type:
-            self = .brandPromo
-        case is RestaurantView.Type:
-            self = .restaurant
-        default:
-            return nil
+            case is MealboxView.Type:
+                self = .recipe
+            case is TvShowPromoView.Type:
+                self = .brandPromo
+            case is BrandPromoView.Type:
+                self = .brandPromo
+            case is RestaurantView.Type:
+                self = .restaurant
+            case is InventoryView.Type:
+                self = .inventory
+            default:
+                return nil
         }
     }
     
@@ -87,12 +93,14 @@ public enum Experiences: RawRepresentable, CaseIterable {
     
     public var rawValue: Experience.Type {
         switch self {
-        case .recipe:
-            return MealboxView.self
-        case .brandPromo:
-            return TvShowPromoView.self
-        case .restaurant:
-            return RestaurantView.self
+            case .recipe:
+                return MealboxView.self
+            case .brandPromo:
+                return BrandPromoView.self
+            case .restaurant:
+                return RestaurantView.self
+            case .inventory:
+                return InventoryView.self
         }
     }
     
@@ -103,7 +111,9 @@ public enum Experiences: RawRepresentable, CaseIterable {
             case .restaurant:
                 return RestaurantView(data).eraseToAnyView()
             case .brandPromo:
-                return TvShowPromoView(data).eraseToAnyView()
+                return BrandPromoView(data).eraseToAnyView()
+            case .inventory:
+                return InventoryView(data).eraseToAnyView()
         }
     }
     

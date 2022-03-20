@@ -1,5 +1,5 @@
 //
-//  TvShowPromoView.swift
+//  BrandPromoView.swift
 //  Joli
 //
 //  Created by Anthony Chinwo on 06/07/2021.
@@ -43,9 +43,10 @@ struct TvShowCastInfo: Codable, Identifiable {
     }
 }
 
-public struct TvShowPromoView: Experience, JoliView {
+public struct BrandPromoView: Experience, JoliView {
     
     public static var title: String = "Trailer"
+    public static var subtitle: String = "Your frontpage for promoting brands such as products, movies and tv shows"
     public static var basePath = "ebrand"
     public static var iconName: String = "star.bubble"
     
@@ -446,3 +447,5 @@ struct TvShowCastTabView: View {
         //}
     }
 }
+
+public typealias TvShowPromoView = BrandPromoView

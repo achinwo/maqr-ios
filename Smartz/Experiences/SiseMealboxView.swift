@@ -101,6 +101,7 @@ struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentV
 public struct MealboxView: Experience, JoliView {
     
     public static var title: String = "Mealbox Prep"
+    public static var subtitle: String = "Interactive meal preparation guides"
     public static var basePath = "ecook"
     public static var iconName: String = "fork.knife"
     

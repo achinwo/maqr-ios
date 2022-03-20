@@ -24,7 +24,7 @@ extension AppLocation {
             case .experienceMeal(_):
                 return RestaurantView(expData).eraseToAnyView()
             case .experienceBrand(_):
-                return TvShowPromoView(expData).eraseToAnyView()
+                return BrandPromoView(expData).eraseToAnyView()
             default:
                 return nil
         }

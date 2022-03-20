@@ -946,9 +946,11 @@ public extension AppClip {
                 Task() {
                     do {
                         let info = try await JoliApi.resolveServer(self.coordinator.api.baseUrl.http)
-                        logger.info("[\(Self.self)] server info: host=\(self.coordinator.api.baseUrl.http), version=\(info.version), features: \(info.feature)")
-                        self.serverInfo = info
-                        self.coordinator.serverInfo = info
+                        await MainActor.run() {
+                            logger.info("[\(Self.self)] server info: host=\(self.coordinator.api.baseUrl.http), version=\(info.version), features: \(info.feature)")
+                            self.serverInfo = info
+                            self.coordinator.serverInfo = info
+                        }
                     } catch {
                         self.coordinator.globalErrorHandler()(error)
                     }

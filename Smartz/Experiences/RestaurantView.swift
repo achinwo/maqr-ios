@@ -193,6 +193,7 @@ struct JoeyRestuarantView<PlaybackControllerType: PlaybackController>: JoliConte
 struct RestaurantView: Experience, JoliView {
     
     static var title: String = "Restaurant"
+    static var subtitle: String = "Seamless restaurant check-ins and menu browser"
     static var basePath = "emeal"
     public static var iconName: String = "menucard"
     

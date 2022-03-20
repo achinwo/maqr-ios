@@ -167,7 +167,9 @@ struct SmartzApp: AppClip {
                                     JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                                 } else if case let AppLocation.product(storeId, _) = currentLocation,
                                           storeId.lowercased() == "shows" {
-                                    TvShowPromoView(crazyworldDemo)
+                                    BrandPromoView(crazyworldDemo)
+                                } else if case let AppLocation.product(_, productId) = currentLocation, productId.lowercased() == "inventory" {
+                                    InventoryView(hospitalPharmacy)
                                 } else if currentLocation.isExperience {
                                     DynamicExperienceView<VideoPlaybackController>(currentLocation, currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
                                 } else {

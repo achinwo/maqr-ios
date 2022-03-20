@@ -10,12 +10,6 @@ import SwiftUI
 import SharedUI
 import JoliCore
 
-extension Experiences {
-    
-    
-    
-}
-
 public struct ExperienceDataView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
