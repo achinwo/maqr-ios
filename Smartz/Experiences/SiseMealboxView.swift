@@ -283,7 +283,7 @@ public struct MealboxView: Experience, JoliView {
                         Image("smartz_logo")
                             .resizable()
                             .frame(width: 38, height: 38)
-                        Text("SmartStikr").font(.subheadline.weight(.semibold))
+                        Text("Maqr").font(.subheadline.weight(.semibold))
                     }
                 }
                 .padding()

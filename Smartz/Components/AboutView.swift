@@ -21,7 +21,7 @@ struct AboutView: JoliView {
     
     var whoWeAreText: String {
         """
-SmartStikr was created with the end user in mind, to fill a gaping hole in the e-commerce consumer experience by streamlining inefficient processes to create futuristic and seamless experiences. Our App clips curates novel experiences for your business which allows customers to interact with your business on an intimate level designed to nurture that customer service relationship from a different angle that is guaranteed to expand your business reach and make your customers Stik with you.
+Maqr was created with the end user in mind, to fill a gaping hole in the e-commerce consumer experience by streamlining inefficient processes to create futuristic and seamless experiences. Our App clips curates novel experiences for your business which allows customers to interact with your business on an intimate level designed to nurture that customer service relationship from a different angle that is guaranteed to expand your business reach and make your customers Stik with you.
 """
     }
     
@@ -31,7 +31,7 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: screenWidth / 3, maxHeight: screenWidth / 3)
-            Text("Smart Stikr").font(.headline.weight(.light)).foregroundColor(.tertiaryLabel).padding([.bottom])
+            Text("Maqr").font(.headline.weight(.light)).foregroundColor(.tertiaryLabel).padding([.bottom])
             (Text("Welcome to the ").font(.title.weight(.light)).foregroundColor(.tertiaryLabel)
              + Text("Paperless ").font(.title.weight(.light)).foregroundColor(.secondaryLabel)
              + Text("Future").font(.title.weight(.light)).foregroundColor(.tertiaryLabel))
@@ -148,8 +148,8 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
     let sections: [ProductSection] = [
         ProductSection(asset: .image("sise_box_ofada"),
                        title: "Services",
-                       //subtitle: "Reasons To Choose SmartStikr",
-                       subtitle: "No matter your e-commerce business type, SmartStikr has an innovative solution for you. Our App clips can be used for anything from welcoming guests to your restaurant or business place, providing options for customers to reach waiting staff during the dine-in process and check out with apple pay, providing interactive step by step instructions for your meal prep boxes and even up to solutions for AirBnB and Uber guests and many more. There is no limit to our innovative and interactive solutions for SmartStikr. In all of these we limit and sometimes eliminate the need for paper and we streamline the process of doing business with your business, ultimately saving you money, time and eliminating redundancy.",
+                       //subtitle: "Reasons To Choose Maqr",
+                       subtitle: "No matter your e-commerce business type, Maqr has an innovative solution for you. Our App clips can be used for anything from welcoming guests to your restaurant or business place, providing options for customers to reach waiting staff during the dine-in process and check out with apple pay, providing interactive step by step instructions for your meal prep boxes and even up to solutions for AirBnB and Uber guests and many more. There is no limit to our innovative and interactive solutions for Maqr. In all of these we limit and sometimes eliminate the need for paper and we streamline the process of doing business with your business, ultimately saving you money, time and eliminating redundancy.",
                        bulletpoints: [
                         "Organised and Impressive dine-In check in processes",
                         "Seamlessly Interact with customers",
@@ -168,7 +168,7 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
         
         ProductSection(asset: .youtube(.url(URL(staticString: "https://youtu.be/P4016ZGlbVc"))),
                        title: "Rich Customer Experience",
-                       subtitle: "Our mission here at SmartStikr is simple. We want to give e-commerce businesses the ability to seamlessly organise, market and streamline their business processes and interact with customers in the language they speak using impressive user friendly technology while saving our planet at the same time."),
+                       subtitle: "Our mission here at Maqr is simple. We want to give e-commerce businesses the ability to seamlessly organise, market and streamline their business processes and interact with customers in the language they speak using impressive user friendly technology while saving our planet at the same time."),
         
         ProductSection(asset: .youtube(.url(URL(staticString: "https://youtu.be/_Ly3UEV9NnE"))),
                        title: "Go Contactless",
@@ -176,7 +176,7 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
         
         ProductSection(asset: .symbol("leaf.fill"),
                        title: "Want to Help go Sustainable",
-                       subtitle: "SmartStikr is committed to creating a greener planet by reducing paper waste and taking advantage of technology that will propel e-commerce industry to the future and forefront of technological advancement. Join us in our green earth commitment"),
+                       subtitle: "Maqr is committed to creating a greener planet by reducing paper waste and taking advantage of technology that will propel e-commerce industry to the future and forefront of technological advancement. Join us in our green earth commitment"),
         
         
         
@@ -208,7 +208,7 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                     
                     Button(){
                         print("submitted help!")
-                        let subject = "SmartStikr iOS App Feedback - \(AppCoordinator.version)"
+                        let subject = "Maqr iOS App Feedback - \(AppCoordinator.version)"
                         self.appCoordinator.modal.presentMailComposer(.init(subject: subject, recipients: [Strings.appSupportEmail], body: feebackText))
                     } label: {
                         HStack(){
@@ -272,9 +272,9 @@ SmartStikr was created with the end user in mind, to fill a gaping hole in the e
                 //.padding(.bottom, safeAreaInsets.bottom * 4)
                 .animation(.easeInOut)
                 
-                Link("Privacy Policy", destination: URL(staticString: "https://smartstikr.com/uk/legal/privacy-policy/")).padding()
-                Link("Our Terms of Use", destination: URL(staticString: "https://smartstikr.com/uk/legal/terms_and_conditions/")).padding(.bottom)
-                Link("License Agreement", destination: URL(staticString: "https://smartstikr.com/uk/legal/end_user_license_agreement/")).padding(.bottom)
+                Link("Privacy Policy", destination: URL(staticString: "https://maqr.co/uk/legal/privacy-policy/")).padding()
+                Link("Our Terms of Use", destination: URL(staticString: "https://maqr.co/uk/legal/terms_and_conditions/")).padding(.bottom)
+                Link("License Agreement", destination: URL(staticString: "https://maqr.co/uk/legal/end_user_license_agreement/")).padding(.bottom)
                 
             }
             .frame(width: screenWidth - 100)

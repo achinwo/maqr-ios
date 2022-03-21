@@ -37,6 +37,14 @@ struct InventoryView: JoliView, Experience {
     
     
     var contentView: some View {
-        Text("Inventory View!")
+        VStack(){
+            Spacer()
+            Text("Maqr Inventory").font(.title)
+            Text("Coming soon!").foregroundColor(.secondaryLabel)
+            Spacer()
+            Spacer()
+        }
+        .frame(minWidth: screenWidth, minHeight: screenHeight, alignment: .center)
+        .backgroundColor(.fixedWhite)
     }
 }

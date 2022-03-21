@@ -7,6 +7,9 @@
 		<string>webcredentials:smartstikr.com</string>
 		<string>appclips:smartstikr.com</string>
 		<string>applinks:smartstikr.com</string>
+		<string>webcredentials:maqr.co</string>
+		<string>appclips:maqr.co</string>
+		<string>applinks:maqr.co</string>
 	</array>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>

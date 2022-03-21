@@ -61,8 +61,8 @@ struct SmartzApp: AppClip {
     let videoController: VideoPlaybackController
     
     init() {
-        JoliApi.BaseUrl.defaultDevUrl = URL(staticString: "https://smartstikr.com")
-        JoliApi.BaseUrl.defaultProdUrl = URL(staticString: "https://smartstikr.com")
+        JoliApi.BaseUrl.defaultDevUrl = URL(staticString: "https://maqr.co")
+        JoliApi.BaseUrl.defaultProdUrl = URL(staticString: "https://maqr.co")
         
         JoliApi.Environment.loadEnvConfig(from: Bundle.main)
         

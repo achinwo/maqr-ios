@@ -227,7 +227,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         return uuid == nil
     }
     
-    static let DEFAULT_BRAND_NAME = "SmartStikr"
+    static let DEFAULT_BRAND_NAME = "Maqr"
     
     @Published var editStartedAt: Date? = nil
     
