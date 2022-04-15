@@ -9,8 +9,9 @@
 import Foundation
 import JoliCore
 import SwiftUI
-//import SharedUI
+import SharedUI
 import JoliApi
+import MultipartFormData
 
 public protocol ExperienceDataItem: Codable {
     var aliasTitle: String? { get set }
@@ -126,41 +127,59 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
 //    }
     
     static func imageAttributes() -> [ReferenceWritableKeyPath<ExperienceData, URL?>] {
-        return [
-            \.logoImageUrl,
-            \.bannerImageUrl,
-            \.backgroundImageUrl,
-             \.productImageUrl,
-        ]
+        return keyPaths.compactMap() { kp in
+            guard let meta = kp.meta, let keypath = kp as? ReferenceWritableKeyPath<ExperienceData, URL?>, meta.mediaType.starts(with: "image") else { return nil }
+            return keypath
+        }
+    }
+    
+    func toMultipartFormData() throws -> MultipartFormData {
+        let encoder = self.jsonEncoder
+        let multipartFormData = try MultipartFormData() {
+            
+            try Subpart {
+                ContentDisposition(name: "body")
+                ContentType(mediaType: .applicationJson)
+            } body: {
+                try encoder.encode(self)
+            }
+                
+            for keyPath in Self.imageAttributes() where keyPath.meta != nil {
+                if let meta = keyPath.meta, let url = self[keyPath: meta.keypath] as? URL, url.isFileURL {
+                    try Subpart {
+                        try ContentDisposition(uncheckedName: meta.name, uncheckedFilename: url.absoluteString)
+                        ContentType(mediaType: .applicationOctetStream)
+                    } body: {
+                        try Data(contentsOf: url)
+                    }
+                }
+            }
+
+        }
+
+        //let url = URL(string: "https://example.com/example")!
+        //let request = URLRequest(url: url, multipartFormData: multipartFormData)
+        
+        return multipartFormData
     }
     
     @MainActor
     public func save(baseUrl: URL? = nil, urlSession: URLSession? = nil) async throws -> PersistedType {
-        
-        let urls = await self.uploadImages(baseUrl: baseUrl, urlSession: urlSession)
-                
-        print("[uploadImages] URLs: \(urls)")
-        
-        for keyPath in Self.imageAttributes() {
-            guard let currentValue = self[keyPath: keyPath],
-                  let newUrl = urls.first(where: { $0.original == currentValue })?.saved else { continue }
-            
-            self[keyPath: keyPath] = baseUrl?.appendingPathComponent("images").appendingPathComponent(newUrl.lastPathComponent)
-            //print("[uploadImages] updated url: \(currentValue) -> \(self[keyPath: keyPath])")
-        }
-        
-        let enc = Musicroom.jsonEncoder()
-        guard let data = try? enc.encode(self) else {
-            throw NetworkError.badRequest("Unable to serialize \(Self.self) instance")
-        }
-        
+        let appUrl = baseUrl ?? LocalhostApi.default.baseUrlHttp
+
         let urlComp = "/api/db/experiences"
-        let object = try await HttpMethod.Fetch.post(url: urlComp,
-                                            dataType: PersistedType.self,
-                                            payload: .data(data),
-                                            baseUrl: baseUrl,
-                                            urlSession: urlSession)
-            
+        let multipart = try self.toMultipartFormData()
+        let request = URLRequest(url: appUrl.appendingPathComponent(urlComp), multipartFormData: multipart)
+        let session = urlSession ?? URLSession.shared
+        
+        let (data, _) = try await session.data(from: request)
+        
+        let decoder = Musicroom.jsonDecoder()
+        
+        let object = try decoder.decode(PersistedType.self, from: data)
+        
+//        let object = try await HttpMethod.Fetch.post(url: urlComp, dataType: PersistedType.self, payload: .data(data), baseUrl: baseUrl, urlSession: urlSession)
+
         self.stored = object
         self.uuid = object.uuid
         return object
@@ -170,8 +189,6 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         var imgs: [(URL, URL)] = []
         
         let imageUrls: [URL] = Self.imageAttributes().compactMap() { self[keyPath: $0] }
-        
-        //let taskGroup = await withTaskGroup(of: (URL, URL).self, returning: [(original: URL, saved: URL)]) { grp in
             
         for imgUrl in Set(imageUrls) {
             
@@ -197,7 +214,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
                     fileName = imgUrl.lastPathComponent
                 } else {
                     ext = .jpeg
-                    image = UIImage(data: image.jpegData(compressionQuality: 1.0) ?? data) ?? image
+                    image = await ImageCompressor.compress(image: image, maxByte: 1_000_000) ?? image
                     print("[imageUpload] converting \(imgUrl.pathExtension) to jpeg...")
                     fileName = imgUrl.deletingPathExtension().appendingPathExtension("jpg").lastPathComponent
                 }
@@ -210,17 +227,16 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
             }
             
         }
-       // }
         return imgs
     }
     
-    func fromHeicToJpg(heicPath: String, jpgPath: String) -> UIImage? {
-        guard let heicImage = UIImage(named: heicPath) else { return nil }
+    func fromHeicToJpg(heicPath: String, jpgPath: String) async -> UIImage? {
+        guard let heicImage = UIImage(named: heicPath), let jpgImageCompresed = await ImageCompressor.compress(image: heicImage, maxByte: 1_000_000) else { return nil }
         
-        let jpgImageData = heicImage.jpegData(compressionQuality: 1.0)
+        let jpgImageData = jpgImageCompresed.jpegData(compressionQuality: 1.0)
         FileManager.default.createFile(atPath: jpgPath, contents: jpgImageData, attributes: nil)
-        let jpgImage = UIImage(named: jpgPath)
-        return jpgImage
+        
+        return UIImage(named: jpgPath)
     }
     
     public var isNew: Bool {
@@ -233,20 +249,23 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     @Published var stored: PersistedType? = nil
     
-    // sourcery: title = "Logo Image", description = "Your brand logo image", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/smartz_logo.png")"
+    // sourcery: title = "Logo Image", description = "Your brand logo image", mediaType = "image"
+    // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/smartz_logo.png")"
     @Published var logoImageUrl: URL?
     
-    // sourcery: title = "Banner Image", description = "Banner image of landing page"
+    // sourcery: title = "Banner Image", description = "Banner image of landing page", mediaType = "image"
     // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/austin-chan-ukzHlkoz1IE-unsplash.jpg")"
     @Published var bannerImageUrl: URL?
     
     // sourcery: title = "Banner Video", description = "Banner video of landing page", default = "URL(staticString: "https://www.youtu.be/ofFyRI6ROTI")"
     @Published var bannerVideoUrl: URL?
     
-    // sourcery: title = "Background Image", description = "Default background image for your brand", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/bg_light.jpg")"
+    // sourcery: title = "Background Image", description = "Default background image for your brand", mediaType = "image"
+    // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/bg_light.jpg")"
     @Published var backgroundImageUrl: URL?
     
-    // sourcery: title = "Product Image", description = "Your product image", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/devialet_phantom.png")"
+    // sourcery: title = "Product Image", description = "Your product image", mediaType = "image"
+    // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/devialet_phantom.png")"
     @Published var productImageUrl: URL?
     
     // sourcery: title = "Brand Name", description = "Name of your company or brand", default = ""Your Brand""
@@ -282,7 +301,8 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Release Platform Name", description = "Platform where this product will be made available", default = ""App Store""
     @Published var releasePlatformName: String?
     
-    // sourcery: title = "Release Platform Logo", description = "Platform logo image", default = "URL(staticString: "https://www.freepnglogos.com/uploads/app-store-logo-png/file-app-store-ios-custom-size-18.png")"
+    // sourcery: title = "Release Platform Logo", description = "Platform logo image", mediaType = "image"
+    // sourcery: default = "URL(staticString: "https://www.freepnglogos.com/uploads/app-store-logo-png/file-app-store-ios-custom-size-18.png")"
     @Published var releasePlatformLogoUrl: URL?
     
     // sourcery: title = "Release Platform Instagram", description = "Platform instagram name", default = ""smartstikr""

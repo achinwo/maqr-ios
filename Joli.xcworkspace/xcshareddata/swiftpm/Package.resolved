@@ -155,6 +155,15 @@
         }
       },
       {
+        "package": "swift-multipart-formdata",
+        "repositoryURL": "https://github.com/FelixHerrmann/swift-multipart-formdata.git",
+        "state": {
+          "branch": null,
+          "revision": "19f4e7aff8854e0395bdf3e6f33026d9f00bc89f",
+          "version": "1.0.1"
+        }
+      },
+      {
         "package": "SwiftSyntax",
         "repositoryURL": "https://github.com/apple/swift-syntax.git",
         "state": {

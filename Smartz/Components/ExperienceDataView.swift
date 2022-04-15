@@ -45,7 +45,7 @@ public struct ExperienceDataView: JoliView {
     public func createImageCb(_ setter: @escaping (URL) -> Void) -> (UIImage?, String?, Error?) -> Void {
         return { (img: UIImage?, imgName: String?, error: Error?) in
             
-            guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first, let img = img else {
                 return
             }
             
@@ -53,18 +53,20 @@ public struct ExperienceDataView: JoliView {
             let cacheFilename = "\(UUID().uuidString).\(ext)"
             let cacheUrl = cachesDirectory.appendingPathComponent(cacheFilename)
             
-            let data = ext == "png" ? img?.pngData() : img?.jpegData(compressionQuality: 0.8)
-            
-            guard let imgageData = data, error == nil else {
-                return
-            }
-            
-            try? imgageData.write(to: cacheUrl)
-            
-            print("Wrote image to caches dir: \(cacheUrl) [isLocal=\(cacheUrl.isFileURL)]")
-            
-            DispatchQueue.main.async {
-                setter(cacheUrl)
+            Task(){
+                let data = ext == "png" ? img.pngData() : (await ImageCompressor.compress(image: img, maxByte: 1_000_000)?.jpegData(compressionQuality: 1.0))
+                
+                guard let imgageData = data, error == nil else {
+                    return
+                }
+                
+                try? imgageData.write(to: cacheUrl)
+                
+                print("Wrote image to caches dir: \(cacheUrl) [isLocal=\(cacheUrl.isFileURL)]")
+                
+                DispatchQueue.main.async {
+                    setter(cacheUrl)
+                }
             }
         }
     }
@@ -418,9 +420,4 @@ public struct ExperienceDataView: JoliView {
 //        )
     }
     
-}
-
-
-extension String: Identifiable {
-    public var id: String { self }
 }

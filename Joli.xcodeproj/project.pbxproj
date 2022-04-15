@@ -81,6 +81,7 @@
 		9246B820263090C6004D2ADF /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
 		9246B821263090C6004D2ADF /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
 		9249A95F2808E4DE00A5F7F6 /* WeddingEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9249A95E2808E4DE00A5F7F6 /* WeddingEventView.swift */; };
+		9249A9642809867E00A5F7F6 /* MultipartFormData in Frameworks */ = {isa = PBXBuildFile; productRef = 9249A9632809867E00A5F7F6 /* MultipartFormData */; };
 		924E96FA26E55D8800FF41E3 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 924E96F926E55D8800FF41E3 /* KeychainAccess */; };
 		924E96FC26E55DC100FF41E3 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 924E96FB26E55DC100FF41E3 /* AlertToast */; };
 		924E96FE26E55DD700FF41E3 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 924E96FD26E55DD700FF41E3 /* PartialSheet */; };
@@ -723,6 +724,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9278E2FD278A076600868722 /* Starscream in Frameworks */,
+				9249A9642809867E00A5F7F6 /* MultipartFormData in Frameworks */,
 				92CC32B026E55B6200178465 /* JoliApi in Frameworks */,
 				924E96FC26E55DC100FF41E3 /* AlertToast in Frameworks */,
 				9280818527046B6F001120ED /* NetworkImage in Frameworks */,
@@ -1373,6 +1375,7 @@
 				9280818427046B6F001120ED /* NetworkImage */,
 				9278E2F9278A073D00868722 /* Version */,
 				9278E2FC278A076600868722 /* Starscream */,
+				9249A9632809867E00A5F7F6 /* MultipartFormData */,
 			);
 			productName = SharedUI;
 			productReference = 92CC32A326E55B3100178465 /* SharedUI.framework */;
@@ -1453,6 +1456,7 @@
 				9278E2FB278A076600868722 /* XCRemoteSwiftPackageReference "Starscream" */,
 				928F078D278B9FA90032BFAA /* XCRemoteSwiftPackageReference "SpotifyiOS" */,
 				9203410127E78BD8002BC9E0 /* XCRemoteSwiftPackageReference "EFQRCode" */,
+				9249A960280984E500A5F7F6 /* XCRemoteSwiftPackageReference "swift-multipart-formdata" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -2002,7 +2006,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2030,7 +2034,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2056,7 +2060,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2084,7 +2088,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2919,6 +2923,14 @@
 				minimumVersion = 2.1.6;
 			};
 		};
+		9249A960280984E500A5F7F6 /* XCRemoteSwiftPackageReference "swift-multipart-formdata" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/FelixHerrmann/swift-multipart-formdata.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		9266BDC72506EB8700DAE077 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/piknotech/SFSafeSymbols.git";
@@ -3019,6 +3031,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */;
 			productName = AlertToast;
+		};
+		9249A9632809867E00A5F7F6 /* MultipartFormData */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9249A960280984E500A5F7F6 /* XCRemoteSwiftPackageReference "swift-multipart-formdata" */;
+			productName = MultipartFormData;
 		};
 		924E96F926E55D8800FF41E3 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
