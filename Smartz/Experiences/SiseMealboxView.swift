@@ -522,7 +522,9 @@ public struct MealboxView: Experience, JoliView {
         .onReceive(self.autoResetting) { value in
             self.tappedStepId = value
         }
+#if !os(macOS)
         .navigationViewStyle(.stack)
+#endif
     }
     
     func stepItemsView(_ proxy: ScrollViewProxy) -> some View {

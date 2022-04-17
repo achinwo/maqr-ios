@@ -172,7 +172,9 @@ public struct ImageView<Content: View>: JoliView {
             EmptyView()
                 .sheet(isPresented: self.$imageChooserPresented) {
                     print("thing is dismissed!")
+#if !os(macOS)
                     self.isLocalSheetPresenting = false
+#endif
                 } content: {
                     #if os(macOS)
                     Text("Unsupported!")

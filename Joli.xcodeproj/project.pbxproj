@@ -82,6 +82,9 @@
 		9246B821263090C6004D2ADF /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246B81F263090C6004D2ADF /* WebView.swift */; };
 		9249A95F2808E4DE00A5F7F6 /* WeddingEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9249A95E2808E4DE00A5F7F6 /* WeddingEventView.swift */; };
 		9249A9642809867E00A5F7F6 /* MultipartFormData in Frameworks */ = {isa = PBXBuildFile; productRef = 9249A9632809867E00A5F7F6 /* MultipartFormData */; };
+		9249A966280C2B5900A5F7F6 /* MultipartFormData in Frameworks */ = {isa = PBXBuildFile; productRef = 9249A965280C2B5900A5F7F6 /* MultipartFormData */; };
+		9249A967280C2F7600A5F7F6 /* WeddingEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9249A95E2808E4DE00A5F7F6 /* WeddingEventView.swift */; };
+		9249A968280C577100A5F7F6 /* WeddingEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9249A95E2808E4DE00A5F7F6 /* WeddingEventView.swift */; };
 		924E96FA26E55D8800FF41E3 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 924E96F926E55D8800FF41E3 /* KeychainAccess */; };
 		924E96FC26E55DC100FF41E3 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 924E96FB26E55DC100FF41E3 /* AlertToast */; };
 		924E96FE26E55DD700FF41E3 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 924E96FD26E55DD700FF41E3 /* PartialSheet */; };
@@ -669,6 +672,7 @@
 			files = (
 				927A7B15276FE47F007105CC /* KeychainAccess in Frameworks */,
 				927A7B01276FE2B3007105CC /* NetworkImage in Frameworks */,
+				9249A966280C2B5900A5F7F6 /* MultipartFormData in Frameworks */,
 				92643780276F93A100E5F1B4 /* JoliApi in Frameworks */,
 				927A7AFF276FE28D007105CC /* AlertToast in Frameworks */,
 			);
@@ -1242,6 +1246,7 @@
 				927A7AFE276FE28D007105CC /* AlertToast */,
 				927A7B00276FE2B3007105CC /* NetworkImage */,
 				927A7B14276FE47F007105CC /* KeychainAccess */,
+				9249A965280C2B5900A5F7F6 /* MultipartFormData */,
 			);
 			productName = SharedMacOS;
 			productReference = 927914E0276F926A0043F995 /* SharedMacOS.framework */;
@@ -1670,6 +1675,7 @@
 				921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
 				920264CE268FB907005643E1 /* Experience.swift in Sources */,
 				92643786276FB56200E5F1B4 /* Experience+JoliView.swift in Sources */,
+				9249A968280C577100A5F7F6 /* WeddingEventView.swift in Sources */,
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */,
 				92A9A34327E652EA0008FE32 /* InventoryView.swift in Sources */,
@@ -1759,6 +1765,7 @@
 				927914E4276F926A0043F995 /* SharedMacOS.docc in Sources */,
 				927A7B1A276FE4ED007105CC /* JoyMeterView.swift in Sources */,
 				927A7B07276FE33F007105CC /* Extensions.swift in Sources */,
+				9249A967280C2F7600A5F7F6 /* WeddingEventView.swift in Sources */,
 				927A7B16276FE4CE007105CC /* Preview.swift in Sources */,
 				927A7B03276FE2E8007105CC /* BaseDestination.swift in Sources */,
 				927A7B0B276FE3DE007105CC /* SignInWithApple.swift in Sources */,
@@ -2006,7 +2013,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2034,7 +2041,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2060,7 +2067,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2088,7 +2095,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -3033,6 +3040,11 @@
 			productName = AlertToast;
 		};
 		9249A9632809867E00A5F7F6 /* MultipartFormData */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9249A960280984E500A5F7F6 /* XCRemoteSwiftPackageReference "swift-multipart-formdata" */;
+			productName = MultipartFormData;
+		};
+		9249A965280C2B5900A5F7F6 /* MultipartFormData */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9249A960280984E500A5F7F6 /* XCRemoteSwiftPackageReference "swift-multipart-formdata" */;
 			productName = MultipartFormData;

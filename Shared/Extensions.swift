@@ -590,6 +590,15 @@ public struct ImageCompressor {
     public static func compress(image: UIImage, maxByte: Int) async -> UIImage? {
         
         return await withCheckedContinuation() { continuation in
+            #if os(macOS)
+            guard let data = image.jpegData(compressionQuality: 0.2) else {
+                continuation.resume(returning: nil)
+                return
+            }
+            
+            continuation.resume(returning: NSImage(data: data))
+            #else
+            
             DispatchQueue.global(qos: .userInitiated).async {
                 guard let currentImageSize = image.jpegData(compressionQuality: 1.0)?.count else {
                     continuation.resume(returning: nil)
@@ -604,6 +613,7 @@ public struct ImageCompressor {
                     let percantageDecrease = getPercantageToDecreaseTo(forDataCount: iterationImageSize)
                     
                     let canvasSize = CGSize(width: image.size.width * iterationCompression, height: image.size.height * iterationCompression)
+                    
                     UIGraphicsBeginImageContextWithOptions(canvasSize, false, image.scale)
                     
                     defer { UIGraphicsEndImageContext() }
@@ -622,6 +632,7 @@ public struct ImageCompressor {
                 
                 continuation.resume(returning: iterationImage)
             }
+            #endif
         }
     }
     

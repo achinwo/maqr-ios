@@ -9,9 +9,12 @@
 import Foundation
 import JoliCore
 import SwiftUI
-import SharedUI
 import JoliApi
 import MultipartFormData
+
+#if !os(macOS)
+import SharedUI
+#endif
 
 public protocol ExperienceDataItem: Codable {
     var aliasTitle: String? { get set }

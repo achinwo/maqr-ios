@@ -7,7 +7,10 @@
 //
 
 import SwiftUI
+
+#if !os(macOS)
 import SharedUI
+#endif
 
 struct InventoryView: JoliView, Experience {
     

@@ -15,7 +15,6 @@ import AuthenticationServices
 import Version
 import KeychainAccess
 import AlertToast
-import MessageUI
 
 #if os(macOS)
 import AppKit
@@ -38,9 +37,22 @@ public extension UIWindow {
     }
 }
 
+public struct MFMailComposeViewController {
+    
+    static func canSendMail() -> Bool {
+        return false
+    }
+    
+}
+
+public enum MFMailComposeResult {
+    
+}
+
 #else
 import UIKit
 import PartialSheet
+import MessageUI
 //import SwiftyBeaver
 
 public typealias FeedbackStyle = UIImpactFeedbackGenerator.FeedbackStyle
@@ -907,7 +919,11 @@ public extension AppClip {
                               return
                           }
                     
+                    #if os(macOS)
+                    NSWorkspace.shared.open(validUrl)
+                    #else
                     UIApplication.shared.open(validUrl)
+                    #endif
                 } else {
                     self.modalItem = modalItem
                     self.modalItemOnClose = modalItem.onClose
