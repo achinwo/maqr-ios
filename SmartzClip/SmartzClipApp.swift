@@ -141,7 +141,7 @@ struct SmartzClipApp: AppClip, AppAuthentication {
 extension Strings {
     
     internal static var appSupportEmail: String {
-        return "smartstikr@gmail.com"
+        return "info@maqr.co"
     }
     
 }

@@ -15,19 +15,14 @@ import AlertToast
 extension AppLocation {
     
     func experienceView(_ expData: ExperienceData) -> AnyView? {
+        let path = self.rawValue
         
-        guard self.isExperience else { return nil }
-        
-        switch self {
-            case .experienceCook(_):
-                return MealboxView(expData).eraseToAnyView()
-            case .experienceMeal(_):
-                return RestaurantView(expData).eraseToAnyView()
-            case .experienceBrand(_):
-                return BrandPromoView(expData).eraseToAnyView()
-            default:
-                return nil
+        guard let exp = Experiences.allCases.first(where: { path.starts(with: $0.rawValue.basePath) || path.starts(with: "/\($0.rawValue.basePath)/") }),
+                self.isExperience else {
+            return nil
         }
+        
+        return exp.toView(expData).eraseToAnyView()
     }
     
 }

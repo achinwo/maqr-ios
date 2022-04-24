@@ -139,6 +139,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     case experienceBrand(String)
     case experienceCook(String)
     case experienceReorderNow(String)
+    case experienceWeddingEvent(String)
+    case experienceBio(String)
     
     case unset
     case home
@@ -162,6 +164,10 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
             self = .experienceCook(experienceId)
         } else if let matches = patterns.experienceReorderNow.matchGroups(rawValue), let experienceId = matches["experienceId"] {
             self = .experienceReorderNow(experienceId)
+        } else if let matches = patterns.experienceBio.matchGroups(rawValue), let experienceId = matches["experienceId"] {
+            self = .experienceBio(experienceId)
+        } else if let matches = patterns.experienceWeddingEvent.matchGroups(rawValue), let experienceId = matches["experienceId"] {
+            self = .experienceWeddingEvent(experienceId)
         } else if let matches = patterns.rsvp.matchGroups(rawValue), let eventId = matches["eventId"] {
             self = .rsvp(eventId)
         } else if let matches = patterns.reward.matchGroups(rawValue), let rewardUid = matches["rewardId"] {
@@ -188,7 +194,12 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     
     public var experienceId: String? {
         switch self {
-            case .experienceMeal(let expId), .experienceCook(let expId), .experienceBrand(let expId), .experienceReorderNow(let expId):
+            case .experienceMeal(let expId),
+                    .experienceCook(let expId),
+                    .experienceBrand(let expId),
+                    .experienceReorderNow(let expId),
+                    .experienceBio(let expId),
+                    .experienceWeddingEvent(let expId):
                 return expId
             default:
                 return nil
@@ -217,6 +228,10 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                 return "/ebrand/\(experienceId)"
             case .experienceCook(let experienceId):
                 return "/ecook/\(experienceId)"
+            case .experienceBio(let experienceId):
+                return "/ebio/\(experienceId)"
+            case .experienceWeddingEvent(let experienceId):
+                return "/ewed/\(experienceId)"
             case .experienceReorderNow(let experienceId):
                 return "/p/\(experienceId)"
             default:
@@ -234,7 +249,9 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
         experienceMeal: Regex("^/emeal/(?<experienceId>.+)$"),
         experienceBrand: Regex("^/ebrand/(?<experienceId>.+)$"),
         experienceCook: Regex("^/ecook/(?<experienceId>.+)$"),
-        experienceReorderNow: Regex("^/p/(?<experienceId>.+)$")
+        experienceReorderNow: Regex("^/p/(?<experienceId>.+)$"),
+        experienceWeddingEvent: Regex("^/ewed/(?<experienceId>.+)$"),
+        experienceBio: Regex("^/ebio/(?<experienceId>.+)$")
     )
     
     public var description: String {

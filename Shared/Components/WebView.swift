@@ -29,6 +29,7 @@ public final class WebViewWrapper: UIViewRepresentable {
         let view = WKWebView()
         view.navigationDelegate = context.coordinator
         view.load(request)
+        view.scrollView.contentInsetAdjustmentBehavior = .never
         return view
     }
       

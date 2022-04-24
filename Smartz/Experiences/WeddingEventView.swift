@@ -33,6 +33,8 @@ struct WeddingEventView: JoliView, Experience {
     
     static var basePath: String = "ewed"
     
+    @StateObject var webViewStateModel: WebViewStateModel = WebViewStateModel()
+    
     init(_ data: ExperienceData?) {
         self._dataModel = State(initialValue: data)
         self.dataModelDefault = ExperienceData.Defaults()
@@ -42,15 +44,27 @@ struct WeddingEventView: JoliView, Experience {
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     var contentView: some View {
-        VStack(){
-            Spacer()
-            Text("Wedding Guest Experience").font(.title)
-            Text("Coming soon!").foregroundColor(.secondaryLabel)
-            Spacer()
-            Spacer()
-        }
+        WebView(request: URLRequest(url: api.baseUrlHttp.appendingPathComponent("ewed/\(dataModel?.uuid ?? "lizmanfred")")), webViewStateModel: self.webViewStateModel, onNavigationAction: self.onWebViewNavigation(_:))
+            .edgesIgnoringSafeArea(.vertical)
         .frame(minWidth: screenWidth, minHeight: screenHeight, alignment: .center)
         .backgroundColor(.fixedWhite)
+    }
+    
+    func onWebViewNavigation(_ navigationAction: WebView.NavigationAction) -> Void {
+        switch navigationAction {
+            case .decidePolicy(_, let completionHandler):
+                completionHandler(.allow)
+            case .didRecieveAuthChallange(let challenge, let completionHandler):
+#if DEBUG
+                let cred = URLCredential(trust: challenge.protectionSpace.serverTrust!)
+                completionHandler(.useCredential, cred)
+#else
+                completionHandler(.performDefaultHandling, nil)
+#endif
+                
+            default:
+                break
+        }
     }
 }
 
