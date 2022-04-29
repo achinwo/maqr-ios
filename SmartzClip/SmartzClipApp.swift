@@ -15,7 +15,7 @@ import JoliCore
 import MessageUI
 
 @main
-struct SmartzClipApp: AppClip {
+struct SmartzClipApp: AppClip, AppAuthentication {
     
     @Environment(\.scenePhase) var scenePhase
     

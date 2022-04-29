@@ -33,7 +33,7 @@ let TOKEN: String? = nil //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imh
 #endif
 
 @main
-struct JoliApp: AppClip {
+struct JoliApp: AppClip, AppAuthentication {
     
     let keychain: Keychain = Keychain(service: "live.joli.session-token")
     

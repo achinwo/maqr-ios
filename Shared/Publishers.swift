@@ -405,7 +405,7 @@ public enum SocketError: Error {
 
 public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
-    @Published var isConnected: Bool = false {
+    @Published public var isConnected: Bool = false {
         didSet {
             connecting = false
             self.onConnect?(self, isConnected)

@@ -162,6 +162,7 @@ public struct CodeDesignerView: JoliView {
                             if let name = product.companyLogoName {
                                 Image(name)
                                     .resizable()
+                                    .frame(minWidth: Sizing.xxLarge, minHeight: Sizing.xxLarge)
                             } else {
                                 Image(systemName: product.experienceCls.iconName)
                                     .renderingMode(.original)

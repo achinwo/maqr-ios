@@ -55,7 +55,7 @@ struct LoadingView<Content>: View where Content: View {
 }
 
 @main
-struct JoliClip: AppClip {
+struct JoliClip: AppClip, AppAuthentication {
     
     @State var safeAreaInsets: EdgeInsets = EdgeInsets()
     

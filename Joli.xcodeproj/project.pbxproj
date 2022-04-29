@@ -71,6 +71,12 @@
 		923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
 		923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		923C2B0624CC752E009E2380 /* JoliPlayground.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		923C4C39281C908A0052F385 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923C4C38281C908A0052F385 /* Authentication.swift */; };
+		923C4C3A281C908A0052F385 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923C4C38281C908A0052F385 /* Authentication.swift */; };
+		923C4C3F281C96480052F385 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923C4C3B281C928C0052F385 /* Authentication.swift */; };
+		923C4C40281C97070052F385 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923C4C3B281C928C0052F385 /* Authentication.swift */; };
+		923C4C41281C97070052F385 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923C4C3B281C928C0052F385 /* Authentication.swift */; };
+		923C4C42281C97B60052F385 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923C4C38281C908A0052F385 /* Authentication.swift */; };
 		923D0DB226205EC0008BB6EA /* SpotifyDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928A391F24E9E1A600A029A1 /* SpotifyDelegate.swift */; };
 		923D0DC126205FA8008BB6EA /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
 		923D0DC226205FA8008BB6EA /* Publishers+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */; };
@@ -524,6 +530,8 @@
 		922989AB26491F0D00FDD58F /* MailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailView.swift; sourceTree = "<group>"; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		923BD58D25E16D63003863AB /* SignInWithApple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApple.swift; sourceTree = "<group>"; };
+		923C4C38281C908A0052F385 /* Authentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authentication.swift; sourceTree = "<group>"; };
+		923C4C3B281C928C0052F385 /* Authentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authentication.swift; sourceTree = "<group>"; };
 		923D0DC026205FA8008BB6EA /* Publishers+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publishers+Playback.swift"; sourceTree = "<group>"; };
 		9246B81F263090C6004D2ADF /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		9249A95E2808E4DE00A5F7F6 /* WeddingEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeddingEventView.swift; sourceTree = "<group>"; };
@@ -760,6 +768,7 @@
 				921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */,
 				92C1A24D26626D5B00A11E0F /* Playback.swift */,
 				92643784276FB53C00E5F1B4 /* Experience+JoliView.swift */,
+				923C4C38281C908A0052F385 /* Authentication.swift */,
 			);
 			path = Smartz;
 			sourceTree = "<group>";
@@ -896,6 +905,7 @@
 				92A32DD624C79C07007C960E /* AppView.swift */,
 				92A32DCE24C79C06007C960E /* AppDelegate.swift */,
 				9209B1E02629E32500786A6A /* LaunchScreen.storyboard */,
+				923C4C3B281C928C0052F385 /* Authentication.swift */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -1643,6 +1653,7 @@
 				9285148E27B83FDE00380CF7 /* HomeView.swift in Sources */,
 				921F6C4726BEA1610061D236 /* UIImage+CVPixelBuffer.swift in Sources */,
 				92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */,
+				923C4C39281C908A0052F385 /* Authentication.swift in Sources */,
 				9249A95F2808E4DE00A5F7F6 /* WeddingEventView.swift in Sources */,
 				922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */,
 				921F6C4526BEA1110061D236 /* CGImage+RawBytes.swift in Sources */,
@@ -1681,6 +1692,7 @@
 				92A9A34327E652EA0008FE32 /* InventoryView.swift in Sources */,
 				921C300D2694B29400527D39 /* BrandPromoView.swift in Sources */,
 				9228F86D26C07A310053DC04 /* ExperienceData.swift in Sources */,
+				923C4C3A281C908A0052F385 /* Authentication.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1716,6 +1728,7 @@
 				92BD11D024CB0BD200AAB7DE /* PeopleGridView.swift in Sources */,
 				922989A72641FCA800FDD58F /* GridChooserView.swift in Sources */,
 				924E971626E5620800FF41E3 /* TrackView.swift in Sources */,
+				923C4C3F281C96480052F385 /* Authentication.swift in Sources */,
 				92BD11CF24CB0BCF00AAB7DE /* ImageView.swift in Sources */,
 				9257430726304BA400B518EA /* SkipVoteView.swift in Sources */,
 				928E7B4F2704A4B80052E5A9 /* BaseDestination.swift in Sources */,
@@ -1804,6 +1817,7 @@
 				928A391D24E9DAE700A029A1 /* ListenView.swift in Sources */,
 				926E2E25260F40E9007F62E0 /* PlayroomCreateView.swift in Sources */,
 				92A32DFC24C79C07007C960E /* ImageView.swift in Sources */,
+				923C4C40281C97070052F385 /* Authentication.swift in Sources */,
 				92A32DB724C79B59007C960E /* UserSettings.swift in Sources */,
 				928604A1270C842200ED2E68 /* StoreKitHelper.swift in Sources */,
 				92870E4A259CF4EC00780CE6 /* PlayroomHeaderView.swift in Sources */,
@@ -1860,6 +1874,7 @@
 				922989A92641FCA800FDD58F /* GridChooserView.swift in Sources */,
 				926DB4C22638B30600D62912 /* SignInWithApple.swift in Sources */,
 				926DB4B526389E1F00D62912 /* ProfileView.swift in Sources */,
+				923C4C41281C97070052F385 /* Authentication.swift in Sources */,
 				924E971926E5620800FF41E3 /* TrackView.swift in Sources */,
 				926DB4B126389E1300D62912 /* NetworkImageView.swift in Sources */,
 				926DB4CA2638BDD000D62912 /* ActivityIndicator.swift in Sources */,
@@ -1933,6 +1948,7 @@
 				924E971726E5620800FF41E3 /* TrackView.swift in Sources */,
 				924E971326E5614000FF41E3 /* PlayroomCreateView.swift in Sources */,
 				92CC32B426E55CDC00178465 /* AppClip.swift in Sources */,
+				923C4C42281C97B60052F385 /* Authentication.swift in Sources */,
 				924E970326E55E8300FF41E3 /* ActivityIndicator.swift in Sources */,
 				928E7B502704A4B80052E5A9 /* BaseDestination.swift in Sources */,
 				924E970126E55E7D00FF41E3 /* SignInWithApple.swift in Sources */,

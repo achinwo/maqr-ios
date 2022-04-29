@@ -370,7 +370,19 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                                 Text("Live Experiences").font(.headline)
                                 Text("Your active brand experiences").font(.subheadline).foregroundColor(.secondaryLabel)
                             }
+                            .id("man-screen-title")
                             .frame(minWidth: screenWidth / 4)
+                        }
+                        
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(){
+                                self.appCoordinator.requestedSignIn.send(.apple(){ value in
+                                    print("sign-in! \(value)")
+                                })
+                            } label: {
+                                Image(systemName: "person.crop.circle")
+                            }
+                            .id("man-screen-signin")
                         }
                     }
                     

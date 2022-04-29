@@ -16,7 +16,7 @@ import os
 import MessageUI
 
 @main
-struct SmartzApp: AppClip {
+struct SmartzApp: AppClip, AppAuthentication {
     
     @Environment(\.scenePhase) var scenePhase
     
