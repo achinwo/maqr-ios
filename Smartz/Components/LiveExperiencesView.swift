@@ -229,7 +229,7 @@ public struct LiveExperiencesView: JoliView {
             
             if let txt = exp.landingPageText {
                 Text(txt)
-                    .lineLimit(nil)
+                    .lineLimit(10)
                     .truncationMode(.tail)
                     .font(.body)
                     .foregroundColor(.secondary)

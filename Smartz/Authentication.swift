@@ -10,7 +10,9 @@ import Foundation
 import JoliCore
 import JoliApi
 
-public protocol AppAuthentication {
+//public let logger = Logger(subsystem: "com.smartstickr.Smartz", category: "global.client")
+
+public protocol AppAuthentication: AppClip {
     
     //func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) async -> Auth?
     
@@ -22,6 +24,34 @@ public extension AppAuthentication {
     @MainActor
     func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) async -> Auth? {
         print("[authenticate] authenticating cred \(credentials)")
+        
+        
+        do {
+            let auth = try await coordinator.api.authenticate(credentials)
+            
+            guard let auth = auth else {
+                return nil
+            }
+            
+            var newAuths = self.auths.filter() { $0.session.userId != auth.session.userId}
+            newAuths.append(auth)
+            
+            self.auths = newAuths
+            
+            self.activeSessionToken = auth.session.token
+            
+            storeToKeychain(newAuths)
+            self.coordinator.api.auth = auth
+            
+            self.coordinator.authsSubject.send(newAuths)
+            self.coordinator.activeSessionToken = self.activeSessionToken
+            print("[authenticate] authenticated: \(auth)")
+            
+            return auth
+        } catch {
+            print("auth error: \(error)")
+        }
+        
         return nil
     }
     

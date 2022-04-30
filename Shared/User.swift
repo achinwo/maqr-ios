@@ -60,7 +60,7 @@ public enum UserName: Equatable {
     case unknown
     case name(String)
     
-    var name: String? {
+    public var name: String? {
         guard case let .name(name) = self else {
             return nil
         }

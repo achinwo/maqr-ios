@@ -16,6 +16,10 @@ import UIKit
 import AppKit
 #endif
 
+#if canImport(LetterAvatarKit)
+import LetterAvatarKit
+#endif
+
 struct ProfileEditView: View {
     
     @Environment(\.presentationMode) var presentationMode

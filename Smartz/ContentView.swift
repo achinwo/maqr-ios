@@ -367,11 +367,33 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button(){
-                                self.appCoordinator.requestedSignIn.send(.apple(){ value in
-                                    print("sign-in! \(value)")
-                                })
+                                
+                                guard let currentAuth = appCoordinator.activeAuth, self.appCoordinator.activeSessionToken != nil else {
+                                    self.appCoordinator.requestedSignIn.send(.apple(){ value in
+                                        print("sign-in! \(value)")
+                                    })
+                                    return
+                                }
+                                
+                                let action = {
+                                    self.appCoordinator.signoutSubject.send(currentAuth)
+                                }
+                                
+                                appCoordinator.withAlert(Strings.reallyLogoutTitle,
+                                                         message: Strings.reallyLogoutMessage,
+                                                         destructive: true, label: "Sign Out",
+                                                         action: action)
+                                
                             } label: {
-                                Image(systemName: "person.crop.circle")
+                                
+                                if let auth = appCoordinator.activeAuth {
+                                    NetworkImage(string: "https://ui-avatars.com/api/?bold=true&name=\(auth.user.displayName.name?.replacingOccurrences(of: " ", with: "+") ?? "Anonymous")&rounded=true"){
+                                        Image(systemName: "person")
+                                    }
+                                } else {
+                                    Image(systemName: "person.crop.circle")
+                                }
+                                
                             }
                             .id("man-screen-signin")
                         }

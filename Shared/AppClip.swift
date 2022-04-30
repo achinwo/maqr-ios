@@ -735,6 +735,10 @@ public extension AppClip {
             headers["X-APP-NAME"] = displayName
         }
         
+        if let appId = Bundle.main.bundleIdentifier {
+            headers["X-APP-ID"] = appId
+        }
+        
         return headers
     }
     
@@ -899,7 +903,7 @@ public extension AppClip {
                     do {
                         let info = try await JoliApi.resolveServer(self.coordinator.api.baseUrl.http)
                         await MainActor.run() {
-                            logger.info("[\(Self.self)] server info: host=\(self.coordinator.api.baseUrl.http), version=\(info.version), features: \(info.feature)")
+                            logger.info("[\(Self.self)] server info: host=\(self.coordinator.api.baseUrl.http), version=\(info.version), features: \(info.feature), prefferedClientVersion: \(String(describing: info.preferredClientVersion))")
                             self.serverInfo = info
                             self.coordinator.serverInfo = info
                         }

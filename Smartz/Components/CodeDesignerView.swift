@@ -361,8 +361,8 @@ public struct CodeDesignerView: JoliView {
                     
             for var code in codes {
                 // temporarily hardcoding user id until sign in is implemented
-                code.createdById = 17
-                code.updatedById = 17
+                code.createdById = appCoordinator.activeAuth?.user.id ?? 17
+                code.updatedById = appCoordinator.activeAuth?.user.id ?? 17
                 
                 code.url = JoliApi.BaseUrl.prod.rawValue.http.appendingPathComponent(expData.experienceTypeInfo.rawValue.basePath).appendingPathComponent(saved.uuid).standardized.absoluteString
                 code.experienceId = saved.id

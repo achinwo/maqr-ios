@@ -24,6 +24,9 @@ struct SmartzApp: AppClip, AppAuthentication {
     
     @Namespace var namespace
     
+    @AppStorage(key: AppStorageKey.authToken, store: UserDefaults.groupContainer)
+    var activeSessionIdFromAppclip: String = .empty
+    
     @AppStorage(key: AppStorageKey.location, store: UserDefaults.groupContainer)
     var activeLocationFromAppclip: AppLocation = .unset
     
@@ -84,7 +87,30 @@ struct SmartzApp: AppClip, AppAuthentication {
         let baseUrls = JoliApi.Environment.current.baseUrl
         
         self.api = JoliApi(baseUrl: baseUrls, headers: request.allHTTPHeaderFields ?? [:])
-        self.coordinator.api = api
+        
+        let appclipsSessionId = self.activeSessionIdFromAppclip.isEmpty ? nil : self.activeSessionIdFromAppclip
+        let location = self.activeLocationFromAppclip
+        //let currentLocation = self.currentLocation
+        
+        //logger.debug("[\(Self.self)] initializing: appclipsSessionId=\(String(describing: appclipsSessionId)), appclipsLocation=\(location), currentLocation=\(currentLocation)")
+        
+        if self.currentLocation == .unset, location != .unset {
+            self._currentLocation = AppStorage(wrappedValue: location, key: AppStorageKey.location, store: .standard)
+        }
+        
+        self._auths = State(initialValue: Self.resolveAuths(keychain))
+        
+        let sessionId = self.activeSessionId.isEmpty ? nil : self.activeSessionId
+        
+        self._activeSessionToken = State(initialValue: sessionId ?? appclipsSessionId)
+        
+        api.urlSessionConfiguration = api.urlSessionConfiguration.withAuthHeader(self.activeSessionToken)
+        
+        coordinator.api = self.api
+        
+//        if let token = self.activeSessionToken {
+//            request.addValue(token, forHTTPHeaderField: "X-SESSION-ID")
+//        }
     }
     
     @State var mailComposeResult: Result<MFMailComposeResult, Error>? = nil
@@ -195,11 +221,41 @@ struct SmartzApp: AppClip, AppAuthentication {
 //                }
 //            )
             .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
+            .onReceive(coordinator.signoutSubject, perform: self.signOut)
             .onReceive(coordinator.globalAlertSubject) { alertInfo in
                 self.alertInfo = alertInfo
                 self.isActionSheetPresented = true
             }
+            .onAppear() {
+                guard let token = activeSessionToken ?? self.auths.first?.session.token else {
+                    return
+                }
+                
+                Task() { await self.authenticate(.sessionToken(token), alertOnFail: false) }
+            }
     }
+    
+    func signOut(_ auth: Auth) -> Void {
+        let newAuths = self.auths.filter() { $0.session.token != auth.session.token}
+        self.auths = newAuths
+        
+        self.activeSessionToken = nil
+        try? keychain.remove(auth.user.email)
+        
+        storeToKeychain(newAuths)
+        
+        self.coordinator.activeSessionToken = nil
+        self.coordinator.authsSubject.send(newAuths)
+        
+        self.coordinator.serverLogDestination.send(.info, msg: "signedout: \(auth)", thread: Thread.current.description, file: #file, function: #function, line: #line)
+        
+        if auth.session.token == activeSessionIdFromAppclip {
+            self.activeSessionIdFromAppclip = .empty
+        }
+        
+        print("signedout: \(auth.user.name)")
+    }
+    
 }
 
 public typealias TrialInfo = ExperienceData
