@@ -203,3 +203,12 @@ struct SmartzApp: AppClip, AppAuthentication {
 }
 
 public typealias TrialInfo = ExperienceData
+
+
+extension Strings {
+    
+    internal static var appSupportEmail: String {
+        return "info@maqr.co"
+    }
+    
+}

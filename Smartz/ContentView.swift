@@ -21,15 +21,6 @@ enum AssetInfo {
     case symbol(String)
 }
 
-
-extension Strings {
-    
-    internal static var appSupportEmail: String {
-        return "smartstikr@gmail.com"
-    }
-    
-}
-
 struct ProductSection: Identifiable {
     
     internal init(asset: AssetInfo, title: String, subtitle: String, subtitle2: String? = nil, bulletpoints: [String]? = nil, learnMore: URL? = nil) {
