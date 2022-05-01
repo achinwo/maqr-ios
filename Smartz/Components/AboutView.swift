@@ -276,12 +276,46 @@ Maqr was created with the end user in mind, to fill a gaping hole in the e-comme
                 Link("Our Terms of Use", destination: URL(staticString: "https://maqr.co/uk/legal/terms_and_conditions/")).padding(.bottom)
                 Link("License Agreement", destination: URL(staticString: "https://maqr.co/uk/legal/end_user_license_agreement/")).padding(.bottom)
                 
+                Spacer()
+                
+                
+                HStack(){
+                    Text("App Version").fontWeight(.light)
+                    Text(SmartzApp.version.description)
+                }
+                .overlay(
+                    HStack(){
+                        Spacer()
+                        VStack(){
+                            Circle()
+                                .foregroundColor(needsUpdate ? .orange : .clear)
+                                .frame(width: 20)
+                                .offset(x: 15, y: -5)
+                            Spacer()
+                        }
+                    }
+                )
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .onTapGesture {
+                    guard needsUpdate else { return }
+                    
+                    UIApplication.shared.open(Self.appStoreUrl)
+                }
             }
             .frame(width: screenWidth - 100)
             .padding(.top)
         }
         .frame(minWidth: screenWidth)
         
+    }
+    
+    static var appStoreUrl = URL(staticString: "https://apps.apple.com/us/app/maqr/id1568896894")
+    
+    var needsUpdate: Bool {
+        guard let serverInfo = appCoordinator.serverInfo, let preferredClientVersion = serverInfo.preferredClientVersion else { return true }
+        
+        return preferredClientVersion > SmartzApp.version
     }
     
     var contentView: some View {

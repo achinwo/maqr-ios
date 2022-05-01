@@ -188,51 +188,6 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         return object
     }
     
-    func uploadImages(baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil) async -> [(original: URL, saved: URL)] {
-        var imgs: [(URL, URL)] = []
-        
-        let imageUrls: [URL] = Self.imageAttributes().compactMap() { self[keyPath: $0] }
-            
-        for imgUrl in Set(imageUrls) {
-            
-            guard imgUrl.isFileURL else {
-                print("[uploadImages] skipping \(imgUrl)")
-                continue
-            }
-            
-            let cachedUrl = imgUrl.cached
-            
-            do {
-                let data = try Data(contentsOf: cachedUrl)
-                guard var image = UIImage(data: data) else {
-                    print("[uploadImages] unable to convert to UIImage: \(imgUrl)")
-                    continue
-                }
-                
-                let fileName: String
-                let ext: ImageExtension
-                
-                if ["png", "jpg", "jpeg"].contains(imgUrl.pathExtension.lowercased()){
-                    ext = imgUrl.pathExtension.lowercased() == "png" ? .png : .jpeg
-                    fileName = imgUrl.lastPathComponent
-                } else {
-                    ext = .jpeg
-                    image = await ImageCompressor.compress(image: image, maxByte: 1_000_000) ?? image
-                    print("[imageUpload] converting \(imgUrl.pathExtension) to jpeg...")
-                    fileName = imgUrl.deletingPathExtension().appendingPathExtension("jpg").lastPathComponent
-                }
-                
-                let savedImgUrl = try await JoliApi.upload(image, fileName: fileName, ext: ext, baseUrl: baseUrl, urlSession: urlSession)
-                imgs.append((imgUrl, savedImgUrl))
-                
-            } catch {
-                print("[uploadImages] error uploading \(imgUrl): \(error)")
-            }
-            
-        }
-        return imgs
-    }
-    
     func fromHeicToJpg(heicPath: String, jpgPath: String) async -> UIImage? {
         guard let heicImage = UIImage(named: heicPath), let jpgImageCompresed = await ImageCompressor.compress(image: heicImage, maxByte: 1_000_000) else { return nil }
         

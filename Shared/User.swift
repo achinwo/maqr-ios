@@ -98,6 +98,17 @@ public protocol UserIdentifiable {
     var ranking: DiscjockeyPosition { get }
 }
 
+import CryptoKit
+
+public extension String {
+    
+    var md5: String {
+        let digest = Insecure.MD5.hash(data: self.data(using: .utf8) ?? Data())
+        return digest.map { String(format: "%02hhx", $0) }.joined()
+    }
+    
+}
+
 public extension UserIdentifiable {
     
     var isAnonymous: Bool {
@@ -113,6 +124,33 @@ public extension UserIdentifiable {
         }
         return uid == currentUuid
         #endif
+    }
+    
+    var gravatarUrl: URL? {
+        
+        guard case let EmailAddress.email(email) = emailAddress else {
+            return nil
+        }
+        
+        var baseUrl = URLComponents(string: "https://www.gravatar.com/avatar/\(email.md5)?s=512&r=g")
+        
+        let name = displayName.name ?? "Anonymous"
+        let avatarUrl = URL(staticString: "https://ui-avatars.com/api/")
+            .appendingPathComponent(name) // name
+            .appendingPathComponent("512") // size
+            .appendingPathComponent("f0e9e9") // background
+            .appendingPathComponent("8b5d5d") // color
+            .appendingPathComponent("2") // length
+            .appendingPathComponent("0.6") // font-size
+            .appendingPathComponent("true") // rounded
+            .appendingPathComponent("true") // uppercase
+            .appendingPathComponent("true") // bold
+        
+        baseUrl?.queryItems?.append(URLQueryItem(name: "d", value: avatarUrl.absoluteString))
+        
+        print("[gravatarUrl] url: \(String(describing: baseUrl?.url))")
+        
+        return baseUrl?.url
     }
 }
 

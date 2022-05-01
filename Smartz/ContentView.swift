@@ -387,14 +387,17 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             } label: {
                                 
                                 if let auth = appCoordinator.activeAuth {
-                                    NetworkImage(string: "https://ui-avatars.com/api/?bold=true&name=\(auth.user.displayName.name?.replacingOccurrences(of: " ", with: "+") ?? "Anonymous")&rounded=true"){
+                                    NetworkImage(url: auth.user.gravatarUrl){
                                         Image(systemName: "person")
                                     }
+                                    .clipShape(Circle())
                                 } else {
                                     Image(systemName: "person.crop.circle")
                                 }
                                 
                             }
+                            .frame(maxWidth: 32)
+                            .animation(.easeInOut)
                             .id("man-screen-signin")
                         }
                     }

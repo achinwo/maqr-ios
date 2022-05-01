@@ -402,38 +402,38 @@ public struct MealboxView: Experience, JoliView {
         }
         .id("share-section")
         
-        let reorderView = VStack(){
-            VStack(){
-                Text("Schedule a re-order?").font(.title2.weight(.light))
-                Text("Scheduling a re-delivery of Ofada sauce is effortless with Apple Pay")
-                    .lineLimit(3)
-                    .font(.body.weight(.light))
-                    .foregroundColor(.secondaryLabel)
-                    .padding()
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                VStack(){
-                    DatePicker("Pick an arrival date", selection: $deliveryDate, displayedComponents: [.date])
-                        .padding(.bottom)
-                        .padding(.bottom)
-                    
-                    if let deliveryDay = Calendar.current.dateComponents([.day], from: deliveryDate).day,
-                       let today = Calendar.current.dateComponents([.day], from: Date()).day, deliveryDay != today {
-                        VStack(){
-                            PaymentButton()
-                            Label("Apple Pay is coming soon!", systemImage: "creditcard.fill")
-                                .foregroundColor(.secondaryLabel)
-                                .font(.caption)
-                                .multilineTextAlignment(.center)
-                        }
-                    }
-                }
-                .padding()
-                .animation(.easeInOut)
-            }
-            .padding()
-        }
+//        let reorderView = VStack(){
+//            VStack(){
+//                Text("Schedule a re-order?").font(.title2.weight(.light))
+//                Text("Scheduling a re-delivery of Ofada sauce is effortless with Apple Pay")
+//                    .lineLimit(3)
+//                    .font(.body.weight(.light))
+//                    .foregroundColor(.secondaryLabel)
+//                    .padding()
+//                    .multilineTextAlignment(.center)
+//                    .fixedSize(horizontal: false, vertical: true)
+//
+//                VStack(){
+//                    DatePicker("Pick an arrival date", selection: $deliveryDate, displayedComponents: [.date])
+//                        .padding(.bottom)
+//                        .padding(.bottom)
+//
+//                    if let deliveryDay = Calendar.current.dateComponents([.day], from: deliveryDate).day,
+//                       let today = Calendar.current.dateComponents([.day], from: Date()).day, deliveryDay != today {
+//                        VStack(){
+//                            PaymentButton()
+//                            Label("Apple Pay is coming soon!", systemImage: "creditcard.fill")
+//                                .foregroundColor(.secondaryLabel)
+//                                .font(.caption)
+//                                .multilineTextAlignment(.center)
+//                        }
+//                    }
+//                }
+//                .padding()
+//                .animation(.easeInOut)
+//            }
+//            .padding()
+//        }
         
         return NavigationView(){
             ZStack(){

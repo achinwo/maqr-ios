@@ -94,7 +94,7 @@ extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
         
         do {
             let data = try Musicroom.jsonEncoder().encode(userData)
-            try keychain.label("apple-signin").set(data, key: userData.email)
+            try keychain.label("apple-signin").set(data, key: userData.identifier)
         } catch {
             self.signInSucceeded(nil, SignInWithAppleError.keychainPersist(error))
         }
@@ -107,7 +107,7 @@ extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
         self.signInSucceeded(success, nil)
     }
     
-    var userDataStored: UserData? {
+    func retreiveUserDataStored(_ appleUserIdentifier: String) -> UserData? {
         let jsonDecoder = Musicroom.jsonDecoder()
         let items = keychain.allKeys()
         
@@ -117,7 +117,8 @@ extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
                   let label = attributes.label,
                   let data = attributes.data,
                   let userData = try? jsonDecoder.decode(UserData.self, from: data),
-                  label == "apple-signin" else {
+                  label == "apple-signin",
+                  userData.identifier == appleUserIdentifier else {
                 continue
             }
             
@@ -132,7 +133,7 @@ extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
         // from your server that the account doesn't exist, you can look in the keychain
         // for the credentials and rerun setup
         
-        guard let stored = userDataStored else {
+        guard let stored = retreiveUserDataStored(credential.user) else {
             self.signInSucceeded(nil, SignInWithAppleError.keychainRetreive)
             return
         }
