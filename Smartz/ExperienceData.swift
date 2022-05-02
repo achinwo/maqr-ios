@@ -179,13 +179,17 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         
         let decoder = Musicroom.jsonDecoder()
         
-        let object = try decoder.decode(PersistedType.self, from: data)
+        let object = try decoder.decode(Response<PersistedType>.self, from: data)
+        
+        guard let saved = object.data, object.error == nil else {
+            throw NetworkError.errorMessage(object.error)
+        }
         
 //        let object = try await HttpMethod.Fetch.post(url: urlComp, dataType: PersistedType.self, payload: .data(data), baseUrl: baseUrl, urlSession: urlSession)
 
-        self.stored = object
-        self.uuid = object.uuid
-        return object
+        self.stored = saved
+        self.uuid = saved.uuid
+        return saved
     }
     
     func fromHeicToJpg(heicPath: String, jpgPath: String) async -> UIImage? {

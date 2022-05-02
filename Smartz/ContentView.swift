@@ -152,7 +152,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.safeAreaInsets) var safeAreaInsets
-    @AppStorage("active-tab") var selectedTab: Tab = .home
+    @AppStorage(key: .activeTab) var selectedTab: Tab = .home
     
     @State var experienceType: Experience.Type?
     

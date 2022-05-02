@@ -27,12 +27,20 @@ public struct LocalExperienceData: Codable {
     let experienceData: ExperienceData
 }
 
+extension AppStorageKey {
+    
+    static let experienceDataCache = AppStorageKey("experience-data-cache")//"cd-brand-name"
+    static let codeDesignerBrandName = AppStorageKey("cd-brand-name")
+    static let codeDesignerLandingText = AppStorageKey("cd-brand-landingpagetext")
+    static let activeTab = AppStorageKey("active-tab")
+}
+
 public struct CodeDesignerView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @State var selectedTab = 0
     
-    @AppStorage("experience-data-cache") public var storedData: Data = .empty
+    @AppStorage(key: .experienceDataCache) public var storedData: Data = .empty
     
     @Binding var selectedExperience: Experience.Type? {
         didSet {
@@ -45,8 +53,8 @@ public struct CodeDesignerView: JoliView {
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Binding var experienceData: ExperienceData?
     
-    @AppStorage("cd-brand-name") var brandName: String = .empty
-    @AppStorage("cd-brand-landingpagetext") var landingPageText: MultilineString = .empty
+    @AppStorage(key: .codeDesignerBrandName) var brandName: String = .empty
+    @AppStorage(key: .codeDesignerLandingText) var landingPageText: MultilineString = .empty
     
     @State var isLandingPageTapped = false
     
@@ -55,7 +63,7 @@ public struct CodeDesignerView: JoliView {
     @State var readyToDownload = true
     
     let trialActivateCallback: () -> Void
-    
+    let persistenceEnabled: Bool
     
     
     @State public var scrollProxy: ScrollViewProxy? = nil
@@ -78,10 +86,11 @@ public struct CodeDesignerView: JoliView {
         return self.experienceData?.isNew ?? true
     }
     
-    public init(_ experienceType: Binding<Experience.Type?>, _ data: Binding<ExperienceData?>, onActiveTrial: @escaping () -> Void){
+    public init(_ experienceType: Binding<Experience.Type?>, _ data: Binding<ExperienceData?>, persistenceEnabled: Bool? = nil, onActiveTrial: @escaping () -> Void){
         self._experienceData = data
         self._selectedExperience = experienceType
         self.trialActivateCallback = onActiveTrial
+        self.persistenceEnabled = persistenceEnabled ?? (data.wrappedValue?.uuid == nil)
     }
     
     var tabNames: [String] {
@@ -163,6 +172,7 @@ public struct CodeDesignerView: JoliView {
                                 Image(name)
                                     .resizable()
                                     .frame(minWidth: Sizing.xxLarge, minHeight: Sizing.xxLarge)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
                             } else {
                                 Image(systemName: product.experienceCls.iconName)
                                     .renderingMode(.original)
@@ -357,7 +367,7 @@ public struct CodeDesignerView: JoliView {
         
         do {
             let saved = try await expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-                    print("SAVE experience: \(saved)")
+            print("SAVE experience: \(saved)")
                     
             for var code in codes {
                 // temporarily hardcoding user id until sign in is implemented
@@ -424,6 +434,7 @@ public struct CodeDesignerView: JoliView {
                         }
                     } else {
                         item.view
+                            .disabled(self.selectedExperience == nil && self.experienceData == nil)
                     }
                 }
                 .frame(width: screenWidth)
@@ -458,14 +469,36 @@ public struct CodeDesignerView: JoliView {
         return !subscriptionPurchases.isEmpty
     }
     
+    public func clearStored() {
+        for key in [AppStorageKey.codeDesignerLandingText, AppStorageKey.codeDesignerBrandName, AppStorageKey.experienceDataCache] {
+            UserDefaults.standard.removeObject(forKey: key.rawValue)
+        }
+        print("[\(Self.self)] cleared stored data")
+    }
+    
     public func submitOrPurchase(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) async {
         
         guard let expCls = selectedExperience else {
             return
         }
         
+        let backToHome = { (clear: Bool) in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
+                withAnimation(){
+                    self.selectedTab = 0
+                    
+                    if clear {
+                        self.selectedExperience = nil
+                        self.experienceData = nil
+                        self.clearStored()
+                    }
+                }
+            }
+        }
+        
         guard appCoordinator.isPaymentEnabled, !self.hasSubscription, expData.uuid == nil else {
-            let _ = try? await self.submitExperience(expData, codes: codes)
+            let res = try? await self.submitExperience(expData, codes: codes)
+            backToHome(res != nil)
             return
         }
         
@@ -474,18 +507,10 @@ public struct CodeDesignerView: JoliView {
                 ExperiencePurchaseView() { _ in
                     self.appCoordinator.modal.close()
                     
-                    defer {
-                        
-                        //Task() { await self.updateStoredExperiences() }
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
-                            withAnimation(){
-                                self.selectedTab = 0
-                            }
-                        }
+                    Task() {
+                        let res = try? await self.submitExperience(expData, codes: codes)
+                        backToHome(res != nil)
                     }
-                    
-                    Task() { try? await self.submitExperience(expData, codes: codes) }
                 }
                 .navigationBarTitle(Text("Purchase \(expCls.title) Experience"), displayMode: .inline)
             }
@@ -683,7 +708,7 @@ public struct CodeDesignerView: JoliView {
     
     func updateStoredExperience() {
         
-        guard let experience = self.experienceData else { return }
+        guard let experience = self.experienceData, persistenceEnabled else { return }
         
         let localData = LocalExperienceData(appVersion: AppCoordinator.version.description, experienceData: experience)
         

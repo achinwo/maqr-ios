@@ -63,13 +63,6 @@ public enum SpotifyError: Error {
     case unathorized
 }
 
-public enum AppStorageKey: String {
-    case authToken = "auth_token"
-    case location = "location"
-    case isTcAccepted = "terms_and_conditions_agreed"
-    case purchasesIdsForTesting = "testing_purchases"
-}
-
 public struct Regex: ExpressibleByStringLiteral, Equatable {
     
     fileprivate let expression: NSRegularExpression
@@ -1041,13 +1034,40 @@ public struct ShakeEffect: GeometryEffect {
     
 }
 
+public struct AppStorageKey: Hashable, Equatable, RawRepresentable, @unchecked Sendable {
+    
+    public var rawValue: String
+    
+    public init(_ rawValue: String){
+        self.rawValue = rawValue
+    }
+    
+    public init(rawValue: String){
+        self.init(rawValue)
+    }
+    
+    public static let authToken: AppStorageKey = .init("auth_token")
+    public static let location: AppStorageKey = .init("location")
+    public static let isTcAccepted: AppStorageKey = .init("terms_and_conditions_agreed")
+    public static let purchasesIdsForTesting: AppStorageKey = .init("testing_purchases")
+    
+}
+
 public extension AppStorage {
     
     init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value == String {
         self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
     }
     
+    init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value == Data {
+        self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
+    }
+    
     init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value: RawRepresentable, Value.RawValue == String {
+        self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
+    }
+    
+    init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value: RawRepresentable, Value.RawValue == Int {
         self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
     }
     
