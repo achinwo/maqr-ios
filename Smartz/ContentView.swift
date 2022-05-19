@@ -158,12 +158,6 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     @State var experienceData: ExperienceData?
     
-    var appclipsCodesView: some View {
-        CodeDesignerView($experienceType, $experienceData) {
-            self.trialInfo = experienceData
-        }
-    }
-    
     var tabView: some View {
         let keyboardHidden = keyboardHeight == 0
         return HStack(){
@@ -412,7 +406,9 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     }
                 } else if self.selectedTab == .appClipCreator {
                     ScrollView(.vertical){
-                        appclipsCodesView
+                        CodeDesignerView() { experienceData in
+                            self.trialInfo = experienceData
+                        }
                     }
                 }
             }
