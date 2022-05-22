@@ -131,7 +131,7 @@ public struct CodeDesignerView: JoliView {
                 return
             }
             
-            appCoordinator.withAlert("Sign In With Apple", message: "Login is required in order to create your save your experience correctly", dismissLabel: "Cancel", label: "Sign In") {
+            appCoordinator.withAlert("Sign In With Apple", message: "It ensures your experience can be saved correctly", dismissLabel: "Cancel", label: "Sign In") {
                 self.appCoordinator.requestedSignIn.send(.apple() { success in
                     if success {
                         setupExperienceType()

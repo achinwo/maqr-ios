@@ -333,7 +333,7 @@ public struct MealboxView: Experience, JoliView {
             .padding()
             
             Section(header: header){
-                VStack(){
+                VStack(alignment: .leading){
                     ForEach((dataModel?.items ?? []).filter { $0.experienceItemType == .mealPrepIngredient }) { ing in
 
                         HStack(){
@@ -353,6 +353,8 @@ public struct MealboxView: Experience, JoliView {
                                     .fixedSize(horizontal: false, vertical: true)
                                     //.fixedSize(horizontal: false, vertical: true)
                             }
+                            
+                            Spacer()
                         }
                         .padding(.horizontal)
                     }
@@ -596,13 +598,13 @@ public struct MealboxView: Experience, JoliView {
                                 .font(.footnote).foregroundColor(Color.systemIndigo.opacity(0.7))
                         }
                         
-                        if let duration = itm.element.duration, let durationStr = formatter.string(from: Double(duration)) {
-                            Label(durationStr, systemImage: "timer")
+                        if let spicy = itm.element.spicy {
+                            Text(spicy.emoji)
                                 .font(.footnote)
                         }
                         
-                        if let spicy = itm.element.spicy {
-                            Text(spicy.emoji)
+                        if let duration = itm.element.duration, let durationStr = formatter.string(from: Double(duration)) {
+                            Label(durationStr, systemImage: "timer")
                                 .font(.footnote)
                         }
                         

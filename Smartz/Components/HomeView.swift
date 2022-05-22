@@ -70,12 +70,16 @@ struct HomeView<Footer: View>: JoliView {
                         if isRefreshingHistory && storedExperiences.isEmpty {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle())
-                            Text("Fetching \(selectedAccessLevel.rawValue.lowercased()) experiences...").font(.caption)
+                                .padding()
+                            Text("Fetching \(selectedAccessLevel.rawValue.lowercased()) experiences...")
+                                .font(.callout)
+                                .padding(.horizontal)
                         } else if !isRefreshingHistory && storedExperiences.isEmpty {
                             Text("No \(selectedAccessLevel.rawValue.lowercased()) experiences to show. Create one from the \"Design\" tab.")
                                 .font(.callout)
                                 .foregroundColor(.secondaryLabel)
                                 .multilineTextAlignment(.center)
+                                .padding(.horizontal)
                         } else {
                             LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: $selectedExperienceUuid, onSelect: onSelect)
                         }

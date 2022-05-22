@@ -10,6 +10,35 @@ import SwiftUI
 import SharedUI
 import JoliCore
 
+public func createImageCb(_ setter: @escaping (URL) -> Void) -> (UIImage?, String?, Error?) -> Void {
+    return { (img: UIImage?, imgName: String?, error: Error?) in
+        
+        guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first, let img = img else {
+            return
+        }
+        
+        let ext = URL(fileURLWithPath: imgName ?? "image.jpg").pathExtension.lowercased()
+        let cacheFilename = "\(UUID().uuidString).\(ext)"
+        let cacheUrl = cachesDirectory.appendingPathComponent(cacheFilename)
+        
+        Task(){
+            let data = ext == "png" ? img.pngData() : (await ImageCompressor.compress(image: img, maxByte: 1_000_000)?.jpegData(compressionQuality: 1.0))
+            
+            guard let imgageData = data, error == nil else {
+                return
+            }
+            
+            try? imgageData.write(to: cacheUrl)
+            
+            print("Wrote image to caches dir: \(cacheUrl) [isLocal=\(cacheUrl.isFileURL)]")
+            
+            DispatchQueue.main.async {
+                setter(cacheUrl)
+            }
+        }
+    }
+}
+
 public struct ExperienceDataView: JoliView {
     
     @EnvironmentObject public var appCoordinator: AppCoordinator
@@ -42,38 +71,9 @@ public struct ExperienceDataView: JoliView {
         return experienceType?.allDataKeys.compactMap() { $0.meta } ?? []
     }
     
-    public func createImageCb(_ setter: @escaping (URL) -> Void) -> (UIImage?, String?, Error?) -> Void {
-        return { (img: UIImage?, imgName: String?, error: Error?) in
-            
-            guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first, let img = img else {
-                return
-            }
-            
-            let ext = URL(fileURLWithPath: imgName ?? "image.jpg").pathExtension.lowercased()
-            let cacheFilename = "\(UUID().uuidString).\(ext)"
-            let cacheUrl = cachesDirectory.appendingPathComponent(cacheFilename)
-            
-            Task(){
-                let data = ext == "png" ? img.pngData() : (await ImageCompressor.compress(image: img, maxByte: 1_000_000)?.jpegData(compressionQuality: 1.0))
-                
-                guard let imgageData = data, error == nil else {
-                    return
-                }
-                
-                try? imgageData.write(to: cacheUrl)
-                
-                print("Wrote image to caches dir: \(cacheUrl) [isLocal=\(cacheUrl.isFileURL)]")
-                
-                DispatchQueue.main.async {
-                    setter(cacheUrl)
-                }
-            }
-        }
-    }
-    
     func imagePickerFrom(meta: ExperienceDataKeyPath.Metadata) -> some View {
         
-        let imageCallback = self.createImageCb() { url in
+        let imageCallback = createImageCb() { url in
             guard let keyPath = meta.keypath as? ReferenceWritableKeyPath<ExperienceData, URL?> else { return }
             self.data[keyPath: keyPath] = url
         }
@@ -107,76 +107,14 @@ public struct ExperienceDataView: JoliView {
         .id(meta.name)
     }
     
-    public func itemTypeSectionItemView(_ element: ExperienceData.Item, index: Int) -> some View {
-        
-        let setter = { (newValue: String, keyPath: WritableKeyPath<ExperienceData.Item, String?>) in
-            var element = element
-            element[keyPath: keyPath] = newValue
-            data.items = data.items.filter({ $0.id != element.id }) + [element]
+    public func itemTypeSectionItemViewNew(_ element: ExperienceData.Item, index: Int) -> some View {
+        NavigationLink() {
+            ExperienceDataItemView(item: element, index: index, data: data)
+                .navigationTitle("Edit \(element.experienceItemType.label)")
+        } label: {
+            ExperienceDataItemSummaryView(item: element, index: index)
+                .id("\(String(describing: element.title))-\(String(describing: element.subtitle))-\(element.uuid)")
         }
-        
-        let makeBinding = { (item: ExperienceData.Item, keyPath: WritableKeyPath<ExperienceData.Item, String?>) -> Binding<String> in
-            return Binding<String>(){
-                return element[keyPath: keyPath] ?? .empty
-            } set: { newValue in
-                setter(newValue, keyPath)
-            }
-        }
-        
-        let onSelected = self.createImageCb() { url in
-            setter(url.absoluteString, \ExperienceData.Item.imageName)
-        }
-        
-        return HStack(){
-            
-            if element.experienceItemType.isNumbered {
-                VStack(alignment: .leading){
-                    Text("\(index + 1).")
-                        .font(.headline.weight(.light))
-                        .foregroundColor(.secondary)
-                    Spacer()
-                }
-            } else {
-                ImageView(urlString: element.imageName, isCircular: false, onSelected: onSelected) { (image, imgName, error) in
-                    
-                } content: {
-                    Color.clear
-                }
-                .frame(width: screenWidth / 5, height: screenWidth / 5)
-            }
-            
-            VStack(alignment: .leading){
-                TextField("Title", text: makeBinding(element, \.title))
-                    .padding([.bottom, .leading, .top])
-                    .background(RoundedRectangle(cornerRadius: 8)
-                                    .foregroundColor(.tertiarySystemGroupedBackground.opacity(0.2))
-                    )
-                TextField("Subtitle", text: makeBinding(element, \.subtitle)).lineLimit(nil)
-                    .padding([.bottom, .leading, .top])
-                    .background(RoundedRectangle(cornerRadius: 8)
-                                    .foregroundColor(.tertiarySystemGroupedBackground.opacity(0.2))
-                    )
-                Spacer()
-            }
-        }
-        .overlay(HStack(){
-                    Spacer()
-                    Button(){
-                        self.appCoordinator.withAlert("Remove \(element.experienceItemType.label)?", message: "Permanent delete this item", destructive: true, label: "Remove") {
-                            self.data.items = self.data.items.filter() { $0.id != element.id }
-                        }
-                    } label: {
-                        Image(systemName: "minus")
-                    }
-                    .frame(width: 24, height: 24)
-                    .backgroundColor(.red.opacity(0.7))
-                    .foregroundColor(.fixedWhite)
-                    .font(.body.weight(.bold))
-                    .clipShape(Circle())
-                }
-                .offset(x: 14, y: 0)
-        )
-        .id(element.id)
     }
     
     public func itemTypeSectionView(_ expItemType: ExperienceItemType) -> some View {
@@ -187,17 +125,19 @@ public struct ExperienceDataView: JoliView {
             
         }
         
-        let items = Array(data.items.filter({ $0.experienceItemType == expItemType }))
+        let filteredItems = Array(data.items.filter({ $0.experienceItemType == expItemType }))
+        let items = filteredItems.sorted(by: { ($0.itemNo ?? filteredItems.count) < ($1.itemNo ?? filteredItems.count) })
         
         return Section(header: header) {
             
-            ForEach(Array(items.sorted().enumerated()), id: \.element.id){ itm in
-                self.itemTypeSectionItemView(itm.element, index: itm.offset)
+            List(Array(items.enumerated()), id: \.element.id){ itm in
+                self.itemTypeSectionItemViewNew(itm.element, index: itm.offset)
+                    .id("\(itm.element.id)-\(itm.offset)")
             }
             
             Button(){
-                print("Adding Item...")
-                let itm: ExperienceData.Item = ExperienceData.Item(experienceItemType: expItemType, identifier: nil)
+                let itm: ExperienceData.Item = ExperienceData.Item(experienceItemType: expItemType, itemNo: self.data.items.count, identifier: nil)
+                print("Adding Item...\(itm.uuid)")
                 self.data.items.append(itm)
             } label: {
                 HStack(){

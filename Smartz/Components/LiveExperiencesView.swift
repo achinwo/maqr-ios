@@ -254,7 +254,7 @@ public struct LiveExperiencesView: JoliView {
             HStack(){
                 Spacer()
                 
-                if let auth = currentAuth, auth.user.id == exp.createdById {
+                if let auth = currentAuth ?? appCoordinator.activeAuth, auth.user.id == exp.createdById {
                     self.editBtn(exp)
                     Spacer()
                 }

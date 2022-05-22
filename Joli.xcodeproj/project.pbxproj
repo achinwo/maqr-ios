@@ -327,6 +327,7 @@
 		92EDE41226193AE000688802 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE41126193AE000688802 /* PartialSheet */; };
 		92EDE43A26193DFA00688802 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE43926193DFA00688802 /* KeychainAccess */; };
 		92F1D5FB2708CF7A00D0743B /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 92F1D5FA2708CF7A00D0743B /* Configuration.storekit */; };
+		92F76DB4283AA06400747420 /* ExperienceDataItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F76DB3283AA06400747420 /* ExperienceDataItemView.swift */; };
 		92F8597225C791810057B3BC /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92FBFC8D26AB33560068DDA5 /* Templates in Resources */ = {isa = PBXBuildFile; fileRef = 92FBFC8C26AB33560068DDA5 /* Templates */; };
 		92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */; };
@@ -629,6 +630,7 @@
 		92ECCEDC26C0543F009A2B75 /* LiveExperiencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveExperiencesView.swift; sourceTree = "<group>"; };
 		92F1D5FA2708CF7A00D0743B /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		92F76DB3283AA06400747420 /* ExperienceDataItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceDataItemView.swift; sourceTree = "<group>"; };
 		92FBFC8C26AB33560068DDA5 /* Templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Templates; sourceTree = "<group>"; };
 		92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Experiences.generated.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -837,6 +839,7 @@
 				929BF21B275D6B4600F850F7 /* DynamicExperienceView.swift */,
 				9285148B27B8291600380CF7 /* AboutView.swift */,
 				9285148D27B83FDE00380CF7 /* HomeView.swift */,
+				92F76DB3283AA06400747420 /* ExperienceDataItemView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1647,6 +1650,7 @@
 				929BF21C275D6B4600F850F7 /* DynamicExperienceView.swift in Sources */,
 				9285149027B9758C00380CF7 /* ReorderNowView.swift in Sources */,
 				921CAFA826B5F4730078A394 /* YouTubePlayer.swift in Sources */,
+				92F76DB4283AA06400747420 /* ExperienceDataItemView.swift in Sources */,
 				9217905026C9832A009FC4CE /* VisualCodeDownloadView.swift in Sources */,
 				9228F86C26C07A310053DC04 /* ExperienceData.swift in Sources */,
 				921F6C3026BE81C00061D236 /* VisualCodeView.swift in Sources */,
@@ -2033,7 +2037,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2061,7 +2065,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2087,7 +2091,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2115,7 +2119,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;

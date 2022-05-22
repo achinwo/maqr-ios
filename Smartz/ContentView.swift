@@ -297,15 +297,22 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     
                     if let stikrExp = self.experienceData?.stored, let expCopy = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp) {
                         
-                        
-                        
                         let experienceDataView = ExperienceDataView(expCopy){ data in
-                                self.experienceData = data
                                 self.isEditingExperience = false
                             
                                 Task() {
-                                    let saved = try await self.submitExperience(data)
-                                    print("[ExperienceDataView] edited data - \(saved)")
+                                    do {
+                                        let saved = try await self.submitExperience(data)
+                                        print("[ExperienceDataView] edited data - \(saved)")
+                                        self.experienceData = ExperienceData.fromExperienceData(saved, baseUrl: api.baseUrlHttp)
+                                        
+                                    } catch {
+                                        print("[ExperienceDataView] error saving experience - \(error)")
+                                        for symbol: String in Thread.callStackSymbols {
+                                            print(symbol)
+                                        }
+                                    }
+                                    
                                 }
                             
                             }
@@ -373,7 +380,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             }
                             .id("man-screen-title")
                             .pickerStyle(SegmentedPickerStyle())
-                            .frame(minWidth: screenWidth / 4)
+                            .frame(minWidth: screenWidth / 2)
                         }
                         
                         ToolbarItem(placement: .navigationBarTrailing) {

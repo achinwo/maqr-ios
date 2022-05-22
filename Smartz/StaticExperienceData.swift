@@ -23,6 +23,31 @@ public extension Spicy {
         }
     }
     
+    var numericValue: Int {
+        switch self {
+            case .mild:
+                return 1
+            case .hot:
+                return 2
+            case .extraHot:
+                return 3
+        }
+    }
+    
+    static func fromNumber(_ value: Int) -> Spicy? {
+        
+        guard value > 0 else { return nil }
+        
+        switch value {
+            case 1:
+                return .mild
+            case 2:
+                return .hot
+            default:
+                return .extraHot
+        }
+    }
+    
 }
 
 public extension ExperienceData.Item {

@@ -148,7 +148,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
             }
                 
             for keyPath in Self.imageAttributes() where keyPath.meta != nil {
-                if let meta = keyPath.meta, let url = self[keyPath: meta.keypath] as? URL, url.isFileURL {
+                if let meta = keyPath.meta, let url = self[keyPath: meta.keypath] as? URL, url.isFileURL, FileManager.default.fileExists(atPath: url.path) {
                     try Subpart {
                         try ContentDisposition(uncheckedName: meta.name, uncheckedFilename: url.absoluteString)
                         ContentType(mediaType: .applicationOctetStream)
