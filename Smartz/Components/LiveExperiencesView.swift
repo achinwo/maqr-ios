@@ -42,12 +42,22 @@ public struct LiveExperiencesView: JoliView {
     
     private func makeQrCode(_ data: StikrExperienceData) -> (UIImage, URL)? {
         
+        var icon: CGImage? = nil
+        
+        if let logoUrl = data.logoImageUrl?.url(),
+           let logoImgData = try? Data(contentsOf: logoUrl) {
+            icon = UIImage(data: logoImgData)?.cgImage
+        }
+        
         guard let vizCode = data.visualcodes?.last,
               let url = URL(string: vizCode.url),
+              
               let img = EFQRCode.generate(for: url.absoluteString,
                                            size: EFIntSize(width: Int(screenWidth - 100), height: Int(screenWidth - 100)),
-                                           backgroundColor: UIColor(hex: "#E1E5EE").cgColor,
-                                           foregroundColor: UIColor(hex: "#29304B").cgColor) else {
+                                           backgroundColor: UIColor(hex: "#f5f6fa").cgColor,
+                                           foregroundColor: UIColor(hex: data.brandColorPrimary ?? "#29304B").cgColor, //
+                                           icon: icon
+              ) else {
                   return nil
               }
         
@@ -58,6 +68,7 @@ public struct LiveExperiencesView: JoliView {
     
     @State var autoResetting = AutoResetSubject<Bool, Never, DispatchQueue>(false, delay: 3, scheduler: DispatchQueue.main)
     @State var savedToPhotos = false
+    @State var currentAuth: Auth? = nil
     
     private func prepareCodeModal(_ exp: StikrExperienceData, _ image: UIImage, _ url: URL) -> some View {
         NavigationView(){
@@ -242,8 +253,12 @@ public struct LiveExperiencesView: JoliView {
             
             HStack(){
                 Spacer()
-                self.editBtn(exp)
-                Spacer()
+                
+                if let auth = currentAuth, auth.user.id == exp.createdById {
+                    self.editBtn(exp)
+                    Spacer()
+                }
+                
                 self.viewCodeBtn(exp)
                 Spacer()
                 self.launchBtn(exp)
@@ -331,6 +346,7 @@ public struct LiveExperiencesView: JoliView {
             //.padding(.vertical, isSelected ? 4 : 0)
         }
         .animation(.easeInOut, value: self.selectedExperienceUuid)
+        .onReceive(appCoordinator.authSubject, assign: \.currentAuth, target: self)
     }
     
 }

@@ -10,6 +10,19 @@ import SwiftUI
 import SharedUI
 import JoliCore
 
+extension ExperienceDataAccess: CaseIterable, Identifiable {
+    
+    public var id: String {
+        rawValue
+    }
+    
+    
+    public static var allCases: [ExperienceDataAccess] {
+        return [.experienceDataAccessPublic, .restricted, .experienceDataAccessPrivate]
+    }
+    
+}
+
 struct HomeView<Footer: View>: JoliView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
@@ -23,7 +36,11 @@ struct HomeView<Footer: View>: JoliView {
     
     @State var isRefreshingHistory = false
     @State public var storedExperiences: [StikrExperienceData] = []
+    @State var currentAuth: Auth? = nil
+    
     @Binding var selectedExperienceUuid: String?
+    @Binding var selectedAccessLevel: ExperienceDataAccess
+    
     public var onSelect: (LiveExperiencesView.Action, StikrExperienceData) -> Void
     
     @MainActor
@@ -31,17 +48,18 @@ struct HomeView<Footer: View>: JoliView {
         defer { isRefreshingHistory = false }
         
         do {
-            let exps = try await StikrExperienceData.all(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+            let exps = try await StikrExperienceData.all(where: [.experienceDataAccess: selectedAccessLevel.rawValue as AnyObject], baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             self.storedExperiences = exps
         } catch {
             print("Unable to fetch exps: \(error)")
         }
     }
     
-    public init(selectedExperienceUuid: Binding<String?>, onSelect: @escaping (LiveExperiencesView.Action, StikrExperienceData) -> Void, @ViewBuilder footer: () -> Footer) {
+    public init(selectedExperienceUuid: Binding<String?>, accessLevel: Binding<ExperienceDataAccess>, onSelect: @escaping (LiveExperiencesView.Action, StikrExperienceData) -> Void, @ViewBuilder footer: () -> Footer) {
         self.footerView = footer()
         self._selectedExperienceUuid = selectedExperienceUuid
         self.onSelect = onSelect
+        self._selectedAccessLevel = accessLevel
     }
     
     var contentView: some View {
@@ -49,7 +67,18 @@ struct HomeView<Footer: View>: JoliView {
             ScrollViewReader() { proxy in
                 VStack(){
                     VStack(){
-                        LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: $selectedExperienceUuid, onSelect: onSelect)
+                        if isRefreshingHistory && storedExperiences.isEmpty {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                            Text("Fetching \(selectedAccessLevel.rawValue.lowercased()) experiences...").font(.caption)
+                        } else if !isRefreshingHistory && storedExperiences.isEmpty {
+                            Text("No \(selectedAccessLevel.rawValue.lowercased()) experiences to show. Create one from the \"Design\" tab.")
+                                .font(.callout)
+                                .foregroundColor(.secondaryLabel)
+                                .multilineTextAlignment(.center)
+                        } else {
+                            LiveExperiencesView(experiences: $storedExperiences, selectedExperienceUuid: $selectedExperienceUuid, onSelect: onSelect)
+                        }
                     }
                     .padding([.top, .horizontal])
                     .padding(.top)
@@ -74,6 +103,14 @@ struct HomeView<Footer: View>: JoliView {
             guard refreshing else { return }
             self.requestStoredExperienceRefreshAt = Date()
         }
+        .onChange(of: self.selectedAccessLevel) { accessLevel in
+            print("[HomeView] changes accesslevel: \(accessLevel)")
+            Task() { await self.updateStoredExperiences() }
+        }
+        .onChange(of: self.currentAuth) { _ in
+            Task() { await self.updateStoredExperiences() }
+        }
+        .onReceive(appCoordinator.authSubject, assign: \.currentAuth, target: self)
         .onAppear(){
             Task() { await self.updateStoredExperiences() }
         }

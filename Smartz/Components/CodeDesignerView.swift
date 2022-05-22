@@ -13,6 +13,7 @@ import os
 import Foundation
 import JoliCore
 import JoliApi
+import AsyncCompatibilityKit
 
 extension Array where Element == ExperienceDataKeyPath.Metadata {
     
@@ -33,6 +34,7 @@ extension AppStorageKey {
     static let codeDesignerBrandName = AppStorageKey("cd-brand-name")
     static let codeDesignerLandingText = AppStorageKey("cd-brand-landingpagetext")
     static let activeTab = AppStorageKey("active-tab")
+    static let activeAccessLevel = AppStorageKey("active-access-level")
 }
 
 public struct CodeDesignerView: JoliView {
@@ -81,7 +83,7 @@ public struct CodeDesignerView: JoliView {
         }
     }
     
-    @State public var visualCode = VisualCodeRecord()
+    @State public var visualCode = VisualCodeRecord(properties: [.logo: Logo.badge.rawValue as AnyObject, .interactionType: InteractionType.cam.rawValue as AnyObject])
     
     @State var submitEnabled = true
     
@@ -115,12 +117,27 @@ public struct CodeDesignerView: JoliView {
                 return
             }
             
-            self.selectedExperience = product.experienceCls
+            let setupExperienceType = {
+                self.selectedExperience = product.experienceCls
+                
+                guard let expData = experienceData else { return }
+                
+                expData.uuid = nil
+                expData.stored = nil
+            }
             
-            guard let expData = experienceData else { return }
+            guard appCoordinator.activeAuth == nil else {
+                setupExperienceType()
+                return
+            }
             
-            expData.uuid = nil
-            expData.stored = nil
+            appCoordinator.withAlert("Sign In With Apple", message: "Login is required in order to create your save your experience correctly", dismissLabel: "Cancel", label: "Sign In") {
+                self.appCoordinator.requestedSignIn.send(.apple() { success in
+                    if success {
+                        setupExperienceType()
+                    }
+                })
+            }
         }
         
         let productBody = VStack(alignment: .leading){
@@ -256,6 +273,16 @@ public struct CodeDesignerView: JoliView {
         self.experienceData = ExperienceData(exp, brandName: brandName, landingPageText: landingPageText)
     }
     
+//    enum FocusField: Hashable, FocusStateCompliant {
+//
+//        case brandName
+//
+//        static var last: CodeDesignerView.FocusField { .brandName }
+//        var next: CodeDesignerView.FocusField? { nil }
+//    }
+    
+    //@FocusStateLegacy var focusedField: FocusField?
+    
     func customiseExperienceView(_ experienceClass: Experience.Type) -> some View {
         VStack(){
             if let experienceData = self.experienceData {
@@ -267,60 +294,71 @@ public struct CodeDesignerView: JoliView {
                 }
                 .padding(.bottom, safeAreaInsets.bottom * 2)
             } else {
-                VStack(){
-                    Text("What's Your Brand Name?")
-                        .font(.title.weight(.light))
-                        .padding(.top, safeAreaInsets.top)
-                        .padding()
+                self.brandDataView(experienceClass)
                     
-                    TextField("Enter your brand name", text: self.$brandName) { editing in
-                        
-                    } onCommit: {
-                        self.updateBrandName()
-                    }
-                    .padding([.horizontal, .bottom])
-                    .multilineTextAlignment(.center)
-                    
-                    Text("Welcome Page Message")
-                        .font(.title.weight(.light))
-                        .padding()
-                    TextEditor(text: self.$landingPageText)
-                        .frame(height: screenWidth / 2)
-                        .padding()
-                        .overlay(
-                            GeometryReader(){ proxy in
-                                VStack(alignment: .leading){
-                                    if landingPageText.isEmpty, !isLandingPageTapped {
-                                        Text("Enter a message for your \(experienceClass.title) experience's landing page")
-                                            .padding()
-                                            .foregroundColor(.tertiaryLabel)
-                                        Spacer()
-                                    }
-                                }
-                                .frame(width: proxy.size.width, height: proxy.size.height)
-                                .padding()
-                            }
-                        )
-                        .multilineTextAlignment(.center)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondaryLabel, lineWidth: 1))
-                        .padding([.horizontal, .bottom])
-                        .onTapGesture {
-                            isLandingPageTapped = true
-                        }
-                    
-                    Button(){
-                        self.updateBrandName()
-                    } label: {
-                        Label("Save & Continue", systemImage: "arrow.forward")
-                    }
-                    .disabled(brandName.isEmpty || landingPageText.isEmpty)
-                    .padding()
-                    .padding(.top)
-                }
-                .padding()
+                
             }
             Spacer()
+        }
+    }
+    
+    func brandDataView(_ experienceClass: Experience.Type) -> some View {
+        VStack(){
+            Text("What's Your Brand Name?")
+                .font(.title.weight(.light))
+                .padding(.top, safeAreaInsets.top)
+                .padding()
+            
+            TextField("Enter your brand name", text: self.$brandName) { editing in
+                
+            } onCommit: {
+                self.updateBrandName()
+            }
+            .padding([.horizontal, .bottom])
+            .multilineTextAlignment(.center)
+            //.focusedLegacy($focusedField, equals: .brandName)
+            
+            Text("Welcome Page Message")
+                .font(.title.weight(.light))
+                .padding()
+            TextEditor(text: self.$landingPageText)
+                .frame(height: screenWidth / 2)
+                .padding()
+                .overlay(
+                    GeometryReader(){ proxy in
+                        VStack(alignment: .leading){
+                            if landingPageText.isEmpty, !isLandingPageTapped {
+                                Text("Enter a message for your \(experienceClass.title) experience's landing page")
+                                    .padding()
+                                    .foregroundColor(.tertiaryLabel)
+                                Spacer()
+                            }
+                        }
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .padding()
+                    }
+                )
+                .multilineTextAlignment(.center)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondaryLabel, lineWidth: 1))
+                .padding([.horizontal, .bottom])
+                .onTapGesture {
+                    isLandingPageTapped = true
+                }
+            
+            Button(){
+                self.updateBrandName()
+            } label: {
+                Label("Save & Continue", systemImage: "arrow.forward")
+            }
+            .disabled(brandName.isEmpty || landingPageText.isEmpty)
+            .padding()
+            .padding(.top)
+        }
+        .padding()
+        .task {
+            print("Task ran correctly")
+            //focusedField = .brandName
         }
     }
     
@@ -330,10 +368,7 @@ public struct CodeDesignerView: JoliView {
                 .eraseToAnyView(), 0),
         ]
         
-        guard let selectedExperience = selectedExperience, isNewExperience else {
-            //print("[###] exper")
-            return vs
-        }
+        guard let selectedExperience = selectedExperience else { return vs }
         
         vs.append((
             customiseExperienceView(selectedExperience)
@@ -463,7 +498,13 @@ public struct CodeDesignerView: JoliView {
         print("[Experience#onChange] EXP: \(String(describing: self.selectedExperience))")
     }
     
+    @State var userEntitlements: [Entitlement] = []
+    
     var hasSubscription: Bool {
+        
+        if let user = appCoordinator.activeAuth?.user, self.userEntitlements.first(where: { $0.type == "subscription_account" && $0.userId == user.id }) != nil {
+            return true
+        }
         
         guard Date(timeIntervalSince1970: 1_640_993_136) > Date() else { return false } // disable testing purchase flow end of 2021
         
@@ -626,6 +667,20 @@ public struct CodeDesignerView: JoliView {
                 self.updateStoredExperience()
                 self.requestExperiencePersistAt = nil
             }
+            .onReceive(appCoordinator.authSubject) { activeAuth in
+                
+                guard let auth = activeAuth else {
+                    self.userEntitlements = []
+                    return
+                }
+                
+                Task() {
+                    let entitlements = try? await Entitlement.all(where: [.userId: auth.user.id.description as AnyObject, .type: "subscription_account" as AnyObject],
+                                                                  baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
+                    self.userEntitlements = entitlements ?? []
+                    //print("[CodeDesigner] user \(auth.user.id) entitlements: \(entitlements ?? [])")
+                }
+            }
             .onAppear() {
                 
                 //            let fileManager = FileManager.default
@@ -640,14 +695,13 @@ public struct CodeDesignerView: JoliView {
                 //                print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
                 //            }
                 self.requestStoredExperienceRefreshAt = Date()
-                
+                    
                 defer {
                     self.selectedTab = selectedExperience != nil && isNewExperience ? 1 : 0
                     self.updateBrandName()
                 }
                 
                 guard storedData != .empty else {
-                    print("[####] stored data is empty!")
                     return
                 }
                 

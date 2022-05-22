@@ -197,6 +197,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         .foregroundColor(.primary)
                         .font(.headline.weight(.light))
                 }
+                .animation(.none)
                 .matchedGeometryEffect(id: "tab-title", in: namespace)
                 .opacity(keyboardHeight < 100 ? 0 : 1)
             }
@@ -260,6 +261,9 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     @State public var visualCode = VisualCodeRecord()
     @State public var isEditingExperience = false
     @State public var submitting = false
+    @State var currentAuth: Auth? = nil
+    
+    @AppStorage(key: .activeAccessLevel) private var selectedAccessLevel = ExperienceDataAccess.experienceDataAccessPrivate
     
     @discardableResult
     @MainActor
@@ -319,7 +323,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         .hidden()
                     }
                     
-                    HomeView(selectedExperienceUuid: binding) { (action, stikrExp) in
+                    HomeView(selectedExperienceUuid: binding, accessLevel: $selectedAccessLevel) { (action, stikrExp) in
                         
                         switch action {
                             case .selected:
@@ -346,20 +350,47 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         codeDesignerButton
                             .padding()
                             .padding(.bottom, safeAreaInsets.bottom * 2)
+                            .disabled(selectedAccessLevel != .experienceDataAccessPrivate)
+                            .opacity(selectedAccessLevel == .experienceDataAccessPrivate ? 1 : 0)
+                            .animation(.easeInOut)
                     }
                     .navigationBarTitleDisplayMode(.inline)
                         //.navigationBarTitle()
                     .toolbar() {
                         ToolbarItem(placement: .principal) {
-                            VStack(alignment: .center) {
-                                Text("Live Experiences").font(.headline)
-                                Text("Your active brand experiences").font(.subheadline).foregroundColor(.secondaryLabel)
+//                            VStack(alignment: .center) {
+//                                Text("Live Experiences").font(.headline)
+//                                Text("Your active brand experiences").font(.subheadline).foregroundColor(.secondaryLabel)
+//                            }
+                            let accessLevels = [ExperienceDataAccess.experienceDataAccessPrivate, ExperienceDataAccess.experienceDataAccessPublic]
+                            
+                            Picker("Choose experiences", selection: $selectedAccessLevel) {
+                                ForEach(accessLevels) { item in
+                                    Text(item.rawValue.capitalized)
+                                        .accentColor(item == .experienceDataAccessPrivate ? .purple : .orange)
+                                        .tag(item)
+                                }
                             }
                             .id("man-screen-title")
+                            .pickerStyle(SegmentedPickerStyle())
                             .frame(minWidth: screenWidth / 4)
                         }
                         
                         ToolbarItem(placement: .navigationBarTrailing) {
+                            let isLoggedIn = currentAuth != nil
+                            
+                            Button() {
+                                self.selectedTab = .appClipCreator
+                            } label: {
+                                Image(systemName: "plus")
+                            }
+                            .padding(.leading)
+                            .opacity(isLoggedIn && selectedAccessLevel == .experienceDataAccessPrivate ? 1 : 0)
+                            .disabled(!isLoggedIn || selectedAccessLevel != .experienceDataAccessPrivate)
+                            .animation(.easeInOut)
+                        }
+                        
+                        ToolbarItem(placement: .navigationBarLeading) {
                             Button(){
                                 
                                 guard let currentAuth = appCoordinator.activeAuth, self.appCoordinator.activeSessionToken != nil else {
@@ -392,6 +423,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             }
                             .frame(maxWidth: 32)
                             .animation(.easeInOut)
+                            .padding(.trailing)
                             .id("man-screen-signin")
                         }
                     }
@@ -416,6 +448,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         .navigationViewStyle(.stack)
         .edgesIgnoringSafeArea(.bottom)
         .onReceive(appCoordinator.$keyboardHeight, assign: \.keyboardHeight, target: self)
+        .onReceive(appCoordinator.authSubject, assign: \.currentAuth, target: self)
         .frame(minWidth: screenWidth, idealHeight: screenHeight - safeAreaInsets.top)
         .overlay(
         
