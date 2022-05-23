@@ -26,6 +26,35 @@ public final class ImageSaver: NSObject {
     
 }
 
+@objc public class EFRoundedRectStyle: NSObject, EFPointStyle {
+    
+    public func fillRect(context: CGContext, rect: CGRect, isStatic: Bool) {
+        if isStatic {
+            context.fill(rect)
+        } else {
+            fillRoundedRect(context: context, rect: rect)
+        }
+    }
+    
+    private func fillRoundedRect(context: CGContext, rect: CGRect) {
+            // shrink rect edge
+        //let drawingRect = rect.insetBy(dx: -2, dy: -2)
+        
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: .allCorners,
+            cornerRadii: CGSize(width: 10, height: 10)
+        )
+        
+        context.addPath(path.cgPath)
+        context.fillPath()
+    }
+}
+
+public extension EFPointStyle where Self == EFRoundedRectStyle {
+    static var roundedRect: Self { .init() }
+}
+
 public struct LiveExperiencesView: JoliView {
     
     public enum Action {
@@ -52,14 +81,20 @@ public struct LiveExperiencesView: JoliView {
         guard let vizCode = data.visualcodes?.last,
               let url = URL(string: vizCode.url),
               
-              let img = EFQRCode.generate(for: url.absoluteString,
-                                           size: EFIntSize(width: Int(screenWidth - 100), height: Int(screenWidth - 100)),
-                                           backgroundColor: UIColor(hex: "#f5f6fa").cgColor,
-                                           foregroundColor: UIColor(hex: data.brandColorPrimary ?? "#29304B").cgColor, //
-                                           icon: icon
-              ) else {
-                  return nil
-              }
+                let img = EFQRCode.generate(for: url.absoluteString,
+                                            size: EFIntSize(width: 1080, height: 1080),
+                                            backgroundColor: UIColor(hex: "#f5f6fa").cgColor,
+                                            foregroundColor: UIColor(hex: data.brandColorPrimary ?? "#29304B").cgColor,
+//                                            watermark: UIImage(named: "smartz_logo")?.cgImage,
+//                                            watermarkMode: .bottomRight,
+//                                            watermarkIsTransparent: true,
+                                            //
+                                            icon: icon,
+                                            pointStyle: .square,
+                                            isTimingPointStyled: true
+                ) else {
+            return nil
+        }
         
         return (UIImage(cgImage: img), url)
     }
@@ -84,6 +119,8 @@ public struct LiveExperiencesView: JoliView {
                             }
                     } label: {
                         Image(uiImage: image)
+                            .resizable()
+                            .frame(width: screenWidth - 100, height: screenWidth - 100)
                             .scaleEffect(savedToPhotos ? 1.2 : 1)
                             .sheet(isPresented: $isShowingMessages) {
                                 MessageView("Share Experience", body: url.absoluteString) {
@@ -286,26 +323,35 @@ public struct LiveExperiencesView: JoliView {
         }
     }
     
+    @State var qrCodeByExpId = [Int: (url: URL, image: UIImage)]()
+    
     func viewCodeBtn(_ exp: StikrExperienceData) -> some View {
-        Group(){
-            if let (img, url) = self.makeQrCode(exp) {
-                
-                Button(){
-                    appCoordinator.modal.present() {
-                        return .view2(){
-                            prepareCodeModal(exp, img, url)
-                                .frame(width: screenWidth)
-                                .eraseToAnyView()
-                        }
-                    }
-                } label: {
-                    Label("QR Code", systemImage: "qrcode")//.padding([.horizontal, .bottom]).padding(.top, 2)
+        Button(){
+            
+            guard let (url, image) = qrCodeByExpId[exp.id] else { return }
+            
+            appCoordinator.modal.present() {
+                return .view2(){
+                    prepareCodeModal(exp, image, url)
+                        .frame(width: screenWidth)
+                        .eraseToAnyView()
                 }
-                .id(url)
+            }
+        } label: {
+            Label("QR Code", systemImage: "qrcode")//.padding([.horizontal, .bottom]).padding(.top, 2)
+        }
+        .id("viewqr-\(exp.id)")
+        .disabled(qrCodeByExpId[exp.id] == nil)
+        .matchedGeometryEffect(id: "\(exp.uuid)-view-btn", in: namespace)
+        .onAppear() {
+            DispatchQueue.global(qos: .userInitiated).async {
+                guard let (img, url) = self.makeQrCode(exp) else { return }
                 
+                DispatchQueue.main.async {
+                    self.qrCodeByExpId[exp.id] = (url: url, image: img)
+                }
             }
         }
-        .matchedGeometryEffect(id: "\(exp.uuid)-view-btn", in: namespace)
     }
     
     func launchBtn(_ exp: StikrExperienceData) -> some View {
