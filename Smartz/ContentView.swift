@@ -147,14 +147,11 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     @State var activeSectionIdx: Int? = nil
     
-    @Namespace var animation
     @Namespace var namespace
     
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @AppStorage(key: .activeTab) var selectedTab: Tab = .home
-    
-    @State var experienceType: Experience.Type?
     
     @State var experienceData: ExperienceData?
     
@@ -298,31 +295,36 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     if let stikrExp = self.experienceData?.stored, let expCopy = ExperienceData.fromExperienceData(stikrExp, baseUrl: api.baseUrlHttp) {
                         
                         let experienceDataView = ExperienceDataView(expCopy){ data in
-                                self.isEditingExperience = false
+                            self.isEditingExperience = false
                             
-                                Task() {
-                                    do {
-                                        let saved = try await self.submitExperience(data)
-                                        print("[ExperienceDataView] edited data - \(saved)")
-                                        self.experienceData = ExperienceData.fromExperienceData(saved, baseUrl: api.baseUrlHttp)
-                                        
-                                    } catch {
-                                        print("[ExperienceDataView] error saving experience - \(error)")
-                                        for symbol: String in Thread.callStackSymbols {
-                                            print(symbol)
-                                        }
-                                    }
-                                    
-                                }
-                            
+                            guard !data.isDeleted else {
+                                self.experienceData = nil
+                                return
                             }
-                            .navigationBarTitle(expCopy.brandName)
-                            .navigationBarItems(trailing: Button(){
-                                appCoordinator.dismissKeyboard()
-                                self.trialInfo = expCopy
-                            } label: {
-                                Text("Try It!")
-                            })
+                            
+                            Task() {
+                                do {
+                                    let saved = try await self.submitExperience(data)
+                                    print("[ExperienceDataView] edited data - \(saved)")
+                                    self.experienceData = ExperienceData.fromExperienceData(saved, baseUrl: api.baseUrlHttp)
+                                    
+                                } catch {
+                                    print("[ExperienceDataView] error saving experience - \(error)")
+                                    for symbol: String in Thread.callStackSymbols {
+                                        print(symbol)
+                                    }
+                                }
+                                
+                            }
+                            
+                        }
+                        .navigationBarTitle(expCopy.brandName)
+                        .navigationBarItems(trailing: Button(){
+                            appCoordinator.dismissKeyboard()
+                            self.trialInfo = expCopy
+                        } label: {
+                            Text("Try It!")
+                        })
                         
                         NavigationLink(destination: experienceDataView, isActive: self.$isEditingExperience) {
                             EmptyView()

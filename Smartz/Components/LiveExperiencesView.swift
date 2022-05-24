@@ -291,7 +291,7 @@ public struct LiveExperiencesView: JoliView {
             HStack(){
                 Spacer()
                 
-                if let auth = currentAuth ?? appCoordinator.activeAuth, auth.user.id == exp.createdById {
+                if let auth = currentAuth ?? appCoordinator.activeAuth, (auth.user.id == exp.createdById || userEntitlements.first(where: { $0.type == "admin_user" }) != nil) {
                     self.editBtn(exp)
                     Spacer()
                 }
@@ -393,6 +393,25 @@ public struct LiveExperiencesView: JoliView {
         }
         .animation(.easeInOut, value: self.selectedExperienceUuid)
         .onReceive(appCoordinator.authSubject, assign: \.currentAuth, target: self)
+        .onReceive(appCoordinator.authsSubject) { _ in
+            
+            guard let auth = appCoordinator.activeAuth else {
+                self.userEntitlements = []
+                return
+            }
+            
+            self.updateEntitlements(auth)
+        }
     }
+    
+    private func updateEntitlements(_ auth: Auth) {
+        Task() {
+            let entitlements = try? await Entitlement.all(where: [.userId: auth.user.id.description as AnyObject, .type: "admin_user" as AnyObject],
+                                                          baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
+            self.userEntitlements = entitlements ?? []
+        }
+    }
+    
+    @State var userEntitlements = [Entitlement]()
     
 }

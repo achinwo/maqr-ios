@@ -185,11 +185,23 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
             throw NetworkError.errorMessage(object.error)
         }
         
-//        let object = try await HttpMethod.Fetch.post(url: urlComp, dataType: PersistedType.self, payload: .data(data), baseUrl: baseUrl, urlSession: urlSession)
-
         self.stored = saved
         self.uuid = saved.uuid
         return saved
+    }
+    
+    @discardableResult
+    public func delete(hard: Bool = false, baseUrl: URL? = nil, urlSession: URLSession? = nil) async throws -> PersistedType {
+        
+        guard let id = self.stored?.id else {
+            throw NetworkError.badRequest("Cant delete unpersisted record")
+        }
+        
+        let urlComp = "/api/db/experiences/\(id)?hard=\(hard)"
+        return try await HttpMethod.Fetch.delete(url: urlComp,
+                                                 dataType: PersistedType.self,
+                                                 baseUrl: baseUrl,
+                                                 urlSession: urlSession)
     }
     
     func fromHeicToJpg(heicPath: String, jpgPath: String) async -> UIImage? {
@@ -203,6 +215,10 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     public var isNew: Bool {
         return uuid == nil
+    }
+    
+    public var isDeleted: Bool {
+        return stored?.deletedAt != nil
     }
     
     static let DEFAULT_BRAND_NAME = "Maqr"

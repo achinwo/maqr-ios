@@ -160,6 +160,12 @@ struct ExperienceDataItemView: JoliView {
         }
     }
     
+    func onDone() {
+        data.items = data.items.filter() { $0.uuid != item.uuid } + [item]
+        print("wrote back item! \(String(describing: item.title)) - \(String(describing: item.itemNo))")
+        presentationMode.wrappedValue.dismiss()
+    }
+    
     var contentView: some View {
         let setter = { (newValue: String, keyPath: WritableKeyPath<ExperienceData.Item, String?>) in
             //var element = item
@@ -213,9 +219,7 @@ struct ExperienceDataItemView: JoliView {
             Section(){
                 HStack(alignment: .center){
                     Spacer()
-                    Button() {
-                        presentationMode.wrappedValue.dismiss()
-                    } label: {
+                    Button(action: onDone) {
                         Label("Done", systemImage: "arrow.right")
                     }
                     .font(.headline)
@@ -241,16 +245,10 @@ struct ExperienceDataItemView: JoliView {
         }
         .toolbar() {
             ToolbarItem(placement: .navigationBarTrailing){
-                Button(){
-                    presentationMode.wrappedValue.dismiss()
-                } label: {
+                Button(action: onDone) {
                     Text("Done")
                 }
             }
-        }
-        .onDisappear() {
-            data.items = data.items.filter() { $0.uuid != item.uuid } + [item]
-            print("wrote back item! \(String(describing: item.title)) - \(String(describing: item.itemNo))")
         }
         .onAppear() {
             

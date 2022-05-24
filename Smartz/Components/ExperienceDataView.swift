@@ -320,7 +320,11 @@ public struct ExperienceDataView: JoliView {
                 self.completionCallback(data)
             }
             
-            Section(footer: Spacer().padding(.bottom, max(safeAreaInsets.bottom, 100) * 4)) {
+            let paddedFooter = Spacer().if(data.isNew) { spacer in
+                spacer.padding(.bottom, max(safeAreaInsets.bottom, 100) * 2)
+            }
+            
+            Section(footer: paddedFooter) {
                 HStack(){
                     Spacer()
                     Button(){
@@ -334,6 +338,16 @@ public struct ExperienceDataView: JoliView {
                 }
             }
             .onTapGesture(perform: onTap)
+            
+            if !data.isNew {
+                Section(footer: Spacer().padding(.bottom, max(safeAreaInsets.bottom, 100) * 2)){
+                    HStack(){
+                        Spacer()
+                        self.deleteButton(data)
+                        Spacer()
+                    }
+                }
+            }
         }
         .background(Color.pink)
         .gesture(
@@ -346,18 +360,39 @@ public struct ExperienceDataView: JoliView {
 
                     appCoordinator.dismissKeyboard()
                 }, including: .subviews)
-//        .overlay(
-//            VStack(){
-//                Spacer()
-//                if let img = image {
-//                    Image(platformImage: img)
-//                        .resizable()
-//                        .aspectRatio(contentMode: .fit)
-//                        .frame(width: screenWidth - 100, height: screenWidth - 100, alignment: .center)
-//                }
-//                Spacer()
-//            }
-//        )
+    }
+    
+    func deleteButton(_ data: ExperienceData) -> some View {
+        
+        let deleteExperience = {
+            
+            appCoordinator.withAlert("Delete Experience?", message: "Confirm delete of \"\(data.brandName)\" experience", destructive: true, dismissLabel: "Cancel", label: "Delete") {
+                print("[ExperienceDataView] delete: \(String(describing: data.uuid))")
+                
+                Task(){
+                    let deleted = try await data.delete(hard: false, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                    print("[ExperienceDataView#deleteButton] deleted=\(deleted)")
+                    data.stored = deleted
+                    
+                    self.completionCallback(data)
+                }
+            }
+        }
+        
+        let label = Label("Delete", systemImage: "trash").foregroundColor(.red)
+        
+        return Group(){
+            if #available(iOS 15.0, *) {
+                Button(role: .destructive, action: deleteExperience) {
+                    label
+                }
+                .buttonStyle(.borderless)
+                .controlSize(.large)
+            } else {
+                Button(action: deleteExperience) { label }
+                .foregroundColor(.red)
+            }
+        }
     }
     
 }
