@@ -11,7 +11,6 @@ import Combine
 import JoliApi
 import AlertToast
 import JoliCore
-import PassKit
 
 #if os(macOS)
 import AppKit
@@ -20,54 +19,54 @@ import SharedUI
 import UIKit
 #endif
 
-struct PaymentButton: View {
-    
-    init(_ style: PKPaymentButtonStyle = .automatic){
-        
-    }
-    
-    var body: some View {
-        Button(action: { /* Custom payment code here */ }, label: { EmptyView() } )
-            .buttonStyle(PaymentButtonStyle())
-    }
-}
+//struct PaymentButton: View {
+//
+//    init(_ style: PKPaymentButtonStyle = .automatic){
+//
+//    }
+//
+//    var body: some View {
+//        Button(action: { /* Custom payment code here */ }, label: { EmptyView() } )
+//            .buttonStyle(PaymentButtonStyle())
+//    }
+//}
+//
+//struct PaymentButtonStyle: ButtonStyle {
+//    func makeBody(configuration: Self.Configuration) -> some View {
+//        return PaymentButtonHelper()
+//    }
+//}
 
-struct PaymentButtonStyle: ButtonStyle {
-    func makeBody(configuration: Self.Configuration) -> some View {
-        return PaymentButtonHelper()
-    }
-}
-
-struct PaymentButtonHelper: View {
-    var body: some View {
-        PaymentButtonRepresentable()
-            .frame(minWidth: 100, maxWidth: 400)
-            .frame(height: 60)
-            .frame(maxWidth: .infinity)
-    }
-}
-
-extension PaymentButtonHelper {
-    
-    struct PaymentButtonRepresentable: UIViewRepresentable {
-        
-        var button: PKPaymentButton {
-            let button = PKPaymentButton(paymentButtonType: .order, paymentButtonStyle: .automatic) /*customize here*/
-            button.cornerRadius = 4.0 /* also customize here */
-            return button
-        }
-        
-#if os(macOS)
-        func makeNSView(context: Context) -> PKPaymentButton { button }
-        func updateNSView(_ uiView: PKPaymentButton, context: Context) { }
-        
-#else
-        func makeUIView(context: Context) -> PKPaymentButton { button }
-        func updateUIView(_ uiView: PKPaymentButton, context: Context) { }
-#endif
-    }
-    
-}
+//struct PaymentButtonHelper: View {
+//    var body: some View {
+//        PaymentButtonRepresentable()
+//            .frame(minWidth: 100, maxWidth: 400)
+//            .frame(height: 60)
+//            .frame(maxWidth: .infinity)
+//    }
+//}
+//
+//extension PaymentButtonHelper {
+//
+//    struct PaymentButtonRepresentable: UIViewRepresentable {
+//
+//        var button: PKPaymentButton {
+//            let button = PKPaymentButton(paymentButtonType: .order, paymentButtonStyle: .automatic) /*customize here*/
+//            button.cornerRadius = 4.0 /* also customize here */
+//            return button
+//        }
+//
+//#if os(macOS)
+//        func makeNSView(context: Context) -> PKPaymentButton { button }
+//        func updateNSView(_ uiView: PKPaymentButton, context: Context) { }
+//
+//#else
+//        func makeUIView(context: Context) -> PKPaymentButton { button }
+//        func updateUIView(_ uiView: PKPaymentButton, context: Context) { }
+//#endif
+//    }
+//
+//}
 
 struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentView {
     
