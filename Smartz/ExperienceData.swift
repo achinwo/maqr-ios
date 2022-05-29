@@ -157,6 +157,17 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
                     }
                 }
             }
+            
+            for item in self.items {
+                if let imageName = item.imageName, let imageUrl = URL(string: imageName), imageUrl.isFileURL, FileManager.default.fileExists(atPath: imageUrl.path) {
+                    try Subpart {
+                        try ContentDisposition(uncheckedName: imageUrl.lastPathComponent, uncheckedFilename: imageUrl.absoluteString)
+                        ContentType(mediaType: .applicationOctetStream)
+                    } body: {
+                        try Data(contentsOf: imageUrl)
+                    }
+                }
+            }
 
         }
 

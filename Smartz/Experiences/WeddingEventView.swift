@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import JoliCore
 
 #if !os(macOS)
 import SharedUI
@@ -14,12 +15,14 @@ import SharedUI
 
 struct WeddingEventView: JoliView, Experience {
     
-    
+    @EnvironmentObject var appCoordinator: AppCoordinator
     @State var dataModel: ExperienceData?
     
     var dataModelDefault: ExperienceData.Defaults
     
     @State var editMode: EditingState = .inactive
+    
+    @StateObject var webViewStateModel: WebViewStateModel = WebViewStateModel()
     
     static var title: String = "Wedding"
     
@@ -27,21 +30,24 @@ struct WeddingEventView: JoliView, Experience {
     
     static var iconName: String = "person.2.circle"
     
-    static var dataKeys: [PartialKeyPath<ExperienceData>] {
-        return []
-    }
-    
     static var basePath: String = "ewed"
     
-    @StateObject var webViewStateModel: WebViewStateModel = WebViewStateModel()
+    public static var dataKeys: [PartialKeyPath<ExperienceData>] {
+        return [
+             \ExperienceData.bannerImageUrl,
+             \ExperienceData.backgroundImageUrl,
+             \ExperienceData.brandContactEmail,
+        ]
+    }
+    
+    public static var supportedItemTypes: Set<ExperienceItemType> {
+        return [.menuFoodItem, .product]
+    }
     
     init(_ data: ExperienceData?) {
         self._dataModel = State(initialValue: data)
         self.dataModelDefault = ExperienceData.Defaults()
     }
-    
-    
-    @EnvironmentObject var appCoordinator: AppCoordinator
     
     var contentView: some View {
         WebView(request: URLRequest(url: api.baseUrlHttp.appendingPathComponent("ewed/\(dataModel?.uuid ?? "lizmanfred")")), webViewStateModel: self.webViewStateModel, onNavigationAction: self.onWebViewNavigation(_:))
