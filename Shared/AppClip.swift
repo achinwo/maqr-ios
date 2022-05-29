@@ -676,7 +676,7 @@ public extension AppClip {
     
     static var wssUrlRequest: URLRequest {
         let url = JoliApi.Environment.current.baseUrl.ws
-        var request = URLRequest(url: url.appendingPathComponent("/ws"), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 5)
+        var request = URLRequest(url: url.appendingPathComponent("/api/ws"), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 5)
         request.allHTTPHeaderFields = Self.defaultHeaders
         return request
     }
