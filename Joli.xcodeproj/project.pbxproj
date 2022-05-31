@@ -31,6 +31,8 @@
 		9203B32A24CB07FD00F465CC /* Consts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E2B24C7BB53007C960E /* Consts.swift */; };
 		9203B32B24CB080000F465CC /* Publishers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32E3024CA22FA007C960E /* Publishers.swift */; };
 		9203B33224CB08D000F465CC /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9234320D23BFD2F700E24E96 /* NotificationCenter.framework */; };
+		92065A792846AE8900E52C3B /* EFQRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 92065A782846AE8900E52C3B /* EFQRCode */; };
+		92065A7C2846C30500E52C3B /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 92065A7B2846C30500E52C3B /* Algorithms */; };
 		9208ACF324CC559400773730 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9208ACF224CC559400773730 /* DevicesView.swift */; };
 		920958AB25601EE10014626D /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920958AA25601EE10014626D /* Logging.swift */; };
 		9209B1E12629E32500786A6A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9209B1E02629E32500786A6A /* LaunchScreen.storyboard */; };
@@ -682,10 +684,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				927A7B15276FE47F007105CC /* KeychainAccess in Frameworks */,
+				92065A7C2846C30500E52C3B /* Algorithms in Frameworks */,
 				927A7B01276FE2B3007105CC /* NetworkImage in Frameworks */,
 				9249A966280C2B5900A5F7F6 /* MultipartFormData in Frameworks */,
 				92643780276F93A100E5F1B4 /* JoliApi in Frameworks */,
 				927A7AFF276FE28D007105CC /* AlertToast in Frameworks */,
+				92065A792846AE8900E52C3B /* EFQRCode in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1262,6 +1266,8 @@
 				927A7B00276FE2B3007105CC /* NetworkImage */,
 				927A7B14276FE47F007105CC /* KeychainAccess */,
 				9249A965280C2B5900A5F7F6 /* MultipartFormData */,
+				92065A782846AE8900E52C3B /* EFQRCode */,
+				92065A7B2846C30500E52C3B /* Algorithms */,
 			);
 			productName = SharedMacOS;
 			productReference = 927914E0276F926A0043F995 /* SharedMacOS.framework */;
@@ -1479,6 +1485,7 @@
 				9203410127E78BD8002BC9E0 /* XCRemoteSwiftPackageReference "EFQRCode" */,
 				9249A960280984E500A5F7F6 /* XCRemoteSwiftPackageReference "swift-multipart-formdata" */,
 				92950BEC2837B1D300EF7504 /* XCRemoteSwiftPackageReference "AsyncCompatibilityKit" */,
+				92065A7A2846C30500E52C3B /* XCRemoteSwiftPackageReference "swift-algorithms" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -2938,6 +2945,14 @@
 				minimumVersion = 6.2.0;
 			};
 		};
+		92065A7A2846C30500E52C3B /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-algorithms.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/elai950/AlertToast.git";
@@ -3065,6 +3080,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9203410127E78BD8002BC9E0 /* XCRemoteSwiftPackageReference "EFQRCode" */;
 			productName = EFQRCode;
+		};
+		92065A782846AE8900E52C3B /* EFQRCode */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9203410127E78BD8002BC9E0 /* XCRemoteSwiftPackageReference "EFQRCode" */;
+			productName = EFQRCode;
+		};
+		92065A7B2846C30500E52C3B /* Algorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92065A7A2846C30500E52C3B /* XCRemoteSwiftPackageReference "swift-algorithms" */;
+			productName = Algorithms;
 		};
 		922BFD32263757F8007CAF36 /* AlertToast */ = {
 			isa = XCSwiftPackageProductDependency;
