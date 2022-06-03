@@ -49,11 +49,26 @@ struct WeddingEventView: JoliView, Experience {
         self.dataModelDefault = ExperienceData.Defaults()
     }
     
+    @State var currentLocation: AppLocation? = nil
+    
+    var url: URL {
+        
+        guard case let AppLocation.experienceWeddingEvent(_, rawUrl) = appCoordinator.currentLocation,
+              let url = rawUrl, let components = URLComponents(url: url, resolvingAgainstBaseURL: true), let absUrl = components.url else {
+            return api.baseUrlHttp.appendingPathComponent("ewed/\(dataModel?.uuid ?? "lizmanfred")")
+        }
+        
+        return absUrl
+    }
+    
     var contentView: some View {
-        WebView(request: URLRequest(url: api.baseUrlHttp.appendingPathComponent("ewed/\(dataModel?.uuid ?? "lizmanfred")")), webViewStateModel: self.webViewStateModel, onNavigationAction: self.onWebViewNavigation(_:))
+        WebView(request: URLRequest(url: self.url), webViewStateModel: self.webViewStateModel, onNavigationAction: self.onWebViewNavigation(_:))
             .edgesIgnoringSafeArea(.vertical)
         .frame(minWidth: screenWidth, minHeight: screenHeight, alignment: .center)
         .backgroundColor(.fixedWhite)
+        .onReceive(appCoordinator.$currentLocation) { appLocation in
+            self.currentLocation = appLocation
+        }
     }
     
     func onWebViewNavigation(_ navigationAction: WebView.NavigationAction) -> Void {

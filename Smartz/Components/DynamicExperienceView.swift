@@ -11,6 +11,7 @@ import SharedUI
 import JoliCore
 import Combine
 import AlertToast
+import AsyncCompatibilityKit
 
 extension AppLocation {
     
@@ -102,9 +103,9 @@ struct DynamicExperienceView<PlaybackControllerType: PlaybackController>: JoliCo
         }
         .frame(width: screenWidth, height: screenHeight)
         .backgroundColor(.fixedWhite)
-        .onAppear(){
+        .task(){
             guard !loadingData else { return }
-            Task() { await self.loadExperienceData() }
+            await self.loadExperienceData()
         }
     }
 }

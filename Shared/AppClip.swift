@@ -132,7 +132,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     case experienceBrand(String)
     case experienceCook(String)
     case experienceReorderNow(String)
-    case experienceWeddingEvent(String)
+    case experienceWeddingEvent(String, URL?)
     case experienceBio(String)
     
     case unset
@@ -160,7 +160,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
         } else if let matches = patterns.experienceBio.matchGroups(rawValue), let experienceId = matches["experienceId"] {
             self = .experienceBio(experienceId)
         } else if let matches = patterns.experienceWeddingEvent.matchGroups(rawValue), let experienceId = matches["experienceId"] {
-            self = .experienceWeddingEvent(experienceId)
+            self = .experienceWeddingEvent(experienceId, nil)
         } else if let matches = patterns.rsvp.matchGroups(rawValue), let eventId = matches["eventId"] {
             self = .rsvp(eventId)
         } else if let matches = patterns.reward.matchGroups(rawValue), let rewardUid = matches["rewardId"] {
@@ -192,7 +192,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                     .experienceBrand(let expId),
                     .experienceReorderNow(let expId),
                     .experienceBio(let expId),
-                    .experienceWeddingEvent(let expId):
+                    .experienceWeddingEvent(let expId, _):
                 return expId
             default:
                 return nil
@@ -223,7 +223,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                 return "/ecook/\(experienceId)"
             case .experienceBio(let experienceId):
                 return "/ebio/\(experienceId)"
-            case .experienceWeddingEvent(let experienceId):
+            case .experienceWeddingEvent(let experienceId, _):
                 return "/ewed/\(experienceId)"
             case .experienceReorderNow(let experienceId):
                 return "/p/\(experienceId)"
@@ -274,7 +274,12 @@ public extension AppLocation {
             return nil
         }
         
-        self.init(rawValue: components.path)
+        if case let .experienceWeddingEvent(expId, _) = Self.init(rawValue: components.path), let url = components.url {
+            self = .experienceWeddingEvent(expId, url)
+        } else {
+            self.init(rawValue: components.path)
+        }
+        
     }
     
 }
