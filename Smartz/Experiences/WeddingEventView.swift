@@ -22,7 +22,9 @@ struct WeddingEventView: JoliView, Experience {
     
     @State var editMode: EditingState = .inactive
     
-    @StateObject var webViewStateModel: WebViewStateModel = WebViewStateModel()
+    @StateObject var webViewStateModel: WebViewStateModel
+    
+    @Environment(\.safeAreaInsets) var safeAreaInsets
     
     static var title: String = "Wedding"
     
@@ -47,6 +49,12 @@ struct WeddingEventView: JoliView, Experience {
     init(_ data: ExperienceData?) {
         self._dataModel = State(initialValue: data)
         self.dataModelDefault = ExperienceData.Defaults()
+        
+        let model = WebViewStateModel() { (controller, message) in
+            print("[WeddingEventView] received: \(message.body)")
+        }
+        
+        self._webViewStateModel = StateObject(wrappedValue: model)
     }
     
     @State var currentLocation: AppLocation? = nil
@@ -62,7 +70,7 @@ struct WeddingEventView: JoliView, Experience {
     }
     
     var contentView: some View {
-        WebView(request: URLRequest(url: self.url), webViewStateModel: self.webViewStateModel, onNavigationAction: self.onWebViewNavigation(_:))
+        WebView(request: URLRequest(url: self.url), webViewStateModel: self.webViewStateModel.updatedEdgeInsets(safeAreaInsets), onNavigationAction: self.onWebViewNavigation(_:))
             .edgesIgnoringSafeArea(.vertical)
         .frame(minWidth: screenWidth, minHeight: screenHeight, alignment: .center)
         .backgroundColor(.fixedWhite)

@@ -9,12 +9,13 @@
 import SwiftUI
 import WebKit
 
-public final class WebViewWrapper: UIViewRepresentable {
+public final class WebViewWrapper: NSObject, UIViewRepresentable {
   
     @ObservedObject public var webViewStateModel: WebViewStateModel //action two way binding
     let action: ((_ navigationAction: WebView.NavigationAction) -> Void)? //delegates callback
     
     public let request: URLRequest
+    public static var SCRIPT_HANDLER_MESSAGE = "mobileMessageHandler"
       
     public init(webViewStateModel: WebViewStateModel,
     action: ((_ navigationAction: WebView.NavigationAction) -> Void)?,
@@ -24,9 +25,10 @@ public final class WebViewWrapper: UIViewRepresentable {
         self.webViewStateModel = webViewStateModel
     }
     
-    
     public func makeUIView(context: Context) -> WKWebView  {
         let view = WKWebView()
+        view.configuration.userContentController.add(self, name: Self.SCRIPT_HANDLER_MESSAGE)
+        
         view.navigationDelegate = context.coordinator
         view.load(request)
         
@@ -73,6 +75,20 @@ extension WebViewWrapper {
     
 }
 
+extension WebViewWrapper: WKScriptMessageHandler {
+    
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        
+        guard message.name == Self.SCRIPT_HANDLER_MESSAGE else {
+            print("[WebViewWrapper#userContentController] unrecognised message name: \(message.name)")
+            return
+        }
+        
+        webViewStateModel.onJsScriptMessage(userContentController, message)
+    }
+    
+}
+
 extension WebViewWrapper.Coordinator: WKNavigationDelegate {
     
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -104,12 +120,59 @@ extension WebViewWrapper.Coordinator: WKNavigationDelegate {
         action?(.didCommit(navigation))
     }
     
+    static var debug: Bool {
+#if DEBUG
+        return true
+#else
+        return false
+#endif
+    }
+    
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         webViewStateModel.loading = false
         webViewStateModel.canGoBack = webView.canGoBack
+        
         if let title = webView.title {
             webViewStateModel.pageTitle = title
         }
+        
+        let appInfo = resolveAppInfo()
+        let version = resolveAppVersion()
+        
+        let jsScript = """
+window.android = {};
+window.android.build = {
+                    versionCode: '',
+                    versionName: '\(version.description)',
+                    buildType: '',
+                    isDebug: \(Self.debug),
+                    appId: '\(appInfo.appId ?? "")',
+                    deviceId: '\(appInfo.uuid ?? "")',
+                    deviceName: '\(appInfo.name)',
+                    deviceModel: '\(appInfo.model)',
+                    platform: 'ios',
+                    platformVersion: '\(appInfo.systemVersion)'
+                };
+"""
+        webView.evaluateJavaScript(jsScript) { (result, error) in
+            print("[\(Self.self)] result: \(String(describing: result)), error: \(String(describing: error))")
+        }
+        
+        if let edgeInsets = webViewStateModel.edgeInsets {
+            let script = """
+                        window.setWindowInsets({
+                            top: \(edgeInsets.top),
+                            right: \(edgeInsets.trailing),
+                            bottom: \(edgeInsets.bottom),
+                            left: \(edgeInsets.leading)
+                        });
+                    """
+            
+            webView.evaluateJavaScript(script) { (result, error) in
+                print("[\(Self.self)] insets result: \(String(describing: result)), error: \(String(describing: error))")
+            }
+        }
+        
         action?(.didFinish(navigation))
     }
     
@@ -130,15 +193,36 @@ extension WebViewWrapper.Coordinator: WKNavigationDelegate {
     }
 }
 
-public class WebViewStateModel: ObservableObject {
+public final class WebViewStateModel: ObservableObject {
+    
+    public typealias JsMessageCallback = (WKUserContentController, WKScriptMessage) -> Void
+    
     @Published public var pageTitle: String = "Web View"
     @Published public var loading: Bool = false
     @Published public var canGoBack: Bool = false
     @Published public var goBack: Bool = false
     
-    public init(pageTitle: String = "Web View"){
+    let onJsMessageCallback: JsMessageCallback?
+    @Published public var edgeInsets: EdgeInsets?
+    
+    public init(pageTitle: String = "Web View", windowInsets: EdgeInsets? = nil, callback: JsMessageCallback? = nil){
         self.pageTitle = pageTitle
+        self.onJsMessageCallback = callback
+        self.edgeInsets = windowInsets
     }
+    
+    public func updatedEdgeInsets(_ edgeInsets: EdgeInsets) -> Self {
+        
+        guard edgeInsets != self.edgeInsets else { return self }
+        
+        self.edgeInsets = edgeInsets
+        return self
+    }
+    
+    public func onJsScriptMessage(_ userContentController: WKUserContentController, _ message: WKScriptMessage) {
+        self.onJsMessageCallback?(userContentController, message)
+    }
+    
 }
 
 public struct WebView: View {

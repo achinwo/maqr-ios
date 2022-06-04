@@ -661,6 +661,30 @@ extension Bundle {
     }
 }
 
+public func resolveAppInfo() -> (uuid: String?, model: String, name: String, systemVersion: String, appName: String?, appId: String?) {
+#if os(macOS)
+    let uuid: String? = nil
+    let model: String = "Mac"
+    let name: String = Host.current().localizedName ?? model
+    let systemVersion: String = ProcessInfo.processInfo.operatingSystemVersionString
+#else
+    let uuid: String? = UIDevice.current.identifierForVendor?.uuidString
+    let model: String = UIDevice.current.model
+    let name: String = UIDevice.current.name
+    let systemVersion: String = UIDevice.current.systemVersion
+#endif
+    return (uuid: uuid, model: model, name: name, systemVersion: systemVersion, appName: Bundle.main.displayName, appId: Bundle.main.bundleIdentifier)
+}
+
+public func resolveAppVersion() -> Version {
+    guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+          let version = Version("\(appVersion).\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0")") else {
+        return Version.init(1, 0, 0)
+    }
+    
+    return version
+}
+
 public extension AppClip {
     
     static var debug: Bool {
@@ -695,45 +719,29 @@ public extension AppClip {
     }
     
     static var version: Version {
-        
-        guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
-              let version = Version("\(appVersion).\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0")") else {
-            return Version.init(1, 0, 0)
-        }
-        
-        return version
+        return resolveAppVersion()
     }
     
     static var defaultHeaders: [String: String] {
         
-        #if os(macOS)
-        let uuid: String? = nil
-        let model: String = "Mac"
-        let name: String = Host.current().localizedName ?? model
-        let systemVersion: String = ProcessInfo.processInfo.operatingSystemVersionString
-        #else
-        let uuid: String? = UIDevice.current.identifierForVendor?.uuidString
-        let model: String = UIDevice.current.model
-        let name: String = UIDevice.current.name
-        let systemVersion: String = UIDevice.current.systemVersion
-        #endif
+        let appInfo = resolveAppInfo()
         
         var headers = [
             "X-PLATFORM": "ios",
-            "X-PLATFORM-VERSION": systemVersion,
-            "X-DEVICE-UUID": uuid ?? "",
-            "X-DEVICE-MODEL": model,
-            "X-DEVICE-NAME": name,
+            "X-PLATFORM-VERSION": appInfo.systemVersion,
+            "X-DEVICE-UUID": appInfo.uuid ?? "",
+            "X-DEVICE-MODEL": appInfo.model,
+            "X-DEVICE-NAME": appInfo.name,
             "X-APP-VERSION": Self.version.description,
             "X-APP-SKU": Self.isAppclip ? "APPCLIP" : "FULL",
             //"X-SESSION-ID": activeSessionId,
         ]
         
-        if let displayName = Bundle.main.displayName {
+        if let displayName = appInfo.appName {
             headers["X-APP-NAME"] = displayName
         }
         
-        if let appId = Bundle.main.bundleIdentifier {
+        if let appId = appInfo.appId {
             headers["X-APP-ID"] = appId
         }
         
