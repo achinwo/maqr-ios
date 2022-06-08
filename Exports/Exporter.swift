@@ -198,26 +198,26 @@ public struct Exporter {
     }
     
     public static func main() -> Void {
-//        let exporter = Self.init()
-//        exporter.export()
-        print("starting...")
-        //let logoUrl = URL(fileURLWithPath: "/Users/anthony/Downloads/chinyerum_wedding_foods/image8.png")
-        
-        let fourthyCodes = [allCodeStyles()[1]].cycled(times: 50)
-        
-        for (offset, element) in fourthyCodes.enumerated() {
-            
-            guard
-                let (image, _) = makeQrCode(URL(string: "https://maqr.co/ewed/lizmanfred?table=\((offset + 1).description)")!, logoText: offset + 1,
-                                            backgroundColor: element.backgroundColor, foregroundColor: element.foregroundColor),
-                let data = image.jpegData() else {
-                print("unable to genrate QR code")
-                return
-            } //Users/anthony/Downloads/chinyerum_wedding_foods/tables
-            
-            try? data.write(to: URL(fileURLWithPath: "/Users/anthony/Downloads/chinyerum_wedding_foods/tables/qr_code_\(offset).jpg"), options: .atomic)
-            print("Write file complete - \(offset)")
-        }
+        let exporter = Self.init()
+        exporter.export()
+//        print("starting...")
+//        //let logoUrl = URL(fileURLWithPath: "/Users/anthony/Downloads/chinyerum_wedding_foods/image8.png")
+//
+//        let fourthyCodes = [allCodeStyles()[1]].cycled(times: 50)
+//
+//        for (offset, element) in fourthyCodes.enumerated() {
+//
+//            guard
+//                let (image, _) = makeQrCode(URL(string: "https://maqr.co/ewed/lizmanfred?table=\((offset + 1).description)")!, logoText: offset + 1,
+//                                            backgroundColor: element.backgroundColor, foregroundColor: element.foregroundColor),
+//                let data = image.jpegData() else {
+//                print("unable to genrate QR code")
+//                return
+//            } //Users/anthony/Downloads/chinyerum_wedding_foods/tables
+//
+//            try? data.write(to: URL(fileURLWithPath: "/Users/anthony/Downloads/chinyerum_wedding_foods/tables/qr_code_\(offset).jpg"), options: .atomic)
+//            print("Write file complete - \(offset)")
+//        }
     }
     
 }

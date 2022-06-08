@@ -216,6 +216,11 @@ struct ExperienceDataItemView: JoliView {
                 mealPrepStepSections
             }
             
+            Section(header: Text("Grouping Tags (Optional)")) {
+                TextField("Primary", text: makeBinding(item, \.itemGrouping))
+                TextField("Secondary", text: makeBinding(item, \.itemSubgrouping))
+            }
+            
             Section(){
                 HStack(alignment: .center){
                     Spacer()
