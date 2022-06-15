@@ -41,6 +41,7 @@ struct WeddingEventView: JoliView, Experience {
              \ExperienceData.brandContactEmail,
               \ExperienceData.productName,
               \ExperienceData.productDescription,
+              \ExperienceData.productImageUrl,
               \ExperienceData.socialInstagramUsername,
               \ExperienceData.socialFacebookPage,
         ]
