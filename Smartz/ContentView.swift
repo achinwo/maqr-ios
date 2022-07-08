@@ -402,25 +402,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         }
                         
                         ToolbarItem(placement: .navigationBarLeading) {
-                            Button(){
-                                
-                                guard let currentAuth = appCoordinator.activeAuth, self.appCoordinator.activeSessionToken != nil else {
-                                    self.appCoordinator.requestedSignIn.send(.apple(){ value in
-                                        print("sign-in! \(value)")
-                                    })
-                                    return
-                                }
-                                
-                                let action = {
-                                    self.appCoordinator.signoutSubject.send(currentAuth)
-                                }
-                                
-                                appCoordinator.withAlert(Strings.reallyLogoutTitle,
-                                                         message: Strings.reallyLogoutMessage,
-                                                         destructive: true, label: "Sign Out",
-                                                         action: action)
-                                
-                            } label: {
+                            Button(action: self.onProfileActionClicked){
                                 
                                 if let auth = appCoordinator.activeAuth {
                                     NetworkImage(url: auth.user.gravatarUrl){
@@ -452,6 +434,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         CodeDesignerView() { experienceData in
                             self.trialInfo = experienceData
                         }
+                        .frame(minHeight: screenHeight * 1.5)
                     }
                 }
             }
@@ -484,6 +467,83 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     }
     
     @State var keyboardHeight: CGFloat = 0
+    
+    func onProfileActionClicked() -> Void {
+        guard let currentAuth = appCoordinator.activeAuth, self.appCoordinator.activeSessionToken != nil else {
+            self.appCoordinator.requestedSignIn.send(.apple(){ value in
+                print("sign-in! \(value)")
+            })
+            return
+        }
+        
+        let accountDelete = {
+            print("Requested account deletion")
+            
+            Task(){
+                print("[accountDelete] posting...")
+                let res = try? await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/apple-signin-token")!,
+                                                               payload: [:], baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                print("[accountDelete] res: \(res)")
+            }
+            
+        }
+        
+        appCoordinator.modal.present() {
+            .view2() {
+                NavigationView(){
+                    VStack(){
+                        
+                        NetworkImage(url: currentAuth.user.gravatarUrl){
+                            Image(systemName: "person")
+                        }
+                        .clipShape(Circle())
+                        .frame(maxWidth: screenWidth / 2, maxHeight: screenWidth / 2)
+                        .padding()
+                        
+                        Text(currentAuth.user.displayName.name ?? "Anonymous")
+                        
+                        Button(){
+                            print("Requested sign out")
+                            
+                            appCoordinator.modal.close() {
+                                appCoordinator.withAlert(Strings.reallyLogoutTitle,
+                                                         message: Strings.reallyLogoutMessage,
+                                                         destructive: true, label: "Sign Out",
+                                                         action: { self.appCoordinator.signoutSubject.send(currentAuth) })
+                            }
+                            
+                        } label: {
+                            Text("Sign Out")
+                        }
+                        .padding()
+                        
+                        Spacer()
+                        Spacer()
+                        
+                        Divider()
+                        
+                        Button() {
+                            appCoordinator.modal.close() {
+                                appCoordinator.withAlert("Account Deletion",
+                                                         message: "Are you sure you want to delete your account?\n\nWarning: This action is irreversible!",
+                                                         destructive: true, label: "Delete",
+                                                         action: accountDelete)
+                            }
+                            
+                        } label: {
+                            Text("Delete Account")
+                        }
+                        .padding()
+                        .padding(.bottom)
+                    }
+                    .padding()
+                    .navigationTitle("Account")
+                }
+                .eraseToAnyView()
+            }
+        }
+    }
+    
 }
 
 //struct ContentView_Previews: PreviewProvider {

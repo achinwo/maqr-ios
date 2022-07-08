@@ -189,7 +189,7 @@ public struct CodeDesignerView: JoliView {
                             if let name = product.companyLogoName {
                                 Image(name)
                                     .resizable()
-                                    .frame(minWidth: Sizing.xxLarge, minHeight: Sizing.xxLarge)
+                                    .frame(width: Sizing.xxLarge * 1.5, height: Sizing.xxLarge * 1.5)
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                             } else {
                                 Image(systemName: product.experienceCls.iconName)
@@ -571,7 +571,7 @@ public struct CodeDesignerView: JoliView {
         return self.tabView
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .interactive))
-            .frame(idealHeight: screenHeight)
+            //.frame(minHeight: screenHeight)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar() {
                 ToolbarItem(placement: .navigationBarLeading) {
