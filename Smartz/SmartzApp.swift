@@ -14,6 +14,7 @@ import JoliApi
 import JoliCore
 import os
 import MessageUI
+import AuthenticationServices
 
 @main
 struct SmartzApp: AppClip, AppAuthentication {
@@ -227,11 +228,39 @@ struct SmartzApp: AppClip, AppAuthentication {
                 self.isActionSheetPresented = true
             }
             .onAppear() {
-                guard let token = activeSessionToken ?? self.auths.first?.session.token else {
+                
+                guard let currentAuth = self.auths.first else {
                     return
                 }
                 
-                Task() { await self.authenticate(.sessionToken(token), alertOnFail: false) }
+                let token = activeSessionToken ?? currentAuth.session.token
+                
+                let authenticate: () -> () = {
+                    Task() { await self.authenticate(.sessionToken(token), alertOnFail: false) }
+                }
+                
+                guard let appleIdentifier = currentAuth.user.appleIdentifier else {
+                    authenticate()
+                    return
+                }
+                
+                let appleIDProvider = ASAuthorizationAppleIDProvider()
+                
+                appleIDProvider.getCredentialState(forUserID: appleIdentifier) { (credentialState, error) in
+                    switch credentialState {
+                        case .authorized:
+                            print("[SIGN IN WITH APPLE] auth is valid")
+                            authenticate()
+                        case .revoked, .notFound:
+                            print("[SIGN IN WITH APPLE] auth has been revoked")
+                            DispatchQueue.main.async() {
+                                self.coordinator.signoutSubject.send(currentAuth)
+                            }
+                        default:
+                            break
+                    }
+                }
+                
             }
     }
     

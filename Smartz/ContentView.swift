@@ -13,6 +13,7 @@ import JoliApi
 import JoliCore
 import AlertToast
 import Combine
+import KeychainAccess
 
 enum AssetInfo {
     case video(AVPlayer)
@@ -476,6 +477,11 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             return
         }
         
+        let signOut = {
+            print("Requested sign out")
+            self.appCoordinator.signoutSubject.send(currentAuth)
+        }
+        
         let accountDelete = {
             print("Requested account deletion")
             
@@ -483,9 +489,14 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                 print("[accountDelete] posting...")
                 let res = try? await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/apple-signin-token")!,
                                                                payload: [:], baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-                print("[accountDelete] res: \(res)")
+                print("[accountDelete] res: \(String(describing: res))")
+                
+                guard let res = res, let status = res["status"] as? Int, status == 200 else { return }
+                
+                signOut()
+                
+                try? Keychain(service: "com.smartstickr.session-token").remove(currentAuth.user.appleIdentifier!)
             }
-            
         }
         
         appCoordinator.modal.present() {
@@ -501,15 +512,18 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         .padding()
                         
                         Text(currentAuth.user.displayName.name ?? "Anonymous")
+                            .font(.title.weight(.thin))
+                        Text(currentAuth.user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondaryLabel)
                         
                         Button(){
-                            print("Requested sign out")
                             
                             appCoordinator.modal.close() {
                                 appCoordinator.withAlert(Strings.reallyLogoutTitle,
                                                          message: Strings.reallyLogoutMessage,
                                                          destructive: true, label: "Sign Out",
-                                                         action: { self.appCoordinator.signoutSubject.send(currentAuth) })
+                                                         action: signOut)
                             }
                             
                         } label: {
@@ -533,8 +547,9 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         } label: {
                             Text("Delete Account")
                         }
+                        .foregroundColor(.red.opacity(0.7))
                         .padding()
-                        .padding(.bottom)
+                        .padding(.vertical)
                     }
                     .padding()
                     .navigationTitle("Account")
