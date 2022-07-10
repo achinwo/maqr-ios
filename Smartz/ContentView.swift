@@ -470,20 +470,52 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     @State var keyboardHeight: CGFloat = 0
     
     func onProfileActionClicked() -> Void {
-        guard let currentAuth = appCoordinator.activeAuth, self.appCoordinator.activeSessionToken != nil else {
-            self.appCoordinator.requestedSignIn.send(.apple(){ value in
-                print("sign-in! \(value)")
-            })
-            return
+//        guard let currentAuth = appCoordinator.activeAuth, self.appCoordinator.activeSessionToken != nil else {
+//            self.appCoordinator.requestedSignIn.send(.apple(){ value in
+//                print("sign-in! \(value)")
+//            })
+//
+//            return
+//        }
+        
+        appCoordinator.modal.present() {
+            .view2() {
+                NavigationView(){
+                    AccountView(currentAuth: currentAuth, selectedAccessLevel: $selectedAccessLevel)
+                    .padding()
+                    .navigationTitle(appCoordinator.activeAuth != nil && self.appCoordinator.activeSessionToken != nil ? "Account" : "Sign in to get started")
+                }
+                .eraseToAnyView()
+            }
         }
+    }
+    
+}
+
+struct AccountView: JoliView {
+    
+    @State var currentAuth: Auth?
+    @Binding var selectedAccessLevel: ExperienceDataAccess
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    
+    
+    var contentView: some View {
+        
         
         let signOut = {
+            guard let currentAuth = currentAuth else { return }
             print("Requested sign out")
             self.appCoordinator.signoutSubject.send(currentAuth)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)){
+                selectedAccessLevel = .experienceDataAccessPublic
+            }
         }
         
         let accountDelete = {
             print("Requested account deletion")
+            
+            guard let currentAuth = currentAuth else { return }
             
             Task(){
                 print("[accountDelete] posting...")
@@ -495,62 +527,72 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             }
         }
         
-        appCoordinator.modal.present() {
-            .view2() {
-                NavigationView(){
-                    VStack(){
-                        
-                        NetworkImage(url: currentAuth.user.gravatarUrl){
-                            Image(systemName: "person")
-                        }
-                        .clipShape(Circle())
-                        .frame(maxWidth: screenWidth / 2, maxHeight: screenWidth / 2)
-                        .padding()
-                        
-                        Text(currentAuth.user.displayName.name ?? "Anonymous")
-                            .font(.title.weight(.thin))
-                        Text(currentAuth.user.email)
-                            .font(.caption)
-                            .foregroundColor(.secondaryLabel)
-                        
-                        Button(){
-                            
-                            appCoordinator.modal.close() {
-                                appCoordinator.withAlert(Strings.reallyLogoutTitle,
-                                                         message: Strings.reallyLogoutMessage,
-                                                         destructive: true, label: "Sign Out",
-                                                         action: signOut)
-                            }
-                            
-                        } label: {
-                            Text("Sign Out")
-                        }
-                        .padding()
-                        
-                        Spacer()
-                        Spacer()
-                        
-                        Divider()
-                        
-                        Button() {
-                            appCoordinator.modal.close() {
-                                appCoordinator.withAlert("Account Deletion",
-                                                         message: "Are you sure you want to delete your account?\n\nWarning: This action is irreversible!",
-                                                         destructive: true, label: "Delete",
-                                                         action: accountDelete)
-                            }
-                            
-                        } label: {
-                            Text("Delete Account")
-                        }
-                        .foregroundColor(.red.opacity(0.7))
-                        .padding()
-                        .padding(.vertical)
+        return VStack(){
+            
+            NetworkImage(url: currentAuth?.user.gravatarUrl){
+                Image(systemName: "person.crop.circle")
+                    .resizable()
+                    .font(.largeTitle.weight(.thin))
+                    .foregroundColor(.secondaryLabel)
+            }
+            .ifLet(currentAuth?.user.gravatarUrl) { (view, value) in
+                return view.clipShape(Circle())
+            }
+            .frame(maxWidth: screenWidth / 2, maxHeight: screenWidth / 2)
+            .padding()
+            
+            if let currentAuth = currentAuth, self.appCoordinator.activeSessionToken != nil  {
+                Text(currentAuth.user.displayName.name ?? "Anonymous")
+                    .font(.title.weight(.thin))
+                Text(currentAuth.user.email)
+                    .font(.caption)
+                    .foregroundColor(.secondaryLabel)
+            
+                Button(){
+                    
+                    appCoordinator.modal.close() {
+                        appCoordinator.withAlert(Strings.reallyLogoutTitle,
+                                                 message: Strings.reallyLogoutMessage,
+                                                 destructive: true, label: "Sign Out",
+                                                 action: signOut)
                     }
-                    .padding()
-                    .navigationTitle("Account")
+                    
+                } label: {
+                    Text("Sign Out")
                 }
-                .eraseToAnyView()
+                .padding()
+                
+                Spacer()
+                Spacer()
+                
+                Divider()
+                
+                Button() {
+                    appCoordinator.modal.close() {
+                        appCoordinator.withAlert("Account Deletion",
+                                                 message: "Are you sure you want to delete your account?\n\nWarning: This action is irreversible!",
+                                                 destructive: true, label: "Delete",
+                                                 action: accountDelete)
+                    }
+                    
+                } label: {
+                    Text("Delete Account")
+                }
+                .foregroundColor(.red.opacity(0.7))
+                .padding()
+                .padding(.vertical)
+            } else {
+                SignInWithApple()
+                    .onTapGesture() {
+                        appCoordinator.modal.close() {
+                            self.appCoordinator.requestedSignIn.send(.apple(){ value in
+                                print("sign-in! \(value)")
+                            })
+                        }
+                    }
+                    .frame(maxHeight: 64)
+                    .padding()
+                    .padding(.vertical)
             }
         }
     }
