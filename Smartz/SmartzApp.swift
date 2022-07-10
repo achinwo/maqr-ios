@@ -276,6 +276,8 @@ struct SmartzApp: AppClip, AppAuthentication {
         self.coordinator.activeSessionToken = nil
         self.coordinator.authsSubject.send(newAuths)
         
+        self.coordinator.api.urlSessionConfiguration = self.coordinator.api.urlSessionConfiguration.withAuthHeader(nil)
+        
         self.coordinator.serverLogDestination.send(.info, msg: "signedout: \(auth)", thread: Thread.current.description, file: #file, function: #function, line: #line)
         
         if auth.session.token == activeSessionIdFromAppclip {

@@ -487,11 +487,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
             
             Task(){
                 print("[accountDelete] posting...")
-                let res = try? await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/apple-signin-token")!,
-                                                               payload: [:], baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-                print("[accountDelete] res: \(String(describing: res))")
-                
-                guard let res = res, let status = res["status"] as? Int, status == 200 else { return }
+                guard let success = try? await api.accountDelete(), success else { return }
                 
                 signOut()
                 
