@@ -65,6 +65,9 @@ public let products: [ProductOffering] = [
             experienceCls: BrandPromoView.self, iconName: "film.fill"),
     ProductOffering(name: "Wedding Event", description: WeddingEventView.subtitle, location: .experienceWeddingEvent("lizmanfred", URL(staticString: "https://maqr.co/ewed/lizmanfred")), companyLogoName: nil, companyDescription: "Event", isComingSoon: false,
             experienceCls: WeddingEventView.self, iconName: "person.2.circle"),
+    ProductOffering(name: EshopView.title, description: EshopView.subtitle, location: .product("stikr", "inventory"),
+                    companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: false,
+                    experienceCls: EshopView.self, iconName: EshopView.iconName),
     ProductOffering(name: InventoryView.title, description: InventoryView.subtitle, location: .product("stikr", "inventory"),
                     companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: false,
                     experienceCls: InventoryView.self, iconName: InventoryView.iconName),
@@ -392,7 +395,18 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             let isLoggedIn = currentAuth != nil
                             
                             Button() {
+                                #if DEBUG
+                                appCoordinator.modal.present() {
+                                    .view2() {
+                                        EshopView(ExperienceData.fromDefaults(type: .eshop))
+                                            .frame(width: screenWidth)
+                                            .eraseToAnyView()
+                                    }
+                                }
+                                #else
                                 self.selectedTab = .appClipCreator
+                                #endif
+                                
                             } label: {
                                 Image(systemName: "plus")
                             }

@@ -467,7 +467,6 @@ public struct CodeDesignerView: JoliView {
                             }
                             .frame(minHeight: screenHeight)
                             .onAppear(){
-                                //guard scrollProxy == nil else { return }
                                 self.scrollProxy = proxy
                             }
                         }
@@ -481,6 +480,7 @@ public struct CodeDesignerView: JoliView {
                 .id("code-designer-tabview-\(item.index)")
             }
         }
+        //.frame(maxHeight: screenHeight)
     }
     
     private func onExperinceDataChanged(_ value: ExperienceData?) {

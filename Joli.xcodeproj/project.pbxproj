@@ -333,6 +333,9 @@
 		92F8597225C791810057B3BC /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92FBFC8D26AB33560068DDA5 /* Templates in Resources */ = {isa = PBXBuildFile; fileRef = 92FBFC8C26AB33560068DDA5 /* Templates */; };
 		92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */; };
+		92FF151D287E190E0059B392 /* EshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF151C287E190E0059B392 /* EshopView.swift */; };
+		92FF151E287E190E0059B392 /* EshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF151C287E190E0059B392 /* EshopView.swift */; };
+		92FF151F287E19440059B392 /* EshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FF151C287E190E0059B392 /* EshopView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -635,6 +638,7 @@
 		92F76DB3283AA06400747420 /* ExperienceDataItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceDataItemView.swift; sourceTree = "<group>"; };
 		92FBFC8C26AB33560068DDA5 /* Templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Templates; sourceTree = "<group>"; };
 		92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Experiences.generated.swift; sourceTree = "<group>"; };
+		92FF151C287E190E0059B392 /* EshopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EshopView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1050,6 +1054,7 @@
 				9285148F27B9758C00380CF7 /* ReorderNowView.swift */,
 				92A9A34027E652D70008FE32 /* InventoryView.swift */,
 				9249A95E2808E4DE00A5F7F6 /* WeddingEventView.swift */,
+				92FF151C287E190E0059B392 /* EshopView.swift */,
 			);
 			path = Experiences;
 			sourceTree = "<group>";
@@ -1685,6 +1690,7 @@
 				921F6C4926BEA1C00061D236 /* Math.swift in Sources */,
 				921F6C4126BEA05C0061D236 /* UIImage+Extensions.swift in Sources */,
 				92562E30266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
+				92FF151D287E190E0059B392 /* EshopView.swift in Sources */,
 				92DD6554267E6104007E22F0 /* RestaurantView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1697,6 +1703,7 @@
 				92C1A24F26626D5B00A11E0F /* Playback.swift in Sources */,
 				929BF21D275D6B4600F850F7 /* DynamicExperienceView.swift in Sources */,
 				9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */,
+				92FF151E287E190E0059B392 /* EshopView.swift in Sources */,
 				920264D12691D4EA005643E1 /* Restaurant.swift in Sources */,
 				92DD6555267E6104007E22F0 /* RestaurantView.swift in Sources */,
 				921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
@@ -1796,6 +1803,7 @@
 				9249A967280C2F7600A5F7F6 /* WeddingEventView.swift in Sources */,
 				927A7B16276FE4CE007105CC /* Preview.swift in Sources */,
 				927A7B03276FE2E8007105CC /* BaseDestination.swift in Sources */,
+				92FF151F287E19440059B392 /* EshopView.swift in Sources */,
 				927A7B0B276FE3DE007105CC /* SignInWithApple.swift in Sources */,
 				927A7B2D276FF751007105CC /* Experience+JoliView.swift in Sources */,
 				927A7B1B276FE503007105CC /* RefreshableScrollView.swift in Sources */,
@@ -2044,7 +2052,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2055,7 +2063,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.31;
+				MARKETING_VERSION = 1.32;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_INSTALL_OBJC_HEADER = NO;
@@ -2072,7 +2080,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2082,7 +2090,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.31;
+				MARKETING_VERSION = 1.32;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_INSTALL_OBJC_HEADER = NO;
@@ -2098,7 +2106,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2109,7 +2117,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.31;
+				MARKETING_VERSION = 1.32;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG APPCLIP";
@@ -2126,7 +2134,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2136,7 +2144,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.31;
+				MARKETING_VERSION = 1.32;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APPCLIP;

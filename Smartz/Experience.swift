@@ -64,6 +64,7 @@ public enum Experiences: RawRepresentable, CaseIterable {
     case restaurant
     case inventory
     case weddingEvent
+    case eshop
     
     public init?(rawValue: Experience.Type) {
         switch rawValue {
@@ -79,6 +80,8 @@ public enum Experiences: RawRepresentable, CaseIterable {
                 self = .inventory
             case is WeddingEventView.Type:
                 self = .weddingEvent
+            case is EshopView.Type:
+                self = .eshop
             default:
                 return nil
         }
@@ -113,6 +116,8 @@ public enum Experiences: RawRepresentable, CaseIterable {
                 return InventoryView.self
             case .weddingEvent:
                 return WeddingEventView.self
+            case .eshop:
+                return EshopView.self
         }
     }
     
@@ -128,6 +133,8 @@ public enum Experiences: RawRepresentable, CaseIterable {
                 return InventoryView(data).eraseToAnyView()
             case .weddingEvent:
                 return WeddingEventView(data).eraseToAnyView()
+            case .eshop:
+                return EshopView(data).eraseToAnyView()
         }
     }
     
