@@ -246,9 +246,9 @@ public struct MealboxView: Experience, JoliView {
         .background(
             Group(){
                 NetworkImage(url: dataModel?.backgroundImageUrl){
-                    Image(colorScheme == .dark ? "bg_dark" : "bg_white")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
+                    Image("bg_white") // colorScheme == .dark ? "bg_dark" : "bg_white"
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
                 }
             }
         )
@@ -709,7 +709,7 @@ public struct MealboxView: Experience, JoliView {
             .background(
                 Group(){
                     NetworkImage(url: dataModel?.backgroundImageUrl){
-                        Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+                        Image("bg_white")
                                         .resizable()
                                         .aspectRatio(contentMode: .fill)
                     }

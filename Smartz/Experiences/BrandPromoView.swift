@@ -322,7 +322,7 @@ public struct BrandPromoView: Experience, JoliView {
             }
             .background(
                 NetworkImage(url: dataModel?.backgroundImageUrl ?? dataModelDefault.backgroundImageUrl){
-                    Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+                    Image("bg_white")
                         .resizable()
                 }
                 .aspectRatio(contentMode: .fill)

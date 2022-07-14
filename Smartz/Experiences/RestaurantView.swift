@@ -325,7 +325,7 @@ struct RestaurantView: Experience, JoliView {
                 .padding(.bottom, max(100, safeAreaInsets.bottom))
                 //.padding(.top, safeAreaInsets.top)
             }
-            .background(Image(colorScheme == .dark ? "bg_dark" : "bg_white")
+            .background(Image("bg_white")
                             .resizable()
                             .aspectRatio(contentMode: .fill)
             )
