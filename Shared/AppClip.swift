@@ -134,6 +134,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     case experienceReorderNow(String)
     case experienceWeddingEvent(String, URL?)
     case experienceBio(String)
+    case experienceEshop(String, String?)
     
     case unset
     case home
@@ -161,6 +162,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
             self = .experienceBio(experienceId)
         } else if let matches = patterns.experienceWeddingEvent.matchGroups(rawValue), let experienceId = matches["experienceId"] {
             self = .experienceWeddingEvent(experienceId, nil)
+        } else if let matches = patterns.experienceEshop.matchGroups(rawValue), let experienceId = matches["experienceId"] {
+            self = .experienceEshop(experienceId, nil)
         } else if let matches = patterns.rsvp.matchGroups(rawValue), let eventId = matches["eventId"] {
             self = .rsvp(eventId)
         } else if let matches = patterns.reward.matchGroups(rawValue), let rewardUid = matches["rewardId"] {
@@ -192,7 +195,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                     .experienceBrand(let expId),
                     .experienceReorderNow(let expId),
                     .experienceBio(let expId),
-                    .experienceWeddingEvent(let expId, _):
+                    .experienceWeddingEvent(let expId, _),
+                    .experienceEshop(let expId, _):
                 return expId
             default:
                 return nil
@@ -227,6 +231,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
                 return "/ewed/\(experienceId)"
             case .experienceReorderNow(let experienceId):
                 return "/p/\(experienceId)"
+            case .experienceEshop(let experienceId, _):
+                return "/eshop/\(experienceId)"
             default:
                 return AppLocation.default
         }
@@ -244,7 +250,8 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
         experienceCook: Regex("^/ecook/(?<experienceId>.+)$"),
         experienceReorderNow: Regex("^/p/(?<experienceId>.+)$"),
         experienceWeddingEvent: Regex("^/ewed/(?<experienceId>.+)$"),
-        experienceBio: Regex("^/ebio/(?<experienceId>.+)$")
+        experienceBio: Regex("^/ebio/(?<experienceId>.+)$"),
+        experienceEshop: Regex("^/eshop/(?<experienceId>.+)$")
     )
     
     public var description: String {

@@ -113,7 +113,7 @@ public final class AppCoordinator: ObservableObject {
     private var cancellableSet: Set<AnyCancellable> = []
     
     lazy var imageLoader: NetworkImageLoader = {
-        let memoryCapacity = 25 * 1024 * 1024
+        let memoryCapacity = 50 * 1024 * 1024
         let diskCapacity = 100 * 1024 * 1024
         
         let configuration = api.urlSession.configuration
