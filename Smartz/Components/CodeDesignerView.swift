@@ -273,16 +273,6 @@ public struct CodeDesignerView: JoliView {
         self.experienceData = ExperienceData(exp, brandName: brandName, landingPageText: landingPageText)
     }
     
-//    enum FocusField: Hashable, FocusStateCompliant {
-//
-//        case brandName
-//
-//        static var last: CodeDesignerView.FocusField { .brandName }
-//        var next: CodeDesignerView.FocusField? { nil }
-//    }
-    
-    //@FocusStateLegacy var focusedField: FocusField?
-    
     func customiseExperienceView(_ experienceClass: Experience.Type) -> some View {
         VStack(){
             if let experienceData = self.experienceData {
@@ -292,11 +282,12 @@ public struct CodeDesignerView: JoliView {
                     
                     self.brandName = data.brandName
                 }
-                .padding(.bottom, safeAreaInsets.bottom * 2)
+                //.padding(.bottom, safeAreaInsets.bottom * 2)
+                .layoutPriority(20)
             } else {
-                self.brandDataView(experienceClass)
-                    
-                
+                ScrollView() {
+                    self.brandDataView(experienceClass)
+                }
             }
             Spacer()
         }
@@ -362,38 +353,6 @@ public struct CodeDesignerView: JoliView {
         }
     }
     
-    var views: [(view: AnyView, index: Int)] {
-        var vs: [(view: AnyView, index: Int)] = [
-            (pickExperienceView
-                .eraseToAnyView(), 0),
-        ]
-        
-        guard let selectedExperience = selectedExperience else { return vs }
-        
-        vs.append((
-            customiseExperienceView(selectedExperience)
-                .eraseToAnyView(), 1
-        ))
-        
-        guard let expData = experienceData else { return vs } //, expData.isValid(for: selectedExperience.allDataKeys) {
-        
-        let codeView = VisualCodeView(code: $visualCode, submitEnabled: $submitEnabled){ visualCode in
-            print("Submitting: \(visualCode.properties)")
-            Task() { await self.submitOrPurchase(expData, codes: [visualCode]) }
-        } label: {
-            if expData.uuid == nil {
-                let newTxt: (String, String) = appCoordinator.isPaymentEnabled && !self.hasSubscription ? ("Purchase", "cart") : ("Submit", "arrow.up")
-                Label(newTxt.0, systemImage: newTxt.1)
-            } else {
-                Text("Save Changes")
-            }
-        }
-        .id("\(String(describing: expData.uuid))-\(String(describing: expData.stored?.updatedAt))-\(String(describing: expData.stored?.visualcodes?.last?.updatedAt))")
-        
-        vs.append((codeView.eraseToAnyView(), 2))
-        return vs
-    }
-    
     @discardableResult
     @MainActor
     func submitExperience(_ expData: ExperienceData, codes: [VisualCodeRecord] = []) async throws -> StikrExperienceData {
@@ -407,9 +366,9 @@ public struct CodeDesignerView: JoliView {
         do {
             let saved = try await expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
             print("SAVE experience: \(saved)")
-                    
+            
             for var code in codes {
-                // temporarily hardcoding user id until sign in is implemented
+                    // temporarily hardcoding user id until sign in is implemented
                 code.createdById = appCoordinator.activeAuth?.user.id ?? 17
                 code.updatedById = appCoordinator.activeAuth?.user.id ?? 17
                 
@@ -425,8 +384,8 @@ public struct CodeDesignerView: JoliView {
                     onExperinceDataChanged(self.experienceData)
                 }
             }
-                    
-                    
+            
+            
             return saved
         } catch {
             print("Save error: \(error)")
@@ -436,51 +395,31 @@ public struct CodeDesignerView: JoliView {
         
     }
     
-    public var tabView: some View {
-        TabView(selection: $selectedTab) {
-            ForEach(self.views, id: \.index){ item in
-                
-                Group(){
-                    if item.index == 0 {
-                        ScrollViewReader() { proxy in
-                            //creator
-                            VStack(){
-                                //historyView.frame(minHeight: screenHeight / 2)
-                                
-                                VStack(){
-                                    Divider()
-                                        .padding(.bottom)
-                                    VStack(){
-                                        Text(tabNames[selectedTab])
-                                            .font(.largeTitle.weight(.light))
-                                        Text("Design an engaging branded experience in \(tabNames.count) easy steps")
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondaryLabel)
-                                        //.padding()
-                                        item.view
-                                    }
-                                }
-                                .id("section-creator")
-                                .padding(.bottom, 250)
-                                
-                                Spacer()
-                            }
-                            .frame(minHeight: screenHeight)
-                            .onAppear(){
-                                self.scrollProxy = proxy
-                            }
-                        }
-                    } else {
-                        item.view
-                            .disabled(self.selectedExperience == nil && self.experienceData == nil)
-                    }
-                }
-                .frame(width: screenWidth)
-                .tag(item.index)
-                .id("code-designer-tabview-\(item.index)")
+    var viewCount: Int {
+        var vs = 1
+        
+        guard selectedExperience != nil else { return vs }
+        
+        vs += 1
+        
+        guard experienceData != nil else { return vs }
+        
+        return vs + 1
+    }
+    
+    func visualCodeView(_ expData: ExperienceData) -> some View {
+        VisualCodeView(code: $visualCode, submitEnabled: $submitEnabled){ visualCode in
+            print("Submitting: \(visualCode.properties)")
+            Task() { await self.submitOrPurchase(expData, codes: [visualCode]) }
+        } label: {
+            if expData.uuid == nil {
+                let newTxt: (String, String) = appCoordinator.isPaymentEnabled && !self.hasSubscription ? ("Purchase", "cart") : ("Submit", "arrow.up")
+                Label(newTxt.0, systemImage: newTxt.1)
+            } else {
+                Text("Save Changes")
             }
         }
-        //.frame(maxHeight: screenHeight)
+        .id("\(String(describing: expData.uuid))-\(String(describing: expData.stored?.updatedAt))-\(String(describing: expData.stored?.visualcodes?.last?.updatedAt))")
     }
     
     private func onExperinceDataChanged(_ value: ExperienceData?) {
@@ -567,8 +506,47 @@ public struct CodeDesignerView: JoliView {
         }
     }
     
+    @ViewBuilder func viewForIndex(_ index: Int) -> some View {
+        if index == 0 {
+            ScrollView() {
+                VStack(){
+                    Divider()
+                        .padding(.bottom)
+                    VStack(){
+                        Text(tabNames[selectedTab])
+                            .font(.largeTitle.weight(.light))
+                        Text("Design an engaging branded experience in \(tabNames.count) easy steps")
+                            .font(.subheadline)
+                            .foregroundColor(.secondaryLabel)
+                            //.padding()
+                        pickExperienceView
+                    }
+                }
+                //.backgroundColor(.blue)
+                .padding(.bottom, 250)
+            }
+            //.frame(height: screenHeight * 2)
+            //.backgroundColor(.pink)
+        } else if let selectedExperience = self.selectedExperience, index == 1 {
+            customiseExperienceView(selectedExperience)
+                .edgesIgnoringSafeArea(.bottom)
+        } else if let expData = self.experienceData, index == 2 {
+            visualCodeView(expData)
+        }
+    }
+    
     public var contentView: some View {
-        return self.tabView
+        TabView(selection: $selectedTab) {
+            ForEach(0 ..< self.viewCount, id: \.self){ index in
+                self.viewForIndex(index)
+                    .frame(width: screenWidth)
+                    .tag(index)
+                    //.id("code-designer-tabview-\(index)")
+            }
+        }
+        //.layoutPriority(100)
+        //.backgroundColor(.green)
+        .edgesIgnoringSafeArea(.bottom)
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .interactive))
             //.frame(minHeight: screenHeight)
@@ -646,7 +624,7 @@ public struct CodeDesignerView: JoliView {
                     }
                 }
             }
-            .id("code-designer-tabview")
+            .id("code-designer-tabview-\(String(describing: self.experienceData?.uuid))")
             .onChange(of: self.experienceData) { value in
                 self.updateStoredExperience()
                 print("[Experience#onChange] \(String(describing: value))")

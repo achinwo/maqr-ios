@@ -211,16 +211,6 @@ struct SmartzApp: AppClip, AppAuthentication {
                     view.alert(isPresented: self.$isActionSheetPresented) { return alert }
                 }
             )
-//            .overlay(
-//                GeometryReader(){ proxy in
-//                    YouTubeView(playerState: youtube)
-//                        .frame(width: proxy.size.width, height: proxy.size.height)
-//                }
-//                .background(Color.blue.opacity(0.6))
-//                .onAppear(){
-//                    youtube.playVideo()
-//                }
-//            )
             .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)
             .onReceive(coordinator.signoutSubject, perform: self.signOut)
             .onReceive(coordinator.globalAlertSubject) { alertInfo in

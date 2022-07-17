@@ -290,7 +290,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     var contentView: some View {
         NavigationView(){
-            VStack(){
+            GeometryReader(){ _ in
                 if self.selectedTab == .home {
                     
                     let binding = Binding<String?>() {
@@ -370,6 +370,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             .opacity(selectedAccessLevel == .experienceDataAccessPrivate ? 1 : 0)
                             .animation(.easeInOut)
                     }
+                    .id(Tab.home)
                     .navigationBarTitleDisplayMode(.inline)
                         //.navigationBarTitle()
                     .toolbar() {
@@ -445,13 +446,12 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     .toolbar() {
                         EmptyView()
                     }
+                    .id(Tab.about)
                 } else if self.selectedTab == .appClipCreator {
-                    ScrollView(.vertical){
-                        CodeDesignerView() { experienceData in
-                            self.trialInfo = experienceData
-                        }
-                        .frame(minHeight: screenHeight * 1.5)
+                    CodeDesignerView() { experienceData in
+                        self.trialInfo = experienceData
                     }
+                    .edgesIgnoringSafeArea(.bottom)
                 }
             }
         }

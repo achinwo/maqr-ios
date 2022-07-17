@@ -160,26 +160,3 @@ let siseMealboxDemo = ExperienceData.fromDefaults(.init(logoImageUrl: URL(static
                                                        ]
                                                        ), type: .recipe
 )
-
-//
-//let ingredients: [Ingredient] = [
-//    Ingredient(id: "food_ing_chilliflakes", title: "Chilli Flakes", description: "Crushed Chillies flakes contain the flesh and seeds of whole chillies; if you want to add a warm, fiery punch to a dish, then look no further"),
-//    Ingredient(id: "food_ing_palmoil", title: "Bleached Palm oil", description: "A unique tasting oil made by bleaching red palm oil for a few minutes till it looks somewhat like vegetable oil"),
-//    Ingredient(id: "food_ing_salt", title: "Salt", description: "Cooking salt – a seasoning to enhance taste and bring out the natural flavours"),
-//    Ingredient(id: "food_ing_scotch_bornet", title: "Scotch Bonnet", description: "Scotch bonnet, also known as bonney peppers, or Caribbean red peppers, is a variety of chili pepper named for its resemblance to a tam o' shanter hat"),
-//    Ingredient(id: "food_ing_seasoningmix", title: "Season Mix", description: "A flavourful, umami-packed blend of ground dried ginger, peanuts, and more"),
-//]
-
-//let steps: [Step] = [
-//    Step(id: "heat_oil", title: "Heat Palm Oil", description: "Heat the bleached palm oil on medium heat for 1-2mins", duration: 60.0 * 2, caution: "Do Not Cover"),
-//    Step(id: "add_locust_beans", title: "Add Locust Beans", description: "Add in locust beans to cook for 50 secs, stir continuously to avoid burning"),
-//    Step(id: "add_protein", title: "Add Protein", description: "Add protein (meat/fish) and fry for 2-3mins stirring continuously", duration: 60.0 * 3),
-//    Step(id: "add_red_pepper", title: "Add Red Pepper", description: "Add the precooked red pepper", spicy: "🌶"),
-//    Step(id: "add_chillies", title: "Add Chilli Flakes", description: "Add the chilli flakes", spicy: "🌶🌶"),
-//    Step(id: "add_crayfish", title: "Add Crayfish", description: "Add the crayfish", isOptional: true),
-//    Step(id: "add_scotch_bonnet", title: "Add scotch bonnet", description: "Add scotch bonnet (quarter teaspoon at a time, until desired level of spice is reached)", spicy: "🌶🌶🌶"),
-//    Step(id: "add_spice", title: "Add the spice/season mix", description: "Add the spice/season mix as desired (half a teaspoon at a time)"),
-//    Step(id: "add_salt", title: "Add a pinch of salt", description: "Add a pinch of salt, optionally tasting till you achieve your desired taste", isOptional: true),
-//    Step(id: "cover_and_simmer", title: "Cover and leave to simmer", description: "Cover and leave to simmer for 6-10mins on medium heat", duration: 60.0 * 10),
-//    Step(id: "serve_enjoy", title: "Serve warn and enjoy", description: "Serve warn and enjoy your meal"),
-//]

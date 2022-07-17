@@ -250,11 +250,11 @@ Maqr was created with the end user in mind, to fill a gaping hole in the e-comme
                 HStack(){
                     Spacer()
                     
-                    Link(destination: URL(social: .instagramUser("smartstikr"))) {
+                    Link(destination: URL(social: .instagramUser("maqr.co"))) {
                         VStack(){
                             Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
                             Text("Follow Us").font(.caption2.weight(.light)).foregroundColor(.secondaryLabel)
-                            Text("@smartstikr").font(.body.weight(.semibold)).foregroundColor(.primary)
+                            Text("@maqr.co").font(.body.weight(.semibold)).foregroundColor(.primary)
                         }
                         .padding()
                     }

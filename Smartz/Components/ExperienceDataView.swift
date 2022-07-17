@@ -349,7 +349,6 @@ public struct ExperienceDataView: JoliView {
                 }
             }
         }
-        .background(Color.pink)
         .gesture(
             TapGesture()
                 .onEnded() { value in
