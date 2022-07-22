@@ -66,7 +66,7 @@ public let products: [ProductOffering] = [
     ProductOffering(name: "Wedding Event", description: WeddingEventView.subtitle, location: .experienceWeddingEvent("lizmanfred", URL(staticString: "https://maqr.co/ewed/lizmanfred")), companyLogoName: nil, companyDescription: "Event", isComingSoon: false,
             experienceCls: WeddingEventView.self, iconName: "person.2.circle"),
     ProductOffering(name: EshopView.title, description: EshopView.subtitle,
-                    location: .experienceEshop("kattys", "caprisun"),
+                    location: .experienceEshop("kattyuniport", "caprisun"),
                     companyLogoName: nil, companyDescription: "Ecommerce", isComingSoon: false,
                     experienceCls: EshopView.self, iconName: EshopView.iconName),
     ProductOffering(name: InventoryView.title, description: InventoryView.subtitle, location: .product("stikr", "inventory"),

@@ -81,10 +81,22 @@ struct EshopView: JoliView, Experience {
 //    ]
     
     var items: [ExperienceData.Item] {
-        return products.map() { p in
-            return ExperienceData.Item(experienceItemType: .product, defaultPrice: Int(p.price * 100),
-                                       imageName: p.image, itemGrouping: p.category,
-                                       subtitle: p.dummyProductDescription, title: p.title, uuid: UUID().uuidString)
+        
+        return products.compactMap() { p in
+            
+            let makeItem = { () -> ExperienceData.Item in
+                return ExperienceData.Item(experienceItemType: .product, defaultPrice: Int(p.price * 100),
+                                           imageName: p.image, itemGrouping: p.category,
+                                           subtitle: p.dummyProductDescription, title: p.title, uuid: p.image)
+            }
+            
+            guard !searchText.isEmpty else {
+                return makeItem()
+            }
+            
+            guard p.title.lowercased().contains(searchText.lowercased()) || p.dummyProductDescription.lowercased().contains(searchText.lowercased()) else { return nil }
+            
+            return makeItem()
         }
     }
     
@@ -92,6 +104,53 @@ struct EshopView: JoliView, Experience {
         self._dataModel = State(initialValue: data)
         self.dataModelDefault = ExperienceData.Defaults()
     }
+    
+    func shopItemView(_ item: ExperienceData.Item) -> some View {
+        VStack() {
+            NetworkImage(string: item.imageName) {
+                ProgressView()
+            }
+            .aspectRatio(contentMode: .fit)
+            .frame(maxWidth: screenWidth / 2, minHeight: screenWidth / 4)
+            .padding()
+            .layoutPriority(9)
+            .id(item.imageName)
+            
+            HStack(alignment: .top){
+                Text(item.title ?? "Product").font(.subheadline)
+                    .multilineTextAlignment(.leading)
+                Spacer()
+            }
+            .layoutPriority(10)
+            
+            Text(item.subtitle ?? "Product description")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+            
+            HStack(){
+                Text(item.itemGrouping ?? "Category")
+                    .font(.caption)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .foregroundColor(.white)
+                    .background(Color.secondary)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                Spacer()
+                Text("£\((item.defaultPrice ?? 0) / 100)")
+                    .font(.headline.weight(.thin))
+                    //.fontWeight(.semibold)
+            }
+            .multilineTextAlignment(.leading)
+            .font(.subheadline)
+            .padding(2)
+            .layoutPriority(8)
+        }
+    }
+    
+    @State var selectedProduct: ExperienceData.Item? = nil
+    @State var searchText: String = .empty
     
     //https://dribbble.com/shots/18733610-TokoMegawa-E-Commerce
     var contentView: some View {
@@ -102,63 +161,43 @@ struct EshopView: JoliView, Experience {
         
         //let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
         
-        return ScrollView(.vertical) {
-            LazyVGrid(columns: columns) {
-                ForEach(items) { item in
-//                    RoundedRectangle(cornerRadius: 5)
-//                        .fill(colors[(idx / 8) % 7])
-//                        .frame(height: 30)
-                    VStack() {
-                        NetworkImage(string: item.imageName) {
-                            ProgressView()
+        return NavigationView(){
+            ScrollView(.vertical) {
+                
+                LazyVGrid(columns: columns) {
+                    ForEach(items) { item in
+                        NavigationLink {
+                            ProductView(product: item)
+                        } label: {
+                            self.shopItemView(item)
+                                .id("button-\(item.id)")
                         }
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: screenWidth / 2, minHeight: screenWidth / 4)
                         .padding()
-                        .layoutPriority(9)
-                        .id(item.imageName)
-                        
-                        HStack(alignment: .top){
-                            Text(item.title ?? "Product").font(.subheadline)
-                            Spacer()
-                        }
-                        .layoutPriority(10)
-                        
-                        HStack(){
-                            Text(item.itemGrouping ?? "Category")
-                                .font(.caption)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .foregroundColor(.white)
-                                .background(Color.secondary)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                            Spacer()
-                            Text("£\((item.defaultPrice ?? 0) / 100)")
-                                .font(.headline.weight(.thin))
-                                //.fontWeight(.semibold)
-                        }
-                        .font(.subheadline)
-                        .padding(2)
-                        .layoutPriority(8)
-                        
-                        Text(item.subtitle ?? "Product description")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(3)
+                        .frame(maxHeight: screenWidth / 1.2)
+                        .frame(maxWidth: screenWidth / 2.2)
+                        .id(item.id)
                     }
-                    .padding()
-                    
-//                    .overlay(
-//                            RoundedRectangle(cornerRadius: 16)
-//                                .stroke(Color.separator, lineWidth: 1)
-//                    )
-                    .frame(maxHeight: screenWidth / 1.2)
-                    .frame(maxWidth: screenWidth / 2.2)
-                    .id(item.id)
                 }
+                //.animation(.easeInOut)
+                .padding()
             }
-            .padding()
+            .toolbar() {
+                ToolbarItem(placement: .principal){
+//                    VStack(){
+//                        Text("Katty Food & Drinks").font(.title)
+                    TextField("Search", text: $searchText)
+                        .padding(Sizing.small / 2)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                    //}
+                    .frame(maxWidth: screenWidth * 0.72)
+                }
+         
+            }
+            .navigationTitle("Katty Food & Drinks")
+            .navigationBarTitleDisplayMode(.inline)
         }
+        //.searchable(text: $queryString)
         .task(){
             //let req = URLRequest(url: URL(staticString: "https://fakestoreapi.com/products"))
             //let (data, _) = try! await api.urlSession.data(for: req)
@@ -171,6 +210,15 @@ struct EshopView: JoliView, Experience {
     
 }
 
+struct ProductView: View {
+    
+    @State var product: ExperienceData.Item
+    
+    var body: some View {
+        Text(product.title!)
+    }
+    
+}
 
 
 let SAMPLE_DATA = """
