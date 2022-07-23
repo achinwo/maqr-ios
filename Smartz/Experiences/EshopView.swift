@@ -10,7 +10,6 @@ import SwiftUI
 import SharedUI
 import JoliCore
 import AsyncCompatibilityKit
-import StoreKit
 
 struct DummyProduct: Codable {
     let id: Int
@@ -119,30 +118,31 @@ struct EshopView: JoliView, Experience {
         return [.product]
     }
     
-    @State public var products: [DummyProduct] = []
+//   @State public var products: [DummyProduct] = []
 //        ExperienceData.Item(experienceItemType: .product, aliasTitle: , defaultPrice: , imageName: ,
 //                            itemGrouping: , itemSubgrouping: , subtitle: , title: , uuid: UUID().uuidString),
 //    ]
     
     var items: [ExperienceData.Item] {
-        
-        return products.compactMap() { p in
-            
-            let makeItem = { () -> ExperienceData.Item in
-                return ExperienceData.Item(experienceItemType: .product, defaultPrice: Int(p.price * 100),
-                                           imageName: p.image, itemGrouping: p.category,
-                                           subtitle: p.dummyProductDescription, title: p.title, uuid: p.image)
-            }
-            
+        return (dataModel?.items ?? []).compactMap() { p in
+
             guard !searchText.isEmpty else {
-                return makeItem()
+                return p
             }
-            
-            guard p.title.lowercased().contains(searchText.lowercased()) || p.dummyProductDescription.lowercased().contains(searchText.lowercased()) else { return nil }
-            
-            return makeItem()
+
+            guard let title = p.title, let desc = p.subtitle,
+                  title.lowercased().contains(searchText.lowercased()) || desc.lowercased().contains(searchText.lowercased())
+            else { return nil }
+
+            return p
         }
     }
+    
+    @State var selectedProduct: ExperienceData.Item? = nil
+    @State var searchText: String = .empty
+    @AppStorage("active-tab-eshop") var selectedTab = Tab.browse
+    @AppStorage("onboarding-flag-welcomed") var hasBeenWelcomed = false
+    @Environment(\.colorScheme) var colorScheme
     
     init(_ data: ExperienceData?) {
         self._dataModel = State(initialValue: data)
@@ -194,6 +194,7 @@ struct EshopView: JoliView, Experience {
                 Spacer()
                 Text("£\((item.defaultPrice ?? 0) / 100)")
                     .font(.headline.weight(.thin))
+                    .foregroundColor(.primary)
                     //.fontWeight(.semibold)
             }
             .multilineTextAlignment(.leading)
@@ -203,56 +204,9 @@ struct EshopView: JoliView, Experience {
         }
     }
     
-    @State var selectedProduct: ExperienceData.Item? = nil
-    @State var searchText: String = .empty
-    @AppStorage("active-tab-eshop") var selectedTab = Tab.browse
-    @Environment(\.colorScheme) var colorScheme
-    
     var contentView: some View {
         ZStack(){
-            
-            Group(){
-                if self.selectedTab == .browse {
-                    contentView2
-                } else if self.selectedTab == .orders {
-                    Text("Orders")
-                } else if self.selectedTab == .support {
-                    Text("Support")
-                }
-            }
-            .frame(maxWidth: screenWidth, maxHeight: screenHeight)
-            
-            VStack(){
-                Spacer()
-                HStack(){
-                    ForEach(Tab.allCases) { tab in
-                        Button() {
-                            self.selectedTab = tab
-                        } label: {
-                            HStack(){
-                                Image(systemName: selectedTab == tab ? tab.emoji.active : tab.emoji.default)
-                                Text(tab.label)
-                                    .lineLimit(1)
-                                    .fixedSize(horizontal: true, vertical: true)
-                            }
-                            .foregroundColor(selectedTab == tab ? tab.color : .primary)
-                            .padding()
-                        }
-                        .if(selectedTab == tab){ view in
-                            view.background(BlurView(colorScheme == .dark ? .systemThickMaterialDark : .systemThickMaterialLight))
-                        } else: { view in
-                            view.background(Color.clear)
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 25.0))
-                        .font(.subheadline.weight(selectedTab == tab ? .semibold : .light))
-                    }
-                }
-                .padding(4)
-                .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
-                .clipShape(RoundedRectangle(cornerRadius: 25.0))
-                .animation(.easeInOut)
-            }
-            .padding(.bottom, max(16, safeAreaInsets.bottom))
+            contentView2
         }
         .frame(maxWidth: screenWidth, maxHeight: screenHeight)
         .edgesIgnoringSafeArea(.all)
@@ -270,25 +224,73 @@ struct EshopView: JoliView, Experience {
         //let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
         
         return NavigationView(){
-            ScrollView(.vertical) {
+            ZStack(){
                 
-                LazyVGrid(columns: columns) {
-                    ForEach(items) { item in
-                        NavigationLink {
-                            ProductView(product: item, selectedProducts: $selectedProducts)
-                        } label: {
-                            self.shopItemView(item)
-                                .id("button-\(item.id)")
+                Group(){
+                    if self.selectedTab == .browse {
+                        ScrollView(.vertical) {
+                            
+                            LazyVGrid(columns: columns) {
+                                ForEach(items) { item in
+                                    NavigationLink {
+                                        ProductView(product: item, selectedProducts: $selectedProducts)
+                                    } label: {
+                                        self.shopItemView(item)
+                                            .id("button-\(item.id)")
+                                    }
+                                    .padding()
+                                    .frame(maxHeight: screenWidth / 1.2)
+                                    .frame(maxWidth: screenWidth / 2.2)
+                                    .id(item.id)
+                                }
+                            }
+                            .padding()
+                            .padding(.bottom, max(16, safeAreaInsets.bottom))
+                            .padding(.top, safeAreaInsets.top)
                         }
-                        .padding()
-                        .frame(maxHeight: screenWidth / 1.2)
-                        .frame(maxWidth: screenWidth / 2.2)
-                        .id(item.id)
+                    } else if self.selectedTab == .orders {
+                        Text("Orders")
+                    } else if self.selectedTab == .support {
+                        Text("Support")
                     }
                 }
-                //.animation(.easeInOut)
-                .padding()
+                .frame(maxWidth: screenWidth, maxHeight: screenHeight)
+                
+                VStack(){
+                    Spacer()
+                        .frame(minHeight: screenHeight * 0.6)
+                    HStack(){
+                        ForEach(Tab.allCases) { tab in
+                            Button() {
+                                self.selectedTab = tab
+                            } label: {
+                                HStack(){
+                                    Image(systemName: selectedTab == tab ? tab.emoji.active : tab.emoji.default)
+                                    Text(tab.label)
+                                        .lineLimit(1)
+                                        .fixedSize(horizontal: true, vertical: true)
+                                }
+                                .foregroundColor(selectedTab == tab ? tab.color : .primary)
+                                .padding()
+                            }
+                            .if(selectedTab == tab){ view in
+                                view.background(BlurView(colorScheme == .dark ? .systemThickMaterialDark : .systemThickMaterialLight))
+                            } else: { view in
+                                view.background(Color.clear)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 25.0))
+                            .font(.subheadline.weight(selectedTab == tab ? .semibold : .light))
+                        }
+                    }
+                    .padding(4)
+                    .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                    .clipShape(RoundedRectangle(cornerRadius: 25.0))
+                    //.animation(.easeInOut)
+                }
+                //.padding(.bottom, max(16, safeAreaInsets.bottom))
+                
             }
+            
             .toolbar() {
                 
                 ToolbarItem(placement: .principal){
@@ -335,14 +337,38 @@ struct EshopView: JoliView, Experience {
             .navigationTitle("Katty Food & Drinks")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .ignoresSafeArea(edges: .bottom)
         //.searchable(text: $queryString)
         .task(){
             //let req = URLRequest(url: URL(staticString: "https://fakestoreapi.com/products"))
             //let (data, _) = try! await api.urlSession.data(for: req)
-            let data: Data = SAMPLE_DATA.data(using: .utf8)!
-            let products: [DummyProduct] = try! Musicroom.jsonDecoder().decode([DummyProduct].self, from: data)
+//            let data: Data = SAMPLE_DATA.data(using: .utf8)!
+//            let products: [DummyProduct] = try! Musicroom.jsonDecoder().decode([DummyProduct].self, from: data)
+//
+//            let itemss = products.map() { p in
+//                ExperienceData.Item(experienceItemType: .product, defaultPrice: Int(p.price * 100),
+//                                    imageName: p.image, itemGrouping: p.category,
+//                                    subtitle: p.dummyProductDescription, title: p.title, uuid: p.image)
+//            }
+//
+//            for item in itemss {
+//                let properties: StikrExperienceDataItemRecord.PersistedType.PropertiesDict = [.experienceId: (self.dataModel?.stored?.id ?? 2) as AnyObject,
+//                                                                                              .experienceItemType: item.experienceItemType.rawValue as AnyObject,
+//                                                                                              .imageName: item.imageName as AnyObject,
+//                                                                                              .defaultPrice: item.defaultPrice as AnyObject,
+//                                                                                              .itemGrouping: item.itemGrouping as AnyObject,
+//                                                                                              .subtitle: item.subtitle as AnyObject,
+//                                                                                              .title: item.title as AnyObject,
+//                                                                                              .uuid: UUID().uuidString as AnyObject]
+//                let expData = StikrExperienceDataItemRecord(properties: properties)
+//                let result = try? await expData.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+//
+//                print("saved \(result?.title): \(result)")
+//            }
             
-            self.products = products
+//            ExperienceData.Item(experienceItemType: .product, ,
+//                                imageName: p.image, itemGrouping: p.category,
+//                                subtitle: p.dummyProductDescription, title: p.title, uuid: p.image)
         }
     }
     
@@ -373,23 +399,50 @@ struct ProductView: View {
             }
             
             HStack(alignment: .top){
-                Text(product.title ?? "Product")
-                    .multilineTextAlignment(.leading)
-                Spacer()
-                Button(){
-                    let newCount = (selectedProducts[product.id] ?? 0) + 1
-                    selectedProducts[product.id] = newCount
-                    print("values: \(selectedProducts)\nsum: \(selectedProducts.values)")
-                    
-                    //self.selectedProducts = Dictionary(uniqueKeysWithValues: selectedProducts.map() { ($0.key, $0.value) })
-                } label: {
-                    Image(systemName: "cart.badge.plus")
+                
+                VStack(alignment: .leading){
+                    Text(product.title ?? "Product")
+                        .multilineTextAlignment(.leading)
+                        .padding(.top)
+                    Text(product.itemGrouping ?? "Category")
+                        .font(.caption)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .foregroundColor(.white)
+                        .background(Color.secondary)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
+                .padding(.leading)
+                
+                
+                Spacer()
+                
+                VStack(alignment: .center){
+                    Button(){
+                        let newCount = (selectedProducts[product.id] ?? 0) + 1
+                        selectedProducts[product.id] = newCount
+                        print("values: \(selectedProducts)\nsum: \(selectedProducts.values)")
+                        
+                            //self.selectedProducts = Dictionary(uniqueKeysWithValues: selectedProducts.map() { ($0.key, $0.value) })
+                    } label: {
+                        Image(systemName: "cart.badge.plus")
+                    }
+                    .padding(.horizontal)
+                    
+                    Text("£\((product.defaultPrice ?? 0) / 100)")
+                        .font(.headline.weight(.thin))
+                        .foregroundColor(.primary)
+                        //.fontWeight(.semibold)
+                        .multilineTextAlignment(.leading)
+                        .font(.title2)
+                        .padding()
+                }
+                .font(.title3)
                 .padding()
+                .layoutPriority(10)
+                
+                
             }
-            .font(.title3)
-            .padding()
-            .layoutPriority(10)
             
             Text(product.subtitle ?? "Product description")
                 .font(.subheadline)
@@ -434,8 +487,3 @@ struct ProductView: View {
     }
     
 }
-
-
-let SAMPLE_DATA = """
-[{"id":1,"title":"Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops","price":109.95,"description":"Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday","category":"men's clothing","image":"https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg","rating":{"rate":3.9,"count":120}},{"id":2,"title":"Mens Casual Premium Slim Fit T-Shirts ","price":22.3,"description":"Slim-fitting style, contrast raglan long sleeve, three-button henley placket, light weight & soft fabric for breathable and comfortable wearing. And Solid stitched shirts with round neck made for durability and a great fit for casual fashion wear and diehard baseball fans. The Henley style round neckline includes a three-button placket.","category":"men's clothing","image":"https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg","rating":{"rate":4.1,"count":259}},{"id":3,"title":"Mens Cotton Jacket","price":55.99,"description":"great outerwear jackets for Spring/Autumn/Winter, suitable for many occasions, such as working, hiking, camping, mountain/rock climbing, cycling, traveling or other outdoors. Good gift choice for you or your family member. A warm hearted love to Father, husband or son in this thanksgiving or Christmas Day.","category":"men's clothing","image":"https://fakestoreapi.com/img/71li-ujtlUL._AC_UX679_.jpg","rating":{"rate":4.7,"count":500}},{"id":4,"title":"Mens Casual Slim Fit","price":15.99,"description":"The color could be slightly different between on the screen and in practice. / Please note that body builds vary by person, therefore, detailed size information should be reviewed below on the product description.","category":"men's clothing","image":"https://fakestoreapi.com/img/71YXzeOuslL._AC_UY879_.jpg","rating":{"rate":2.1,"count":430}},{"id":5,"title":"John Hardy Women's Legends Naga Gold & Silver Dragon Station Chain Bracelet","price":695,"description":"From our Legends Collection, the Naga was inspired by the mythical water dragon that protects the ocean's pearl. Wear facing inward to be bestowed with love and abundance, or outward for protection.","category":"jewelery","image":"https://fakestoreapi.com/img/71pWzhdJNwL._AC_UL640_QL65_ML3_.jpg","rating":{"rate":4.6,"count":400}},{"id":6,"title":"Solid Gold Petite Micropave ","price":168,"description":"Satisfaction Guaranteed. Return or exchange any order within 30 days.Designed and sold by Hafeez Center in the United States. Satisfaction Guaranteed. Return or exchange any order within 30 days.","category":"jewelery","image":"https://fakestoreapi.com/img/61sbMiUnoGL._AC_UL640_QL65_ML3_.jpg","rating":{"rate":3.9,"count":70}},{"id":7,"title":"White Gold Plated Princess","price":9.99,"description":"Classic Created Wedding Engagement Solitaire Diamond Promise Ring for Her. Gifts to spoil your love more for Engagement, Wedding, Anniversary, Valentine's Day...","category":"jewelery","image":"https://fakestoreapi.com/img/71YAIFU48IL._AC_UL640_QL65_ML3_.jpg","rating":{"rate":3,"count":400}},{"id":8,"title":"Pierced Owl Rose Gold Plated Stainless Steel Double","price":10.99,"description":"Rose Gold Plated Double Flared Tunnel Plug Earrings. Made of 316L Stainless Steel","category":"jewelery","image":"https://fakestoreapi.com/img/51UDEzMJVpL._AC_UL640_QL65_ML3_.jpg","rating":{"rate":1.9,"count":100}},{"id":9,"title":"WD 2TB Elements Portable External Hard Drive - USB 3.0 ","price":64,"description":"USB 3.0 and USB 2.0 Compatibility Fast data transfers Improve PC Performance High Capacity; Compatibility Formatted NTFS for Windows 10, Windows 8.1, Windows 7; Reformatting may be required for other operating systems; Compatibility may vary depending on user’s hardware configuration and operating system","category":"electronics","image":"https://fakestoreapi.com/img/61IBBVJvSDL._AC_SY879_.jpg","rating":{"rate":3.3,"count":203}},{"id":10,"title":"SanDisk SSD PLUS 1TB Internal SSD - SATA III 6 Gb/s","price":109,"description":"Easy upgrade for faster boot up, shutdown, application load and response (As compared to 5400 RPM SATA 2.5” hard drive; Based on published specifications and internal benchmarking tests using PCMark vantage scores) Boosts burst write performance, making it ideal for typical PC workloads The perfect balance of performance and reliability Read/write speeds of up to 535MB/s/450MB/s (Based on internal testing; Performance may vary depending upon drive capacity, host device, OS and application.)","category":"electronics","image":"https://fakestoreapi.com/img/61U7T1koQqL._AC_SX679_.jpg","rating":{"rate":2.9,"count":470}},{"id":11,"title":"Silicon Power 256GB SSD 3D NAND A55 SLC Cache Performance Boost SATA III 2.5","price":109,"description":"3D NAND flash are applied to deliver high transfer speeds Remarkable transfer speeds that enable faster bootup and improved overall system performance. The advanced SLC Cache Technology allows performance boost and longer lifespan 7mm slim design suitable for Ultrabooks and Ultra-slim notebooks. Supports TRIM command, Garbage Collection technology, RAID, and ECC (Error Checking & Correction) to provide the optimized performance and enhanced reliability.","category":"electronics","image":"https://fakestoreapi.com/img/71kWymZ+c+L._AC_SX679_.jpg","rating":{"rate":4.8,"count":319}},{"id":12,"title":"WD 4TB Gaming Drive Works with Playstation 4 Portable External Hard Drive","price":114,"description":"Expand your PS4 gaming experience, Play anywhere Fast and easy, setup Sleek design with high capacity, 3-year manufacturer's limited warranty","category":"electronics","image":"https://fakestoreapi.com/img/61mtL65D4cL._AC_SX679_.jpg","rating":{"rate":4.8,"count":400}},{"id":13,"title":"Acer SB220Q bi 21.5 inches Full HD (1920 x 1080) IPS Ultra-Thin","price":599,"description":"21. 5 inches Full HD (1920 x 1080) widescreen IPS display And Radeon free Sync technology. No compatibility for VESA Mount Refresh Rate: 75Hz - Using HDMI port Zero-frame design | ultra-thin | 4ms response time | IPS panel Aspect ratio - 16: 9. Color Supported - 16. 7 million colors. Brightness - 250 nit Tilt angle -5 degree to 15 degree. Horizontal viewing angle-178 degree. Vertical viewing angle-178 degree 75 hertz","category":"electronics","image":"https://fakestoreapi.com/img/81QpkIctqPL._AC_SX679_.jpg","rating":{"rate":2.9,"count":250}},{"id":14,"title":"Samsung 49-Inch CHG90 144Hz Curved Gaming Monitor (LC49HG90DMNXZA) – Super Ultrawide Screen QLED ","price":999.99,"description":"49 INCH SUPER ULTRAWIDE 32:9 CURVED GAMING MONITOR with dual 27 inch screen side by side QUANTUM DOT (QLED) TECHNOLOGY, HDR support and factory calibration provides stunningly realistic and accurate color and contrast 144HZ HIGH REFRESH RATE and 1ms ultra fast response time work to eliminate motion blur, ghosting, and reduce input lag","category":"electronics","image":"https://fakestoreapi.com/img/81Zt42ioCgL._AC_SX679_.jpg","rating":{"rate":2.2,"count":140}},{"id":15,"title":"BIYLACLESEN Women's 3-in-1 Snowboard Jacket Winter Coats","price":56.99,"description":"Note:The Jackets is US standard size, Please choose size as your usual wear Material: 100% Polyester; Detachable Liner Fabric: Warm Fleece. Detachable Functional Liner: Skin Friendly, Lightweigt and Warm.Stand Collar Liner jacket, keep you warm in cold weather. Zippered Pockets: 2 Zippered Hand Pockets, 2 Zippered Pockets on Chest (enough to keep cards or keys)and 1 Hidden Pocket Inside.Zippered Hand Pockets and Hidden Pocket keep your things secure. Humanized Design: Adjustable and Detachable Hood and Adjustable cuff to prevent the wind and water,for a comfortable fit. 3 in 1 Detachable Design provide more convenience, you can separate the coat and inner as needed, or wear it together. It is suitable for different season and help you adapt to different climates","category":"women's clothing","image":"https://fakestoreapi.com/img/51Y5NI-I5jL._AC_UX679_.jpg","rating":{"rate":2.6,"count":235}},{"id":16,"title":"Lock and Love Women's Removable Hooded Faux Leather Moto Biker Jacket","price":29.95,"description":"100% POLYURETHANE(shell) 100% POLYESTER(lining) 75% POLYESTER 25% COTTON (SWEATER), Faux leather material for style and comfort / 2 pockets of front, 2-For-One Hooded denim style faux leather jacket, Button detail on waist / Detail stitching at sides, HAND WASH ONLY / DO NOT BLEACH / LINE DRY / DO NOT IRON","category":"women's clothing","image":"https://fakestoreapi.com/img/81XH0e8fefL._AC_UY879_.jpg","rating":{"rate":2.9,"count":340}},{"id":17,"title":"Rain Jacket Women Windbreaker Striped Climbing Raincoats","price":39.99,"description":"Lightweight perfet for trip or casual wear---Long sleeve with hooded, adjustable drawstring waist design. Button and zipper front closure raincoat, fully stripes Lined and The Raincoat has 2 side pockets are a good size to hold all kinds of things, it covers the hips, and the hood is generous but doesn't overdo it.Attached Cotton Lined Hood with Adjustable Drawstrings give it a real styled look.","category":"women's clothing","image":"https://fakestoreapi.com/img/71HblAHs5xL._AC_UY879_-2.jpg","rating":{"rate":3.8,"count":679}},{"id":18,"title":"MBJ Women's Solid Short Sleeve Boat Neck V ","price":9.85,"description":"95% RAYON 5% SPANDEX, Made in USA or Imported, Do Not Bleach, Lightweight fabric with great stretch for comfort, Ribbed on sleeves and neckline / Double stitching on bottom hem","category":"women's clothing","image":"https://fakestoreapi.com/img/71z3kpMAYsL._AC_UY879_.jpg","rating":{"rate":4.7,"count":130}},{"id":19,"title":"Opna Women's Short Sleeve Moisture","price":7.95,"description":"100% Polyester, Machine wash, 100% cationic polyester interlock, Machine Wash & Pre Shrunk for a Great Fit, Lightweight, roomy and highly breathable with moisture wicking fabric which helps to keep moisture away, Soft Lightweight Fabric with comfortable V-neck collar and a slimmer fit, delivers a sleek, more feminine silhouette and Added Comfort","category":"women's clothing","image":"https://fakestoreapi.com/img/51eg55uWmdL._AC_UX679_.jpg","rating":{"rate":4.5,"count":146}},{"id":20,"title":"DANVOUY Womens T Shirt Casual Cotton Short","price":12.99,"description":"95%Cotton,5%Spandex, Features: Casual, Short Sleeve, Letter Print,V-Neck,Fashion Tees, The fabric is soft and has some stretch., Occasion: Casual/Office/Beach/School/Home/Street. Season: Spring,Summer,Autumn,Winter.","category":"women's clothing","image":"https://fakestoreapi.com/img/61pHAEJ4NML._AC_UX679_.jpg","rating":{"rate":3.6,"count":145}}]
-"""
