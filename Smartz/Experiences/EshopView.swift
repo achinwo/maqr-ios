@@ -10,6 +10,7 @@ import SwiftUI
 import SharedUI
 import JoliCore
 import AsyncCompatibilityKit
+import StoreKit
 
 struct DummyProduct: Codable {
     let id: Int
@@ -40,6 +41,49 @@ struct DummyProductResponse: Codable {
 }
 
 struct EshopView: JoliView, Experience {
+    
+    enum Tab: Int, Identifiable, CaseIterable {
+        case browse
+        case orders
+        case support
+        
+        var id: Int {
+            rawValue
+        }
+        
+        var label: String {
+            switch self {
+                case .support:
+                    return "Support"
+                case .orders:
+                    return "Orders"
+                case .browse:
+                    return "Browse"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+                case .support:
+                    return Color.systemIndigo
+                case .orders:
+                    return .pink
+                case .browse:
+                    return .green
+            }
+        }
+        
+        var emoji: (default: String, active: String) {
+            switch self {
+                case .support:
+                    return (default: "questionmark.circle", active: "questionmark.circle.fill")
+                case .orders:
+                    return (default: "list.dash", active: "list.number")
+                case .browse:
+                    return (default: "info", active: "info")
+            }
+        }
+    }
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     @State var dataModel: ExperienceData?
@@ -106,7 +150,7 @@ struct EshopView: JoliView, Experience {
     }
     
     func shopItemView(_ item: ExperienceData.Item) -> some View {
-        VStack() {
+        VStack(alignment: .leading) {
             NetworkImage(string: item.imageName) {
                 ProgressView()
             }
@@ -116,12 +160,22 @@ struct EshopView: JoliView, Experience {
             .layoutPriority(9)
             .id(item.imageName)
             
-            HStack(alignment: .top){
-                Text(item.title ?? "Product").font(.subheadline)
-                    .multilineTextAlignment(.leading)
-                Spacer()
+            if selectedProducts[item.id] != nil {
+                Label(){
+                    Text("Added")
+                } icon: {
+                    Image(systemName: "checkmark.circle.fill")
+                }
+                .foregroundColor(.green)
+                .font(.callout)
+                .padding(.bottom, 2)
             }
-            .layoutPriority(10)
+            
+            Text(item.title ?? "Product")
+                .font(.subheadline)
+                .multilineTextAlignment(.leading)
+                .padding(.bottom, 2)
+                .layoutPriority(10)
             
             Text(item.subtitle ?? "Product description")
                 .font(.caption)
@@ -151,9 +205,63 @@ struct EshopView: JoliView, Experience {
     
     @State var selectedProduct: ExperienceData.Item? = nil
     @State var searchText: String = .empty
+    @AppStorage("active-tab-eshop") var selectedTab = Tab.browse
+    @Environment(\.colorScheme) var colorScheme
+    
+    var contentView: some View {
+        ZStack(){
+            
+            Group(){
+                if self.selectedTab == .browse {
+                    contentView2
+                } else if self.selectedTab == .orders {
+                    Text("Orders")
+                } else if self.selectedTab == .support {
+                    Text("Support")
+                }
+            }
+            .frame(maxWidth: screenWidth, maxHeight: screenHeight)
+            
+            VStack(){
+                Spacer()
+                HStack(){
+                    ForEach(Tab.allCases) { tab in
+                        Button() {
+                            self.selectedTab = tab
+                        } label: {
+                            HStack(){
+                                Image(systemName: selectedTab == tab ? tab.emoji.active : tab.emoji.default)
+                                Text(tab.label)
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: true)
+                            }
+                            .foregroundColor(selectedTab == tab ? tab.color : .primary)
+                            .padding()
+                        }
+                        .if(selectedTab == tab){ view in
+                            view.background(BlurView(colorScheme == .dark ? .systemThickMaterialDark : .systemThickMaterialLight))
+                        } else: { view in
+                            view.background(Color.clear)
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 25.0))
+                        .font(.subheadline.weight(selectedTab == tab ? .semibold : .light))
+                    }
+                }
+                .padding(4)
+                .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
+                .clipShape(RoundedRectangle(cornerRadius: 25.0))
+                .animation(.easeInOut)
+            }
+            .padding(.bottom, max(16, safeAreaInsets.bottom))
+        }
+        .frame(maxWidth: screenWidth, maxHeight: screenHeight)
+        .edgesIgnoringSafeArea(.all)
+    }
+    
+    @State var selectedProducts = [String: Int]()
     
     //https://dribbble.com/shots/18733610-TokoMegawa-E-Commerce
-    var contentView: some View {
+    var contentView2: some View {
         let columns = [
             GridItem(.adaptive(minimum: screenWidth / 3, maximum: screenWidth / 2), spacing: Sizing.small),
             GridItem(.adaptive(minimum: screenWidth / 3, maximum: screenWidth / 2), spacing: Sizing.small)
@@ -167,7 +275,7 @@ struct EshopView: JoliView, Experience {
                 LazyVGrid(columns: columns) {
                     ForEach(items) { item in
                         NavigationLink {
-                            ProductView(product: item)
+                            ProductView(product: item, selectedProducts: $selectedProducts)
                         } label: {
                             self.shopItemView(item)
                                 .id("button-\(item.id)")
@@ -182,15 +290,45 @@ struct EshopView: JoliView, Experience {
                 .padding()
             }
             .toolbar() {
+                
                 ToolbarItem(placement: .principal){
-//                    VStack(){
-//                        Text("Katty Food & Drinks").font(.title)
                     TextField("Search", text: $searchText)
-                        .padding(Sizing.small / 2)
+                        .padding(Sizing.small / 2.5)
                             .background(Color(.systemGray6))
                             .cornerRadius(8)
-                    //}
-                    .frame(maxWidth: screenWidth * 0.72)
+                    .frame(maxWidth: screenWidth * 0.65)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing){
+                    Button(){
+                        print("Tapped cart!")
+                    } label: {
+                        Image(systemName: selectedProducts.isEmpty ? "cart" : "cart.fill")
+                    }
+                    .disabled(selectedProducts.isEmpty)
+                    .overlay(
+                        GeometryReader(){ proxy in
+                            ZStack(alignment: .topTrailing){
+                                if !selectedProducts.isEmpty {
+                                    Text(selectedProducts.values.reduce(0, +).description)
+                                        .foregroundColor(.fixedWhite)
+                                        .padding(2)
+                                        .fixedSize()
+                                        .font(.caption2.weight(.light))
+                                        .frame(width: Sizing.small, height: Sizing.small)
+                                        .backgroundColor(.red)
+                                        .cornerRadius(Sizing.small / 2)
+                                        .offset(x: Sizing.small / 3, y: -1 * (Sizing.small / 3))
+                                        .onAppear(){
+                                            print("values: \(selectedProducts)\nsum: \(selectedProducts.values)")
+                                        }
+                                }
+                            }
+                            .animation(.easeInOut)
+                            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topTrailing)
+                            //.backgroundColor(.green)
+                        }
+                    )
                 }
          
             }
@@ -213,9 +351,86 @@ struct EshopView: JoliView, Experience {
 struct ProductView: View {
     
     @State var product: ExperienceData.Item
+    @Binding var selectedProducts: [String: Int]
     
     var body: some View {
-        Text(product.title!)
+        VStack() {
+            NetworkImage(string: product.imageName) {
+                ProgressView()
+            }
+            .aspectRatio(contentMode: .fit)
+            .padding()
+            .frame(maxHeight: screenHeight / 3)
+            .layoutPriority(9)
+            .id(product.imageName)
+            
+            if selectedProducts[product.id] != nil {
+                Label(){
+                    Text("Added")
+                } icon: {
+                    Image(systemName: "checkmark.circle.fill")
+                }.foregroundColor(.green)
+            }
+            
+            HStack(alignment: .top){
+                Text(product.title ?? "Product")
+                    .multilineTextAlignment(.leading)
+                Spacer()
+                Button(){
+                    let newCount = (selectedProducts[product.id] ?? 0) + 1
+                    selectedProducts[product.id] = newCount
+                    print("values: \(selectedProducts)\nsum: \(selectedProducts.values)")
+                    
+                    //self.selectedProducts = Dictionary(uniqueKeysWithValues: selectedProducts.map() { ($0.key, $0.value) })
+                } label: {
+                    Image(systemName: "cart.badge.plus")
+                }
+                .padding()
+            }
+            .font(.title3)
+            .padding()
+            .layoutPriority(10)
+            
+            Text(product.subtitle ?? "Product description")
+                .font(.subheadline)
+                .padding(.horizontal)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.leading)
+            
+            Spacer()
+        }
+        .toolbar() {
+            
+            ToolbarItem(placement: .navigationBarTrailing){
+                Button(){
+                    print("Tapped cart!")
+                } label: {
+                    Image(systemName: selectedProducts.isEmpty ? "cart" : "cart.fill")
+                }
+                .disabled(selectedProducts.isEmpty)
+                .overlay(
+                    GeometryReader(){ proxy in
+                        ZStack(alignment: .topTrailing){
+                            if !selectedProducts.isEmpty {
+                                Text(selectedProducts.values.reduce(0, +).description)
+                                    .foregroundColor(.fixedWhite)
+                                    .padding(2)
+                                    .fixedSize()
+                                    .font(.caption2.weight(.light))
+                                    .frame(width: Sizing.small, height: Sizing.small)
+                                    .backgroundColor(.red)
+                                    .cornerRadius(Sizing.small / 2)
+                                    .offset(x: Sizing.small / 3, y: -1 * (Sizing.small / 3))
+                            }
+                        }
+                        .animation(.easeInOut)
+                        .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topTrailing)
+                            //.backgroundColor(.green)
+                    }
+                )
+            }
+            
+        }
     }
     
 }
