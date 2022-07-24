@@ -28,8 +28,12 @@ struct SmartzClipApp: AppClip, AppAuthentication {
     
     @AppStorage(key: AppStorageKey.location, store: .standard)
     var currentLocation: AppLocation = .unset {
-        didSet {
-            print("[\(Self.self)] Setting current location: \(currentLocation)")
+        willSet {
+            print("[\(Self.self)] Setting current location: \(currentLocation) -> \(newValue)")
+            
+            guard newValue != currentLocation else { return }
+            
+            coordinator.modal.close()
         }
     }
     

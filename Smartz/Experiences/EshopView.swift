@@ -7,9 +7,12 @@
 //
 
 import SwiftUI
-import SharedUI
 import JoliCore
+
+#if !os(macOS)
+import SharedUI
 import AsyncCompatibilityKit
+#endif
 
 struct DummyProduct: Codable {
     let id: Int
@@ -249,7 +252,7 @@ struct EshopView: JoliView, Experience {
                             .padding(.top, safeAreaInsets.top)
                         }
                     } else if self.selectedTab == .orders {
-                        Text("Orders")
+                        OrderStatusView()
                     } else if self.selectedTab == .support {
                         Text("Support")
                     }
@@ -296,12 +299,23 @@ struct EshopView: JoliView, Experience {
                 ToolbarItem(placement: .principal){
                     TextField("Search", text: $searchText)
                         .padding(Sizing.small / 2.5)
-                            .background(Color(.systemGray6))
+                            
+#if os(macOS)
+                        .background(Color(.systemGray))
+#else
+                        .background(Color(.systemGray6))
+#endif
                             .cornerRadius(8)
                     .frame(maxWidth: screenWidth * 0.65)
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing){
+#if os(macOS)
+                let toolbarPlacement: ToolbarItemPlacement = .automatic
+#else
+                let toolbarPlacement: ToolbarItemPlacement = .navigationBarTrailing
+#endif
+                
+                ToolbarItem(placement: toolbarPlacement){
                     Button(){
                         print("Tapped cart!")
                     } label: {
@@ -335,11 +349,14 @@ struct EshopView: JoliView, Experience {
          
             }
             .navigationTitle("Katty Food & Drinks")
+#if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
+#endif
+            
         }
         .ignoresSafeArea(edges: .bottom)
         //.searchable(text: $queryString)
-        .task(){
+        //.task(){
             //let req = URLRequest(url: URL(staticString: "https://fakestoreapi.com/products"))
             //let (data, _) = try! await api.urlSession.data(for: req)
 //            let data: Data = SAMPLE_DATA.data(using: .utf8)!
@@ -369,6 +386,41 @@ struct EshopView: JoliView, Experience {
 //            ExperienceData.Item(experienceItemType: .product, ,
 //                                imageName: p.image, itemGrouping: p.category,
 //                                subtitle: p.dummyProductDescription, title: p.title, uuid: p.image)
+ //       }
+    }
+    
+}
+
+struct OrderStatusView: JoliView {
+    
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    
+    var contentView: some View {
+        VStack(){
+            Text("Track Orders")
+                .font(.title2)
+            
+            Button(){
+                print("subscribe for notifciation!")
+            } label: {
+                HStack(){
+                    Spacer()
+                    HStack(){
+                        Text("Notify Me!")
+                        Image(systemName: "bell.fill")
+                    }
+                    .font(.title3)
+                    .foregroundColor(.label)
+                    Spacer()
+                }
+            }
+            .background(Color.pink)
+            .clipShape(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+            )
+            .frame(width: screenWidth - 100, height: 60)
+            .accentColor(.orange)
+            .buttonStyle(OutlineButton())
         }
     }
     
@@ -454,7 +506,13 @@ struct ProductView: View {
         }
         .toolbar() {
             
-            ToolbarItem(placement: .navigationBarTrailing){
+            #if os(macOS)
+            let toolbarPlacement: ToolbarItemPlacement = .automatic
+            #else
+            let toolbarPlacement: ToolbarItemPlacement = .navigationBarTrailing
+            #endif
+            
+            ToolbarItem(placement: toolbarPlacement){
                 Button(){
                     print("Tapped cart!")
                 } label: {
