@@ -20,6 +20,7 @@ import AuthenticationServices
 struct SmartzApp: AppClip, AppAuthentication {
     
     @Environment(\.scenePhase) var scenePhase
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var coordinator: AppCoordinator
     
@@ -94,9 +95,9 @@ struct SmartzApp: AppClip, AppAuthentication {
         
         let appclipsSessionId = self.activeSessionIdFromAppclip.isEmpty ? nil : self.activeSessionIdFromAppclip
         let location = self.activeLocationFromAppclip
-        //let currentLocation = self.currentLocation
+        let currentLocation = self.currentLocation
         
-        //logger.debug("[\(Self.self)] initializing: appclipsSessionId=\(String(describing: appclipsSessionId)), appclipsLocation=\(location), currentLocation=\(currentLocation)")
+        print("[\(Self.self)] initializing: appclipsSessionId=\(String(describing: appclipsSessionId)), appclipsLocation=\(location), currentLocation=\(currentLocation)")
         
         if self.currentLocation == .unset, location != .unset {
             self._currentLocation = AppStorage(wrappedValue: location, key: AppStorageKey.location, store: .standard)

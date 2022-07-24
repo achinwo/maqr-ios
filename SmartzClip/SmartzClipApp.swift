@@ -18,6 +18,7 @@ import MessageUI
 struct SmartzClipApp: AppClip, AppAuthentication {
     
     @Environment(\.scenePhase) var scenePhase
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var coordinator: AppCoordinator
     

@@ -271,7 +271,6 @@
 		92A32DDC24C79C07007C960E /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
 		92A32DDE24C79C07007C960E /* PeopleGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC424C79C06007C960E /* PeopleGridView.swift */; };
 		92A32DEA24C79C07007C960E /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCB24C79C06007C960E /* App.swift */; };
-		92A32DF024C79C07007C960E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCE24C79C06007C960E /* AppDelegate.swift */; };
 		92A32DF424C79C07007C960E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD024C79C06007C960E /* Extensions.swift */; };
 		92A32DF624C79C07007C960E /* TrackList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD124C79C06007C960E /* TrackList.swift */; };
 		92A32DFC24C79C07007C960E /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD424C79C07007C960E /* ImageView.swift */; };
@@ -303,6 +302,13 @@
 		92C32A6B288D5A4600CFC21E /* AppLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C32A6A288D5A4600CFC21E /* AppLocation.swift */; };
 		92C32A6C288D5A4600CFC21E /* AppLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C32A6A288D5A4600CFC21E /* AppLocation.swift */; };
 		92C32A6D288D5A4600CFC21E /* AppLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C32A6A288D5A4600CFC21E /* AppLocation.swift */; };
+		92C32A70288DECB200CFC21E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCE24C79C06007C960E /* AppDelegate.swift */; };
+		92C32A71288DECB600CFC21E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCE24C79C06007C960E /* AppDelegate.swift */; };
+		92C32A72288DECC100CFC21E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCE24C79C06007C960E /* AppDelegate.swift */; };
+		92C32A73288DECFE00CFC21E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCE24C79C06007C960E /* AppDelegate.swift */; };
+		92C32A74288DECFE00CFC21E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DCE24C79C06007C960E /* AppDelegate.swift */; };
+		92C32A75288DED0100CFC21E /* AppLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C32A6A288D5A4600CFC21E /* AppLocation.swift */; };
+		92C32A76288DED0200CFC21E /* AppLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C32A6A288D5A4600CFC21E /* AppLocation.swift */; };
 		92CC32A726E55B3200178465 /* SharedUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 92CC32A526E55B3200178465 /* SharedUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		92CC32AA26E55B3200178465 /* SharedUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; };
 		92CC32AB26E55B3200178465 /* SharedUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -883,6 +889,7 @@
 				92A32D8D24C79B3D007C960E /* Resources */,
 				92A32DAF24C79B59007C960E /* State */,
 				927E0E3524E9ADC000C8257D /* AppClip.swift */,
+				92A32DCE24C79C06007C960E /* AppDelegate.swift */,
 				92A32DD024C79C06007C960E /* Extensions.swift */,
 				921CAFAA26B5F4F10078A394 /* YTPlayer.html */,
 				92595B4C253A1AD200609558 /* AppCoordinator.swift */,
@@ -912,7 +919,6 @@
 				92A32DCB24C79C06007C960E /* App.swift */,
 				92A32DC924C79C06007C960E /* ServiceAlert.swift */,
 				92A32DD624C79C07007C960E /* AppView.swift */,
-				92A32DCE24C79C06007C960E /* AppDelegate.swift */,
 				9209B1E02629E32500786A6A /* LaunchScreen.storyboard */,
 				923C4C3B281C928C0052F385 /* Authentication.swift */,
 			);
@@ -1723,6 +1729,7 @@
 				9203B32A24CB07FD00F465CC /* Consts.swift in Sources */,
 				9286049B2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */,
 				927E0E3624E9ADC000C8257D /* AppClip.swift in Sources */,
+				92C32A71288DECB600CFC21E /* AppDelegate.swift in Sources */,
 				928A392424E9E2FA00A029A1 /* JoyMeterView.swift in Sources */,
 				926DB4C82638BDD000D62912 /* ActivityIndicator.swift in Sources */,
 				9251F1C525CE190200906D9D /* RefreshableScrollView.swift in Sources */,
@@ -1796,6 +1803,7 @@
 				927A7B0B276FE3DE007105CC /* SignInWithApple.swift in Sources */,
 				927A7B2D276FF751007105CC /* Experience+JoliView.swift in Sources */,
 				927A7B1B276FE503007105CC /* RefreshableScrollView.swift in Sources */,
+				92C32A72288DECC100CFC21E /* AppDelegate.swift in Sources */,
 				927A7B10276FE419007105CC /* UserSettings.swift in Sources */,
 				927A7B0E276FE3F6007105CC /* Publishers.swift in Sources */,
 				927A7B0D276FE3EB007105CC /* Styles.swift in Sources */,
@@ -1825,6 +1833,7 @@
 				925B40362621B6A6009BD781 /* TrackSuggestionsListView.swift in Sources */,
 				92595B4E253A1AD200609558 /* AppCoordinator.swift in Sources */,
 				92A32E2C24C7BB53007C960E /* Consts.swift in Sources */,
+				92C32A74288DECFE00CFC21E /* AppDelegate.swift in Sources */,
 				92A32E0A24C79C07007C960E /* LogOnView.swift in Sources */,
 				9208ACF324CC559400773730 /* DevicesView.swift in Sources */,
 				928A391D24E9DAE700A029A1 /* ListenView.swift in Sources */,
@@ -1843,7 +1852,6 @@
 				922989AD26491F0E00FDD58F /* MailView.swift in Sources */,
 				928A392524E9E2FA00A029A1 /* JoyMeterView.swift in Sources */,
 				92A32DF624C79C07007C960E /* TrackList.swift in Sources */,
-				92A32DF024C79C07007C960E /* AppDelegate.swift in Sources */,
 				927AE0C22554AC020027493D /* LobbyView.swift in Sources */,
 				92A32DF424C79C07007C960E /* Extensions.swift in Sources */,
 				92A32DEA24C79C07007C960E /* App.swift in Sources */,
@@ -1860,6 +1868,7 @@
 				923D0DC326205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
 				922989A82641FCA800FDD58F /* GridChooserView.swift in Sources */,
 				926DB4C52638B83C00D62912 /* BlurView.swift in Sources */,
+				92C32A76288DED0200CFC21E /* AppLocation.swift in Sources */,
 				92A32E0824C79C07007C960E /* ProfileView.swift in Sources */,
 				923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */,
 				928A392124E9E1A600A029A1 /* SpotifyDelegate.swift in Sources */,
@@ -1886,12 +1895,14 @@
 				926DB4AB26389DFB00D62912 /* ExploreView.swift in Sources */,
 				922989A92641FCA800FDD58F /* GridChooserView.swift in Sources */,
 				926DB4C22638B30600D62912 /* SignInWithApple.swift in Sources */,
+				92C32A75288DED0100CFC21E /* AppLocation.swift in Sources */,
 				926DB4B526389E1F00D62912 /* ProfileView.swift in Sources */,
 				923C4C41281C97070052F385 /* Authentication.swift in Sources */,
 				924E971926E5620800FF41E3 /* TrackView.swift in Sources */,
 				926DB4B126389E1300D62912 /* NetworkImageView.swift in Sources */,
 				926DB4CA2638BDD000D62912 /* ActivityIndicator.swift in Sources */,
 				926DB4A926389DF500D62912 /* LogOnView.swift in Sources */,
+				92C32A73288DECFE00CFC21E /* AppDelegate.swift in Sources */,
 				92A32DB824C79B59007C960E /* UserSettings.swift in Sources */,
 				926DB4C62638B83C00D62912 /* BlurView.swift in Sources */,
 				926DB4B426389E1C00D62912 /* Preview.swift in Sources */,
@@ -1960,6 +1971,7 @@
 				924E970426E55E8600FF41E3 /* YouTubePlayer.swift in Sources */,
 				924E970626E55EB400FF41E3 /* MailView.swift in Sources */,
 				92CC32B426E55CDC00178465 /* AppClip.swift in Sources */,
+				92C32A70288DECB200CFC21E /* AppDelegate.swift in Sources */,
 				92C32A69288D57DE00CFC21E /* PlayroomCreateView.stub.swift in Sources */,
 				923C4C42281C97B60052F385 /* Authentication.swift in Sources */,
 				924E970326E55E8300FF41E3 /* ActivityIndicator.swift in Sources */,

@@ -12,12 +12,12 @@ import JoliApi
 import UserNotifications
 import Combine
 
-class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+public class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     #if DEBUG
-    let debug = true
+    public let debug = true
     #else
-    let debug = false
+    public let debug = false
     #endif
     
     //var appState: AppState!
@@ -30,7 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     private var  observingChanges = false
 
-    func startObservingVolumeChanges() {
+    public func startObservingVolumeChanges() {
         logger.debug("[AppDelegate#startObservingVolumeChanges]")
         
         guard !observingChanges else { return }
@@ -40,7 +40,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         //self.observeValue(forKeyPath: Observation.VolumeKey, of: audioSession, change: nil, context: &Observation.Context)
     }
     
-    func stopObservingVolumeChanges() {
+    public func stopObservingVolumeChanges() {
         logger.debug("[AppDelegate#stopObservingVolumeChanges]")
         
         guard observingChanges else { return }
@@ -52,7 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.stopObservingVolumeChanges()
     }
 
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) -> Void {
+    override public func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) -> Void {
         if context == &Observation.Context {
             guard keyPath == Observation.VolumeKey, let volume = (change?[NSKeyValueChangeKey.newKey] as? NSNumber)?.floatValue else {
                 // `volume` contains the new system output volume...
@@ -78,7 +78,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
-    var env: JoliApi.Environment {
+    public var env: JoliApi.Environment {
         guard self.debug else {
             return .production
         }
@@ -87,7 +87,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return JoliApi.Environment(rawValue: json["env"] as? String ?? JoliApi.Environment.local.rawValue) ?? .development
     }
     
-    func registerForPushNotifications() {
+    public func registerForPushNotifications() {
       UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) {
           [weak self] granted, error in
             
@@ -98,7 +98,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
       }
     }
     
-    func getNotificationSettings() {
+    public func getNotificationSettings() {
       UNUserNotificationCenter.current().getNotificationSettings { settings in
         print("Notification settings: \(settings)")
         
@@ -111,7 +111,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     /// https://code.tutsplus.com/tutorials/an-introduction-to-the-usernotifications-framework--cms-27250
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+    public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         let actionIdentifier = response.actionIdentifier
         let content = response.notification.request.content
          
@@ -127,18 +127,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         let content = notification.request.content
         // Process notification content
         logger.info("[AppDelegate#userNotificationCenter] willPresent: \(content.body)")
         completionHandler([.list]) // Display notification as regular alert and play sound
     }
     
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         NotificationCenter.default.post(name: Notifications.apnToken, object: [Notifications.apnToken: deviceToken])
     }
     
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
       fetchCompletionHandler completionHandler:
       @escaping (UIBackgroundFetchResult) -> Void
     ) {
@@ -149,11 +149,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         logger.info("[AppDelegate] handled notificatiom: \(String(describing: aps))")
     }
 
-    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    public func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         logger.error("Failed to register: \(String(describing: error))")
     }
     
-    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    public func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         
         UNUserNotificationCenter.current().delegate = self
         
@@ -168,7 +168,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     /// - Tag: PerformAction
-    func application(_ application: UIApplication,
+    public func application(_ application: UIApplication,
              performActionFor shortcutItem: UIApplicationShortcutItem,
              completionHandler: @escaping (Bool) -> Void) {
         // Alternatively, a shortcut item may be passed in through this delegate method if the app was
@@ -177,7 +177,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         logger.debug("[AppDelegate] shortcutItemToProcess=\(String(describing: shortcutItemToProcess))")
     }
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        do {
 //            try audioSession.setCategory(AVAudioSession.Category.playback)
 //        } catch {
@@ -212,7 +212,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return true
     }
     
-    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+    public func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         
         if let shortcutItem = options.shortcutItem {
             shortcutItemToProcess = shortcutItem
@@ -226,11 +226,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
 }
 
-var shortcutItemToProcess: UIApplicationShortcutItem?
+public var shortcutItemToProcess: UIApplicationShortcutItem?
 
-class CustomSceneDelegate: UIResponder, UIWindowSceneDelegate {
+public class CustomSceneDelegate: UIResponder, UIWindowSceneDelegate {
     
-    func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+    public func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
         shortcutItemToProcess = shortcutItem
         logger.debug("[AppDelegate] windowScene=\(shortcutItem)")
     }

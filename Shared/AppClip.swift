@@ -750,6 +750,7 @@ public extension AppClip {
             let device = try await self.coordinator.api.setNotificationToken(token)
             logger.info("Token Saved: \(device)")
         } catch {
+            logger.error("Unable to post apn: token=\(token), error=\(String(describing: error))")
             self.coordinator.globalErrorHandler()(error)
         }
     }
