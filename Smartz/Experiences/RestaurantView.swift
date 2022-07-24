@@ -247,7 +247,7 @@ struct RestaurantView: Experience, JoliView {
                                 .overlay(ProgressView().progressViewStyle(CircularProgressViewStyle()))
                         )
                     
-                    Image(colorScheme == .dark ? "logo_joey_full_white" : "logo_joey_full_black")
+                    Image("logo_joey_full_black")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: screenWidth * 0.7)
@@ -625,8 +625,11 @@ struct RestaurantMenuView: View {
                         
                         if let url = drinkGroup.imageUrl {
                             NetworkImage(url: url){
-                                ProgressView()
+                                VStack(){
+                                    ProgressView()
+                                }
                             }
+                            .id(url)
                             .aspectRatio(contentMode: .fill)
                             .frame(width: screenWidth, height: screenWidth / 2)
                             .clipped()

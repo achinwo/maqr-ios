@@ -21,7 +21,6 @@
 		9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D3D82659B6E900D5974F /* Assets.xcassets */; };
 		9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9202D4092659BC0B00D5974F /* SmartzClipApp.swift */; };
 		9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D40D2659BC0E00D5974F /* Assets.xcassets */; };
-		9202D4112659BC0E00D5974F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D4102659BC0E00D5974F /* Preview Assets.xcassets */; };
 		9202D42C2659BC0E00D5974F /* SmartzClip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 9202D4072659BC0B00D5974F /* SmartzClip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9203410327E78BD8002BC9E0 /* EFQRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 9203410227E78BD8002BC9E0 /* EFQRCode */; };
 		9203B31324CB06C900F465CC /* JoliPlayground.h in Headers */ = {isa = PBXBuildFile; fileRef = 9203B31124CB06C900F465CC /* JoliPlayground.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -51,12 +50,6 @@
 		921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
 		921F6C3426BE8AE10061D236 /* StaticExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3226BE8AE10061D236 /* StaticExperienceData.swift */; };
 		921F6C3926BE9DF80061D236 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 921F6C3826BE9DF80061D236 /* Preview Assets.xcassets */; };
-		921F6C4126BEA05C0061D236 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3E26BEA05C0061D236 /* UIImage+Extensions.swift */; };
-		921F6C4226BEA05C0061D236 /* CGImage+CVPixelBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C3F26BEA05C0061D236 /* CGImage+CVPixelBuffer.swift */; };
-		921F6C4326BEA05C0061D236 /* MLMultiArray+Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4026BEA05C0061D236 /* MLMultiArray+Image.swift */; };
-		921F6C4526BEA1110061D236 /* CGImage+RawBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4426BEA1110061D236 /* CGImage+RawBytes.swift */; };
-		921F6C4726BEA1610061D236 /* UIImage+CVPixelBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4626BEA1610061D236 /* UIImage+CVPixelBuffer.swift */; };
-		921F6C4926BEA1C00061D236 /* Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921F6C4826BEA1C00061D236 /* Math.swift */; };
 		922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922223E226A2E368007BD0D3 /* CodeDesignerView.swift */; };
 		9222BE1924CD8A5900F19973 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9222BE1724CD8A5800F19973 /* ExploreView.swift */; };
 		9228F86C26C07A310053DC04 /* ExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9228F86B26C07A310053DC04 /* ExperienceData.swift */; };
@@ -111,10 +104,8 @@
 		924E970E26E560BB00FF41E3 /* NetworkImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7120C24D85EC500AD6729 /* NetworkImageView.swift */; };
 		924E971126E5611E00FF41E3 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DDA24C79C07007C960E /* ProfileView.swift */; };
 		924E971226E5613500FF41E3 /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E8FE024C76DE100378436 /* Styles.swift */; };
-		924E971326E5614000FF41E3 /* PlayroomCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926E2E23260F40E9007F62E0 /* PlayroomCreateView.swift */; };
 		924E971426E561A200FF41E3 /* SkipVoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9257430626304BA400B518EA /* SkipVoteView.swift */; };
 		924E971626E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
-		924E971726E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
 		924E971826E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
 		924E971926E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
 		9251F1C525CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
@@ -308,6 +299,10 @@
 		92C1A24C26626BF900A11E0F /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C1A24D26626D5B00A11E0F /* Playback.swift */; };
 		92C1A24F26626D5B00A11E0F /* Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C1A24D26626D5B00A11E0F /* Playback.swift */; };
+		92C32A69288D57DE00CFC21E /* PlayroomCreateView.stub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C32A68288D57DE00CFC21E /* PlayroomCreateView.stub.swift */; };
+		92C32A6B288D5A4600CFC21E /* AppLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C32A6A288D5A4600CFC21E /* AppLocation.swift */; };
+		92C32A6C288D5A4600CFC21E /* AppLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C32A6A288D5A4600CFC21E /* AppLocation.swift */; };
+		92C32A6D288D5A4600CFC21E /* AppLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C32A6A288D5A4600CFC21E /* AppLocation.swift */; };
 		92CC32A726E55B3200178465 /* SharedUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 92CC32A526E55B3200178465 /* SharedUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		92CC32AA26E55B3200178465 /* SharedUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; };
 		92CC32AB26E55B3200178465 /* SharedUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -626,6 +621,8 @@
 		92A7120C24D85EC500AD6729 /* NetworkImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageView.swift; sourceTree = "<group>"; };
 		92A9A34027E652D70008FE32 /* InventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryView.swift; sourceTree = "<group>"; };
 		92C1A24D26626D5B00A11E0F /* Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playback.swift; sourceTree = "<group>"; };
+		92C32A68288D57DE00CFC21E /* PlayroomCreateView.stub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayroomCreateView.stub.swift; sourceTree = "<group>"; };
+		92C32A6A288D5A4600CFC21E /* AppLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLocation.swift; sourceTree = "<group>"; };
 		92CC32A326E55B3100178465 /* SharedUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SharedUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		92CC32A526E55B3200178465 /* SharedUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SharedUI.h; sourceTree = "<group>"; };
 		92CC32A626E55B3200178465 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -902,6 +899,7 @@
 				921CAFA626B5F4730078A394 /* YouTubePlayer.swift */,
 				928E7B4E2704A4B80052E5A9 /* BaseDestination.swift */,
 				9286049A2708E84B00ED2E68 /* StoreKitHelper.swift */,
+				92C32A6A288D5A4600CFC21E /* AppLocation.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1038,6 +1036,7 @@
 				9217905526CC51DA009FC4CE /* MessageView.swift */,
 				922989AB26491F0D00FDD58F /* MailView.swift */,
 				924E971526E5620800FF41E3 /* TrackView.swift */,
+				92C32A68288D57DE00CFC21E /* PlayroomCreateView.stub.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1529,7 +1528,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				920264DD26924653005643E1 /* joey_sherway_data.json in Resources */,
-				9202D4112659BC0E00D5974F /* Preview Assets.xcassets in Resources */,
 				921CAFAD26B5F4F10078A394 /* YTPlayer.html in Resources */,
 				9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */,
 				92C1A24C26626BF900A11E0F /* env.json in Resources */,
@@ -1663,17 +1661,13 @@
 				9228F86C26C07A310053DC04 /* ExperienceData.swift in Sources */,
 				921F6C3026BE81C00061D236 /* VisualCodeView.swift in Sources */,
 				920264CB268FAE06005643E1 /* Experience.swift in Sources */,
-				921F6C4326BEA05C0061D236 /* MLMultiArray+Image.swift in Sources */,
-				921F6C4226BEA05C0061D236 /* CGImage+CVPixelBuffer.swift in Sources */,
 				9285148C27B8291600380CF7 /* AboutView.swift in Sources */,
 				920264D02691D4EA005643E1 /* Restaurant.swift in Sources */,
 				92643785276FB53C00E5F1B4 /* Experience+JoliView.swift in Sources */,
 				9285148E27B83FDE00380CF7 /* HomeView.swift in Sources */,
-				921F6C4726BEA1610061D236 /* UIImage+CVPixelBuffer.swift in Sources */,
 				92FBFC9426AB4A110068DDA5 /* Experiences.generated.swift in Sources */,
 				9249A95F2808E4DE00A5F7F6 /* WeddingEventView.swift in Sources */,
 				922223E326A2E368007BD0D3 /* CodeDesignerView.swift in Sources */,
-				921F6C4526BEA1110061D236 /* CGImage+RawBytes.swift in Sources */,
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */,
 				928604A4270CA80D00ED2E68 /* ExperiencePurchaseView.swift in Sources */,
@@ -1683,8 +1677,6 @@
 				92C1A24E26626D5B00A11E0F /* Playback.swift in Sources */,
 				92ECCEDD26C0543F009A2B75 /* LiveExperiencesView.swift in Sources */,
 				9202D3D52659B6E700D5974F /* SmartzApp.swift in Sources */,
-				921F6C4926BEA1C00061D236 /* Math.swift in Sources */,
-				921F6C4126BEA05C0061D236 /* UIImage+Extensions.swift in Sources */,
 				92562E30266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				92FF151D287E190E0059B392 /* EshopView.swift in Sources */,
 				92DD6554267E6104007E22F0 /* RestaurantView.swift in Sources */,
@@ -1724,6 +1716,7 @@
 				92BD11D124CB0BD800AAB7DE /* TrackList.swift in Sources */,
 				920958AB25601EE10014626D /* Logging.swift in Sources */,
 				9203B32924CB07F800F465CC /* Styles.swift in Sources */,
+				92C32A6B288D5A4600CFC21E /* AppLocation.swift in Sources */,
 				923D0DC126205FA8008BB6EA /* Publishers+Playback.swift in Sources */,
 				922989AC26491F0D00FDD58F /* MailView.swift in Sources */,
 				926E2E24260F40E9007F62E0 /* PlayroomCreateView.swift in Sources */,
@@ -1808,6 +1801,7 @@
 				927A7B0D276FE3EB007105CC /* Styles.swift in Sources */,
 				927A7B09276FE3D5007105CC /* BlurView.swift in Sources */,
 				927A7B1F276FE52A007105CC /* TrackView.swift in Sources */,
+				92C32A6D288D5A4600CFC21E /* AppLocation.swift in Sources */,
 				92643783276F94EC00E5F1B4 /* Experiences.generated.swift in Sources */,
 				927A7B04276FE2F7007105CC /* Logging.swift in Sources */,
 				927A7B1E276FE516007105CC /* SkipVoteView.swift in Sources */,
@@ -1944,6 +1938,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92C32A6C288D5A4600CFC21E /* AppLocation.swift in Sources */,
 				92CC32B526E55CDF00178465 /* AppCoordinator.swift in Sources */,
 				924E970E26E560BB00FF41E3 /* NetworkImageView.swift in Sources */,
 				929BF21A275D411600F850F7 /* MessageView.swift in Sources */,
@@ -1964,9 +1959,8 @@
 				9286049C2708E84B00ED2E68 /* StoreKitHelper.swift in Sources */,
 				924E970426E55E8600FF41E3 /* YouTubePlayer.swift in Sources */,
 				924E970626E55EB400FF41E3 /* MailView.swift in Sources */,
-				924E971726E5620800FF41E3 /* TrackView.swift in Sources */,
-				924E971326E5614000FF41E3 /* PlayroomCreateView.swift in Sources */,
 				92CC32B426E55CDC00178465 /* AppClip.swift in Sources */,
+				92C32A69288D57DE00CFC21E /* PlayroomCreateView.stub.swift in Sources */,
 				923C4C42281C97B60052F385 /* Authentication.swift in Sources */,
 				924E970326E55E8300FF41E3 /* ActivityIndicator.swift in Sources */,
 				928E7B502704A4B80052E5A9 /* BaseDestination.swift in Sources */,
@@ -2048,7 +2042,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2076,7 +2070,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2102,7 +2096,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2130,7 +2124,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
