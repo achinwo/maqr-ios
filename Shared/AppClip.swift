@@ -391,6 +391,7 @@ public protocol AppClip: App {
     associatedtype ModalView: View
     
     var env: JoliApi.Environment { get }
+    var appDelegate: AppDelegate { get }
     var contentView: Content { get }
     var scenePhase: ScenePhase { get }
     var coordinator: AppCoordinator { nonmutating get }
@@ -663,6 +664,10 @@ public extension AppClip {
                         }
                         self.coordinator.spotifyAuthRequestedAt = Date()
                 }
+            }
+            .onReceive(coordinator.requestedNotificationPermission) { ts in
+                logger.info("[\(Self.self)] notifictaion requested at: \(ts)")
+                appDelegate.registerForPushNotifications()
             }
             .onReceive(apnTokenPublisher) { (notification: Notification) in
                 guard let notif = notification.object as? [Notification.Name: Data],

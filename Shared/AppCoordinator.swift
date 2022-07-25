@@ -140,6 +140,7 @@ public final class AppCoordinator: ObservableObject {
     public let globalToastInfo = PassthroughSubject<(alert: AlertToast, onDismiss: (Bool) -> Void), Never>()
     
     public let requestedSignIn = PassthroughSubject<AuthenticationFlow, Never>()
+    public let requestedNotificationPermission = PassthroughSubject<Date, Never>()
     
     public let purchaseNotificationSubject = PassthroughSubject<String?, Never>()
     

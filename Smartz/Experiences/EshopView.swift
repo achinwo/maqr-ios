@@ -82,7 +82,7 @@ struct EshopView: JoliView, Experience {
                 case .orders:
                     return (default: "list.dash", active: "list.number")
                 case .browse:
-                    return (default: "info", active: "info")
+                    return (default: "bag", active: "bag.fill")
             }
         }
     }
@@ -391,36 +391,69 @@ struct EshopView: JoliView, Experience {
     
 }
 
+import UserNotifications
+
 struct OrderStatusView: JoliView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
+    @State var notificationSettings: UNNotificationSettings? = nil
+    
+    let apnTokenPublisher = NotificationCenter.default.publisher(for: Notifications.apnToken)
+    
+    @Namespace var namespace
     
     var contentView: some View {
         VStack(){
+            Spacer()
             Text("Track Orders")
                 .font(.title2)
+                .padding()
             
-            Button(){
-                print("subscribe for notifciation!")
-            } label: {
-                HStack(){
-                    Spacer()
-                    HStack(){
-                        Text("Notify Me!")
-                        Image(systemName: "bell.fill")
+            Group(){
+                if let settings = notificationSettings, ![.denied, .notDetermined].contains(settings.authorizationStatus) {
+                    Text("We've notify you as your order status changes")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .matchedGeometryEffect(id: "notif-button", in: namespace)
+                } else {
+                    Button(){
+                        print("subscribe for notifciation!")
+                        appCoordinator.requestedNotificationPermission.send(Date())
+                    } label: {
+                        HStack(){
+                            Spacer()
+                            HStack(){
+                                Text("Notify Me!")
+                                Image(systemName: "bell.fill")
+                            }
+                            .font(.title3)
+                            Spacer()
+                        }
+                        .foregroundColor(.white)
                     }
-                    .font(.title3)
-                    .foregroundColor(.label)
-                    Spacer()
+                    .accentColor(.purple)
+                    .background(Color.purple)
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    )
+                    .frame(width: screenWidth - 100, height: 60)
+                    .buttonStyle(OutlineButton())
+                    .matchedGeometryEffect(id: "notif-button", in: namespace)
                 }
             }
-            .background(Color.pink)
-            .clipShape(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-            )
-            .frame(width: screenWidth - 100, height: 60)
-            .accentColor(.orange)
-            .buttonStyle(OutlineButton())
+            
+            Spacer()
+            Spacer()
+        }
+        .onAppear(perform: refreshNotificationStatus)
+        .onReceive(apnTokenPublisher) { _ in
+            refreshNotificationStatus()
+        }
+    }
+    
+    private func refreshNotificationStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            self.notificationSettings = settings
         }
     }
     

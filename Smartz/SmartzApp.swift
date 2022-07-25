@@ -20,7 +20,7 @@ import AuthenticationServices
 struct SmartzApp: AppClip, AppAuthentication {
     
     @Environment(\.scenePhase) var scenePhase
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @UIApplicationDelegateAdaptor var appDelegate: AppDelegate
     
     var coordinator: AppCoordinator
     
