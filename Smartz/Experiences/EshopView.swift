@@ -217,6 +217,7 @@ struct EshopView: JoliView, Experience {
     }
     
     @State var selectedProducts = [String: Int]()
+    @State var inCheckout: Bool = false
     
     //https://dribbble.com/shots/18733610-TokoMegawa-E-Commerce
     var contentView2: some View {
@@ -226,37 +227,41 @@ struct EshopView: JoliView, Experience {
         ]
         
         //let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
+        let vals: [ExperienceData.Item] = dataModel?.items ?? []
         
         return NavigationView(){
             ZStack(){
                 
                 Group(){
-                    if self.selectedTab == .browse {
-                        ScrollView(.vertical) {
-                            
-                            LazyVGrid(columns: columns) {
-                                ForEach(items) { item in
-                                    NavigationLink {
-                                        ProductView(product: item, selectedProducts: $selectedProducts)
-                                    } label: {
-                                        self.shopItemView(item)
-                                            .id("button-\(item.id)")
-                                    }
-                                    .padding()
-                                    .frame(maxHeight: screenWidth / 1.2)
-                                    .frame(maxWidth: screenWidth / 2.2)
-                                    .id(item.id)
+                    ScrollView(.vertical) {
+                        
+                        LazyVGrid(columns: columns) {
+                            ForEach(items) { item in
+                                NavigationLink {
+                                    ProductView(product: item, selectedProducts: $selectedProducts, inCheckout: $inCheckout, products: .constant(dataModel?.items ?? []))
+                                } label: {
+                                    self.shopItemView(item)
+                                        .id("button-\(item.id)")
                                 }
+                                .padding()
+                                .frame(maxHeight: screenWidth / 1.2)
+                                .frame(maxWidth: screenWidth / 2.2)
+                                .id(item.id)
                             }
-                            .padding()
-                            .padding(.bottom, max(16, safeAreaInsets.bottom))
-                            .padding(.top, safeAreaInsets.top)
                         }
-                    } else if self.selectedTab == .orders {
-                        OrderStatusView()
-                    } else if self.selectedTab == .support {
-                        Text("Support")
+                        .padding()
+                        .padding(.bottom, max(16, safeAreaInsets.bottom))
+                        .padding(.top, safeAreaInsets.top)
                     }
+                    .backgroundColor(.white)
+                    .opacity(self.selectedTab == .browse ? 1 : 0)
+                
+                    OrderStatusView()
+                    .backgroundColor(.white)
+                    .opacity(self.selectedTab == .orders ? 1 : 0)
+                
+                    Text("Support")
+                    .opacity(self.selectedTab == .support ? 1 : 0)
                 }
                 .frame(maxWidth: screenWidth, maxHeight: screenHeight)
                 
@@ -266,7 +271,9 @@ struct EshopView: JoliView, Experience {
                     HStack(){
                         ForEach(Tab.allCases) { tab in
                             Button() {
-                                self.selectedTab = tab
+                                withAnimation(.easeInOut){
+                                    self.selectedTab = tab
+                                }
                             } label: {
                                 HStack(){
                                     Image(systemName: selectedTab == tab ? tab.emoji.active : tab.emoji.default)
@@ -317,35 +324,7 @@ struct EshopView: JoliView, Experience {
 #endif
                 
                 ToolbarItem(placement: toolbarPlacement){
-                    Button(){
-                        print("Tapped cart!")
-                    } label: {
-                        Image(systemName: selectedProducts.isEmpty ? "cart" : "cart.fill")
-                    }
-                    .disabled(selectedProducts.isEmpty)
-                    .overlay(
-                        GeometryReader(){ proxy in
-                            ZStack(alignment: .topTrailing){
-                                if !selectedProducts.isEmpty {
-                                    Text(selectedProducts.values.reduce(0, +).description)
-                                        .foregroundColor(.fixedWhite)
-                                        .padding(2)
-                                        .fixedSize()
-                                        .font(.caption2.weight(.light))
-                                        .frame(width: Sizing.small, height: Sizing.small)
-                                        .backgroundColor(.red)
-                                        .cornerRadius(Sizing.small / 2)
-                                        .offset(x: Sizing.small / 3, y: -1 * (Sizing.small / 3))
-                                        .onAppear(){
-                                            print("values: \(selectedProducts)\nsum: \(selectedProducts.values)")
-                                        }
-                                }
-                            }
-                            .animation(.easeInOut)
-                            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topTrailing)
-                            //.backgroundColor(.green)
-                        }
-                    )
+                    return CartButton(selectedProducts: $selectedProducts, inCheckout: $inCheckout, products: .constant(vals))
                 }
          
             }
@@ -388,6 +367,246 @@ struct EshopView: JoliView, Experience {
 //                                imageName: p.image, itemGrouping: p.category,
 //                                subtitle: p.dummyProductDescription, title: p.title, uuid: p.image)
  //       }
+    }
+    
+}
+
+struct CartCheckoutView: JoliView {
+    
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    @Binding var selectedProducts: [String: Int]
+    @Binding var products: [ExperienceData.Item]
+    
+    @State var selectedTimeHr: Int? = nil
+    
+    @State var selectedHostel: Int? = nil
+    @State var selectedRoomNum: Int? = nil
+    
+    var hostelNames = ["Londa Hotels", "The Randolph Hotel & resorts", "Elkan Terrace", "Hostel F"]
+    
+    enum Sections: String, CaseIterable, Identifiable {
+        case products = ""
+        case location = "Your Hostel & Room"
+        case delivery = "Pick Delivery Slot"
+        
+        var id: String {
+            rawValue
+        }
+    }
+    
+    var hostelsView: some View {
+        Group(){
+            Picker("Hostel", selection: self.$selectedHostel) {
+                ForEach(Array(hostelNames.enumerated()), id: \.offset){ item in
+                    Text(item.element)
+                        .tag(Optional(item.offset))
+                }
+            }
+            
+            Picker("Room No.", selection: $selectedRoomNum) {
+                ForEach(1 ..< 50) { number in
+                    Text("Room \(number.description)")
+                        .tag(Optional(number))
+                }
+            }
+            .pickerStyle(WheelPickerStyle())
+        }
+        
+    }
+    
+    var contentView: some View {
+        
+        let columns = [
+            GridItem(.adaptive(minimum: screenWidth / 8, maximum: screenWidth / 6)),
+            GridItem(.adaptive(minimum: screenWidth / 8, maximum: screenWidth / 6)),
+            GridItem(.adaptive(minimum: screenWidth / 8, maximum: screenWidth / 6)),
+            GridItem(.adaptive(minimum: screenWidth / 8, maximum: screenWidth / 6)),
+        ]
+        
+        var total: Int = 0
+        for (productId, quantity) in selectedProducts {
+            guard let product = products.first(where: { $0.id == productId }), let price = product.defaultPrice else {
+                continue
+            }
+            
+            total += quantity * (price / 100)
+        }
+        
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .currency
+        
+        let totalLabel = formatter.string(from: total as NSNumber) ?? total.description
+        
+        return ZStack(alignment: .bottom){
+            
+            List(Sections.allCases, id: \.self) { section in
+                    
+                if section == .products {
+                    Section() {
+                        ForEach(Array(selectedProducts.keys), id: \.self) { productId in
+                            if let product = products.first(where: { $0.id == productId }) {
+                                HStack(alignment: .center) {
+                                    NetworkImage(string: product.imageName) {
+                                        ProgressView()
+                                    }
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: screenWidth / 6, height: screenWidth / 6)
+                                    .layoutPriority(9)
+                                    .id(product.imageName)
+                                    
+                                    VStack(alignment: .leading){
+                                        Text(product.title ?? "Product")
+                                            .font(.subheadline)
+                                            .multilineTextAlignment(.leading)
+                                            .lineLimit(2)
+                                            .padding(.bottom, 2)
+                                            .layoutPriority(7)
+                                        
+                                        Text(product.subtitle ?? "Product description")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(3)
+                                            .multilineTextAlignment(.leading)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    HStack(alignment: .center, spacing: .zero){
+                                        if let count = selectedProducts[productId], let price = product.defaultPrice {
+                                            Divider()
+                                            
+                                            VStack(){
+                                                HStack(alignment: .firstTextBaseline, spacing: .zero){
+                                                    Spacer()
+                                                    Image(systemName: "xmark")
+                                                        .font(.caption.weight(.light))
+                                                        .foregroundColor(.secondary)
+                                                    Text(count.description)
+                                                        .font(.title.weight(.light))
+                                                        .foregroundColor(.secondary)
+                                                    Spacer()
+                                                }
+                                                Text("£\(price / 100)").font(.caption2).foregroundColor(.secondary)
+                                            }
+                                        }
+                                    }
+                                    .layoutPriority(10)
+                                    .frame(width: screenWidth / 8)
+                                }
+                            }
+                        }
+                        
+                        HStack(){
+                            Spacer()
+                            Text("Total:")
+                                .font(.headline.weight(.bold))
+                            Text(totalLabel)
+                                .font(.headline.weight(.light))
+                        }
+                        .padding()
+                    }
+                } else if section == .location {
+                    let header = Label() {
+                        Text(section.rawValue)
+                    } icon: {
+                        Image(systemName: "house")
+                    }
+                    Section(header: header) {
+                        self.hostelsView
+                    }
+                } else if section == .delivery {
+                    let header = Label() {
+                        Text(section.rawValue)
+                    } icon: {
+                        Image(systemName: "clock")
+                    }
+                    Section(header: header, footer: Spacer().padding(.bottom, 120)) {
+                        LazyVGrid(columns: columns){
+                            ForEach(9..<17, id: \.self) { num in
+                                
+                                (Text("\(num == 12 ? num : num % 12)").font(.subheadline) + Text("\(num > 11 ? "pm" : "am")").font(.caption.weight(.light)))
+                                    .frame(width: screenWidth / 12, height: screenWidth / 12)
+                                    .fixedSize()
+                                    .padding()
+                                    .background(self.selectedTimeHr == num ? Color.primary : Color.clear)
+                                    .foregroundColor(self.selectedTimeHr == num ? Color.white : .secondary)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(self.selectedTimeHr == num ? Color.primary : Color.secondary.opacity(0.7), lineWidth: 1)
+                                    )
+                                    .onTapGesture(){
+                                        self.selectedTimeHr = num
+                                    }
+                                    //.background(Color.secondaryLabel)
+                            }
+                        }
+                        .padding()
+                    }
+                }
+            }
+            
+            Button(){
+                print("subscribe for notifciation!")
+            } label: {
+                HStack(){
+                    Spacer()
+                    HStack(){
+                        Text("Place Order")
+                        //Image(systemName: "")
+                    }
+                    .font(.title3)
+                    Spacer()
+                }
+                .foregroundColor(.white)
+            }
+            .accentColor(.purple)
+            .background(Color.blue)
+            .clipShape(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+            )
+            .frame(width: screenWidth - 100, height: 60)
+            .buttonStyle(OutlineButton())
+        }
+    }
+    
+}
+
+struct CartButton: View {
+    
+    @Binding var selectedProducts: [String: Int]
+    @Binding var inCheckout: Bool
+    @Binding var products: [ExperienceData.Item]
+    
+    var body: some View {
+        NavigationLink(isActive: $inCheckout){
+            CartCheckoutView(selectedProducts: $selectedProducts, products: $products)
+                .navigationTitle("Shopping Basket")
+        } label: {
+            Image(systemName: selectedProducts.isEmpty ? "cart" : "cart.fill")
+        }
+        .disabled(selectedProducts.isEmpty)
+        .overlay(
+            GeometryReader(){ proxy in
+                ZStack(alignment: .topTrailing){
+                    if !selectedProducts.isEmpty {
+                        Text(selectedProducts.values.reduce(0, +).description)
+                            .foregroundColor(.fixedWhite)
+                            .padding(2)
+                            .fixedSize()
+                            .font(.caption2.weight(.light))
+                            .frame(width: Sizing.small, height: Sizing.small)
+                            .backgroundColor(.red)
+                            .cornerRadius(Sizing.small / 2)
+                            .offset(x: Sizing.small / 3, y: -1 * (Sizing.small / 3))
+                    }
+                }
+                .animation(.easeInOut)
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topTrailing)
+                    //.backgroundColor(.green)
+            }
+        )
     }
     
 }
@@ -476,6 +695,8 @@ struct ProductView: View {
     
     @State var product: ExperienceData.Item
     @Binding var selectedProducts: [String: Int]
+    @Binding var inCheckout: Bool
+    @Binding var products: [ExperienceData.Item]
     
     var body: some View {
         VStack() {
@@ -559,32 +780,7 @@ struct ProductView: View {
             #endif
             
             ToolbarItem(placement: toolbarPlacement){
-                Button(){
-                    print("Tapped cart!")
-                } label: {
-                    Image(systemName: selectedProducts.isEmpty ? "cart" : "cart.fill")
-                }
-                .disabled(selectedProducts.isEmpty)
-                .overlay(
-                    GeometryReader(){ proxy in
-                        ZStack(alignment: .topTrailing){
-                            if !selectedProducts.isEmpty {
-                                Text(selectedProducts.values.reduce(0, +).description)
-                                    .foregroundColor(.fixedWhite)
-                                    .padding(2)
-                                    .fixedSize()
-                                    .font(.caption2.weight(.light))
-                                    .frame(width: Sizing.small, height: Sizing.small)
-                                    .backgroundColor(.red)
-                                    .cornerRadius(Sizing.small / 2)
-                                    .offset(x: Sizing.small / 3, y: -1 * (Sizing.small / 3))
-                            }
-                        }
-                        .animation(.easeInOut)
-                        .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topTrailing)
-                            //.backgroundColor(.green)
-                    }
-                )
+                return CartButton(selectedProducts: $selectedProducts, inCheckout: $inCheckout, products: $products)
             }
             
         }
