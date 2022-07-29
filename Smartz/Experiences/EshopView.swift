@@ -8,6 +8,7 @@
 
 import SwiftUI
 import JoliCore
+import UserNotifications
 
 #if !os(macOS)
 import SharedUI
@@ -391,8 +392,6 @@ struct EshopView: JoliView, Experience {
     
 }
 
-import UserNotifications
-
 struct OrderStatusView: JoliView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
@@ -451,9 +450,23 @@ struct OrderStatusView: JoliView {
         }
     }
     
+    static var debug: Bool {
+        #if DEBUG
+        return true
+        #else
+        return false
+        #endif
+    }
+    
     private func refreshNotificationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             self.notificationSettings = settings
+            
+            guard settings.authorizationStatus == .ephemeral, appCoordinator.apnToken == nil, !Self.debug else { return }
+            
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
         }
     }
     

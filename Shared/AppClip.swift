@@ -440,18 +440,27 @@ extension Bundle {
 }
 
 public func resolveAppInfo() -> (uuid: String?, model: String, name: String, systemVersion: String, appName: String?, appId: String?) {
+    var deviceUuid: UUID? = nil
+    var deviceUuidString: String? = nil
+    
 #if os(macOS)
-    let uuid: String? = nil
     let model: String = "Mac"
     let name: String = Host.current().localizedName ?? model
     let systemVersion: String = ProcessInfo.processInfo.operatingSystemVersionString
 #else
-    let uuid: String? = UIDevice.current.identifierForVendor?.uuidString
+    deviceUuid = UIDevice.current.identifierForVendor
+    deviceUuidString = deviceUuid?.uuidString
     let model: String = UIDevice.current.model
     let name: String = UIDevice.current.name
     let systemVersion: String = UIDevice.current.systemVersion
 #endif
-    return (uuid: uuid, model: model, name: name, systemVersion: systemVersion, appName: Bundle.main.displayName, appId: Bundle.main.bundleIdentifier)
+    
+    if let deviceUuid = deviceUuid, deviceUuid.isBlank {
+        deviceUuidString = UserDefaults.standard.string(forKey: Strings.KEY_DEVICE_UUID) ?? "CLIP-\(UUID().uuidString)"
+        UserDefaults.standard.set(deviceUuidString, forKey: Strings.KEY_DEVICE_UUID)
+    }
+    
+    return (uuid: deviceUuidString, model: model, name: name, systemVersion: systemVersion, appName: Bundle.main.displayName, appId: Bundle.main.bundleIdentifier)
 }
 
 public func resolveAppVersion() -> Version {
@@ -750,6 +759,8 @@ public extension AppClip {
     func onNotificationRecieved(_ deviceToken: Data) async {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         let token = tokenParts.joined()
+        
+        self.coordinator.apnToken = token
         
         do {
             let device = try await self.coordinator.api.setNotificationToken(token)

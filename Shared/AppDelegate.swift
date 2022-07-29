@@ -88,8 +88,7 @@ public class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotification
     }
     
     public func registerForPushNotifications() {
-      UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) {
-          [weak self] granted, error in
+      UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, error in
             
           print("Permission granted: \(granted)")
           guard granted else { return }
@@ -138,14 +137,11 @@ public class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotification
         NotificationCenter.default.post(name: Notifications.apnToken, object: [Notifications.apnToken: deviceToken])
     }
     
-    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
-      fetchCompletionHandler completionHandler:
-      @escaping (UIBackgroundFetchResult) -> Void
-    ) {
-      guard let aps = userInfo["aps"] as? [String: AnyObject] else {
-        completionHandler(.failed)
-        return
-      }
+    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        guard let aps = userInfo["aps"] as? [String: AnyObject] else {
+            completionHandler(.failed)
+            return
+        }
         logger.info("[AppDelegate] handled notificatiom: \(String(describing: aps))")
     }
 
@@ -168,9 +164,7 @@ public class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotification
     }
     
     /// - Tag: PerformAction
-    public func application(_ application: UIApplication,
-             performActionFor shortcutItem: UIApplicationShortcutItem,
-             completionHandler: @escaping (Bool) -> Void) {
+    public func application(_ application: UIApplication, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
         // Alternatively, a shortcut item may be passed in through this delegate method if the app was
         // still in memory when the Home screen quick action was used. Again, store it for processing.
         shortcutItemToProcess = shortcutItem

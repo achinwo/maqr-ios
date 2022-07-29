@@ -60,6 +60,8 @@ public enum Strings {
     static let URL_SCHEME = "joli"
     static let SPOTIFY_URL_BASEPATH = "spotify-callback"
     
+    public static let KEY_DEVICE_UUID = "device-uuid-ephemeral"
+    
     public static let volume = NSLocalizedString("volume", comment: "Sound volume")
     public static let profile = NSLocalizedString("profile", comment: "User Profile Label")
     public static let photoUpload = NSLocalizedString("photoUpload", comment: "Upload picture")

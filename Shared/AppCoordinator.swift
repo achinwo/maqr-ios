@@ -135,6 +135,7 @@ public final class AppCoordinator: ObservableObject {
     @Published public var namespace: Namespace.ID? = nil
     @Published public var keyboardHeight: CGFloat = 0
     @Published public var insufficientPointsAttempt = 0
+    @Published public var apnToken: String? = nil
     
     public let signoutSubject = PassthroughSubject<Auth, Never>()
     public let globalToastInfo = PassthroughSubject<(alert: AlertToast, onDismiss: (Bool) -> Void), Never>()

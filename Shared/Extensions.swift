@@ -466,6 +466,17 @@ public extension String {
     }
 }
 
+
+public extension UUID {
+    
+    var isBlank: Bool {
+        uuidString.allSatisfy() { char in
+            return char == "0" || char == "-"
+        }
+    }
+    
+}
+
 public final class ImageStore {
     typealias _ImageDictionary = [String: CGImage]
     fileprivate var images: _ImageDictionary = [:]
