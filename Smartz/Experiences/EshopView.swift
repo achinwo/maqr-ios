@@ -395,7 +395,16 @@ struct CartCheckoutView: JoliView {
     }
     
     var hostelsView: some View {
-        Group(){
+        
+        let foreachView = ForEach(0 ..< 50, id: \.self) { number in
+            Text(number == .zero ? "Select Room" : "Room \(number.description)")
+                //                            .`if`(number == .zero){ view in
+                //                                return view.fontWeight(.italic)
+                //                            }
+                .tag(number == .zero ? nil : Optional(number))
+        }
+        
+        return Group(){
             Picker("Hostel", selection: self.$selectedHostel) {
                 ForEach(Array(hostelNames.enumerated()), id: \.offset){ item in
                     Text(item.element)
@@ -403,13 +412,14 @@ struct CartCheckoutView: JoliView {
                 }
             }
             
-            Picker("Room No.", selection: $selectedRoomNum) {
-                ForEach(1 ..< 50) { number in
-                    Text("Room \(number.description)")
-                        .tag(Optional(number))
+            HStack(){
+                Text("Room No.")//.font(.headline)
+                Spacer()
+                Picker("Room No.", selection: $selectedRoomNum) {
+                    foreachView
                 }
+                .pickerStyle(MenuPickerStyle())
             }
-            .pickerStyle(WheelPickerStyle())
         }
         
     }
@@ -548,7 +558,7 @@ struct CartCheckoutView: JoliView {
             }
             
             Button(){
-                print("subscribe for notifciation!")
+                print("New room choice: \(self.selectedRoomNum)")
             } label: {
                 HStack(){
                     Spacer()
