@@ -857,6 +857,7 @@ public struct AppStorageKey: Hashable, Equatable, RawRepresentable, @unchecked S
     public static let location: AppStorageKey = .init("location")
     public static let isTcAccepted: AppStorageKey = .init("terms_and_conditions_agreed")
     public static let purchasesIdsForTesting: AppStorageKey = .init("testing_purchases")
+    public static let expMealprepRating: AppStorageKey = .init("experience.mealguide.user_rating")
     
 }
 
@@ -875,6 +876,10 @@ public extension AppStorage {
     }
     
     init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value: RawRepresentable, Value.RawValue == Int {
+        self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
+    }
+    
+    init(wrappedValue: Value, key: AppStorageKey, store: UserDefaults? = nil) where Value == Int {
         self.init(wrappedValue: wrappedValue, key.rawValue, store: store)
     }
     

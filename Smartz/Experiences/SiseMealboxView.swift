@@ -80,11 +80,23 @@ public struct MealboxView: Experience, JoliView {
     @EnvironmentObject public var appCoordinator: AppCoordinator
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
+    @State var userRating: Int = .zero
+    @AppStorage(key: AppStorageKey.expMealprepRating) var userRatingStored: Int = .zero
+    
     public init(_ data: ExperienceData? = nil) {
         self._editMode = State(initialValue: .inactive)
         self.startDate = Date(timeIntervalSinceNow: 0)
         self._deliveryDate = State(initialValue: startDate)
         self._dataModel = State(initialValue: data)
+        
+        self._requestRatingAt = State(initialValue: steps.count > 4 ? Int(Double(steps.count) * 0.7) : nil)
+        
+//        #if DEBUG
+//        self.userRatingStored = .zero
+//        #endif
+        
+        print("User rating: \(self.userRatingStored)")
+        self._userRating = State(initialValue: self.userRatingStored)
     }
     
     enum Tab: Int, Identifiable, CaseIterable {
@@ -152,6 +164,42 @@ public struct MealboxView: Experience, JoliView {
     let startDate: Date
     @State var completed = false
     @State var helpText: String = .empty
+    
+    var userRatingView: some View {
+        
+        VStack(){
+            Text("How is our digital experience so far?")
+                .font(.headline.weight(.light))
+                .padding(.top)
+            Divider()
+                .padding(.horizontal)
+            RatingView(rating: self.$userRating)
+                .padding()
+            
+            if self.userRating > .zero {
+                Button(){
+                    self.userRatingStored = self.userRating
+                    self.isRatingVisible = false
+                    
+                    guard let uuid = dataModel?.uuid, let deviceUid = resolveAppInfo().uuid else { return }
+                    
+                    Task() {
+                        let userRating = try await api.submitRating(self.userRatingStored, tag: "\(Self.basePath)/\(uuid)", deviceUid: deviceUid)
+                        
+                        print("posted rating for: \(userRating)")
+                    }
+                } label: {
+                    Text("Submit Feedback")
+                }
+                .padding(.bottom)
+            }
+        }
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondarySystemBackground))
+        .padding()
+        
+    }
+    
+    @State var requestRatingAt: Int?
     
     var helpView: some View {
         ScrollView(showsIndicators: false){
@@ -496,6 +544,12 @@ public struct MealboxView: Experience, JoliView {
                 withImpact(feeback, animated: .easeInOut){
                     self.autoResetting.send(itm.offset)
                     
+                    if let reqIndex = self.requestRatingAt, reqIndex == itm.offset, self.lastStepId == reqIndex {
+                        isRatingVisible = userRating == .zero
+                    } else {
+                        isRatingVisible = false
+                    }
+                    
                     guard self.lastStepId == steps.count - 1 else { return }
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3){
@@ -583,10 +637,56 @@ public struct MealboxView: Experience, JoliView {
                 }
                 
             }
+            .opacity(self.isRatingVisible ? 0.5 : 1.0)
             .padding([.bottom, .horizontal])
             .onTapGesture(perform: onCheck)
+            
+            if let reqIndex = self.requestRatingAt, reqIndex == itm.offset, self.lastStepId == reqIndex, isRatingVisible {
+                self.userRatingView
+                    .padding(.bottom)
+            }
         }
     }
+    
+    struct RatingView: View {
+        @Binding var rating: Int
+        
+        var label = ""
+        var maximumRating = 5
+        
+        var offImage: Image?
+        var onImage = Image(systemName: "star.fill")
+        
+        var offColor = Color.gray
+        var onColor = Color.yellow
+        
+        var body: some View {
+            HStack {
+                if label.isEmpty == false {
+                    Text(label)
+                }
+                
+                ForEach(1..<maximumRating + 1, id: \.self) { number in
+                    image(for: number)
+                        .foregroundColor(number > rating ? offColor : onColor)
+                        .onTapGesture {
+                            rating = number
+                        }
+                }
+            }
+        }
+        
+        func image(for number: Int) -> Image {
+            if number > rating {
+                return offImage ?? onImage
+            } else {
+                return onImage
+            }
+        }
+    }
+
+    
+    @State var isRatingVisible: Bool = false
     
     var galleryView: some View {
         
