@@ -266,6 +266,12 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience", default = ""Describe \nyour brand \nexperience""
     @Published var landingPageText: MultilineString
     
+    // sourcery: title = "All to action", description = "Label for action button", default = ""See our products""
+    @Published var callToActionLabel: String?
+    
+    // sourcery: title = "All to action icon", description = "Icon for action button", default = ""bag.fill""
+    @Published var callToActionIconName: String?
+    
     // sourcery: title = "Product Name", description = "Brand product name", default = ""Your Product""
     @Published var productName: String?
     
@@ -283,6 +289,15 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     // sourcery: title = "TikTok", description = "TikTok username", default = ""smartstikr""
     @Published var socialTiktokUsername: String?
+    
+    // sourcery: title = "Twitter", description = "Twitter handle", default = ""arranowanna""
+    @Published var socialTwitterUsername: String?
+    
+    // sourcery: title = "Website", description = "Website URL", default = "URL(staticString: "https://maqr.co")"
+    @Published var websiteUrl: URL?
+    
+     // sourcery: title = "Website Name", description = "Website display name", default = ""maqr.co""
+    @Published var websiteLabel: String?
     
     // sourcery: title = "Release Date", description = "Product release date", default = "Date().advanced(by: 604800)"
     @Published var releaseDate: Date?
@@ -347,6 +362,12 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         res.socialFacebookPage = experienceData.socialFacebookPage
         res.socialTiktokUsername = experienceData.socialTiktokUsername
         
+        res.websiteUrl = URL.fromString(experienceData.websiteUrl)
+        res.websiteLabel = experienceData.websiteLabel
+        res.socialTwitterUsername = experienceData.socialTwitterUsername
+        res.callToActionLabel = experienceData.callToActionLabel
+        res.callToActionIconName = experienceData.callToActionIconName
+        
         res.releaseDate = experienceData.releaseDate
         res.releasePlatformName = experienceData.releasePlatformName
         res.releasePlatformLogoUrl = URL.fromString(experienceData.releasePlatformLogoUrl)
@@ -397,12 +418,17 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         brandName = try container.decode(String.self, forKey: .brandName)
         brandContactEmail = try container.decode(String?.self, forKey: .brandContactEmail)
         landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
+        callToActionLabel = try container.decode(String?.self, forKey: .callToActionLabel)
+        callToActionIconName = try container.decode(String?.self, forKey: .callToActionIconName)
         productName = try container.decode(String?.self, forKey: .productName)
         productDescription = try container.decode(MultilineString?.self, forKey: .productDescription)
         socialInstagramUsername = try container.decode(String?.self, forKey: .socialInstagramUsername)
         socialInstagramTag = try container.decode(String?.self, forKey: .socialInstagramTag)
         socialFacebookPage = try container.decode(String?.self, forKey: .socialFacebookPage)
         socialTiktokUsername = try container.decode(String?.self, forKey: .socialTiktokUsername)
+        socialTwitterUsername = try container.decode(String?.self, forKey: .socialTwitterUsername)
+        websiteUrl = try container.decode(URL?.self, forKey: .websiteUrl)
+        websiteLabel = try container.decode(String?.self, forKey: .websiteLabel)
         releaseDate = try container.decode(Date?.self, forKey: .releaseDate)
         releasePlatformName = try container.decode(String?.self, forKey: .releasePlatformName)
         releasePlatformLogoUrl = try container.decode(URL?.self, forKey: .releasePlatformLogoUrl)

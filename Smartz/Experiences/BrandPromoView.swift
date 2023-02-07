@@ -260,9 +260,9 @@ public struct BrandPromoView: Experience, JoliView {
                                 }
                             } label: {
                                 Label(){
-                                    Text(productItems.isEmpty ? " Meet The Cast" : " See Our Products")
+                                    Text(dataModel?.callToActionLabel ?? (productItems.isEmpty ? " Meet The Cast" : " See Our Products"))
                                 } icon: {
-                                    Image(systemName: productItems.isEmpty ? "rectangle.stack.person.crop" : "bag.fill")
+                                    Image(systemName: dataModel?.callToActionIconName ?? (productItems.isEmpty ? "rectangle.stack.person.crop" : "bag.fill"))
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .foregroundColor(dataModel?.brandColorAccent ?? Color.yellow)
@@ -301,14 +301,40 @@ public struct BrandPromoView: Experience, JoliView {
                             .padding(.bottom)
                         }
                         
-                        Link(destination: URL(social: .instagramUser(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername))) {
-                            VStack(){
-                                Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
-                                Text("Follow us").font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
-                                Text("@\(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername)").font(.body.weight(.semibold)).foregroundColor(.primary)
+                        HStack(spacing: Sizing.large){
+                            Link(destination: URL(social: .twitterUser(dataModel?.socialTwitterUsername ?? dataModelDefault.socialTwitterUsername))) {
+                                VStack(){
+                                    Image("logo_twitter")
+                                        .resizable()
+                                        .frame(width: screenWidth / 6, height: screenWidth / 6)
+                                    Text("Tweet us").font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
+                                    Text("@\(dataModel?.socialTwitterUsername ?? dataModelDefault.socialTwitterUsername)")
+                                        .font(.body.weight(.semibold))
+                                        .foregroundColor(.primary)
+                                }
+                            }
+                            
+                            Link(destination: URL(social: .instagramUser(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername))) {
+                                VStack(){
+                                    Image("instagram_logo").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                                    Text("Follow us").font(.callout.weight(.light)).foregroundColor(.secondaryLabel)
+                                    Text("@\(dataModel?.socialInstagramUsername ?? dataModelDefault.socialInstagramUsername)").font(.body.weight(.semibold))
+                                        .foregroundColor(.primary)
+                                }
                             }
                         }
                         .padding(.bottom)
+                        
+                        if let webUrl = dataModel?.websiteUrl {
+                            Link(destination: webUrl) {
+                                VStack(){
+                                    Image(systemName: "globe").resizable().frame(width: screenWidth / 6, height: screenWidth / 6)
+                                    Text(dataModel?.websiteLabel ?? webUrl.absoluteString)
+                                        .font(.body.weight(.semibold))
+                                        .foregroundColor(.primary)
+                                }
+                            }
+                        }
                         
                     }
                     .padding(.bottom)

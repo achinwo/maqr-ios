@@ -290,6 +290,8 @@
 		92A9A34327E652EA0008FE32 /* InventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A9A34027E652D70008FE32 /* InventoryView.swift */; };
 		92ACFCAB278BB33D000B5AFC /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = 92ACFCAA278BB33D000B5AFC /* SpotifyiOS */; };
 		92ACFCAD278BB34D000B5AFC /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = 92ACFCAC278BB34D000B5AFC /* SpotifyiOS */; };
+		92B7DDA1298572C70032FE2B /* AvenirNextLTPro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 92B7DDA0298572C60032FE2B /* AvenirNextLTPro-Regular.otf */; };
+		92B7DDA2298572C70032FE2B /* AvenirNextLTPro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 92B7DDA0298572C60032FE2B /* AvenirNextLTPro-Regular.otf */; };
 		92BD11CE24CB0BCB00AAB7DE /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC324C79C06007C960E /* ImagePicker.swift */; };
 		92BD11CF24CB0BCF00AAB7DE /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DD424C79C07007C960E /* ImageView.swift */; };
 		92BD11D024CB0BD200AAB7DE /* PeopleGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A32DC424C79C06007C960E /* PeopleGridView.swift */; };
@@ -626,6 +628,7 @@
 		92A32E3024CA22FA007C960E /* Publishers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Publishers.swift; sourceTree = "<group>"; };
 		92A7120C24D85EC500AD6729 /* NetworkImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageView.swift; sourceTree = "<group>"; };
 		92A9A34027E652D70008FE32 /* InventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryView.swift; sourceTree = "<group>"; };
+		92B7DDA0298572C60032FE2B /* AvenirNextLTPro-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AvenirNextLTPro-Regular.otf"; sourceTree = "<group>"; };
 		92C1A24D26626D5B00A11E0F /* Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playback.swift; sourceTree = "<group>"; };
 		92C32A68288D57DE00CFC21E /* PlayroomCreateView.stub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayroomCreateView.stub.swift; sourceTree = "<group>"; };
 		92C32A6A288D5A4600CFC21E /* AppLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLocation.swift; sourceTree = "<group>"; };
@@ -957,6 +960,7 @@
 		92A32D8D24C79B3D007C960E /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				92B7DDA0298572C60032FE2B /* AvenirNextLTPro-Regular.otf */,
 				92A32D9424C79B3D007C960E /* Assets.xcassets */,
 				92A32D8F24C79B3D007C960E /* Development */,
 				92A32D9924C79B3D007C960E /* Localizable.strings */,
@@ -1523,6 +1527,7 @@
 				92F1D5FB2708CF7A00D0743B /* Configuration.storekit in Resources */,
 				921F6C3926BE9DF80061D236 /* Preview Assets.xcassets in Resources */,
 				9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */,
+				92B7DDA1298572C70032FE2B /* AvenirNextLTPro-Regular.otf in Resources */,
 				92562E2E266C003D004972E6 /* Assets.xcassets in Resources */,
 				92C1A24B26626BF800A11E0F /* env.json in Resources */,
 				921CAFAC26B5F4F10078A394 /* YTPlayer.html in Resources */,
@@ -1536,6 +1541,7 @@
 				920264DD26924653005643E1 /* joey_sherway_data.json in Resources */,
 				921CAFAD26B5F4F10078A394 /* YTPlayer.html in Resources */,
 				9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */,
+				92B7DDA2298572C70032FE2B /* AvenirNextLTPro-Regular.otf in Resources */,
 				92C1A24C26626BF900A11E0F /* env.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2054,7 +2060,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2065,7 +2071,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.36;
+				MARKETING_VERSION = 1.37;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_INSTALL_OBJC_HEADER = NO;
@@ -2082,7 +2088,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Smartz/Smartz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"Smartz/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2092,7 +2098,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.36;
+				MARKETING_VERSION = 1.37;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_INSTALL_OBJC_HEADER = NO;
@@ -2108,7 +2114,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
@@ -2119,7 +2125,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.36;
+				MARKETING_VERSION = 1.37;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG APPCLIP";
@@ -2136,7 +2142,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = SmartzClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"SmartzClip/Preview Content\"";
 				DEVELOPMENT_TEAM = 2L26ZMA265;
 				ENABLE_PREVIEWS = YES;
@@ -2146,7 +2152,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.36;
+				MARKETING_VERSION = 1.37;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APPCLIP;

@@ -15,6 +15,8 @@ import JoliCore
 import os
 import MessageUI
 import AuthenticationServices
+import UserNotifications
+
 
 @main
 struct SmartzApp: AppClip, AppAuthentication {
@@ -185,6 +187,7 @@ struct SmartzApp: AppClip, AppAuthentication {
         }
         
         return ContentView(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController, trialInfo: $trialData)
+            //.font(.custom("AvenirLTStd-Roman", size: 46))
             .overlay(
                 GeometryReader(){ proxy in
                     //let isVisible = trialData != nil || ![AppLocation.home, AppLocation.unset].contains(currentLocation)
@@ -223,6 +226,68 @@ struct SmartzApp: AppClip, AppAuthentication {
             }
             .onAppear() {
                 
+//                let accept = UNNotificationAction(
+//                    identifier: ActionIdentifier.accept.rawValue,
+//                    title: "A. 33")
+//
+//                let reject = UNNotificationAction(
+//                    identifier: ActionIdentifier.reject.rawValue,
+//                    title: "B. 136")
+//
+//                let neutral = UNNotificationAction(
+//                    identifier: ActionIdentifier.neutral.rawValue,
+//                    title: "C. 9")
+//
+//                let plus = UNNotificationAction(
+//                    identifier: ActionIdentifier.plus.rawValue,
+//                    title: "D. 685")
+//
+//                let howManyGlassesInputAction =  UNTextInputNotificationAction(
+//                    identifier: "drinkingReminder.howManyGlassesInputAction",
+//                    //title: "How many glasses of water did you drink?",
+//                    title: "How do you spell \"Squirrel\" in french?",
+//                    options: [],
+//                    textInputButtonTitle: "SUBMIT",
+//                    textInputPlaceholder: "Enter french spelling")
+//
+//                let category = UNNotificationCategory(
+//                    identifier: categoryIdentifier,
+//                    actions: [
+////                        accept,
+////                        reject,
+////                        neutral,
+////                        plus,
+//                        howManyGlassesInputAction
+//                    ],
+//                    intentIdentifiers: [])
+//
+//                UNUserNotificationCenter.current()
+//                    .setNotificationCategories([category])
+//
+//                let content = UNMutableNotificationContent()
+////                content.title = "French Lessons: Translate Below"
+////                content.subtitle = "il est très heureux dans son travail"
+//
+////                content.title = "Maths Lessons: Challenge #16"
+////                content.subtitle = "Take out the wrong number from the given series; 3, 4, 9, 33, 136, 685, 4116"
+//
+//                content.title = "French Lessons: Challenge #45"
+//                content.subtitle = "How do you spell \"Squirrel\" in french?"
+//
+//                content.sound = UNNotificationSound.default
+//                content.categoryIdentifier = self.categoryIdentifier
+//
+//                    // show this notification five seconds from now
+//                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+//
+//                    // choose a random identifier
+//                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+//
+//                    // add our notification request
+//                UNUserNotificationCenter.current().add(request)
+//
+//                print("££££££££ Notification scheduled")
+                
                 guard let currentAuth = self.auths.first else {
                     return
                 }
@@ -257,6 +322,12 @@ struct SmartzApp: AppClip, AppAuthentication {
                 
             }
     }
+    
+//    private let categoryIdentifier = "AcceptOrReject"
+//
+//    private enum ActionIdentifier: String {
+//        case accept, reject, neutral, plus
+//    }
     
     func signOut(_ auth: Auth) -> Void {
         let newAuths = self.auths.filter() { $0.session.token != auth.session.token}
