@@ -253,10 +253,10 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/bg_light.jpg")"
     @Published var backgroundImageUrl: URL?
     
-    // sourcery: title = "Primary Background Color", description = "Default background image for your brand", default = "Color(hex: "#09203f")"
+    // sourcery: title = "Primary Background Color", description = "Default primary background color for your brand", default = "Color(hex: "#09203f")"
     @Published var backgroundColor1: Color?
     
-    // sourcery: title = "Secondary Background Color", description = "Default background image for your brand", default = "Color(hex: "#537895")"
+    // sourcery: title = "Secondary Background Color", description = "Default secondary background color for your brand", default = "Color(hex: "#537895")"
     @Published var backgroundColor2: Color?
     
     // sourcery: title = "Product Image", description = "Your product image", mediaType = "image"

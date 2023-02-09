@@ -19,7 +19,7 @@ import AuthenticationServices
 import KeychainAccess
 import JoliCore
 
-public final class SignInWithApple: UIViewRepresentable {
+public struct SignInWithApple: UIViewRepresentable {
     
     public init() {}
     
