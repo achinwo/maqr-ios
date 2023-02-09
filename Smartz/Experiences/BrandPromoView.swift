@@ -346,18 +346,28 @@ public struct BrandPromoView: Experience, JoliView {
                 .padding(.bottom, max(100, safeAreaInsets.bottom))
                 //.padding(.top, safeAreaInsets.top)
             }
-            .background(
-                NetworkImage(url: dataModel?.backgroundImageUrl ?? dataModelDefault.backgroundImageUrl){
-                    Image("bg_white")
-                        .resizable()
-                }
-                .aspectRatio(contentMode: .fill)
-            )
+            .background(self.backgroundView.aspectRatio(contentMode: .fill))
             .onAppear(){
                 let url = dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl
                 
                 if self.youtube.videoId != .url(url) {
                     self.youtube = YouTubeControlState(.url(url))
+                }
+            }
+        }
+    }
+    
+    public var backgroundView: some View {
+        //LinearGradient(gradient: Gradient(colors: [Color(hex: "#09203f"), Color(hex: "#537895")]), startPoint: .topLeading, endPoint: .bottomTrailing)
+        return Group() {
+            if let color1 = dataModel?.backgroundColor1, let color2 = dataModel?.backgroundColor2 {
+                LinearGradient(gradient: Gradient(colors: [color1, color2]), startPoint: .topLeading, endPoint: .bottomTrailing)
+            } else if let color1 = dataModel?.backgroundColor1 {
+                color1
+            } else {
+                NetworkImage(url: dataModel?.backgroundImageUrl ?? dataModelDefault.backgroundImageUrl){
+                    Image("bg_white")
+                        .resizable()
                 }
             }
         }

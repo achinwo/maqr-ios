@@ -562,7 +562,7 @@ public struct MealboxView: Experience, JoliView {
                         }
                     }
                     
-                    self.presentToast("All done!", subTitle: "Enoy your meal", type: .image("confetti", .clear), displayMode: .alert) { _ in }
+                    self.presentToast("All done!", subTitle: "Enjoy your meal", type: .image("confetti", .clear), displayMode: .alert) { _ in }
                 }
                 
             }

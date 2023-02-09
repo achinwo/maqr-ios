@@ -253,6 +253,12 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/bg_light.jpg")"
     @Published var backgroundImageUrl: URL?
     
+    // sourcery: title = "Primary Background Color", description = "Default background image for your brand", default = "Color(hex: "#09203f")"
+    @Published var backgroundColor1: Color?
+    
+    // sourcery: title = "Secondary Background Color", description = "Default background image for your brand", default = "Color(hex: "#537895")"
+    @Published var backgroundColor2: Color?
+    
     // sourcery: title = "Product Image", description = "Your product image", mediaType = "image"
     // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/devialet_phantom.png")"
     @Published var productImageUrl: URL?
@@ -377,6 +383,14 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         res.brandColorSecondary = Color.init(hex: experienceData.brandColorSecondary ?? res.brandColorSecondary.hexString)
         res.brandColorAccent = Color.init(hex: experienceData.brandColorAccent ?? res.brandColorAccent.hexString)
         
+        if let color1 = experienceData.backgroundColor1 {
+            res.backgroundColor1 = Color.init(hex: color1)
+        }
+        
+        if let color2 = experienceData.backgroundColor2 {
+            res.backgroundColor2 = Color.init(hex: color2)
+        }
+        
         res.stored = experienceData
         
         guard let items = experienceData.items else {
@@ -414,6 +428,8 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         bannerImageUrl = try container.decode(URL?.self, forKey: .bannerImageUrl)
         bannerVideoUrl = try container.decode(URL?.self, forKey: .bannerVideoUrl)
         backgroundImageUrl = try container.decode(URL?.self, forKey: .backgroundImageUrl)
+        backgroundColor1 = try container.decode(Color?.self, forKey: .backgroundColor1)
+        backgroundColor2 = try container.decode(Color?.self, forKey: .backgroundColor2)
         productImageUrl = try container.decode(URL?.self, forKey: .productImageUrl)
         brandName = try container.decode(String.self, forKey: .brandName)
         brandContactEmail = try container.decode(String?.self, forKey: .brandContactEmail)

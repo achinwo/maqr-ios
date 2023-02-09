@@ -512,7 +512,7 @@ public class YouTubeControlState: ObservableObject {
     }
 }
 
-final class YouTubeView: UIViewRepresentable {
+struct YouTubeView: UIViewRepresentable {
     
     typealias UIViewType = YouTubePlayerView
     
