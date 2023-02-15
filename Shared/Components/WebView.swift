@@ -9,13 +9,28 @@
 import SwiftUI
 import WebKit
 
-public final class WebViewWrapper: NSObject, UIViewRepresentable {
+public struct WebViewWrapper: UIViewRepresentable {
   
     @ObservedObject public var webViewStateModel: WebViewStateModel //action two way binding
     let action: ((_ navigationAction: WebView.NavigationAction) -> Void)? //delegates callback
     
     public let request: URLRequest
     public static var SCRIPT_HANDLER_MESSAGE = "mobileMessageHandler"
+    
+    private final class UserContentController: NSObject, WKScriptMessageHandler {
+        
+        public typealias Callback = (WKUserContentController, WKScriptMessage) -> Void
+        let callback: Callback
+        
+        public init(_ callback: @escaping Callback) {
+            self.callback = callback
+        }
+        
+        public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            self.callback(userContentController, message)
+        }
+        
+    }
       
     public init(webViewStateModel: WebViewStateModel,
     action: ((_ navigationAction: WebView.NavigationAction) -> Void)?,
@@ -27,10 +42,26 @@ public final class WebViewWrapper: NSObject, UIViewRepresentable {
     
     public func makeUIView(context: Context) -> WKWebView  {
         let view = WKWebView()
-        view.configuration.userContentController.add(self, name: Self.SCRIPT_HANDLER_MESSAGE)
+        
+        let controller = UserContentController() { (userContentController: WKUserContentController, message: WKScriptMessage) in
+            guard message.name == Self.SCRIPT_HANDLER_MESSAGE else {
+                print("[WebViewWrapper#userContentController] unrecognised message name: \(message.name)")
+                return
+            }
+            
+            webViewStateModel.onJsScriptMessage(userContentController, message)
+        }
+        
+        view.configuration.userContentController.add(controller, name: Self.SCRIPT_HANDLER_MESSAGE)
         
         view.navigationDelegate = context.coordinator
-        view.load(request)
+        
+//        DispatchQueue.global(qos: .userInitiated).async {
+//            view.load(request)
+//        }
+        DispatchQueue.main.async {
+            view.load(request)
+        }
         
         #if !os(macOS)
         view.scrollView.contentInsetAdjustmentBehavior = .never
@@ -51,12 +82,23 @@ public final class WebViewWrapper: NSObject, UIViewRepresentable {
     }
     
     public final class Coordinator: NSObject {
+        
         @ObservedObject var webViewStateModel: WebViewStateModel
         let action: ((_ navigationAction: WebView.NavigationAction) -> Void)?
         
         public init(action: ((_ navigationAction: WebView.NavigationAction) -> Void)?,
              webViewStateModel: WebViewStateModel) {
-            self.action = action
+            
+            if let action {
+                self.action = { (navigationAction: WebView.NavigationAction) in
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        action(navigationAction)
+                    }
+                }
+            } else {
+                self.action = nil
+            }
+            
             self.webViewStateModel = webViewStateModel
         }
         
@@ -71,20 +113,6 @@ extension WebViewWrapper {
     
     public func updateNSView(_ nsView: WKWebView, context: Context) {
         self.updateUIView(nsView, context: context)
-    }
-    
-}
-
-extension WebViewWrapper: WKScriptMessageHandler {
-    
-    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        
-        guard message.name == Self.SCRIPT_HANDLER_MESSAGE else {
-            print("[WebViewWrapper#userContentController] unrecognised message name: \(message.name)")
-            return
-        }
-        
-        webViewStateModel.onJsScriptMessage(userContentController, message)
     }
     
 }
@@ -215,7 +243,10 @@ public final class WebViewStateModel: ObservableObject {
         
         guard edgeInsets != self.edgeInsets else { return self }
         
-        self.edgeInsets = edgeInsets
+        DispatchQueue.main.async {
+            self.edgeInsets = edgeInsets
+        }
+        
         return self
     }
     
