@@ -55,7 +55,7 @@ public struct ExperienceDataView: JoliView {
     
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
-    let experienceType: Experience.Type?
+    let experienceType: (any Experience.Type)?
     let completionCallback: (ExperienceData) -> Void
     
     init(_ data: ExperienceData, callback: @escaping (ExperienceData) -> Void) {

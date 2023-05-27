@@ -28,8 +28,18 @@ public enum EditingState: Hashable, Equatable {
 public typealias EditingState = EditMode
 #endif
 
+public protocol ExperinceOptions: Codable {
+    
+}
+
+public struct EmptyExperinceOptions: ExperinceOptions {
+    
+}
+
 public protocol Experience {
     //associatedtype Model: ExperienceData
+    associatedtype Options: ExperinceOptions = EmptyExperinceOptions
+    
     var dataModel: ExperienceData? { get nonmutating set }
     var dataModelDefault: ExperienceData.Defaults { get }
     
@@ -66,7 +76,7 @@ public enum Experiences: RawRepresentable, CaseIterable {
     case weddingEvent
     case eshop
     
-    public init?(rawValue: Experience.Type) {
+    public init?(rawValue: any Experience.Type) {
         switch rawValue {
             case is MealboxView.Type:
                 self = .recipe
@@ -104,7 +114,7 @@ public enum Experiences: RawRepresentable, CaseIterable {
         return nil
     }
     
-    public var rawValue: Experience.Type {
+    public var rawValue: any Experience.Type {
         switch self {
             case .recipe:
                 return MealboxView.self
@@ -155,7 +165,7 @@ extension Experiences {
 
 extension StikrExperienceData {
     
-    var type: Experience.Type? {
+    var type: (any Experience.Type)? {
         return typeInfo?.rawValue
     }
     

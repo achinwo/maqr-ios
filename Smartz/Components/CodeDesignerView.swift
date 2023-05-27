@@ -44,7 +44,7 @@ public struct CodeDesignerView: JoliView {
     
     @AppStorage(key: .experienceDataCache) public var storedData: Data = .empty
     
-    @State var selectedExperience: Experience.Type? = nil {
+    @State var selectedExperience: (any Experience.Type)? = nil {
         didSet {
             
             guard selectedExperience != nil else { return }
@@ -273,7 +273,7 @@ public struct CodeDesignerView: JoliView {
         self.experienceData = ExperienceData(exp, brandName: brandName, landingPageText: landingPageText)
     }
     
-    func customiseExperienceView(_ experienceClass: Experience.Type) -> some View {
+    func customiseExperienceView(_ experienceClass: any Experience.Type) -> some View {
         VStack(){
             if let experienceData = self.experienceData {
                 ExperienceDataView(experienceData) { data in
@@ -293,7 +293,7 @@ public struct CodeDesignerView: JoliView {
         }
     }
     
-    func brandDataView(_ experienceClass: Experience.Type) -> some View {
+    func brandDataView(_ experienceClass: any Experience.Type) -> some View {
         VStack(){
             Text("What's Your Brand Name?")
                 .font(.title.weight(.light))

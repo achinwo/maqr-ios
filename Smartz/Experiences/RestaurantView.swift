@@ -621,7 +621,7 @@ struct RestaurantMenuView: View {
                     .padding(.top, safeAreaInsets.top)
                 ForEach(menu.drinks, id: \.id) { drinkGroup in
                     
-                    if let drinks = drinkGroup.items.filter() { $0.category == category }, !drinks.isEmpty {
+                    if let drinks = drinkGroup.items.filter({ $0.category == category }) as? [RestaurantDrink], !drinks.isEmpty {
                         
                         if let url = drinkGroup.imageUrl {
                             NetworkImage(url: url){

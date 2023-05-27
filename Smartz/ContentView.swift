@@ -52,7 +52,7 @@ public struct ProductOffering: Identifiable {
     public let companyLogoName: String?
     public let companyDescription: String
     public let isComingSoon: Bool
-    public let experienceCls: Experience.Type
+    public let experienceCls: any Experience.Type
     public var iconName: String? = nil
     
     public var id: String { name }

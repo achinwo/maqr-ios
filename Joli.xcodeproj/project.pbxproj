@@ -170,7 +170,6 @@
 		9274A81424CDB41500B45EDF /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
 		9274A81524CDB41500B45EDF /* JoliPlayground.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9278E2FA278A073D00868722 /* Version in Frameworks */ = {isa = PBXBuildFile; productRef = 9278E2F9278A073D00868722 /* Version */; };
-		9278E2FD278A076600868722 /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = 9278E2FC278A076600868722 /* Starscream */; };
 		927914E4276F926A0043F995 /* SharedMacOS.docc in Sources */ = {isa = PBXBuildFile; fileRef = 927914E3276F926A0043F995 /* SharedMacOS.docc */; };
 		927914E5276F926A0043F995 /* SharedMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 927914E2276F926A0043F995 /* SharedMacOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		927914F0276F929F0043F995 /* Exporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927914EF276F929F0043F995 /* Exporter.swift */; };
@@ -750,7 +749,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9278E2FD278A076600868722 /* Starscream in Frameworks */,
 				9249A9642809867E00A5F7F6 /* MultipartFormData in Frameworks */,
 				92CC32B026E55B6200178465 /* JoliApi in Frameworks */,
 				924E96FC26E55DC100FF41E3 /* AlertToast in Frameworks */,
@@ -1412,7 +1410,6 @@
 				924E96FD26E55DD700FF41E3 /* PartialSheet */,
 				9280818427046B6F001120ED /* NetworkImage */,
 				9278E2F9278A073D00868722 /* Version */,
-				9278E2FC278A076600868722 /* Starscream */,
 				9249A9632809867E00A5F7F6 /* MultipartFormData */,
 				92950BED2837B1D300EF7504 /* AsyncCompatibilityKit */,
 			);
@@ -3149,11 +3146,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9278E2F8278A073D00868722 /* XCRemoteSwiftPackageReference "Version" */;
 			productName = Version;
-		};
-		9278E2FC278A076600868722 /* Starscream */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9278E2FB278A076600868722 /* XCRemoteSwiftPackageReference "Starscream" */;
-			productName = Starscream;
 		};
 		927A7AFE276FE28D007105CC /* AlertToast */ = {
 			isa = XCSwiftPackageProductDependency;
