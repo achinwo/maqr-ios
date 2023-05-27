@@ -239,7 +239,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     @Published var stored: PersistedType? = nil
     
     // sourcery: title = "Logo Image", description = "Your brand logo image", mediaType = "image"
-    // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/smartz_logo.png")"
+    // sourcery: default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/logo_maqr.jpg")"
     @Published var logoImageUrl: URL?
     
     // sourcery: title = "Banner Image", description = "Banner image of landing page", mediaType = "image"
@@ -327,6 +327,15 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Accent", description = "Accent brand color", default = ".primary"
     @Published var brandColorAccent: Color = .primary
     
+    // sourcery: title = "Card Title", description = "Brand title", default = ""maQR""
+    @Published var cardTitle: String?
+    
+    // sourcery: title = "Card Subtitle", description = "Card slogan", default = ""Engaging QR code experiences""
+    @Published var cardSubtitle: String?
+    
+    // sourcery: title = "Card Image", description = "App Clip image", default = "URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/banner_maQR.jpg")"
+    @Published var cardImageUrl: URL?
+    
     @Published var uuid: String? = nil
     
     var experienceTypeInfo: Experiences
@@ -382,6 +391,10 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         res.brandColorPrimary = Color.init(hex: experienceData.brandColorPrimary ?? res.brandColorPrimary.hexString)
         res.brandColorSecondary = Color.init(hex: experienceData.brandColorSecondary ?? res.brandColorSecondary.hexString)
         res.brandColorAccent = Color.init(hex: experienceData.brandColorAccent ?? res.brandColorAccent.hexString)
+        
+        res.cardTitle = experienceData.cardTitle
+        res.cardSubtitle = experienceData.cardSubtitle
+        res.cardImageUrl = URL.fromString(experienceData.cardImageUrl)
         
         if let color1 = experienceData.backgroundColor1 {
             res.backgroundColor1 = Color.init(hex: color1)
@@ -452,6 +465,9 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         brandColorPrimary = try container.decode(Color.self, forKey: .brandColorPrimary)
         brandColorSecondary = try container.decode(Color.self, forKey: .brandColorSecondary)
         brandColorAccent = try container.decode(Color.self, forKey: .brandColorAccent)
+        cardTitle = try container.decode(String?.self, forKey: .cardTitle)
+        cardSubtitle = try container.decode(String?.self, forKey: .cardSubtitle)
+        cardImageUrl = try container.decode(URL?.self, forKey: .cardImageUrl)
         items = try container.decode([ExperienceData.Item].self, forKey: .items)
     }
 // sourcery:end

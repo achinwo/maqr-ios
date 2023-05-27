@@ -11,7 +11,6 @@ import SharedUI
 import JoliCore
 import Combine
 import AlertToast
-import AsyncCompatibilityKit
 
 extension AppLocation {
     

@@ -13,7 +13,6 @@ import os
 import Foundation
 import JoliCore
 import JoliApi
-import AsyncCompatibilityKit
 
 extension Array where Element == ExperienceDataKeyPath.Metadata {
     

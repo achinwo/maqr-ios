@@ -203,7 +203,13 @@ struct RestaurantView: Experience, JoliView {
     
     @State var dataModel: ExperienceData?
     
-    let dataModelDefault = ExperienceData.Defaults(bannerVideoUrl: URL(staticString: "https://joeyrestaurants.com/assets/craftAssets/Joey-Restaurants-Welcome-Back-With-Audio.mp4"))
+    let dataModelDefault = ExperienceData.Defaults(logoImageUrl: URL(staticString: "https://storage.googleapis.com/joli-app-bucket/images/logo_joey_full_dark.png"),
+                                                   
+                                                   bannerVideoUrl: URL(staticString: "https://joeyrestaurants.com/assets/craftAssets/Joey-Restaurants-Welcome-Back-With-Audio.mp4"),
+                                                   brandName: "JOEY Sherway",
+                                                   cardTitle: "HELLO & WELCOME",
+                                                   cardSubtitle: "restaurant features a warm and modern industrial design and a seasonal rooftop patio in this popular Toronto neighbourhood gathering spot."
+    )
     
     @Environment(\.safeAreaInsets) var safeAreaInsets
     @Environment(\.colorScheme) var colorScheme
@@ -227,6 +233,7 @@ struct RestaurantView: Experience, JoliView {
     static var dataKeys: [PartialKeyPath<ExperienceData>] {
         let paths: [PartialKeyPath<ExperienceData>] = [
             \ExperienceData.socialInstagramUsername,
+             \ExperienceData.bannerImageUrl,
         ]
         
         return paths
@@ -237,30 +244,36 @@ struct RestaurantView: Experience, JoliView {
             ScrollView(showsIndicators: false){
                 VStack(spacing: .zero){
                     
-                    //VideoPlayer(player: joeyVideo)
-                    PlayerView(url: dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl)
-                        .frame(width: screenWidth, height: screenWidth / 1.6)
-                        .clipped()
-                        
-                        .background(
-                            BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight)
-                                .overlay(ProgressView().progressViewStyle(CircularProgressViewStyle()))
-                        )
+                    Group(){
+                        if let bannerImgUrl = self.dataModel?.bannerImageUrl {
+                            AsyncImage(url: bannerImgUrl)
+                        } else {
+                            PlayerView(url: dataModel?.bannerVideoUrl ?? dataModelDefault.bannerVideoUrl)
+                        }
+                    }
+                    .frame(width: screenWidth, height: screenWidth / 1.6)
+                    .clipped()
+                    .background(
+                        BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight)
+                            .overlay(ProgressView().progressViewStyle(CircularProgressViewStyle()))
+                    )
                     
-                    Image("logo_joey_full_black")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: screenWidth * 0.7)
-                        .padding()
-                        .padding(.vertical)
-                        //.offset(x: 0, y: -200)
-                        .id("brand")
-                    //
+                    AsyncImage(url: dataModel?.logoImageUrl ?? dataModelDefault.logoImageUrl) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: screenWidth * 0.7)
+                            .padding()
+                            .padding(.vertical)
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    .id("brand")
                     
                     VStack(){
-                        Section(header: Text("HELLO & WELCOME").font(.title3)) {
-                            (Text("JOEY Sherway ").font(.subheadline.weight(.semibold))
-                                + Text("restaurant features a warm and modern industrial design and a seasonal rooftop patio in this popular Toronto neighbourhood gathering spot.")
+                        Section(header: Text(dataModel?.cardTitle ?? dataModelDefault.cardTitle).font(.title3)) {
+                            (Text("\(dataModel?.brandName ?? dataModelDefault.brandName) ").font(.subheadline.weight(.semibold))
+                                + Text(dataModel?.cardSubtitle ?? dataModelDefault.cardSubtitle)
                                 .font(.body.weight(.light))
                             )
                             .padding(.bottom)
@@ -268,6 +281,19 @@ struct RestaurantView: Experience, JoliView {
                         }
                         
                         .padding()
+                        
+//                        Button("Save!") {
+//                            Task(){
+//                                do {
+//                                    let res = try await self.dataModel?.save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+//                                    print("Saved experience! \(String(describing: res)) --- \(String(describing: self.dataModel))")
+//                                } catch {
+//                                    print("Error saving experience! \(error)")
+//                                }
+//                            }
+//                        }
+//                        .padding()
+                        
                     }
                     .frame(width: screenWidth - 100)
                     .background(BlurView(colorScheme == .dark ? .systemUltraThinMaterialDark : .systemUltraThinMaterialLight))
@@ -277,41 +303,44 @@ struct RestaurantView: Experience, JoliView {
                     .id("body")
                     
                     VStack(){
-                        Text("How can we be of service?")
-                            .font(.title2.weight(.light))
+                        
+                        if dataModel == nil {
+                            Text("How can we be of service?")
+                                .font(.title2.weight(.light))
+                                .padding(.bottom)
+                            
+                            NavigationLink(destination: RestaurantWalkinView(menu: $menu, arrivedAt: $arrivedAt).navigationTitle(Text("Walk-In"))){
+                                Text("I'd like to walk in")
+                                    .font(.title3)
+                                    .foregroundColor(.label)
+                            }
+                            .frame(width: screenWidth - 100, height: 60)
+                            .background(Color.blue)
+                            .clipShape(RoundedRectangle(
+                                cornerRadius: 8,
+                                style: .continuous
+                            ))
+                                //.frame(width: screenWidth - 100, height: 60)
+                            .accentColor(.blue)
+                            .buttonStyle(OutlineButton())
                             .padding(.bottom)
-                        
-                        NavigationLink(destination: RestaurantWalkinView(menu: $menu, arrivedAt: $arrivedAt).navigationTitle(Text("Walk-In"))){
-                            Text("I'd like to walk in")
-                                .font(.title3)
-                                .foregroundColor(.label)
+                            
+                            NavigationLink(destination: RestaurantReservationView(menu: $menu).navigationTitle(Text("Reservation"))) {
+                                Text("I have a reservation")
+                                    .font(.title3)
+                                    .foregroundColor(.label)
+                            }
+                            .frame(width: screenWidth - 100, height: 60)
+                            .background(Color.green)
+                            .clipShape(RoundedRectangle(
+                                cornerRadius: 8,
+                                style: .continuous
+                            ))
+                                //.frame(width: screenWidth - 100, height: 60)
+                            .accentColor(.green)
+                            .buttonStyle(OutlineButton())
+                            .padding(.bottom)
                         }
-                        .frame(width: screenWidth - 100, height: 60)
-                        .background(Color.blue)
-                        .clipShape(RoundedRectangle(
-                            cornerRadius: 8,
-                            style: .continuous
-                        ))
-                        //.frame(width: screenWidth - 100, height: 60)
-                        .accentColor(.blue)
-                        .buttonStyle(OutlineButton())
-                        .padding(.bottom)
-                        
-                        NavigationLink(destination: RestaurantReservationView(menu: $menu).navigationTitle(Text("Reservation"))) {
-                            Text("I have a reservation")
-                                .font(.title3)
-                                .foregroundColor(.label)
-                        }
-                        .frame(width: screenWidth - 100, height: 60)
-                        .background(Color.green)
-                        .clipShape(RoundedRectangle(
-                            cornerRadius: 8,
-                            style: .continuous
-                        ))
-                        //.frame(width: screenWidth - 100, height: 60)
-                        .accentColor(.green)
-                        .buttonStyle(OutlineButton())
-                        .padding(.bottom)
                         
                         RestaurantMenuButtonView(menu: $menu)
                             .frame(width: screenWidth - 100, height: 60)

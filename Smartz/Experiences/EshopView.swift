@@ -12,7 +12,6 @@ import UserNotifications
 
 #if !os(macOS)
 import SharedUI
-import AsyncCompatibilityKit
 #endif
 
 struct DummyProduct: Codable {
