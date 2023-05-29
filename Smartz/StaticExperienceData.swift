@@ -97,6 +97,21 @@ public extension ExperienceData.Item {
                                    title: title)
     }
     
+    static func makeFookItem(_ title: String, description subtitle: String, imageName: String) -> Self {
+        return ExperienceData.Item(experienceItemType: .menuFoodItem,
+                                   aliasTitle: nil,
+                                   caution: nil,
+                                   defaultPrice: nil,
+                                   duration: nil,
+                                   imageName: imageName,
+                                   isOptional: nil,
+                                   itemGrouping: nil,
+                                   itemSubgrouping: nil,
+                                   spicy: nil,
+                                   subtitle: subtitle,
+                                   title: title)
+    }
+    
 }
 
 let hospitalPharmacy = ExperienceData.fromDefaults(ExperienceData.Defaults(), type: .inventory)

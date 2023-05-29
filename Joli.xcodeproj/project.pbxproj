@@ -327,6 +327,12 @@
 		92EDE3CE2619394000688802 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE3CD2619394000688802 /* SFSafeSymbols */; };
 		92EDE41226193AE000688802 /* PartialSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE41126193AE000688802 /* PartialSheet */; };
 		92EDE43A26193DFA00688802 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 92EDE43926193DFA00688802 /* KeychainAccess */; };
+		92EFA7162A23CF6900ED017D /* TabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EFA7152A23CF6900ED017D /* TabView.swift */; };
+		92EFA7172A23D02A00ED017D /* TabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EFA7152A23CF6900ED017D /* TabView.swift */; };
+		92EFA7192A23D40E00ED017D /* RestaurantView+Legacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EFA7182A23D40E00ED017D /* RestaurantView+Legacy.swift */; };
+		92EFA71A2A23D40E00ED017D /* RestaurantView+Legacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EFA7182A23D40E00ED017D /* RestaurantView+Legacy.swift */; };
+		92EFA71C2A23D84000ED017D /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EFA71B2A23D84000ED017D /* PlayerView.swift */; };
+		92EFA71D2A23D84000ED017D /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EFA71B2A23D84000ED017D /* PlayerView.swift */; };
 		92F1D5FB2708CF7A00D0743B /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 92F1D5FA2708CF7A00D0743B /* Configuration.storekit */; };
 		92F76DB4283AA06400747420 /* ExperienceDataItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F76DB3283AA06400747420 /* ExperienceDataItemView.swift */; };
 		92F8597225C791810057B3BC /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
@@ -635,6 +641,9 @@
 		92CC32A626E55B3200178465 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92DD6553267E6104007E22F0 /* RestaurantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestaurantView.swift; sourceTree = "<group>"; };
 		92ECCEDC26C0543F009A2B75 /* LiveExperiencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveExperiencesView.swift; sourceTree = "<group>"; };
+		92EFA7152A23CF6900ED017D /* TabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabView.swift; sourceTree = "<group>"; };
+		92EFA7182A23D40E00ED017D /* RestaurantView+Legacy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RestaurantView+Legacy.swift"; sourceTree = "<group>"; };
+		92EFA71B2A23D84000ED017D /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
 		92F1D5FA2708CF7A00D0743B /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		92F379F02363534F005FE2AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92F76DB3283AA06400747420 /* ExperienceDataItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceDataItemView.swift; sourceTree = "<group>"; };
@@ -848,6 +857,8 @@
 				9285148B27B8291600380CF7 /* AboutView.swift */,
 				9285148D27B83FDE00380CF7 /* HomeView.swift */,
 				92F76DB3283AA06400747420 /* ExperienceDataItemView.swift */,
+				92EFA7152A23CF6900ED017D /* TabView.swift */,
+				92EFA71B2A23D84000ED017D /* PlayerView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1058,6 +1069,7 @@
 				92A9A34027E652D70008FE32 /* InventoryView.swift */,
 				9249A95E2808E4DE00A5F7F6 /* WeddingEventView.swift */,
 				92FF151C287E190E0059B392 /* EshopView.swift */,
+				92EFA7182A23D40E00ED017D /* RestaurantView+Legacy.swift */,
 			);
 			path = Experiences;
 			sourceTree = "<group>";
@@ -1661,6 +1673,7 @@
 				929BF21C275D6B4600F850F7 /* DynamicExperienceView.swift in Sources */,
 				9285149027B9758C00380CF7 /* ReorderNowView.swift in Sources */,
 				921CAFA826B5F4730078A394 /* YouTubePlayer.swift in Sources */,
+				92EFA71C2A23D84000ED017D /* PlayerView.swift in Sources */,
 				92F76DB4283AA06400747420 /* ExperienceDataItemView.swift in Sources */,
 				9217905026C9832A009FC4CE /* VisualCodeDownloadView.swift in Sources */,
 				9228F86C26C07A310053DC04 /* ExperienceData.swift in Sources */,
@@ -1676,6 +1689,7 @@
 				9202D3D72659B6E700D5974F /* ContentView.swift in Sources */,
 				921CAFA326AEF2CB0078A394 /* ExperienceDataView.swift in Sources */,
 				928604A4270CA80D00ED2E68 /* ExperiencePurchaseView.swift in Sources */,
+				92EFA7162A23CF6900ED017D /* TabView.swift in Sources */,
 				921C300C2694B29400527D39 /* BrandPromoView.swift in Sources */,
 				92A9A34127E652D70008FE32 /* InventoryView.swift in Sources */,
 				921F6C3326BE8AE10061D236 /* StaticExperienceData.swift in Sources */,
@@ -1685,6 +1699,7 @@
 				92562E30266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				92FF151D287E190E0059B392 /* EshopView.swift in Sources */,
 				92DD6554267E6104007E22F0 /* RestaurantView.swift in Sources */,
+				92EFA7192A23D40E00ED017D /* RestaurantView+Legacy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1694,6 +1709,7 @@
 			files = (
 				921CAFA926B5F4730078A394 /* YouTubePlayer.swift in Sources */,
 				92C1A24F26626D5B00A11E0F /* Playback.swift in Sources */,
+				92EFA71A2A23D40E00ED017D /* RestaurantView+Legacy.swift in Sources */,
 				929BF21D275D6B4600F850F7 /* DynamicExperienceView.swift in Sources */,
 				9202D40A2659BC0B00D5974F /* SmartzClipApp.swift in Sources */,
 				92FF151E287E190E0059B392 /* EshopView.swift in Sources */,
@@ -1703,10 +1719,12 @@
 				920264CE268FB907005643E1 /* Experience.swift in Sources */,
 				92643786276FB56200E5F1B4 /* Experience+JoliView.swift in Sources */,
 				9249A968280C577100A5F7F6 /* WeddingEventView.swift in Sources */,
+				92EFA7172A23D02A00ED017D /* TabView.swift in Sources */,
 				92562E31266D3C38004972E6 /* SiseMealboxView.swift in Sources */,
 				921CAFA526B5ABC70078A394 /* Experiences.generated.swift in Sources */,
 				92A9A34327E652EA0008FE32 /* InventoryView.swift in Sources */,
 				921C300D2694B29400527D39 /* BrandPromoView.swift in Sources */,
+				92EFA71D2A23D84000ED017D /* PlayerView.swift in Sources */,
 				9228F86D26C07A310053DC04 /* ExperienceData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
