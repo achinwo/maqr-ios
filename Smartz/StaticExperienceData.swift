@@ -97,7 +97,7 @@ public extension ExperienceData.Item {
                                    title: title)
     }
     
-    static func makeFookItem(_ title: String, description subtitle: String, imageName: String) -> Self {
+    static func makeFookItem(_ title: String, description subtitle: String, imageName: String, grouping: String? = nil, subgrouping: String? = nil) -> Self {
         return ExperienceData.Item(experienceItemType: .menuFoodItem,
                                    aliasTitle: nil,
                                    caution: nil,
@@ -105,8 +105,8 @@ public extension ExperienceData.Item {
                                    duration: nil,
                                    imageName: imageName,
                                    isOptional: nil,
-                                   itemGrouping: nil,
-                                   itemSubgrouping: nil,
+                                   itemGrouping: grouping,
+                                   itemSubgrouping: subgrouping,
                                    spicy: nil,
                                    subtitle: subtitle,
                                    title: title)

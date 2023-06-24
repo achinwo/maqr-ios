@@ -123,8 +123,64 @@ struct RestaurantView: Experience, JoliView {
     }
     
     @State var currentTab: Int = 0
-    @State var selectedMenuGroup: String = "Suya"
-    @State var menuGroups: [String] = ["Suya", "Rice", "Extras", "Special"]
+    @State var selectedMenuGroup: String? = nil
+    
+    var groupedItems: [String: [String: [ExperienceData.Item]]] {
+        var res: [String: [String: [ExperienceData.Item]]] = [:]
+        
+        for item in (dataModel?.items ?? []).filter({ $0.experienceItemType == .menuFoodItem }) {
+            
+            guard let grouping = item.itemGrouping, let subgrouping = item.itemSubgrouping else { continue }
+            
+            var existing: [String: [ExperienceData.Item]] = res[grouping] ?? [:]
+            
+            var items = existing[subgrouping] ?? []
+            items.append(item)
+            
+            existing[subgrouping] = items
+            res[grouping] = existing
+        }
+        
+        return res
+    }
+    
+    func makeFoodItem(subgroup: String, items: [ExperienceData.Item]) -> some View {
+        DisclosureGroup() {
+            
+            VStack(alignment: .leading){
+                ForEach(items, id: \.title) { item in
+                    HStack(spacing: Sizing.small){
+                        AsyncImage(url: URL.fromString(item.imageName)){ image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 80, height: 80)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .clipped()
+                        
+                        VStack(alignment: .leading){
+                            Text(item.title ?? "").font(.headline)
+                            Text(item.subtitle ?? "").font(.subheadline)
+                        }
+                    }
+                    
+                }
+                
+            }
+            .padding()
+        } label: {
+            HStack(){
+                Text(subgroup)
+                Spacer()
+            }
+            .padding()
+        }
+        .tint(.primary)
+        .padding(.horizontal)
+    }
     
     var menuView: some View {
         
@@ -132,7 +188,7 @@ struct RestaurantView: Experience, JoliView {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(){
-                    ForEach(self.menuGroups, id: \.self) { group in
+                    ForEach(Array(self.groupedItems.keys), id: \.self) { group in
                         Button() {
                             self.selectedMenuGroup = group
                         } label: {
@@ -149,77 +205,29 @@ struct RestaurantView: Experience, JoliView {
             }
             .padding()
             
-            ZStack(){
-//
-//                Color.black.frame(width: 200, height: 10)
-//                    .alignmentGuide(HorizontalAlignment.myHorizontalAlignment)
-//                { d in d[.trailing] }
-//                    .alignmentGuide(VerticalAlignment.myVerticalAlignment)
-//                { d in d[.bottom] }
                 
-                DisclosureGroup() {
+            if let groupName = self.selectedMenuGroup, let subgroupItems = self.groupedItems[groupName] {
+                
+                ForEach(Array(subgroupItems.keys), id: \.self) { subgroup in
                     
-                    VStack(alignment: .leading){
-                        ForEach(dataModel?.items ?? [], id: \.title) { item in
-                            HStack(spacing: Sizing.small){
-                                AsyncImage(url: URL.fromString(item.imageName)){ image in
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 80, height: 80)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                                } placeholder: {
-                                    ProgressView()
-                                }
-                                .clipped()
-                                
-                                VStack(alignment: .leading){
-                                    Text(item.title ?? "").font(.headline)
-                                    Text(item.subtitle ?? "").font(.subheadline)
-                                }
-                            }
-                            
-                        }
-                        
+                    let items: [ExperienceData.Item] = subgroupItems[subgroup] ?? []
+
+                    Group(){
+                        self.makeFoodItem(subgroup: subgroup, items: items)
                     }
-                    .padding()
-                    //.backgroundColor(.secondarySystemBackground)
-                    //.background(Color.green.frame(width: screenWidth))
-                } label: {
-                    HStack(){
-                        Text("Chicken")
-                        Spacer()
-                    }
-                    .padding()
-                    //.alignmentGuide(VerticalAlignment.myVerticalAlignment, computeValue: {d in d[VerticalAlignment.top]})
-                    //.background(Color.pink)
+                    .backgroundColor(.secondarySystemBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .padding([.horizontal, .top])
                     
                 }
-                .tint(.primary)
-                .padding(.horizontal)
+                
             }
-            .backgroundColor(.secondarySystemBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-            .padding([.horizontal, .top])
-            
-            Group(){
-                DisclosureGroup() {
-                    Text("Combine power of protocol oriented programming with MVVM design pattern in SwiftUI by building Task List app.")
-                        .padding()
-                } label: {
-                    Text("Beef")
-                        .padding()
-                }
-                .tint(.primary)
-                .padding(.horizontal)
-            }
-            .backgroundColor(.secondarySystemBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-            .padding([.horizontal, .top])
             
             Spacer()
         }
-        //.backgroundColor(.fixedCyan)
+        .onAppear() {
+            self.selectedMenuGroup = self.selectedMenuGroup ?? self.groupedItems.keys.first
+        }
         
     }
     
@@ -472,7 +480,8 @@ struct Previews_RestaurantView_Previews: PreviewProvider {
                                                cardTitle: "HELLO & WELCOME",
                                                cardSubtitle: "restaurant features a warm and modern industrial design and a seasonal rooftop patio in this popular Toronto neighbourhood gathering spot.",
                                                items: [
-                                                .makeFookItem("Dumplings", description: "The dish typically consists of chicken, dumplings, and vegetables.", imageName: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Xiaolongbao-breakfast.jpg/640px-Xiaolongbao-breakfast.jpg")
+                                                .makeFookItem("Dumplings", description: "The dish typically consists of chicken, dumplings, and vegetables.", imageName: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Xiaolongbao-breakfast.jpg/640px-Xiaolongbao-breakfast.jpg",
+                                                    grouping: "Suya", subgrouping: "Beef")
                                                ]
         )
         let restaurantData = ExperienceData.fromDefaults(defaults, type: .restaurant)
