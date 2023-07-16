@@ -144,12 +144,14 @@ struct RestaurantView: Experience, JoliView {
         return res
     }
     
+    @State private var flag = false
+    
     func makeFoodItem(subgroup: String, items: [ExperienceData.Item]) -> some View {
         DisclosureGroup() {
             
             VStack(alignment: .leading){
-                ForEach(items, id: \.title) { item in
-                    HStack(spacing: Sizing.small){
+                ForEach(items.sorted(by: { $0.title! > $1.title! }), id: \.title) { item in
+                    HStack(alignment: .top, spacing: Sizing.small){
                         AsyncImage(url: URL.fromString(item.imageName)){ image in
                             image
                                 .resizable()
@@ -160,13 +162,35 @@ struct RestaurantView: Experience, JoliView {
                             ProgressView()
                         }
                         .clipped()
+                        .id(item.imageName)
                         
                         VStack(alignment: .leading){
-                            Text(item.title ?? "").font(.headline)
-                            Text(item.subtitle ?? "").font(.subheadline)
+                            HStack(){
+                                Text(item.title ?? "").font(.headline)
+                                
+                                Spacer()
+                                Text("£12.99").font(.subheadline.bold())
+                            }
+                            
+                            
+                            Text(item.subtitle ?? "").font(.subheadline).padding(.top, Sizing.small)
+                            
+                            HStack(){
+                                Spacer()
+                                
+                                VStack(alignment: .leading){
+                                    Toggle(flag ? "Soldout" : "Available", isOn: $flag).labelsHidden()
+                                        .tint(flag ? Color.red : Color.fixedGreen)
+                                    Text(flag ? "Soldout" : "Available").font(.caption.weight(.light))
+                                }
+                                .animation(.spring(), value: flag)
+                            }
                         }
+                        
+                        
                     }
                     
+                    Spacer()
                 }
                 
             }
@@ -184,46 +208,46 @@ struct RestaurantView: Experience, JoliView {
     
     var menuView: some View {
         
-        VStack(spacing: .zero){
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(){
-                    ForEach(Array(self.groupedItems.keys), id: \.self) { group in
-                        Button() {
-                            self.selectedMenuGroup = group
-                        } label: {
-                            HStack(){
-                                Text(group)
-                                    .tag(group)
-                                    .font(.subheadline)
+        ScrollView(.vertical){
+            VStack(alignment: .center){
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(){
+                        ForEach(Array(self.groupedItems.keys).sorted(), id: \.self) { group in
+                            Button() {
+                                self.selectedMenuGroup = group
+                            } label: {
+                                HStack(){
+                                    Text(group)
+                                        .tag(group)
+                                        .font(.subheadline)
+                                }
+                                .padding()
                             }
-                            .padding()
+                            .buttonStyle(BlackWhiteButtonStyle(inverted: self.selectedMenuGroup == group))
                         }
-                        .buttonStyle(BlackWhiteButtonStyle(inverted: self.selectedMenuGroup == group))
+                    }
+                }
+                .padding()
+                
+                
+                if let groupName = self.selectedMenuGroup, let subgroupItems = self.groupedItems[groupName] {
+                    
+                    ForEach(Array(subgroupItems.keys), id: \.self) { subgroup in
+                        
+                        let items: [ExperienceData.Item] = subgroupItems[subgroup] ?? []
+                        
+                        Group(){
+                            self.makeFoodItem(subgroup: subgroup, items: items)
+                        }
+                        .backgroundColor(.secondarySystemBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                        .padding([.horizontal, .top])
+                        
                     }
                 }
             }
-            .padding()
-            
-                
-            if let groupName = self.selectedMenuGroup, let subgroupItems = self.groupedItems[groupName] {
-                
-                ForEach(Array(subgroupItems.keys), id: \.self) { subgroup in
-                    
-                    let items: [ExperienceData.Item] = subgroupItems[subgroup] ?? []
-
-                    Group(){
-                        self.makeFoodItem(subgroup: subgroup, items: items)
-                    }
-                    .backgroundColor(.secondarySystemBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .padding([.horizontal, .top])
-                    
-                }
-                
-            }
-            
-            Spacer()
+            .padding(.bottom, max(100, safeAreaInsets.bottom))
         }
         .onAppear() {
             self.selectedMenuGroup = self.selectedMenuGroup ?? self.groupedItems.keys.first
@@ -241,7 +265,35 @@ struct RestaurantView: Experience, JoliView {
                 .tag(0)
                 
                 VStack(){
-                    Text("View 2")
+                    Text(try! AttributedString(markdown: """
+Poenam reponuntur frons, Delius cura auro exit offensane inferias armentis.
+Latens certi absitque circuit nam fugit animam
+[heros](http://deus.org/nec-socii) potentia tandemque murmure et hamis lex amor.
+
+- Hanc adsumere tibi
+- Radice cruorem
+- Legit Echion cur poma
+
+## Et populo laboris se si Rutuli Agenorides
+
+**Refugit tuos te** cum non reges moenia. Hic iusta ministros aspera nactus, et
+cedendo fronte undas iam nostris domo votisque, iungitur. Potens novi multi de
+priorem ego cum, constitit nomine. Atque Pylonque fertur et saepius ipse cumque
+vultus creavit erit Cyanee premebat questus tutius et, vidit!
+
+- Ad erit
+- Teneat ora aestu corpora Pleuron Aegeus incubat
+- Consistere et ea suo
+- Ferroque nondum Thaumantidos agna
+
+Dolores coeunt ora bella matris certe iam! Saucia praecordia ardua clausaeque
+sertaque neci, nec per properandum [se vires](http://in-reddidit.com/super).
+Aures caelo altrice nec ignibus, tacitaque terrae, densis.
+""")
+                    )
+                    .multilineTextAlignment(.center)
+                    .padding()
+                    Spacer()
                 }
                 .tag(1)
             }
@@ -366,7 +418,6 @@ struct RestaurantView: Experience, JoliView {
                             Spacer()
                         }
                         .frame(minHeight: screenHeight * 1.2)
-                        .padding(.bottom, max(100, safeAreaInsets.bottom))
                             //.padding(.top, safeAreaInsets.top)
                     }
                 }

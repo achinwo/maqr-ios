@@ -101,6 +101,7 @@ struct TabBarItem: View {
             .animation(.spring(), value: self.currentTab)
         }
         .buttonStyle(.plain)
+        //.backgroundColor(.fixedCyan)
     }
 }
 
