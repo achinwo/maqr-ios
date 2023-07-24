@@ -83,6 +83,7 @@ struct ExperienceDataItemView: JoliView {
     @State private var spicyRating: Double = 0
     @State var hasCaution: Bool = false
     @State var duration: Double = 0
+    @State var priceField: String = "0.00"
     
     var mealPrepStepSections: some View {
         let setter = { (newValue: String, keyPath: WritableKeyPath<ExperienceData.Item, String?>) in
@@ -215,6 +216,27 @@ struct ExperienceDataItemView: JoliView {
             if item.experienceItemType == .mealPrepStep {
                 mealPrepStepSections
             }
+            
+            Section(header: Text("Price (£)")) {
+                TextField("£.££", text: $priceField)
+                    .keyboardType(.decimalPad)
+            }
+            
+            let isAvaliable = Binding<Bool>(){
+                return item.quantityAvailable != nil
+            } set: { newValue in
+                item.quantityAvailable = newValue ? 1 : nil
+            }
+            
+            HStack(){
+                Label("Availability", systemImage: "nosign")
+                Spacer()
+                Toggle(isOn: isAvaliable) {
+                    Text("Cautionary information")
+                }
+                .labelsHidden()
+            }
+            
             
             Section(header: Text("Grouping Tags (Optional)")) {
                 TextField("Primary", text: makeBinding(item, \.itemGrouping))

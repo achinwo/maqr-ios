@@ -117,6 +117,7 @@ struct RestaurantView: Experience, JoliView {
         let paths: [PartialKeyPath<ExperienceData>] = [
             \ExperienceData.socialInstagramUsername,
              \ExperienceData.bannerImageUrl,
+             //\ExperienceData.
         ]
         
         return paths
@@ -169,24 +170,28 @@ struct RestaurantView: Experience, JoliView {
                                 Text(item.title ?? "").font(.headline)
                                 
                                 Spacer()
-                                Text("£12.99").font(.subheadline.bold())
+                                
+                                if let price = item.defaultPrice {
+                                    Text(String(format: "£%.2f", Double(price) / 100.0)).font(.subheadline.bold())
+                                }
                             }
                             
                             
                             Text(item.subtitle ?? "").font(.subheadline).padding(.top, Sizing.small)
                             
-                            HStack(){
-                                Spacer()
-                                
-                                VStack(alignment: .leading){
-                                    Toggle(flag ? "Soldout" : "Available", isOn: $flag).labelsHidden()
-                                        .tint(flag ? Color.red : Color.fixedGreen)
-                                    Text(flag ? "Soldout" : "Available").font(.caption.weight(.light))
+                            if appCoordinator.activeAuth?.user.id == dataModel?.stored?.createdById {
+                                HStack(){
+                                    Spacer()
+                                    
+                                    VStack(alignment: .leading){
+                                        Toggle(flag ? "Soldout" : "Available", isOn: $flag)
+                                            .labelsHidden()
+                                            .tint(flag ? Color.red : Color.fixedGreen)
+                                        Text(flag ? "Soldout" : "Available").font(.caption.weight(.light))
+                                    }
                                 }
-                                .animation(.spring(), value: flag)
                             }
                         }
-                        
                         
                     }
                     
@@ -265,32 +270,7 @@ struct RestaurantView: Experience, JoliView {
                 .tag(0)
                 
                 VStack(){
-                    Text(try! AttributedString(markdown: """
-Poenam reponuntur frons, Delius cura auro exit offensane inferias armentis.
-Latens certi absitque circuit nam fugit animam
-[heros](http://deus.org/nec-socii) potentia tandemque murmure et hamis lex amor.
-
-- Hanc adsumere tibi
-- Radice cruorem
-- Legit Echion cur poma
-
-## Et populo laboris se si Rutuli Agenorides
-
-**Refugit tuos te** cum non reges moenia. Hic iusta ministros aspera nactus, et
-cedendo fronte undas iam nostris domo votisque, iungitur. Potens novi multi de
-priorem ego cum, constitit nomine. Atque Pylonque fertur et saepius ipse cumque
-vultus creavit erit Cyanee premebat questus tutius et, vidit!
-
-- Ad erit
-- Teneat ora aestu corpora Pleuron Aegeus incubat
-- Consistere et ea suo
-- Ferroque nondum Thaumantidos agna
-
-Dolores coeunt ora bella matris certe iam! Saucia praecordia ardua clausaeque
-sertaque neci, nec per properandum [se vires](http://in-reddidit.com/super).
-Aures caelo altrice nec ignibus, tacitaque terrae, densis.
-""")
-                    )
+                    Text((try? AttributedString(markdown: dataModel?.landingPageText ?? "")) ?? AttributedString(dataModel?.brandName ?? ""))
                     .multilineTextAlignment(.center)
                     .padding()
                     Spacer()
@@ -327,25 +307,46 @@ Aures caelo altrice nec ignibus, tacitaque terrae, densis.
                 Spacer()
                 
                 VStack(){
-                    Image("logo_ubereats")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxHeight: Sizing.xxLarge + Sizing.small)
-                    Image("logo_deliveroo")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxHeight: Sizing.xxLarge + Sizing.small)
+                    if let deliverooUrl = dataModel?.storeUbereatsUrl {
+                        Link(destination: deliverooUrl) {
+                            Image("logo_ubereats")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxHeight: Sizing.xxLarge + Sizing.small)
+                        }
+                    }
+                    
+                    if let deliverooUrl = dataModel?.storeDeliverooUrl {
+                        Link(destination: deliverooUrl) {
+                            Image("logo_deliveroo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxHeight: Sizing.xxLarge + Sizing.small)
+                        }
+                    }
                 }
             }
             .padding()
             
             HStack(){
-                Label("+447823930279", systemImage: "phone")
-                    .padding()
-                    .foregroundColor(.secondary)
+                
+                if let tel = dataModel?.brandContactPhoneNumber {
+                    Label(tel, systemImage: "phone")
+                        .padding()
+                        .foregroundColor(.secondary)
+                }
+                
                 Spacer()
                 
+                
+                
+                
                 Button() {
+                    guard let username = dataModel?.socialInstagramUsername else {
+                        return
+                    }
+                    
+                    openURL(SocialLink.instagramUser(username).url)
                 } label: {
                     HStack(){
                         Image("logo_instagram_white")
@@ -367,6 +368,8 @@ Aures caelo altrice nec ignibus, tacitaque terrae, densis.
             self.tabView
         }
     }
+    
+    @Environment(\.openURL) var openURL
     
     var contentView: some View {
         NavigationView(){

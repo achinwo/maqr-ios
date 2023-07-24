@@ -105,6 +105,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         public var aliasTitle: String?
         public var caution: String?
         public var defaultPrice: Int?
+        public var quantityAvailable: Int?
         public var duration: Int?
         public var imageName: String?
         public var isOptional: Bool?
@@ -269,6 +270,9 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     // sourcery: title = "Brand Email", description = "Contact email for enquiries and support", default = ""Your Brand""
     @Published var brandContactEmail: String?
     
+    // sourcery: title = "Brand Phone Number", description = "Call for enquiries and support", default = ""+44 123 123 456""
+    @Published var brandContactPhoneNumber: String?
+    
     // sourcery: title = "Welcome Message", description = "Invite customers to your brand experience", default = ""Describe \nyour brand \nexperience""
     @Published var landingPageText: MultilineString
     
@@ -298,6 +302,12 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     // sourcery: title = "Twitter", description = "Twitter handle", default = ""arranowanna""
     @Published var socialTwitterUsername: String?
+    
+    // sourcery: title = "UberEats", description = "UberEats store link", default = "URL(staticString: "https://www.ubereats.com/gb/store/alhaji-suya-walworth/hqMoVEMoVi2ize0Ovqx4Fg")"
+    @Published var storeUbereatsUrl: URL?
+    
+    // sourcery: title = "Deliveroo", description = "Deliveroo store link", default = "URL(staticString: "https://deliveroo.co.uk/menu/London/new-charlton/alhaji-suya")"
+    @Published var storeDeliverooUrl: URL?
     
     // sourcery: title = "Website", description = "Website URL", default = "URL(staticString: "https://maqr.co")"
     @Published var websiteUrl: URL?
@@ -377,6 +387,11 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         res.socialFacebookPage = experienceData.socialFacebookPage
         res.socialTiktokUsername = experienceData.socialTiktokUsername
         
+        res.storeUbereatsUrl = URL.fromString(experienceData.storeUbereatsUrl)
+        res.storeDeliverooUrl = URL.fromString(experienceData.storeDeliverooUrl)
+        
+        res.brandContactPhoneNumber = experienceData.brandContactPhoneNumber
+        
         res.websiteUrl = URL.fromString(experienceData.websiteUrl)
         res.websiteLabel = experienceData.websiteLabel
         res.socialTwitterUsername = experienceData.socialTwitterUsername
@@ -446,6 +461,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         productImageUrl = try container.decode(URL?.self, forKey: .productImageUrl)
         brandName = try container.decode(String.self, forKey: .brandName)
         brandContactEmail = try container.decode(String?.self, forKey: .brandContactEmail)
+        brandContactPhoneNumber = try container.decode(String?.self, forKey: .brandContactPhoneNumber)
         landingPageText = try container.decode(MultilineString.self, forKey: .landingPageText)
         callToActionLabel = try container.decode(String?.self, forKey: .callToActionLabel)
         callToActionIconName = try container.decode(String?.self, forKey: .callToActionIconName)
@@ -456,6 +472,8 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         socialFacebookPage = try container.decode(String?.self, forKey: .socialFacebookPage)
         socialTiktokUsername = try container.decode(String?.self, forKey: .socialTiktokUsername)
         socialTwitterUsername = try container.decode(String?.self, forKey: .socialTwitterUsername)
+        storeUbereatsUrl = try container.decode(URL?.self, forKey: .storeUbereatsUrl)
+        storeDeliverooUrl = try container.decode(URL?.self, forKey: .storeDeliverooUrl)
         websiteUrl = try container.decode(URL?.self, forKey: .websiteUrl)
         websiteLabel = try container.decode(String?.self, forKey: .websiteLabel)
         releaseDate = try container.decode(Date?.self, forKey: .releaseDate)
