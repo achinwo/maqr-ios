@@ -16,7 +16,7 @@ import SharedUI
 
 struct TvShowCastInfo: Codable, Identifiable {
     let name: String
-    let characterName: String
+    let characterName: String?
     let imageUrl: URL
     let bio: String
     let dataType: ExperienceItemType
@@ -82,13 +82,12 @@ public struct BrandPromoView: Experience, JoliView {
             
             guard let title = itm.title,
                   let subtitle = itm.subtitle,
-                  let alias = itm.aliasTitle,
                   let imgName = itm.imageName,
                   let url = URL(string: imgName) else {
                 continue
             }
             
-            castMembers.append(TvShowCastInfo(name: title, characterName: alias, imageUrl: url, bio: subtitle, dataType: itm.experienceItemType))
+            castMembers.append(TvShowCastInfo(name: title, characterName: itm.aliasTitle, imageUrl: url, bio: subtitle, dataType: itm.experienceItemType))
         }
         
         return castMembers
@@ -424,7 +423,11 @@ struct TvShowCastTabView: View {
                     Text(info.name).font(.largeTitle.weight(.ultraLight))
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
-                    (isProduct ? Text("") : Text("as ").font(.callout).foregroundColor(.secondaryLabel) ) + Text(info.characterName).font(.title3)
+                    
+                    if let alias = info.characterName {
+                        (isProduct ? Text("") : Text("as ").font(.callout).foregroundColor(.secondaryLabel) ) + Text(alias).font(.title3)
+                    }
+                    
                     Rectangle().frame(height: 1).foregroundColor(dividerColor.opacity(0.7)).padding(.horizontal)
                 }
                 
