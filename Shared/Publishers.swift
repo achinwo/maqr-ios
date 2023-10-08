@@ -494,7 +494,8 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
 
 extension Socket: WebSocketDelegate {
     
-    public func didReceive(event: WebSocketEvent, client: WebSocket) {
+    
+    public func didReceive(event: Starscream.WebSocketEvent, client: Starscream.WebSocketClient) {
         //Swift.print("websocket event: \(event)")
         
         switch event {
@@ -553,6 +554,9 @@ extension Socket: WebSocketDelegate {
                 isConnected = false
                 Swift.print("websocket is error: \(String(describing: error))")
                 self.completion =  Subscribers.Completion.failure(SocketError.error(error))
+            case .peerClosed:
+                isConnected = false
+                Swift.print("websocket peerClosed!")
         }
     }
     
