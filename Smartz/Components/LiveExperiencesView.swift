@@ -82,7 +82,7 @@ public struct LiveExperiencesView: JoliView {
               let url = URL(string: vizCode.url),
               
                 let img = EFQRCode.generate(for: url.absoluteString,
-                                            size: EFIntSize(width: 1080, height: 1080),
+                                            size: EFIntSize(width: 2560, height: 2560),
                                             backgroundColor: UIColor(hex: "#f5f6fa").cgColor,
                                             foregroundColor: UIColor(hex: data.brandColorPrimary ?? "#29304B").cgColor,
 //                                            watermark: UIImage(named: "smartz_logo")?.cgImage,

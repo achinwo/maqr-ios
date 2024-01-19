@@ -79,6 +79,12 @@ struct WeddingEventView: JoliView, Experience {
             .edgesIgnoringSafeArea(.vertical)
         .frame(minWidth: screenWidth, minHeight: screenHeight, alignment: .center)
         .backgroundColor(.fixedWhite)
+        .fullScreenCover(item: self.$webViewStateModel.externalUrl) {
+            self.webViewStateModel.externalUrl = nil
+        } content: { url in
+            SafariWebView(url: url)
+                .ignoresSafeArea()
+        }
         .onReceive(appCoordinator.$currentLocation) { appLocation in
             self.currentLocation = appLocation
         }

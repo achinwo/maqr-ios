@@ -466,6 +466,14 @@ public extension String {
     }
 }
 
+extension URL: Identifiable {
+    
+    public var id: String {
+        self.absoluteString
+    }
+    
+}
+
 
 public extension UUID {
     

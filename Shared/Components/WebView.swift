@@ -8,6 +8,7 @@
 
 import SwiftUI
 import WebKit
+import SafariServices
 
 public struct WebViewWrapper: UIViewRepresentable {
   
@@ -168,8 +169,10 @@ extension WebViewWrapper.Coordinator: WKNavigationDelegate {
         let version = resolveAppVersion()
         
         let jsScript = """
-window.android = {};
-window.android.build = {
+window.mobile = {
+    openUrl: (url) => window.webkit?.messageHandlers.mobileMessageHandler.postMessage({messageType: 'OPEN_URL', data: {url}});
+};
+window.mobile.build = {
                     versionCode: '',
                     versionName: '\(version.description)',
                     buildType: '',
@@ -181,6 +184,7 @@ window.android.build = {
                     platform: 'ios',
                     platformVersion: '\(appInfo.systemVersion)'
                 };
+window.android = window.mobile;
 """
         webView.evaluateJavaScript(jsScript) { (result, error) in
             print("[\(Self.self)] result: \(String(describing: result)), error: \(String(describing: error))")
@@ -221,6 +225,24 @@ window.android.build = {
     }
 }
 
+
+public struct SafariWebView: UIViewControllerRepresentable {
+    
+    let url: URL
+    
+    public init(url: URL) {
+        self.url = url
+    }
+    
+    public func makeUIViewController(context: Context) -> SFSafariViewController {
+        return SFSafariViewController(url: url)
+    }
+    
+    public func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {
+        
+    }
+}
+
 public final class WebViewStateModel: ObservableObject {
     
     public typealias JsMessageCallback = (WKUserContentController, WKScriptMessage) -> Void
@@ -229,6 +251,8 @@ public final class WebViewStateModel: ObservableObject {
     @Published public var loading: Bool = false
     @Published public var canGoBack: Bool = false
     @Published public var goBack: Bool = false
+    
+    @Published public var externalUrl: URL? = nil
     
     let onJsMessageCallback: JsMessageCallback?
     @Published public var edgeInsets: EdgeInsets?
@@ -251,6 +275,17 @@ public final class WebViewStateModel: ObservableObject {
     }
     
     public func onJsScriptMessage(_ userContentController: WKUserContentController, _ message: WKScriptMessage) {
+        
+        if let body = message.body as? [String: AnyObject],
+            let messageType = body["messageType"] as? String,
+            let data = body["data"] as? [String: String],
+            let urlString = data["url"],
+            messageType == "OPEN_URL" {
+            
+            externalUrl = URL(string: urlString)
+            print("[\(Self.self)] opening URL: \(String(describing: externalUrl))")
+        }
+        
         self.onJsMessageCallback?(userContentController, message)
     }
     
