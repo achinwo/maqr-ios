@@ -169,10 +169,12 @@ extension WebViewWrapper.Coordinator: WKNavigationDelegate {
         let version = resolveAppVersion()
         
         let jsScript = """
-window.mobile = {
-    openUrl: (url) => window.webkit?.messageHandlers.mobileMessageHandler.postMessage({messageType: 'OPEN_URL', data: {url}});
+window._mobile = {
+    openUrl: (url) => window.webkit?.messageHandlers.mobileMessageHandler.postMessage({messageType: 'OPEN_URL', data: {url}}),
+    postMessage: (messageType, body) => window.webkit?.messageHandlers.mobileMessageHandler.postMessage({messageType: messageType, data: body}),
+    screen: {width: \(UIScreen.main.bounds.width), height: \(UIScreen.main.bounds.height), scale: \(UIScreen.main.scale)},
 };
-window.mobile.build = {
+window._mobile.build = {
                     versionCode: '',
                     versionName: '\(version.description)',
                     buildType: '',
@@ -184,8 +186,9 @@ window.mobile.build = {
                     platform: 'ios',
                     platformVersion: '\(appInfo.systemVersion)'
                 };
-window.android = window.mobile;
 """
+        
+        
         webView.evaluateJavaScript(jsScript) { (result, error) in
             print("[\(Self.self)] result: \(String(describing: result)), error: \(String(describing: error))")
         }
