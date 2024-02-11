@@ -157,6 +157,14 @@ extension WebViewWrapper.Coordinator: WKNavigationDelegate {
 #endif
     }
     
+    static var isAppclip: Bool {
+#if APPCLIP
+        return true
+#else
+        return false
+#endif
+    }
+    
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         webViewStateModel.loading = false
         webViewStateModel.canGoBack = webView.canGoBack
@@ -179,6 +187,7 @@ window._mobile.build = {
                     versionName: '\(version.description)',
                     buildType: '',
                     isDebug: \(Self.debug),
+                    isFullApp: \(!Self.isAppclip),
                     appId: '\(appInfo.appId ?? "")',
                     deviceId: '\(appInfo.uuid ?? "")',
                     deviceName: '\(appInfo.name)',
@@ -256,6 +265,9 @@ public final class WebViewStateModel: ObservableObject {
     @Published public var goBack: Bool = false
     
     @Published public var externalUrl: URL? = nil
+    @Published public var alertMessage: String? = nil
+    @Published public var isPresentingAlert: Bool = false
+    
     
     let onJsMessageCallback: JsMessageCallback?
     @Published public var edgeInsets: EdgeInsets?
@@ -279,17 +291,24 @@ public final class WebViewStateModel: ObservableObject {
     
     public func onJsScriptMessage(_ userContentController: WKUserContentController, _ message: WKScriptMessage) {
         
-        if let body = message.body as? [String: AnyObject],
-            let messageType = body["messageType"] as? String,
-            let data = body["data"] as? [String: String],
-            let urlString = data["url"],
-            messageType == "OPEN_URL" {
+        defer {
+            self.onJsMessageCallback?(userContentController, message)
+        }
+        
+        guard let body = message.body as? [String: AnyObject], let messageType = body["messageType"] as? String, let data = body["data"] as? [String: AnyObject] else {
+            return
+        }
+    
+        
+        if let urlString = data["url"] as? String, messageType == "OPEN_URL" {
             
             externalUrl = URL(string: urlString)
             print("[\(Self.self)] opening URL: \(String(describing: externalUrl))")
+        } else if let message = data["message"] as? String, messageType == "PRESENT_ALERT" {
+            alertMessage = message
+            isPresentingAlert = true
         }
         
-        self.onJsMessageCallback?(userContentController, message)
     }
     
 }
@@ -336,8 +355,8 @@ public struct WebView: View {
     }
 }
 
-//struct WebView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        WebView()
-//    }
-//}
+struct WebView_Previews: PreviewProvider {
+    static var previews: some View {
+        WebView(url: URL(staticString: "https://maqr.co/ewed/estherjide"), webViewStateModel: WebViewStateModel())
+    }
+}

@@ -8,6 +8,7 @@
 
 import SwiftUI
 import JoliCore
+import AlertToast
 
 #if !os(macOS)
 import SharedUI
@@ -84,6 +85,11 @@ struct WeddingEventView: JoliView, Experience {
         } content: { url in
             SafariWebView(url: url)
                 .ignoresSafeArea()
+        }
+        .toast(isPresenting: self.$webViewStateModel.isPresentingAlert) {
+            AlertToast(type: .regular, title: self.webViewStateModel.alertMessage)
+        } completion: {
+            self.webViewStateModel.alertMessage = nil
         }
         .onReceive(appCoordinator.$currentLocation) { appLocation in
             self.currentLocation = appLocation
