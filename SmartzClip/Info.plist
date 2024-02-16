@@ -22,6 +22,12 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+    <key>NSCameraUsageDescription</key>
+    <string>Capture images for customised brand experience creation</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Required to save QR and App Clip code images to Photo libarary</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Photo library access is required for uploading brand assets</string>
 	<key>NSAppClip</key>
 	<dict>
 		<key>NSAppClipRequestEphemeralUserNotification</key>
