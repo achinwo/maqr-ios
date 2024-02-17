@@ -85,6 +85,8 @@ protocol EditableView: JoliView & Identifiable {
     var isEditing: Bool { get }
     var id: UUID { get nonmutating set }
     
+    func onValue(image: UIImage?)
+    
 }
 
 
@@ -95,12 +97,16 @@ extension EditableView {
         editMode == .active
     }
     
+    func onValue(image: UIImage?) {
+        print("Wrong 'onValue'!! \(String(describing: image))")
+    }
+    
     var body: some View {
         
         return self.contentView
             //.environment(\.currentEditTarget, isEditing ? .active(id) : nil)
             .overlay(alignment: editButtonPlacement){
-                PencilButton(editMode: editModeBinding)
+                PencilButton(editMode: editModeBinding, onValue: self.onValue(image:))
                     .offset(editButtonOffset)
                     .shadow(radius: 1)
                     .opacity(editMode.opacity)
@@ -147,6 +153,7 @@ extension UIImagePickerController.SourceType: Identifiable {
 struct PencilButton: View {
     
     @Binding var editMode: EditingState
+    var onValue: (_ image: UIImage?) -> Void
     
     var isEditing: Bool {
         editMode == .active
@@ -204,12 +211,15 @@ struct PencilButton: View {
         .sheet(item: $sourceType) { item in
             if item == .camera{
                 CameraImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
-                    
+                    self.sourceType = nil
+                    self.onValue(img)
                 }
                     .edgesIgnoringSafeArea(.bottom)
             } else {
-                SingleImagePicker() {_,_,_ in
-                    
+                SingleImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
+                    self.sourceType = nil
+                    print("image: \(String(describing: img)), assestName: \(String(describing: assetName)), error: \(String(describing: error))")
+                    self.onValue(img)
                 }
                     .edgesIgnoringSafeArea(.bottom)
             }
@@ -234,15 +244,28 @@ struct RoundedImageView: EditableView {
     @EnvironmentObject var appCoordinator: SharedUI.AppCoordinator
     
     @State var imageUrl = URL(string: "https://images.unsplash.com/photo-1521510186458-bbbda7aef46b?q=80&w=480&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+    @State var uiImage: UIImage? = nil
+    
+    func onValue(image: UIImage?){
+        self.uiImage = image
+        print("[\(Self.self)] Setting image: \(String(describing: image))")
+    }
     
     var contentView: some View {
-        AsyncImage(url: imageUrl) { image in
-            image.resizable()
-        } placeholder: {
-            ProgressView()
+        Group(){
+            if let image = self.uiImage {
+                Image(platformImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                AsyncImage(url: imageUrl) { image in
+                    image.resizable()
+                } placeholder: {
+                    ProgressView()
+                }
+            }
         }
         .frame(width: 100, height: 100)
-        .aspectRatio(contentMode: .fill)
         .clipShape(Circle())
         .overlay(Circle().stroke(Color.white, lineWidth: 4))
         .offset(editButtonOffset)
@@ -259,6 +282,7 @@ struct EditableContentView<Content: View>: EditableView {
     @State var editMode: EditingState = .inactive
     
     @State var editButtonPlacement: Alignment
+    var callback: ((_ img: UIImage?) -> Void)?
     
     var editModeBinding: Binding<EditingState> { $editMode }
     
@@ -266,10 +290,15 @@ struct EditableContentView<Content: View>: EditableView {
     
     private let content: () -> Content
     
-    init(editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero, @ViewBuilder content: @escaping () -> Content) {
+    init(editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero, @ViewBuilder content: @escaping () -> Content, onValue: ((_ img: UIImage?) -> Void)? = nil) {
         self._editButtonPlacement = State(initialValue: editPlacement)
         self.content = content
         self._editButtonOffset = State(initialValue: editOffset)
+        self.callback = onValue
+    }
+    
+    func onValue(image: UIImage?) {
+        self.callback?(image)
     }
     
     var contentView: some View {
@@ -295,29 +324,36 @@ struct ContentView: EditableView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    
+    @State var imageUrl = URL(string: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+    @State var uiImage: UIImage? = nil
     
     var contentView: some View {
         
-        
-        
-        VStack {
+        VStack(spacing: .zero) {
             
             
             EditableContentView(editPlacement: .bottomTrailing, editOffset: .init(width: 0, height: -5)){
-                AsyncImage(url: URL(string: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")) { image in
-                    
-                    image.resizable()
-                } placeholder: {
-                    ProgressView()
+                Group(){
+                    if let image = uiImage {
+                        Image(platformImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else {
+                        AsyncImage(url: imageUrl) { image in
+                            image.resizable()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                    }
                 }
-                
                 .frame(maxHeight: screenHeight * 0.25)
+                .clipped()
                 .overlay(alignment: .init(horizontal: .center, vertical: .bottom)) {
                     RoundedImageView()
                 }
+            } onValue: { image in
+                self.uiImage = image
             }
-            
             
             ScrollView(.vertical){
                 
@@ -327,7 +363,7 @@ struct ContentView: EditableView {
                             .font(.title.weight(.light))
                             .padding()
                     }
-                    .padding(.top, 50)
+                    .padding(.top, 60)
                     
                     EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: -5)){
                         Text("Hello & Welcome!")
@@ -341,7 +377,7 @@ struct ContentView: EditableView {
                         ("gift.fill", "Gift"),
                         ("menucard.fill", "Food Menu"),
                         ("photo.on.rectangle.angled", "Photos"),
-                        ("book.fill", "Thanks & Credits"),
+                        ("trophy.fill", "Thanks & Credits"),
                     ]
                     
                     let columns = [
@@ -364,6 +400,7 @@ struct ContentView: EditableView {
                                             .font(.subheadline)
                                             .lineLimit(3)
                                             .multilineTextAlignment(.center)
+                                            .fixedSize()
                                             .padding(.top)
                                     }
                                     .frame(width: screenWidth / 4, height: screenWidth / 6)
