@@ -492,10 +492,11 @@ public class Socket: ObservableObject, ConnectablePublisher, Identifiable {
     
 }
 
-extension Socket: WebSocketDelegate {
+public extension Socket {
     
     
-    public func didReceive(event: Starscream.WebSocketEvent, client: Starscream.WebSocketClient) {
+    
+    func didReceive(event: Starscream.WebSocketEvent, client: Starscream.WebSocketClient) {
         //Swift.print("websocket event: \(event)")
         
         switch event {
@@ -559,6 +560,10 @@ extension Socket: WebSocketDelegate {
                 Swift.print("websocket peerClosed!")
         }
     }
+    
+}
+
+extension Socket: Starscream.WebSocketDelegate {
     
 }
 

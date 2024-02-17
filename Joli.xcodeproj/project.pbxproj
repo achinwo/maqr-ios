@@ -62,6 +62,17 @@
 		922989AD26491F0E00FDD58F /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989AB26491F0D00FDD58F /* MailView.swift */; };
 		922989AE26491F0E00FDD58F /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922989AB26491F0D00FDD58F /* MailView.swift */; };
 		922BFD33263757F8007CAF36 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 922BFD32263757F8007CAF36 /* AlertToast */; };
+		92305FB52B800E4F00DFAF44 /* JsonUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92305FB42B800E4F00DFAF44 /* JsonUIApp.swift */; };
+		92305FB72B800E4F00DFAF44 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92305FB62B800E4F00DFAF44 /* ContentView.swift */; };
+		92305FB92B800E5000DFAF44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92305FB82B800E5000DFAF44 /* Assets.xcassets */; };
+		92305FBC2B800E5000DFAF44 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92305FBB2B800E5000DFAF44 /* Preview Assets.xcassets */; };
+		92305FC12B800EBC00DFAF44 /* JoliApi in Frameworks */ = {isa = PBXBuildFile; productRef = 92305FC02B800EBC00DFAF44 /* JoliApi */; };
+		92305FC32B800EBC00DFAF44 /* JoliMaqro in Frameworks */ = {isa = PBXBuildFile; productRef = 92305FC22B800EBC00DFAF44 /* JoliMaqro */; };
+		92305FC82B800EBC00DFAF44 /* SharedUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; };
+		92305FC92B800EBC00DFAF44 /* SharedUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 92CC32A326E55B3100178465 /* SharedUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		92305FCE2B8013BF00DFAF44 /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = 92305FCD2B8013BF00DFAF44 /* Starscream */; };
+		92305FD02B80158C00DFAF44 /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = 92305FCF2B80158C00DFAF44 /* Starscream */; };
+		92305FD22B8016AE00DFAF44 /* UIImageColors in Frameworks */ = {isa = PBXBuildFile; productRef = 92305FD12B8016AE00DFAF44 /* UIImageColors */; };
 		923BD58E25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
 		923BD58F25E16D63003863AB /* SignInWithApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923BD58D25E16D63003863AB /* SignInWithApple.swift */; };
 		923C2B0524CC752E009E2380 /* JoliPlayground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */; };
@@ -358,6 +369,13 @@
 			remoteGlobalIDString = 9202D4062659BC0B00D5974F;
 			remoteInfo = SmartzClip;
 		};
+		92305FCA2B800EBC00DFAF44 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 92CC32A226E55B3100178465;
+			remoteInfo = SharedUI;
+		};
 		923C2B0724CC752E009E2380 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F379D72363534D005FE2AB /* Project object */;
@@ -441,6 +459,17 @@
 				9202D42C2659BC0E00D5974F /* SmartzClip.app in Embed App Clips */,
 			);
 			name = "Embed App Clips";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92305FCC2B800EBC00DFAF44 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				92305FC92B800EBC00DFAF44 /* SharedUI.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		9274A80D24CDB29900B45EDF /* Embed App Clips */ = {
@@ -540,6 +569,11 @@
 		9228F86B26C07A310053DC04 /* ExperienceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceData.swift; sourceTree = "<group>"; };
 		922989A62641FCA800FDD58F /* GridChooserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridChooserView.swift; sourceTree = "<group>"; };
 		922989AB26491F0D00FDD58F /* MailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailView.swift; sourceTree = "<group>"; };
+		92305FB22B800E4F00DFAF44 /* JsonUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JsonUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		92305FB42B800E4F00DFAF44 /* JsonUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonUIApp.swift; sourceTree = "<group>"; };
+		92305FB62B800E4F00DFAF44 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		92305FB82B800E5000DFAF44 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		92305FBB2B800E5000DFAF44 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9234320D23BFD2F700E24E96 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		923BD58D25E16D63003863AB /* SignInWithApple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApple.swift; sourceTree = "<group>"; };
 		923C4C38281C908A0052F385 /* Authentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authentication.swift; sourceTree = "<group>"; };
@@ -685,6 +719,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		92305FAF2B800E4E00DFAF44 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92305FC12B800EBC00DFAF44 /* JoliApi in Frameworks */,
+				92305FC32B800EBC00DFAF44 /* JoliMaqro in Frameworks */,
+				92305FC82B800EBC00DFAF44 /* SharedUI.framework in Frameworks */,
+				92305FCE2B8013BF00DFAF44 /* Starscream in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9274A7E124CDB29200B45EDF /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -763,7 +808,9 @@
 				9280818527046B6F001120ED /* NetworkImage in Frameworks */,
 				9278E2FA278A073D00868722 /* Version in Frameworks */,
 				924E96FA26E55D8800FF41E3 /* KeychainAccess in Frameworks */,
+				92305FD22B8016AE00DFAF44 /* UIImageColors in Frameworks */,
 				924E96FE26E55DD700FF41E3 /* PartialSheet in Frameworks */,
+				92305FD02B80158C00DFAF44 /* Starscream in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -842,6 +889,25 @@
 				921F6C3E26BEA05C0061D236 /* UIImage+Extensions.swift */,
 			);
 			name = CoreMlHelpers;
+			sourceTree = "<group>";
+		};
+		92305FB32B800E4F00DFAF44 /* JsonUI */ = {
+			isa = PBXGroup;
+			children = (
+				92305FB42B800E4F00DFAF44 /* JsonUIApp.swift */,
+				92305FB62B800E4F00DFAF44 /* ContentView.swift */,
+				92305FB82B800E5000DFAF44 /* Assets.xcassets */,
+				92305FBA2B800E5000DFAF44 /* Preview Content */,
+			);
+			path = JsonUI;
+			sourceTree = "<group>";
+		};
+		92305FBA2B800E5000DFAF44 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				92305FBB2B800E5000DFAF44 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		9239722C27497851006FCE06 /* Components */ = {
@@ -1102,6 +1168,7 @@
 				92CC32A426E55B3200178465 /* SharedUI */,
 				927914E1276F926A0043F995 /* SharedMacOS */,
 				927914EE276F929F0043F995 /* Exports */,
+				92305FB32B800E4F00DFAF44 /* JsonUI */,
 				92F379E02363534D005FE2AB /* Products */,
 				92F37A18236458F2005FE2AB /* Frameworks */,
 			);
@@ -1121,6 +1188,7 @@
 				92CC32A326E55B3100178465 /* SharedUI.framework */,
 				927914E0276F926A0043F995 /* SharedMacOS.framework */,
 				927914ED276F929F0043F995 /* Exports */,
+				92305FB22B800E4F00DFAF44 /* JsonUI.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1243,6 +1311,30 @@
 			productName = JoliPlayground;
 			productReference = 9203B30F24CB06C900F465CC /* JoliPlayground.framework */;
 			productType = "com.apple.product-type.framework";
+		};
+		92305FB12B800E4E00DFAF44 /* JsonUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92305FBF2B800E5000DFAF44 /* Build configuration list for PBXNativeTarget "JsonUI" */;
+			buildPhases = (
+				92305FAE2B800E4E00DFAF44 /* Sources */,
+				92305FAF2B800E4E00DFAF44 /* Frameworks */,
+				92305FB02B800E4E00DFAF44 /* Resources */,
+				92305FCC2B800EBC00DFAF44 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				92305FCB2B800EBC00DFAF44 /* PBXTargetDependency */,
+			);
+			name = JsonUI;
+			packageProductDependencies = (
+				92305FC02B800EBC00DFAF44 /* JoliApi */,
+				92305FC22B800EBC00DFAF44 /* JoliMaqro */,
+				92305FCD2B8013BF00DFAF44 /* Starscream */,
+			);
+			productName = JsonUI;
+			productReference = 92305FB22B800E4F00DFAF44 /* JsonUI.app */;
+			productType = "com.apple.product-type.application";
 		};
 		9274A7E324CDB29200B45EDF /* JoliClip */ = {
 			isa = PBXNativeTarget;
@@ -1421,6 +1513,8 @@
 				9280818427046B6F001120ED /* NetworkImage */,
 				9278E2F9278A073D00868722 /* Version */,
 				9249A9632809867E00A5F7F6 /* MultipartFormData */,
+				92305FCF2B80158C00DFAF44 /* Starscream */,
+				92305FD12B8016AE00DFAF44 /* UIImageColors */,
 			);
 			productName = SharedUI;
 			productReference = 92CC32A326E55B3100178465 /* SharedUI.framework */;
@@ -1435,7 +1529,7 @@
 				KnownAssetTags = (
 					New,
 				);
-				LastSwiftUpdateCheck = 1320;
+				LastSwiftUpdateCheck = 1520;
 				LastUpgradeCheck = 1320;
 				ORGANIZATIONNAME = "Anthony Chinwo";
 				TargetAttributes = {
@@ -1447,6 +1541,9 @@
 					};
 					9203B30E24CB06C900F465CC = {
 						CreatedOnToolsVersion = 12.0;
+					};
+					92305FB12B800E4E00DFAF44 = {
+						CreatedOnToolsVersion = 15.2;
 					};
 					9274A7E324CDB29200B45EDF = {
 						CreatedOnToolsVersion = 12.0;
@@ -1519,6 +1616,7 @@
 				9202D3D12659B6E700D5974F /* Smartz */,
 				9202D4062659BC0B00D5974F /* SmartzClip */,
 				927914EC276F929F0043F995 /* Exports */,
+				92305FB12B800E4E00DFAF44 /* JsonUI */,
 			);
 		};
 /* End PBXProject section */
@@ -1558,6 +1656,15 @@
 				92FBFC8D26AB33560068DDA5 /* Templates in Resources */,
 				9203B32724CB07EE00F465CC /* Localizable.strings in Resources */,
 				921CAFAB26B5F4F10078A394 /* YTPlayer.html in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92305FB02B800E4E00DFAF44 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92305FBC2B800E5000DFAF44 /* Preview Assets.xcassets in Resources */,
+				92305FB92B800E5000DFAF44 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1770,6 +1877,15 @@
 				9203B32824CB07F200F465CC /* Extensions.swift in Sources */,
 				922989AA26491DB800FDD58F /* ProfileView.swift in Sources */,
 				929FFE1C24FAF096000BDCF0 /* User.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92305FAE2B800E4E00DFAF44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92305FB72B800E4F00DFAF44 /* ContentView.swift in Sources */,
+				92305FB52B800E4F00DFAF44 /* JsonUIApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2013,6 +2129,11 @@
 			target = 9202D4062659BC0B00D5974F /* SmartzClip */;
 			targetProxy = 9202D42A2659BC0E00D5974F /* PBXContainerItemProxy */;
 		};
+		92305FCB2B800EBC00DFAF44 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 92CC32A226E55B3100178465 /* SharedUI */;
+			targetProxy = 92305FCA2B800EBC00DFAF44 /* PBXContainerItemProxy */;
+		};
 		923C2B0824CC752E009E2380 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9203B30E24CB06C900F465CC /* JoliPlayground */;
@@ -2245,6 +2366,84 @@
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		92305FBD2B800E5000DFAF44 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_ASSET_PATHS = "\"JsonUI/Preview Content\"";
+				DEVELOPMENT_TEAM = 2L26ZMA265;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Capture images for customised brand experience creation";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo library access is required for uploading brand assets";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartstikr.JsonUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		92305FBE2B800E5000DFAF44 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"JsonUI/Preview Content\"";
+				DEVELOPMENT_TEAM = 2L26ZMA265;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Capture images for customised brand experience creation";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo library access is required for uploading brand assets";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartstikr.JsonUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -2880,6 +3079,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		92305FBF2B800E5000DFAF44 /* Build configuration list for PBXNativeTarget "JsonUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92305FBD2B800E5000DFAF44 /* Debug */,
+				92305FBE2B800E5000DFAF44 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		9274A80A24CDB29900B45EDF /* Build configuration list for PBXNativeTarget "JoliClip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -3114,6 +3322,29 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 922BFD31263757F7007CAF36 /* XCRemoteSwiftPackageReference "AlertToast" */;
 			productName = AlertToast;
+		};
+		92305FC02B800EBC00DFAF44 /* JoliApi */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = JoliApi;
+		};
+		92305FC22B800EBC00DFAF44 /* JoliMaqro */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = JoliMaqro;
+		};
+		92305FCD2B8013BF00DFAF44 /* Starscream */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9278E2FB278A076600868722 /* XCRemoteSwiftPackageReference "Starscream" */;
+			productName = Starscream;
+		};
+		92305FCF2B80158C00DFAF44 /* Starscream */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9278E2FB278A076600868722 /* XCRemoteSwiftPackageReference "Starscream" */;
+			productName = Starscream;
+		};
+		92305FD12B8016AE00DFAF44 /* UIImageColors */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92C258B524939F780035A05B /* XCRemoteSwiftPackageReference "UIImageColors" */;
+			productName = UIImageColors;
 		};
 		9249A9632809867E00A5F7F6 /* MultipartFormData */ = {
 			isa = XCSwiftPackageProductDependency;

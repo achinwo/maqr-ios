@@ -25,6 +25,29 @@ public enum AuthenticationFlow {
     case spotify((Bool) -> Void)
 }
 
+public enum EditTarget: Equatable {
+    case active(UUID)
+    case none
+}
+
+public struct EditTargetKey: EnvironmentKey {
+    public static var defaultValue: EditTarget = .none
+}
+
+public extension EnvironmentValues {
+    
+    var currentEditTarget: EditTarget? {
+        get { self[EditTargetKey.self] }
+        set {
+            
+            guard let newValue else { return }
+            
+            self[EditTargetKey.self] = newValue
+        }
+    }
+    
+}
+
 
 public class ModalCoordinator {
     
@@ -136,6 +159,7 @@ public final class AppCoordinator: ObservableObject {
     @Published public var keyboardHeight: CGFloat = 0
     @Published public var insufficientPointsAttempt = 0
     @Published public var apnToken: String? = nil
+    @Published public var currentEditTarget: EditTarget? = nil
     
     public let signoutSubject = PassthroughSubject<Auth, Never>()
     public let globalToastInfo = PassthroughSubject<(alert: AlertToast, onDismiss: (Bool) -> Void), Never>()

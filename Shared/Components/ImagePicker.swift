@@ -79,6 +79,11 @@ extension ImagePickerRepresentable {
 
 public struct SingleImagePicker: ImagePickerRepresentable {
     
+    public init(callback: @escaping (UIImage?, String?, Error?) -> Void) {
+        self.callback = callback
+    }
+    
+    
     public var callback: (UIImage?, String?, Error?) -> Void
     
     public func makeUIViewController(context: UIViewControllerRepresentableContext<SingleImagePicker>) -> PHPickerViewController {
@@ -94,6 +99,11 @@ public struct SingleImagePicker: ImagePickerRepresentable {
 }
 
 public struct CameraImagePicker: ImagePickerRepresentable {
+    
+    public init(callback: @escaping (UIImage?, String?, Error?) -> Void) {
+        self.callback = callback
+    }
+    
     
     public var callback: (UIImage?, String?, Error?) -> Void
     
