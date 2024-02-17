@@ -15,10 +15,7 @@ import Version
 import AlertToast
 import struct NetworkImage.NetworkImageLoader
 import struct NetworkImage.NetworkImageCache
-
-#if !os(macOS)
 import PartialSheet
-#endif
 
 public enum AuthenticationFlow {
     case apple((Bool) -> Void)
@@ -123,10 +120,6 @@ public class ModalCoordinator {
 public final class AppCoordinator: ObservableObject {
     
     @Published public var currentLocation: AppLocation = .unset
-    
-    #if !os(macOS)
-    public var sheet: PartialSheetManager = PartialSheetManager()
-    #endif
     
     public var api: JoliApi!
     public lazy var serverLogDestination: ServerDestination = {
@@ -661,7 +654,7 @@ public final class AppCoordinator: ObservableObject {
             #if os(macOS)
             return view
             #else
-            return view.environmentObject(self.coordinator.sheet)
+            return view.attachPartialSheetToRoot()
             #endif
         }
         

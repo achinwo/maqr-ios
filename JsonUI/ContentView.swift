@@ -209,19 +209,19 @@ struct PencilButton: View {
         }
         .animation(.smooth, value: editMode)
         .sheet(item: $sourceType) { item in
-            if item == .camera{
+            if item == .camera {
                 CameraImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
                     self.sourceType = nil
                     self.onValue(img)
                 }
-                    .edgesIgnoringSafeArea(.bottom)
+                .edgesIgnoringSafeArea(.bottom)
             } else {
                 SingleImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
                     self.sourceType = nil
                     print("image: \(String(describing: img)), assestName: \(String(describing: assetName)), error: \(String(describing: error))")
                     self.onValue(img)
                 }
-                    .edgesIgnoringSafeArea(.bottom)
+                .edgesIgnoringSafeArea(.bottom)
             }
         }
         
@@ -330,7 +330,6 @@ struct ContentView: EditableView {
     var contentView: some View {
         
         VStack(spacing: .zero) {
-            
             
             EditableContentView(editPlacement: .bottomTrailing, editOffset: .init(width: 0, height: -5)){
                 Group(){

@@ -63,15 +63,6 @@ public enum SpotifyError: Error {
     case unathorized
 }
 
-#if !os(macOS)
-public extension PartialSheetManager {
-    
-    func show<T>(_ onDismiss: (() -> Void)? = nil, @ViewBuilder content: @escaping () -> T) where T: SwiftUI.View {
-        self.showPartialSheet(onDismiss, content: content)
-    }
-}
-#endif
-
 public protocol JoliView: View {
     associatedtype Content: View
     
@@ -610,14 +601,7 @@ public extension AppClip {
     var body: some Scene {
         WindowGroup {
             ZStack(){
-                self.contentView
-                    .if(!isMacOs){ view in
-                        #if os(macOS)
-                        view
-                        #else
-                        view.addPartialSheet()
-                        #endif
-                    }
+                self.contentView.attachPartialSheetToRoot()
             }
             .sheet(item: self.modalItemBinding){
                 DispatchQueue.main.async {

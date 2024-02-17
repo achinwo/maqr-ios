@@ -174,11 +174,11 @@ public struct EventView: JoliView {
     
     func authenticateAndPerform(_ callback: @escaping (Bool) -> Void){
         #if !os(macOS)
-        self.appCoordinator.sheet.show(){
-            print("Sheet dismissed!")
-        } content: {
-            SignInSheetView(title: "Authentication Required", subtitle: "Choose an authentication method", callback: callback)
-        }
+//        self.appCoordinator.sheet.show(){
+//            print("Sheet dismissed!")
+//        } content: {
+//            SignInSheetView(title: "Authentication Required", subtitle: "Choose an authentication method", callback: callback)
+//        }
         #endif
     }
     
@@ -189,9 +189,9 @@ public struct EventView: JoliView {
             
             guard authSuccessful else {
                 presentToast("Authentication Failed", subTitle: "Unable to complete authenication", type: .error(.red)) { _ in
-                    #if !os(macOS)
-                    self.appCoordinator.sheet.closePartialSheet()
-                    #endif
+//                    #if !os(macOS)
+//                    self.appCoordinator.sheet.closePartialSheet()
+//                    #endif
                 }
                 return
             }
@@ -207,7 +207,7 @@ public struct EventView: JoliView {
                 scrollProxy?.scrollTo("food", anchor: .top)
                 
                 #if !os(macOS)
-                self.appCoordinator.sheet.closePartialSheet()
+                //self.appCoordinator.sheet.closePartialSheet()
                 #endif
             }
         }
@@ -228,9 +228,9 @@ public struct EventView: JoliView {
             
             guard authSuccessful else {
                 presentToast("Authentication Failed", subTitle: "Unable to complete authenication", type: .error(.red)) { _ in
-                    #if !os(macOS)
-                    self.appCoordinator.sheet.closePartialSheet()
-                    #endif
+//                    #if !os(macOS)
+//                    self.appCoordinator.sheet.closePartialSheet()
+//                    #endif
                 }
                 return
             }
@@ -241,11 +241,11 @@ public struct EventView: JoliView {
                 await self.saveEntitlement(rec)
             }
             
-#if !os(macOS)
-            DispatchQueue.main.async {
-                self.appCoordinator.sheet.closePartialSheet()
-            }
-#endif
+//#if !os(macOS)
+//            DispatchQueue.main.async {
+//                self.appCoordinator.sheet.closePartialSheet()
+//            }
+//#endif
         }
         
         guard appCoordinator.activeAuth != nil else {
