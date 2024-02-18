@@ -9,13 +9,13 @@
 import SwiftUI
 import Starscream
 import SharedUI
+import SheeKit
 
 #if os(macOS)
 public enum EditingState: Hashable, Equatable {
     case active
     case inactive
     case transient
-    var isEditing: Bool { self == .active }
 }
 #else
 public typealias EditingState = EditMode
@@ -24,6 +24,8 @@ public typealias EditingState = EditMode
 
 extension EditingState {
     
+    var isEditing: Bool { self == .active }
+    
     mutating func toggle() {
         self = self == .active ? .inactive : .active
     }
@@ -31,7 +33,7 @@ extension EditingState {
     var opacity: CGFloat {
         switch self {
             case .active:
-                return 1
+                return 0.4
             case .inactive:
                 return 0.9
             case .transient:
@@ -76,6 +78,7 @@ struct TestExperience: Experience {
 }
 
 protocol EditableView: JoliView & Identifiable {
+    associatedtype SheetContent: View
     
     var editMode: EditingState { get nonmutating set }
     var editButtonPlacement: Alignment { get nonmutating set}
@@ -86,6 +89,8 @@ protocol EditableView: JoliView & Identifiable {
     var id: UUID { get nonmutating set }
     
     func onValue(image: UIImage?)
+    
+    func editSheet() -> SheetContent
     
 }
 
@@ -106,11 +111,10 @@ extension EditableView {
         return self.contentView
             //.environment(\.currentEditTarget, isEditing ? .active(id) : nil)
             .overlay(alignment: editButtonPlacement){
-                PencilButton(editMode: editModeBinding, onValue: self.onValue(image:))
+                PencilButton(editMode: editModeBinding, parentViewId: id, sheetContent: self.editSheet)
                     .offset(editButtonOffset)
                     .shadow(radius: 1)
                     .opacity(editMode.opacity)
-                    .zIndex(999)
             }
             .onReceive(appCoordinator.connectionStateSubject) { state in
                 self.onConnectionStateChange(state.state)
@@ -150,10 +154,11 @@ extension UIImagePickerController.SourceType: Identifiable {
     
 }
 
-struct PencilButton: View {
+struct PencilButton<SheetContent: View>: View {
     
     @Binding var editMode: EditingState
-    var onValue: (_ image: UIImage?) -> Void
+    @State var parentViewId: UUID
+    var sheetContent: () -> SheetContent
     
     var isEditing: Bool {
         editMode == .active
@@ -161,70 +166,50 @@ struct PencilButton: View {
     
     @Namespace var nspace
     @State private var sourceType: UIImagePickerController.SourceType? = nil
+    @State var isSheetPresented: Bool = false
+    
+    private let height = 32.0
     
     var body: some View {
-        let height = 32.0
         
         let button = Button(){
-                editMode.toggle()
-            } label: {
-                VStack(){
-                    Image(systemName: isEditing ? "checkmark" : "pencil")
-                        .foregroundStyle(isEditing ? Color.green : Color.black)
-                }
-                .frame(width: height, height: height)
+            editMode.toggle()
+        } label: {
+            VStack(){
+                Image(systemName: isEditing ? "checkmark" : "pencil")
+                    .foregroundStyle(isEditing ? Color.green : Color.black)
             }
-            .disabled(editMode == .transient)
+            .frame(width: height, height: height)
+        }
+        .disabled(editMode == .transient)
         
         Group(){
-            if isEditing {
-                HStack(){
-                    
-                    Button(){
-                        sourceType = .camera
-                    } label: {
-                        Image(systemName: "camera.viewfinder")
-                        .frame(width: height, height: height)
-                    }
-                    .padding(.horizontal)
-                    
-                    Button(){
-                        sourceType = .photoLibrary
-                    } label: {
-                        Image(systemName: "photo.on.rectangle.angled")
-                        .frame(width: height, height: height)
-                    }.padding(.vertical)
-                    
-                    button.padding(.horizontal)
-                }
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 20, height: 10)))
-                .matchedGeometryEffect(id: "group1", in: nspace, properties: .frame, isSource: false)
+            if editMode == .active {
+                button
+                    .preference(key: EditViewsKey.self, value: [
+                        .init(id: parentViewId, active: self.editMode == .active){
+                            self.editMode = .inactive
+                        } content: {
+                            AnyView(self.sheetContent())
+                        }
+                    ])
             } else {
                 button
-                    .background(Color.white)
-                    .clipShape(Circle())
-                    .matchedGeometryEffect(id: "group1", in: nspace, properties: .frame, isSource: false)
             }
         }
+        .background(Color.white)
+        .clipShape(Circle())
         .animation(.smooth, value: editMode)
-        .sheet(item: $sourceType) { item in
-            if item == .camera {
-                CameraImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
-                    self.sourceType = nil
-                    self.onValue(img)
-                }
-                .edgesIgnoringSafeArea(.bottom)
-            } else {
-                SingleImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
-                    self.sourceType = nil
-                    print("image: \(String(describing: img)), assestName: \(String(describing: assetName)), error: \(String(describing: error))")
-                    self.onValue(img)
-                }
-                .edgesIgnoringSafeArea(.bottom)
+        .onChange(of: editMode) { val in
+            
+            guard val == .active else {
+                isSheetPresented = false
+                return
             }
+            
+            isSheetPresented = true
+            print("[\(Self.self)] edit mode changed: \(val) - \(isSheetPresented)")
         }
-        
     }
     
 }
@@ -245,10 +230,38 @@ struct RoundedImageView: EditableView {
     
     @State var imageUrl = URL(string: "https://images.unsplash.com/photo-1521510186458-bbbda7aef46b?q=80&w=480&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
     @State var uiImage: UIImage? = nil
+    @State var sourceType: UIImagePickerController.SourceType? = nil
     
-    func onValue(image: UIImage?){
-        self.uiImage = image
-        print("[\(Self.self)] Setting image: \(String(describing: image))")
+    @ViewBuilder
+    func editSheet() -> some View {
+        HStack(){
+            Button("Camera", systemImage: "camera.viewfinder"){
+                sourceType = .camera
+            }
+            .buttonStyle(.borderedProminent)
+            .padding()
+            
+            Button("Gallery", systemImage: "photo.on.rectangle.angled"){
+                sourceType = .photoLibrary
+            }
+            .buttonStyle(.borderedProminent)
+            .padding()
+        }
+        .sheet(item: $sourceType) { item in
+            if item == .camera {
+                CameraImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
+                    self.sourceType = nil
+                    self.uiImage = img
+                }
+                .edgesIgnoringSafeArea(.bottom)
+            } else {
+                SingleImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
+                    self.sourceType = nil
+                    self.uiImage = img
+                }
+                .edgesIgnoringSafeArea(.bottom)
+            }
+        }
     }
     
     var contentView: some View {
@@ -272,7 +285,7 @@ struct RoundedImageView: EditableView {
     }
 }
 
-struct EditableContentView<Content: View>: EditableView {
+struct EditableContentView<Content: View, SheetContent: View>: EditableView {
     
     @State var id: UUID = UUID()
     
@@ -289,22 +302,22 @@ struct EditableContentView<Content: View>: EditableView {
     @EnvironmentObject var appCoordinator: SharedUI.AppCoordinator
     
     private let content: () -> Content
+    private let sheetContent: () -> SheetContent
     
-    init(editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero, @ViewBuilder content: @escaping () -> Content, onValue: ((_ img: UIImage?) -> Void)? = nil) {
+    init(editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero, @ViewBuilder content: @escaping () -> Content, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
         self._editButtonPlacement = State(initialValue: editPlacement)
         self.content = content
         self._editButtonOffset = State(initialValue: editOffset)
-        self.callback = onValue
-    }
-    
-    func onValue(image: UIImage?) {
-        self.callback?(image)
+        self.sheetContent = sheetContent
     }
     
     var contentView: some View {
         self.content()
     }
     
+    func editSheet() -> SheetContent {
+        sheetContent()
+    }
 }
 
 struct ContentView: EditableView {
@@ -316,6 +329,7 @@ struct ContentView: EditableView {
     }
     
     @Environment(\.currentEditTarget) var currentEditTarget: EditTarget?
+    @Environment(\.safeAreaInsets) var safeAreaInsets: EdgeInsets
     
     @State var editMode: EditingState = .inactive
     @State var editButtonOffset: CGSize = .init(width: 0, height: 0)
@@ -326,6 +340,18 @@ struct ContentView: EditableView {
     
     @State var imageUrl = URL(string: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
     @State var uiImage: UIImage? = nil
+    
+    @State var weddingTitle = "Esther & Jide"
+    @State var weddingSubtitle = "Hello & Welcome!"
+    
+    func editSheet() -> some View {
+        Text("Make edits and save!")
+    }
+    
+    @State private var sourceType: UIImagePickerController.SourceType? = nil
+    
+    @State var modals: [EditSheetWrapper] = []
+    @State var keyboardHeight: CGFloat = 0
     
     var contentView: some View {
         
@@ -350,23 +376,60 @@ struct ContentView: EditableView {
                 .overlay(alignment: .init(horizontal: .center, vertical: .bottom)) {
                     RoundedImageView()
                 }
-            } onValue: { image in
-                self.uiImage = image
+            } sheetContent: {
+                HStack(){
+                    Button("Camera", systemImage: "camera.viewfinder"){
+                        print("open camera!")
+                        sourceType = .camera
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding()
+                    
+                    Button("Gallery", systemImage: "photo.on.rectangle.angled"){
+                        print("open Gallery!")
+                        sourceType = .photoLibrary
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding()
+                }
+                .sheet(item: $sourceType) { item in
+                    if item == .camera {
+                        CameraImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
+                            self.sourceType = nil
+                            print("CAM| image: \(String(describing: img)), assestName: \(String(describing: assetName)), error: \(String(describing: error))")
+                                //self.onValue(img)
+                            self.uiImage = img
+                        }
+                        .edgesIgnoringSafeArea(.bottom)
+                    } else {
+                        SingleImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
+                            self.sourceType = nil
+                            print("image: \(String(describing: img)), assestName: \(String(describing: assetName)), error: \(String(describing: error))")
+                                //self.onValue(img)
+                            self.uiImage = img
+                        }
+                        .edgesIgnoringSafeArea(.bottom)
+                    }
+                }
             }
             
             ScrollView(.vertical){
                 
                 VStack {
                     EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: 0)){
-                        Text("Esther & Jide")
+                        Text(self.weddingTitle)
                             .font(.title.weight(.light))
                             .padding()
+                    } sheetContent: {
+                        TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder).padding()
                     }
                     .padding(.top, 60)
                     
                     EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: -5)){
-                        Text("Hello & Welcome!")
+                        Text(self.weddingSubtitle)
                             .font(.subheadline.weight(.light))
+                    } sheetContent: {
+                        TextField("Subtitle", text: self.$weddingSubtitle).textFieldStyle(.roundedBorder).padding()
                     }
                     
                     let pairs: [(imageName: String, title: String)] = [
@@ -407,6 +470,8 @@ struct ContentView: EditableView {
                                     
                                 }
                                 .buttonStyle(.bordered)
+                            } sheetContent: {
+                                Toggle("Active", isOn: .constant(true))
                             }
                             
                         }
@@ -416,10 +481,91 @@ struct ContentView: EditableView {
                 }
                 .padding(.bottom, 50)
             }
+            
         }
         .edgesIgnoringSafeArea(.vertical)
+        .onChange(of: appCoordinator.keyboardHeight) { keyboardHeight in
+            print("Keyboard height: \(keyboardHeight)")
+            self.keyboardHeight = keyboardHeight
+        }
         .background(Color.teal.opacity(0.1))
+        .onPreferenceChange(EditViewsKey.self) { views in
+            self.modals = views
+        }
+        .overlay(alignment: .init(horizontal: .center, vertical: .bottom)) {
+            
+            GeometryReader() { proxy in
+                ZStack(){
+                    ForEach(self.modals) { modalView in
+                        
+                        //if modalView.active {
+                            
+                            VStack(spacing: .zero){
+                                Spacer()
+                                    .onTapGesture(){
+                                        print("Tapped Spacer!")
+                                    }
+                                
+                                Divider()
+                                
+                                ZStack(alignment: .center){
+                                    modalView
+                                }
+                                .frame(minHeight: screenHeight * 0.3)
+                                .frame(width: proxy.frame(in: .global).width)
+                                .background(Color.systemGroupedBackground)
+                                    //.padding(.bottom, appCoordinator.keyboardHeight)
+                                //.background(BlurView(.systemUltraThinMaterialLight))
+                                
+                            }
+                            .background(
+                                Color.systemGroupedBackground.opacity(0.2)
+                                    .onTapGesture(){
+                                        print("Tapped Background!")
+                                        
+                                        withAnimation(){
+                                            modalView.onDismiss()
+                                        }
+                                    }
+                            )
+                            
+                            
+                       // }
+                        
+                    }
+                }
+                .frame(width: proxy.frame(in: .global).width, height: proxy.frame(in: .global).height)
+            }
+            .edgesIgnoringSafeArea(.top)
+            
+        }
     }
+}
+
+struct EditSheetWrapper: View, Identifiable, Equatable {
+    
+    let id: UUID
+    let active: Bool
+    let onDismiss: () -> Void
+    let content: () -> AnyView
+    
+    static func == (lhs: EditSheetWrapper, rhs: EditSheetWrapper) -> Bool {
+        lhs.id == rhs.id //&& lhs.active == rhs.active
+    }
+    
+    var body: some View {
+        content()
+    }
+    
+}
+
+struct EditViewsKey: PreferenceKey {
+    
+    static func reduce(value: inout [EditSheetWrapper], nextValue: () -> [EditSheetWrapper]) {
+        value = value + nextValue()
+    }
+    
+    static var defaultValue: [EditSheetWrapper] = []
 }
 
 #Preview {

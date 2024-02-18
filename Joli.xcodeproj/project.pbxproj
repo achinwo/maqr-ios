@@ -139,6 +139,7 @@
 		92643783276F94EC00E5F1B4 /* Experiences.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FBFC9326AB4A110068DDA5 /* Experiences.generated.swift */; };
 		92643785276FB53C00E5F1B4 /* Experience+JoliView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92643784276FB53C00E5F1B4 /* Experience+JoliView.swift */; };
 		92643786276FB56200E5F1B4 /* Experience+JoliView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92643784276FB53C00E5F1B4 /* Experience+JoliView.swift */; };
+		9268F1242B81A22200E3BC68 /* SheeKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9268F1232B81A22200E3BC68 /* SheeKit */; };
 		926DB4A6263897F500D62912 /* AppClip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927E0E3524E9ADC000C8257D /* AppClip.swift */; };
 		926DB4A7263897FE00D62912 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92595B4C253A1AD200609558 /* AppCoordinator.swift */; };
 		926DB4A826389CF000D62912 /* LobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927AE0C02554AC020027493D /* LobbyView.swift */; };
@@ -723,6 +724,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9268F1242B81A22200E3BC68 /* SheeKit in Frameworks */,
 				92305FC12B800EBC00DFAF44 /* JoliApi in Frameworks */,
 				92305FC32B800EBC00DFAF44 /* JoliMaqro in Frameworks */,
 				92305FC82B800EBC00DFAF44 /* SharedUI.framework in Frameworks */,
@@ -1331,6 +1333,7 @@
 				92305FC02B800EBC00DFAF44 /* JoliApi */,
 				92305FC22B800EBC00DFAF44 /* JoliMaqro */,
 				92305FCD2B8013BF00DFAF44 /* Starscream */,
+				9268F1232B81A22200E3BC68 /* SheeKit */,
 			);
 			productName = JsonUI;
 			productReference = 92305FB22B800E4F00DFAF44 /* JsonUI.app */;
@@ -1600,6 +1603,7 @@
 				9203410127E78BD8002BC9E0 /* XCRemoteSwiftPackageReference "EFQRCode" */,
 				9249A960280984E500A5F7F6 /* XCRemoteSwiftPackageReference "swift-multipart-formdata" */,
 				92065A7A2846C30500E52C3B /* XCRemoteSwiftPackageReference "swift-algorithms" */,
+				9268F1222B81A22200E3BC68 /* XCRemoteSwiftPackageReference "SheeKit" */,
 			);
 			productRefGroup = 92F379E02363534D005FE2AB /* Products */;
 			projectDirPath = "";
@@ -3220,6 +3224,14 @@
 				minimumVersion = 1.2.0;
 			};
 		};
+		9268F1222B81A22200E3BC68 /* XCRemoteSwiftPackageReference "SheeKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/edudnyk/SheeKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.1;
+			};
+		};
 		9278E2F8278A073D00868722 /* XCRemoteSwiftPackageReference "Version" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mxcl/Version.git";
@@ -3374,6 +3386,11 @@
 		9264377F276F93A100E5F1B4 /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JoliApi;
+		};
+		9268F1232B81A22200E3BC68 /* SheeKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9268F1222B81A22200E3BC68 /* XCRemoteSwiftPackageReference "SheeKit" */;
+			productName = SheeKit;
 		};
 		9270C228252CAA3B0030E6AD /* JoliApi */ = {
 			isa = XCSwiftPackageProductDependency;
