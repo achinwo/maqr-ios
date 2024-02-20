@@ -27,19 +27,21 @@ public enum EditTarget: Equatable {
     case none
 }
 
-public struct EditTargetKey: EnvironmentKey {
-    public static var defaultValue: EditTarget = .none
+public enum ViewMode: Equatable {
+    case editing
+    case preview
+}
+
+public struct ViewModeKey: EnvironmentKey {
+    public static var defaultValue: ViewMode = .preview
 }
 
 public extension EnvironmentValues {
     
-    var currentEditTarget: EditTarget? {
-        get { self[EditTargetKey.self] }
+    var viewModeGlobal: ViewMode {
+        get { self[ViewModeKey.self] }
         set {
-            
-            guard let newValue else { return }
-            
-            self[EditTargetKey.self] = newValue
+            self[ViewModeKey.self] = newValue
         }
     }
     

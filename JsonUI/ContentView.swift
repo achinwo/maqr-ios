@@ -60,26 +60,11 @@ public protocol Experience {
     init(_ data: ExperienceData?)
 }
 
-
-struct TestExperience: Experience {
-    
-    
-    @State var dataModel: ExperienceData? = nil
-    
-    @State var editMode: EditingState = .inactive
-    
-    
-    static var basePath: String = "test-ui"
-    
-    init(_ data: ExperienceData?) {
-        
-    }
-    
-}
-
 protocol EditableView: JoliView & Identifiable {
     associatedtype SheetContent: View
     
+    
+    var viewModeGlobal: ViewMode { get }
     var editMode: EditingState { get nonmutating set }
     var editButtonPlacement: Alignment { get nonmutating set}
     var editButtonOffset: CGSize { get nonmutating set}
@@ -88,13 +73,9 @@ protocol EditableView: JoliView & Identifiable {
     var isEditing: Bool { get }
     var id: UUID { get nonmutating set }
     
-    func onValue(image: UIImage?)
-    
     func editSheet() -> SheetContent
     
 }
-
-
 
 extension EditableView {
     
@@ -102,19 +83,17 @@ extension EditableView {
         editMode == .active
     }
     
-    func onValue(image: UIImage?) {
-        print("Wrong 'onValue'!! \(String(describing: image))")
-    }
-    
     var body: some View {
         
         return self.contentView
             //.environment(\.currentEditTarget, isEditing ? .active(id) : nil)
             .overlay(alignment: editButtonPlacement){
-                PencilButton(editMode: editModeBinding, parentViewId: id, sheetContent: self.editSheet)
-                    .offset(editButtonOffset)
-                    .shadow(radius: 1)
-                    .opacity(editMode.opacity)
+                if viewModeGlobal == .editing {
+                    PencilButton(editMode: editModeBinding, parentViewId: id, sheetContent: self.editSheet)
+                        .offset(editButtonOffset)
+                        .shadow(radius: 1)
+                        .opacity(editMode.opacity)
+                }
             }
             .onReceive(appCoordinator.connectionStateSubject) { state in
                 self.onConnectionStateChange(state.state)
@@ -142,6 +121,92 @@ extension EditableView {
                 
             }
             
+    }
+    
+}
+
+
+protocol EditContainerView: JoliView {
+    
+    var viewMode: ViewMode { get nonmutating set }
+    var modals: [EditSheetWrapper] { get nonmutating set }
+    
+}
+
+extension EditContainerView {
+    
+    var body: some View {
+        self.contentView
+            .environment(\.viewModeGlobal, viewMode)
+            .overlay() {
+                GeometryReader() { proxy in
+                    HStack(){
+                        Spacer()
+                        Button(){
+                            viewMode = viewMode == .editing ? .preview : .editing
+                        } label: {
+                            Label("\(viewMode == .editing ? "Preview" : "Edit")", systemImage: "\(viewMode == .editing ? "eye" : "pencil")")
+                        }
+                        .buttonStyle(.bordered)
+                        .padding()
+                    }
+                        
+//                    }
+//                    .frame(width: proxy.frame(in: .global).width, height: proxy.frame(in: .global).height)
+//                    .background(Color.green.opacity(0.3))
+                }
+                
+            }
+            .onReceive(appCoordinator.connectionStateSubject) { state in
+                self.onConnectionStateChange(state.state)
+            }
+            .onPreferenceChange(EditViewsKey.self) { views in
+                self.modals = views
+            }
+            .overlay(alignment: .init(horizontal: .center, vertical: .bottom)) {
+                
+                GeometryReader() { proxy in
+                    ZStack(){
+                        ForEach(self.modals) { modalView in
+                            
+                                //if modalView.active {
+                            
+                            VStack(spacing: .zero){
+                                Spacer()
+                                    .onTapGesture(){
+                                        print("Tapped Spacer!")
+                                    }
+                                
+                                Divider()
+                                
+                                ZStack(alignment: .center){
+                                    modalView
+                                }
+                                .frame(minHeight: screenHeight * 0.3)
+                                .frame(width: proxy.frame(in: .global).width)
+                                .background(Color.systemGroupedBackground)
+                                    //.padding(.bottom, appCoordinator.keyboardHeight)
+                                    //.background(BlurView(.systemUltraThinMaterialLight))
+                                
+                            }
+                            .background(
+                                Color.systemGroupedBackground.opacity(0.2)
+                                    .onTapGesture(){
+                                        print("Tapped Background!")
+                                        
+                                        withAnimation(){
+                                            modalView.onDismiss()
+                                        }
+                                    }
+                            )
+                            
+                        }
+                    }
+                    .frame(width: proxy.frame(in: .global).width, height: proxy.frame(in: .global).height)
+                }
+                .edgesIgnoringSafeArea(.top)
+                
+            }
     }
     
 }
@@ -218,7 +283,7 @@ struct RoundedImageView: EditableView {
     
     @State var id: UUID = UUID()
     
-    @Environment(\.currentEditTarget) var currentEditTarget: EditTarget?
+    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
     @State var editMode: EditingState = .inactive
     @State var editButtonOffset: CGSize = .init(width: 0, height: 50)
     
@@ -291,7 +356,7 @@ struct EditableContentView<Content: View, SheetContent: View>: EditableView {
     
     @State var editButtonOffset: CGSize = .zero
     
-    @Environment(\.currentEditTarget) var currentEditTarget: EditTarget?
+    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
     @State var editMode: EditingState = .inactive
     
     @State var editButtonPlacement: Alignment
@@ -320,21 +385,10 @@ struct EditableContentView<Content: View, SheetContent: View>: EditableView {
     }
 }
 
-struct ContentView: EditableView {
+struct ContentView: EditContainerView {
     
-    @State var id: UUID = UUID()
-    
-    var editModeBinding: Binding<EditingState> {
-        $editMode
-    }
-    
-    @Environment(\.currentEditTarget) var currentEditTarget: EditTarget?
-    @Environment(\.safeAreaInsets) var safeAreaInsets: EdgeInsets
-    
-    @State var editMode: EditingState = .inactive
-    @State var editButtonOffset: CGSize = .init(width: 0, height: 0)
-    
-    @State var editButtonPlacement: Alignment = .init(horizontal: .center, vertical: .bottom)
+    @State var viewMode: ViewMode = .editing
+    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
@@ -344,14 +398,11 @@ struct ContentView: EditableView {
     @State var weddingTitle = "Esther & Jide"
     @State var weddingSubtitle = "Hello & Welcome!"
     
-    func editSheet() -> some View {
-        Text("Make edits and save!")
-    }
-    
     @State private var sourceType: UIImagePickerController.SourceType? = nil
     
-    @State var modals: [EditSheetWrapper] = []
     @State var keyboardHeight: CGFloat = 0
+    
+    @State var modals: [EditSheetWrapper] = []
     
     var contentView: some View {
         
@@ -489,56 +540,7 @@ struct ContentView: EditableView {
             self.keyboardHeight = keyboardHeight
         }
         .background(Color.teal.opacity(0.1))
-        .onPreferenceChange(EditViewsKey.self) { views in
-            self.modals = views
-        }
-        .overlay(alignment: .init(horizontal: .center, vertical: .bottom)) {
-            
-            GeometryReader() { proxy in
-                ZStack(){
-                    ForEach(self.modals) { modalView in
-                        
-                        //if modalView.active {
-                            
-                            VStack(spacing: .zero){
-                                Spacer()
-                                    .onTapGesture(){
-                                        print("Tapped Spacer!")
-                                    }
-                                
-                                Divider()
-                                
-                                ZStack(alignment: .center){
-                                    modalView
-                                }
-                                .frame(minHeight: screenHeight * 0.3)
-                                .frame(width: proxy.frame(in: .global).width)
-                                .background(Color.systemGroupedBackground)
-                                    //.padding(.bottom, appCoordinator.keyboardHeight)
-                                //.background(BlurView(.systemUltraThinMaterialLight))
-                                
-                            }
-                            .background(
-                                Color.systemGroupedBackground.opacity(0.2)
-                                    .onTapGesture(){
-                                        print("Tapped Background!")
-                                        
-                                        withAnimation(){
-                                            modalView.onDismiss()
-                                        }
-                                    }
-                            )
-                            
-                            
-                       // }
-                        
-                    }
-                }
-                .frame(width: proxy.frame(in: .global).width, height: proxy.frame(in: .global).height)
-            }
-            .edgesIgnoringSafeArea(.top)
-            
-        }
+        
     }
 }
 
@@ -571,5 +573,4 @@ struct EditViewsKey: PreferenceKey {
 #Preview {
     ContentView()
         .environmentObject(AppCoordinator())
-        //.edgesIgnoringSafeArea(.vertical)
 }
