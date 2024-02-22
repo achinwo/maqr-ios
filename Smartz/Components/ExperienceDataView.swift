@@ -306,7 +306,7 @@ public struct ExperienceDataView: JoliView {
             ForEach(items) { expItemType in
                 self.itemTypeSectionView(expItemType)
             }
-            .animation(.easeInOut)
+            .animation(.easeInOut, value: experienceType?.supportedItemTypes)
             
             let isNew = data.isNew
             

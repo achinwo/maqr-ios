@@ -201,7 +201,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                         .foregroundColor(.primary)
                         .font(.headline.weight(.light))
                 }
-                .animation(.none)
+                .animation(.none, value: keyboardHeight)
                 .matchedGeometryEffect(id: "tab-title", in: namespace)
                 .opacity(keyboardHeight < 100 ? 0 : 1)
             }
@@ -213,7 +213,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
         //        .if(keyboardHidden){ view in
         //            view.clipShape(RoundedRectangle(cornerRadius: 25.0))
         //        }
-        .animation(.easeInOut)
+        .animation(.easeInOut, value: keyboardHeight)
     }
     
     var codeDesignerButton: some View {

@@ -44,12 +44,21 @@ struct ExperienceDataItemSummaryView: View {
 
 struct ExperienceDataItemView: JoliView {
     
+    init(item: ExperienceData.Item, index: Int, data: ExperienceData) {
+        self._itemDescription = State(initialValue: item.subtitle ?? .empty)
+        
+        self._item = State(wrappedValue: item)
+        self._index = State(initialValue: index)
+        self._data = StateObject(wrappedValue: data)
+    }
+    
     @EnvironmentObject var appCoordinator: AppCoordinator
     @Environment(\.presentationMode) var presentationMode
     
     @State var item: ExperienceData.Item
     @State var index: Int
     @StateObject var data: ExperienceData
+    @State var itemDescription: String
     
     func onItemRemove() {
         self.appCoordinator.withAlert("Remove \(item.experienceItemType.label)?", message: "Permanent delete this item", destructive: true, label: "Remove") {
@@ -210,7 +219,7 @@ struct ExperienceDataItemView: JoliView {
             }
             
             Section(header: Text("Description")) {
-                TextEditor(text: makeBinding(item, \.subtitle))
+                TextEditor(text: self.$itemDescription)//makeBinding(item, \.subtitle))
             }
             
             if item.experienceItemType == .mealPrepStep {
@@ -266,8 +275,6 @@ struct ExperienceDataItemView: JoliView {
                 }
                 
             }
-            //.padding(.bottom)
-            //.padding(.bottom)
             
         }
         .toolbar() {
@@ -276,6 +283,9 @@ struct ExperienceDataItemView: JoliView {
                     Text("Done")
                 }
             }
+        }
+        .onChange(of: itemDescription) { desc in
+            self.item.subtitle = desc
         }
         .onAppear() {
             

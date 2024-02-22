@@ -69,7 +69,7 @@ public struct LiveExperiencesView: JoliView {
     public var onSelect: (Action, StikrExperienceData) -> Void
     @Namespace var namespace
     
-    private func makeQrCode(_ data: StikrExperienceData) -> (UIImage, URL)? {
+    private func makeQrCode(_ data: StikrExperienceData) -> (URL, UIImage)? {
         
         var icon: CGImage? = nil
         
@@ -82,7 +82,7 @@ public struct LiveExperiencesView: JoliView {
               let url = URL(string: vizCode.url),
               
                 let img = EFQRCode.generate(for: url.absoluteString,
-                                            size: EFIntSize(width: 2560, height: 2560),
+                                            size: EFIntSize(width: 1080, height: 1080),
                                             backgroundColor: UIColor(hex: "#f5f6fa").cgColor,
                                             foregroundColor: UIColor(hex: data.brandColorPrimary ?? "#29304B").cgColor,
 //                                            watermark: UIImage(named: "smartz_logo")?.cgImage,
@@ -96,7 +96,53 @@ public struct LiveExperiencesView: JoliView {
             return nil
         }
         
-        return (UIImage(cgImage: img), url)
+        return (url, UIImage(cgImage: img))
+    }
+    
+    @State var loadingQrCode: Bool = false
+    
+    func viewCodeBtn(_ exp: StikrExperienceData) -> some View {
+        Button(){
+            
+            loadingQrCode = true
+            
+            DispatchQueue.global(qos: .userInteractive).async() {
+                
+                guard let (url, image) = self.qrCodeByExpId[exp.id] ?? self.makeQrCode(exp) else {
+                    
+                    DispatchQueue.main.sync() { loadingQrCode = false }
+                    
+                    return
+                }
+                
+                DispatchQueue.main.sync() {
+                    loadingQrCode = false
+                    
+                    self.qrCodeByExpId[exp.id] = (url: url, image: image)
+                    
+                    appCoordinator.modal.present() {
+                        return .view2(){
+                            prepareCodeModal(exp, image, url)
+                                .frame(width: screenWidth)
+                                .eraseToAnyView()
+                        }
+                    }
+                }
+                
+            }
+            
+        } label: {
+            Label("QR Code", systemImage: "qrcode")//.padding([.horizontal, .bottom]).padding(.top, 2)
+        }
+        .disabled(loadingQrCode)
+        .opacity(loadingQrCode ? 0.7 : 1)
+        .overlay() {
+            if loadingQrCode {
+                ProgressView()
+            }
+        }
+        .id("viewqr-\(exp.id)")
+        .matchedGeometryEffect(id: "\(exp.uuid)-view-btn", in: namespace)
     }
     
     @State var isShowingMessages = false
@@ -324,35 +370,6 @@ public struct LiveExperiencesView: JoliView {
     }
     
     @State var qrCodeByExpId = [Int: (url: URL, image: UIImage)]()
-    
-    func viewCodeBtn(_ exp: StikrExperienceData) -> some View {
-        Button(){
-            
-            guard let (url, image) = qrCodeByExpId[exp.id] else { return }
-            
-            appCoordinator.modal.present() {
-                return .view2(){
-                    prepareCodeModal(exp, image, url)
-                        .frame(width: screenWidth)
-                        .eraseToAnyView()
-                }
-            }
-        } label: {
-            Label("QR Code", systemImage: "qrcode")//.padding([.horizontal, .bottom]).padding(.top, 2)
-        }
-        .id("viewqr-\(exp.id)")
-        .disabled(qrCodeByExpId[exp.id] == nil)
-        .matchedGeometryEffect(id: "\(exp.uuid)-view-btn", in: namespace)
-        .onAppear() {
-            DispatchQueue.global(qos: .userInitiated).async {
-                guard let (img, url) = self.makeQrCode(exp) else { return }
-                
-                DispatchQueue.main.async {
-                    self.qrCodeByExpId[exp.id] = (url: url, image: img)
-                }
-            }
-        }
-    }
     
     func launchBtn(_ exp: StikrExperienceData) -> some View {
         Button(){
