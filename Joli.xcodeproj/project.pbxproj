@@ -2219,7 +2219,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.43;
+				MARKETING_VERSION = 1.44;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_INSTALL_OBJC_HEADER = NO;
@@ -2246,7 +2246,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.43;
+				MARKETING_VERSION = 1.44;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_INSTALL_OBJC_HEADER = NO;
@@ -2273,7 +2273,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.43;
+				MARKETING_VERSION = 1.44;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG APPCLIP";
@@ -2300,7 +2300,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.43;
+				MARKETING_VERSION = 1.44;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APPCLIP;

@@ -84,9 +84,7 @@ public struct GridChooserView<Item: Identifiable, Content: View>: JoliView {
             } label: {
                 content(item)
             }
-            .ifLet(cornerRadius){ view, value in
-                view.cornerRadius(value)
-            }
+            .cornerRadius(cornerRadius ?? .zero)
             .id(item.id)
         }
     }

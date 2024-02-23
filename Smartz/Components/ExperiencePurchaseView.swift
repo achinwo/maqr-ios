@@ -108,7 +108,7 @@ struct ExperiencePurchaseView: JoliView {
                         //.padding(.horizontal)
                         .font(.title2.weight(.light))
                         .scaleEffect(x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1)
-                        .animation(.easeInOut)
+                        .animation(.easeInOut, value: isActive)
                         .disabled(!isActive)
                     
                     Spacer()
@@ -125,14 +125,14 @@ struct ExperiencePurchaseView: JoliView {
             GridChooserView(items: .constant(oneoffProducts), selection: $selectedProductId, layout: .grid(oneoffProducts.count), cornerRadius: nil) { (product: Product) in
                 
                 withImpact(.light, animated: Animation.easeInOut) {
-                    print("selected: \(product) - \(self.selectedProductId)")
+                    print("selected: \(product) - \(String(describing: self.selectedProductId))")
                 }
             } content: { product in
                 self.oneoffProductView(product)
             }
             //.backgroundColor(.green)
             
-            if let invalidIds = invalidProductIds, oneoffProducts.isEmpty {
+            if invalidProductIds != nil, oneoffProducts.isEmpty {
                 Text("Seems there's been an issue loading product information...")
                     .frame(maxWidth: screenWidth - 100, minHeight: screenWidth / 4)
                     .padding(.horizontal)
@@ -150,54 +150,55 @@ struct ExperiencePurchaseView: JoliView {
         let width = screenWidth - 150
         return ScrollView(.horizontal, showsIndicators: false){
             VStack(){
-            GridChooserView(items: .constant(subscriptionProducts), selection: $selectedProductId, layout: .grid(subscriptionProducts.count), cornerRadius: nil) { (product: Product) in
-                
-                withImpact(.rigid) {
-                    //scrollProxy?.scrollTo(product.productIdentifier, anchor: .leading)
-                    print("selected: \(product) - \(self.selectedProductId) - \(scrollProxy)")
-                }
-            } content: { product in
-                let isActive = product.productIdentifier == self.selectedProductId
-                
-                VStack(){
-                    Spacer()
-                    Text(product.localizedTitle).font(.headline)
-                    Text(product.localizedDescription).font(.subheadline).foregroundColor(.secondary)
-                    Text(product.price  ?? "Unable to determine price")
-                        .foregroundColor(.secondary)
-                        .font(isActive ? .title2.weight(.semibold) : .title2)
-                        .padding()
-                    Spacer()
-                }
-                .frame(minHeight: screenWidth * 0.5)
-                .frame(width: width)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke((isActive ? Color.green : Color.fixedGray).opacity(isActive ? 0.6 : 0.2), lineWidth: 1)
-                )
-                .overlay(
-                    HStack(spacing: .zero){
-                        Spacer()
-                        
-                        VStack(alignment: .trailing, spacing: .zero){
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(isActive ? .green : Color.secondaryLabel)
-                                //.padding(.horizontal)
-                                .font(.title2.weight(.light))
-                                .scaleEffect(x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1)
-                                .animation(.easeInOut)
-                                .disabled(!isActive)
-                            
-                            Spacer()
-                        }//.backgroundColor(.yellow)
+                GridChooserView(items: .constant(subscriptionProducts), selection: $selectedProductId, layout: .grid(subscriptionProducts.count), cornerRadius: nil) { (product: Product) in
+                    
+                    withImpact(.rigid) {
+                            //scrollProxy?.scrollTo(product.productIdentifier, anchor: .leading)
+                        print("selected: \(product) - \(String(describing: self.selectedProductId)) - \(String(describing: scrollProxy))")
                     }
-                    .opacity(isActive ? 1 : 0)
-                )
-                .padding()
-                .padding(.horizontal)
-                .id(product.id)
-            }
-                if let invalidIds = invalidProductIds, subscriptionProducts.isEmpty {
+                } content: { product in
+                    let isActive = product.productIdentifier == self.selectedProductId
+                    
+                    VStack(){
+                        Spacer()
+                        Text(product.localizedTitle).font(.headline)
+                        Text(product.localizedDescription).font(.subheadline).foregroundColor(.secondary)
+                        Text(product.price  ?? "Unable to determine price")
+                            .foregroundColor(.secondary)
+                            .font(isActive ? .title2.weight(.semibold) : .title2)
+                            .padding()
+                        Spacer()
+                    }
+                    .frame(minHeight: screenWidth * 0.5)
+                    .frame(width: width)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke((isActive ? Color.green : Color.fixedGray).opacity(isActive ? 0.6 : 0.2), lineWidth: 1)
+                    )
+                    .overlay(
+                        HStack(spacing: .zero){
+                            Spacer()
+                            
+                            VStack(alignment: .trailing, spacing: .zero){
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(isActive ? .green : Color.secondaryLabel)
+                                    //.padding(.horizontal)
+                                    .font(.title2.weight(.light))
+                                    .scaleEffect(x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1)
+                                    .animation(.easeInOut, value: isActive)
+                                    .disabled(!isActive)
+                                
+                                Spacer()
+                            }//.backgroundColor(.yellow)
+                        }
+                            .opacity(isActive ? 1 : 0)
+                    )
+                    .padding()
+                    .padding(.horizontal)
+                    .id(product.id)
+                }
+                
+                if invalidProductIds != nil, subscriptionProducts.isEmpty {
                     Label(){
                         Text("Seems there's been an issue loading product information...")
                             .frame(maxWidth: screenWidth - 100, minHeight: screenWidth / 4)
@@ -213,13 +214,6 @@ struct ExperiencePurchaseView: JoliView {
             }
             .frame(minWidth: width * CGFloat(subscriptionProducts.count) * 1.1)
             .padding(.horizontal)
-//            .ifLet(self.invalidProductIds){ view, ids in
-//                Group(){
-//                    if subscriptionProducts.isEmpty {
-//                        view.overlay(Text("Seems there's been an issue loading product information"))
-//                    }
-//                }
-//            }
         }
         
     }
@@ -275,7 +269,7 @@ struct ExperiencePurchaseView: JoliView {
                         
                         self.subscriptionProductsView
                         Divider().padding()
-                            .animation(.easeInOut)
+                            .animation(.easeInOut, value: isLoadingProducts)
                         Text("Don't need a subscription?").font(.title2.weight(.semibold)).padding(.horizontal)
                         (Text("We've got you covered, use a one-off fixed duration plan - perfect for trailing, or ") + Text("planning events").fontWeight(.semibold))                            .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
@@ -283,7 +277,7 @@ struct ExperiencePurchaseView: JoliView {
                         
                         self.oneoffProductsView
                             .padding()
-                            .animation(.easeInOut)
+                            .animation(.easeInOut, value: isLoadingProducts)
                             .padding(.bottom)
                         
                         if shouldShowTnC {
@@ -343,9 +337,7 @@ struct ExperiencePurchaseView: JoliView {
                                     Label(prodSelectTxt, systemImage: iconName)
                                 }
                             }
-                            .ifLet(frameSize){ view, value in
-                                view.frame(width: abs(value.width - 100))
-                            }
+                            .frame(width: frameSize == nil ? nil : abs(frameSize!.width - 100))
                             .id("button-buy")
                             
                         }

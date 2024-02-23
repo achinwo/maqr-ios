@@ -368,7 +368,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             .padding(.bottom, safeAreaInsets.bottom * 2)
                             .disabled(selectedAccessLevel != .experienceDataAccessPrivate)
                             .opacity(selectedAccessLevel == .experienceDataAccessPrivate ? 1 : 0)
-                            .animation(.easeInOut)
+                            .animation(.easeInOut, value: selectedAccessLevel)
                     }
                     .id(Tab.home)
                     .navigationBarTitleDisplayMode(.inline)
@@ -415,7 +415,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                             .padding(.leading)
                             .opacity(isLoggedIn && selectedAccessLevel == .experienceDataAccessPrivate ? 1 : 0)
                             .disabled(!isLoggedIn || selectedAccessLevel != .experienceDataAccessPrivate)
-                            .animation(.easeInOut)
+                            .animation(.easeInOut, value: isLoggedIn)
                         }
                         
                         ToolbarItem(placement: .navigationBarLeading) {
@@ -432,7 +432,7 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                                 
                             }
                             .frame(maxWidth: 32)
-                            .animation(.easeInOut)
+                            .animation(.easeInOut, value: appCoordinator.activeAuth)
                             .padding(.trailing)
                             .id("man-screen-signin")
                         }
@@ -544,14 +544,19 @@ struct AccountView: JoliView {
         
         return VStack(){
             
-            NetworkImage(url: currentAuth?.user.gravatarUrl){
+            let img = NetworkImage(url: currentAuth?.user.gravatarUrl){
                 Image(systemName: "person.crop.circle")
                     .resizable()
                     .font(.largeTitle.weight(.thin))
                     .foregroundColor(.secondaryLabel)
             }
-            .ifLet(currentAuth?.user.gravatarUrl) { (view, value) in
-                return view.clipShape(Circle())
+            
+            Group(){
+                if currentAuth?.user.gravatarUrl != nil {
+                    img.clipShape(Circle())
+                } else {
+                    img
+                }
             }
             .frame(maxWidth: screenWidth / 2, maxHeight: screenWidth / 2)
             .padding()

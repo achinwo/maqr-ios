@@ -535,20 +535,17 @@ public struct CodeDesignerView: JoliView {
     }
     
     public var contentView: some View {
-        TabView(selection: $selectedTab) {
-            ForEach(0 ..< self.viewCount, id: \.self){ index in
-                self.viewForIndex(index)
-                    .frame(width: screenWidth)
-                    .tag(index)
-                    //.id("code-designer-tabview-\(index)")
+        let tabView = TabView(selection: $selectedTab) {
+                ForEach(0 ..< self.viewCount, id: \.self){ index in
+                    self.viewForIndex(index)
+                        .frame(width: screenWidth)
+                        .tag(index)
+                        //.id("code-designer-tabview-\(index)")
+                }
             }
-        }
-        //.layoutPriority(100)
-        //.backgroundColor(.green)
-        .edgesIgnoringSafeArea(.bottom)
+            .edgesIgnoringSafeArea(.bottom)
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .interactive))
-            //.frame(minHeight: screenHeight)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar() {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -586,7 +583,7 @@ public struct CodeDesignerView: JoliView {
                         let isLastTab = selectedTab == tabNames.count - 1
                         
                         Button(){
-
+                            
                             let msg = "[\(Self.self)] attempting to submit: isLastTab=\(isLastTab), brandName=\(String(describing: experienceData?.brandName)), purchases: \(purchasesIdsForTesting), hasSubscription: \(hasSubscription)"
                             appCoordinator.serverLogDestination.send(.info, msg: msg, thread: Thread.current.description,
                                                                      file: #file, function: #function, line: #line)
@@ -617,7 +614,7 @@ public struct CodeDesignerView: JoliView {
                                 Text("Try It")
                             }
                             
-                            //Label("Try It", systemImage: "arrow.forward")
+                                //Label("Try It", systemImage: "arrow.forward")
                         }
                         .disabled(brandName.isEmpty || landingPageText.isEmpty || submitting)
                     }
@@ -633,11 +630,7 @@ public struct CodeDesignerView: JoliView {
                 self.selectedExperience = Experiences(typeName: expTypeName)?.rawValue
             }
             .ifLet(self.experienceData) { view, experience in
-                view.onReceive(experience.objectWillChange) { value in
-                    DispatchQueue.main.async {
-                        requestExperiencePersistAt = Date()
-                    }
-                }
+                view
             }
             .onReceive(self.$requestExperiencePersistAt) { persistRequestedAt in
                 guard persistRequestedAt != nil else { return }
@@ -655,94 +648,108 @@ public struct CodeDesignerView: JoliView {
                     let entitlements = try? await Entitlement.all(where: [.userId: auth.user.id.description as AnyObject, .type: "subscription_account" as AnyObject],
                                                                   baseUrl: api.baseUrlHttp, urlSession: api.urlSession, on: .main)
                     self.userEntitlements = entitlements ?? []
-                    //print("[CodeDesigner] user \(auth.user.id) entitlements: \(entitlements ?? [])")
+                        //print("[CodeDesigner] user \(auth.user.id) entitlements: \(entitlements ?? [])")
                 }
             }
-            .onAppear() {
-                
-                //            let fileManager = FileManager.default
-                //            let documentsURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-                //            do {
-                //                let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
-                //                // process files
-                //                for u in fileURLs {
-                //                    print("file: \(u)")
-                //                }
-                //            } catch {
-                //                print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
-                //            }
-                self.requestStoredExperienceRefreshAt = Date()
-                    
-                defer {
-                    self.selectedTab = selectedExperience != nil && isNewExperience ? 1 : 0
-                    self.updateBrandName()
-                }
-                
-                guard storedData != .empty else {
-                    return
-                }
-                
-                let decoder = Musicroom.jsonDecoder()
-                let exp: LocalExperienceData
-                
-                do {
-                    exp = try decoder.decode(LocalExperienceData.self, from: storedData)
-                } catch {
-                    print("[CodeDesignerView] unable to load stored experience: \(error)")
-                    self.appCoordinator.globalErrorHandler()(error)
-                    return
-                }
-                
-                let expData = exp.experienceData
-                
-                self.selectedExperience = expData.experienceTypeInfo.rawValue
-                
-                expData.logoImageUrl = exp.experienceData.logoImageUrl?.cached
-                expData.bannerImageUrl = exp.experienceData.bannerImageUrl?.cached
-                expData.bannerVideoUrl = exp.experienceData.bannerVideoUrl?.cached
-                expData.backgroundImageUrl = exp.experienceData.backgroundImageUrl?.cached
-                expData.productImageUrl = exp.experienceData.productImageUrl?.cached
-                
-                expData.items = expData.items.map() { item -> ExperienceData.Item in
-                    
-                    guard let imageUrl = item.imageName, let url = URL(string: imageUrl) else {
-                        return item
+        
+        return Group(){
+            if let experienceData = self.experienceData {
+                tabView.onReceive(experienceData.objectWillChange) { value in
+                    DispatchQueue.main.async {
+                        requestExperiencePersistAt = Date()
                     }
-                    
-                    var newItem = item
-                    newItem.imageName = url.cached.absoluteString
-                    
-                    return newItem
                 }
-                
-                self.brandName = expData.brandName
-                self.landingPageText = expData.landingPageText
-                
-                self.experienceData = expData
-                self.onExperinceDataChanged(expData)
-                
-                //let encode = exp.experienceData.jsonEncoder
-                //let data = try! encode.encode(exp.experienceData)
-                //print("[Experience Changed] loaded experience data") //: \(String(data: data, encoding: .utf8)!)")
-                
-                //            var string = "SVG File Name,URL,Background Color,Foreground Color,Type,Logo\n"
-                //            let url = "https://smartstikr.com/s/shows/iacw"
-                //            for item in appClipsStyles {
-                //                string += "preview_appclip_\(item.index)_cam_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,badge\n"
-                //                string += "preview_appclip_\(item.index)_cam_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,none\n"
-                //                string += "preview_appclip_\(item.index)_nfc_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,badge\n"
-                //                string += "preview_appclip_\(item.index)_nfc_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,none\n"
-                //
-                //                let s2 = AppClipCodeStyle(index: item.index + 1, foregroundColor: item.backgroundColor, backgroundColor: item.foregroundColor)
-                //
-                //                string += "preview_appclip_\(s2.index)_cam_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,badge\n"
-                //                string += "preview_appclip_\(s2.index)_cam_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,none\n"
-                //                string += "preview_appclip_\(s2.index)_nfc_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,badge\n"
-                //                string += "preview_appclip_\(s2.index)_nfc_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,none\n"
-                //            }
-                //
-                //            print(string)
+            } else {
+                tabView
             }
+        }
+        .onAppear(perform: self.onTabViewAppear)
+                
+    }
+    
+    func onTabViewAppear() {
+            //            let fileManager = FileManager.default
+            //            let documentsURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            //            do {
+            //                let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
+            //                // process files
+            //                for u in fileURLs {
+            //                    print("file: \(u)")
+            //                }
+            //            } catch {
+            //                print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
+            //            }
+        self.requestStoredExperienceRefreshAt = Date()
+        
+        defer {
+            self.selectedTab = selectedExperience != nil && isNewExperience ? 1 : 0
+            self.updateBrandName()
+        }
+        
+        guard storedData != .empty else {
+            return
+        }
+        
+        let decoder = Musicroom.jsonDecoder()
+        let exp: LocalExperienceData
+        
+        do {
+            exp = try decoder.decode(LocalExperienceData.self, from: storedData)
+        } catch {
+            print("[CodeDesignerView] unable to load stored experience: \(error)")
+            self.appCoordinator.globalErrorHandler()(error)
+            return
+        }
+        
+        let expData = exp.experienceData
+        
+        self.selectedExperience = expData.experienceTypeInfo.rawValue
+        
+        expData.logoImageUrl = exp.experienceData.logoImageUrl?.cached
+        expData.bannerImageUrl = exp.experienceData.bannerImageUrl?.cached
+        expData.bannerVideoUrl = exp.experienceData.bannerVideoUrl?.cached
+        expData.backgroundImageUrl = exp.experienceData.backgroundImageUrl?.cached
+        expData.productImageUrl = exp.experienceData.productImageUrl?.cached
+        
+        expData.items = expData.items.map() { item -> ExperienceData.Item in
+            
+            guard let imageUrl = item.imageName, let url = URL(string: imageUrl) else {
+                return item
+            }
+            
+            var newItem = item
+            newItem.imageName = url.cached.absoluteString
+            
+            return newItem
+        }
+        
+        self.brandName = expData.brandName
+        self.landingPageText = expData.landingPageText
+        
+        self.experienceData = expData
+        self.onExperinceDataChanged(expData)
+        
+            //let encode = exp.experienceData.jsonEncoder
+            //let data = try! encode.encode(exp.experienceData)
+            //print("[Experience Changed] loaded experience data") //: \(String(data: data, encoding: .utf8)!)")
+        
+            //            var string = "SVG File Name,URL,Background Color,Foreground Color,Type,Logo\n"
+            //            let url = "https://smartstikr.com/s/shows/iacw"
+            //            for item in appClipsStyles {
+            //                string += "preview_appclip_\(item.index)_cam_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,badge\n"
+            //                string += "preview_appclip_\(item.index)_cam_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),cam,none\n"
+            //                string += "preview_appclip_\(item.index)_nfc_badge.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,badge\n"
+            //                string += "preview_appclip_\(item.index)_nfc_none.svg,\(url),\(item.backgroundColor.hexString.suffix(6)),\(item.foregroundColor.hexString.suffix(6)),nfc,none\n"
+            //
+            //                let s2 = AppClipCodeStyle(index: item.index + 1, foregroundColor: item.backgroundColor, backgroundColor: item.foregroundColor)
+            //
+            //                string += "preview_appclip_\(s2.index)_cam_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,badge\n"
+            //                string += "preview_appclip_\(s2.index)_cam_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),cam,none\n"
+            //                string += "preview_appclip_\(s2.index)_nfc_badge.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,badge\n"
+            //                string += "preview_appclip_\(s2.index)_nfc_none.svg,\(url),\(s2.backgroundColor.hexString.suffix(6)),\(s2.foregroundColor.hexString.suffix(6)),nfc,none\n"
+            //            }
+            //
+            //            print(string)
         //.navigationBarTitle(Text(tabNames[selectedTab]).multilineTextAlignment(.leading))
     }
     
