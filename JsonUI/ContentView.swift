@@ -12,7 +12,7 @@ import SharedUI
 
 struct EditableContentView<Content: View, SheetContent: View>: EditableView {
     
-    @State var id: UUID = UUID()
+    @State var id: String = UUID().uuidString
     
     @State var editButtonOffset: CGSize = .zero
     
@@ -61,7 +61,7 @@ struct ContentView: EditContainerView {
     @State private var sourceType: UIImagePickerController.SourceType? = nil
     
     @State var keyboardHeight: CGFloat = 0
-    
+    @State var modalViewOffset: CGFloat = 0
     @State var modals: [EditSheetWrapper] = []
     
     var contentView: some View {
@@ -159,17 +159,6 @@ struct ContentView: EditContainerView {
         
     }
     
-    
-    @State var functionViews: [any WeddingItemView] = [
-        WeddingStoryView(),
-//        WeddingFunctionView(imageName: "chair.lounge", title: "Seating"),
-//        WeddingFunctionView(imageName: "list.bullet", title: "Order of Events"),
-//        WeddingFunctionView(imageName: "gift.fill", title: "Gift"),
-//        WeddingFunctionView(imageName: "fork.knife.circle.fill", title: "Food Menu"),
-//        WeddingFunctionView(imageName: "photo.on.rectangle.angled", title: "Photos"),
-//        WeddingFunctionView(imageName: "trophy.fill", title: "Thanks & Credits"),
-    ]
-    
     var columns: [GridItem] {
         [
             GridItem(.fixed(screenWidth / 2.5), spacing: 10),
@@ -177,24 +166,59 @@ struct ContentView: EditContainerView {
         ]
     }
     
+    @State var title: String = "Our Story"
+    @State var systemImage: String = "book.fill"
+    
     var bodyGridView: some View {
-        
+        //
         LazyVGrid(columns: columns, spacing: 15) {
-            let storyView = WeddingStoryView()
-            EditableContentView(editPlacement: .topTrailing){
-                NavigationLink() {
-                    storyView
-                } label: {
-                    storyView.navButton
-                        .frame(width: screenWidth / 4, height: screenWidth / 6)
-                        .padding()
-                }
-                .buttonStyle(.bordered)
-                
-            } sheetContent: {
-                storyView.editSheet()
-            }
             
+            let functionViews: [any WeddingItemView] = [
+                
+                //WeddingFunctionView(title: "Our Story", systemImage: "book.fill"),
+                WeddingFunctionView(title: "Seating", systemImage: "chair.lounge"),
+                WeddingFunctionView(title: "Order of Events", systemImage: "list.bullet"),
+                WeddingFunctionView(title: "Gift", systemImage: "gift.fill"),
+                WeddingFunctionView(title: "Food Menu", systemImage: "fork.knife.circle.fill"),
+                WeddingFunctionView(title: "Photos", systemImage: "photo.on.rectangle.angled"),
+                WeddingFunctionView(title: "Thanks & Credits", systemImage: "trophy.fill"),
+            ]
+            
+            WeddingStoryView(title: $title, systemImage: $systemImage)
+            
+//            EditableContentView(editPlacement: .topTrailing){
+//                Button() {
+//                    WeddingStoryView(title: $title, systemImage: $systemImage)
+//                        //.navigationTitle(storyView.title)
+//                } label: {
+//                    WeddingStoryView(title: $title, systemImage: $systemImage).navButton
+//                        .frame(width: screenWidth / 4, height: screenWidth / 6)
+//                        .padding()
+//                }
+//                .buttonStyle(.bordered)
+//                
+//            } sheetContent: {
+//                WeddingStoryView(title: $title, systemImage: $systemImage).editSheet()
+//            }
+            
+            ForEach(functionViews, id: \.id) { fnView in
+                
+                EditableContentView(editPlacement: .topTrailing){
+                    NavigationLink() {
+                        AnyView(fnView)
+                            .navigationTitle(fnView.title)
+                    } label: {
+                        AnyView(fnView.navButton)
+                            .frame(width: screenWidth / 4, height: screenWidth / 6)
+                            .padding()
+                    }
+                    .buttonStyle(.bordered)
+                    
+                } sheetContent: {
+                    AnyView(fnView.editSheet())
+                }
+                
+            }
         }
     }
     
@@ -204,7 +228,7 @@ struct ContentView: EditContainerView {
 
 public struct EditSheetWrapper: View, Identifiable, Equatable {
     
-    public let id: UUID
+    public let id: String
     let active: Bool
     let onDismiss: () -> Void
     let content: () -> AnyView

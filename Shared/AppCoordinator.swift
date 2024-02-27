@@ -23,7 +23,7 @@ public enum AuthenticationFlow {
 }
 
 public enum EditTarget: Equatable {
-    case active(UUID)
+    case active(String)
     case none
 }
 

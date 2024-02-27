@@ -12,7 +12,7 @@ import SharedUI
 
 struct RoundedImageView: EditableView {
     
-    @State var id: UUID = UUID()
+    @State var id: String = UUID().uuidString
     
     @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
     @State var editMode: EditingState = .inactive

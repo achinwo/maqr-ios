@@ -30,23 +30,106 @@ public protocol WeddingItemView: EditableView, Identifiable {
 
 struct WeddingStoryView: WeddingItemView {
     
-    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
+    @State var id: String = "wedding/story"
     
     @State var editMode: EditingState = .inactive
     @State var editButtonPlacement: Alignment = .topTrailing
-    @State var editButtonOffset: CGSize = .zero
+    @State var editButtonOffset: CGSize = .init(width: 0, height: 0)
     @State public var active: Bool = false
     
     var editModeBinding: Binding<EditingState> { $editMode }
     
-    @State public var id = UUID()
-    @State var title: String = "Our Story"
-    @State var systemImage: String = "book.fill"
+    @Binding var title: String
+    @Binding var systemImage: String
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    init(editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero) {
+    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
+    
+    init(title: Binding<String>, systemImage: Binding<String>){
+        _title = title
+        _systemImage = systemImage
+    }
+    
+    var navButton: some View {
+        VStack(){
+            Image(systemName: systemImage)
+                .renderingMode(.original)
+                .font(.title)
+            Text(title)
+                .font(.subheadline)
+                .lineLimit(3)
+                .multilineTextAlignment(.center)
+                .fixedSize()
+                .padding(.top)
+        }
+    }
+    
+    var contentView: some View {
+        NavigationLink(){
+            contentView2
+        } label: {
+            navButton
+                .frame(width: screenWidth / 4, height: screenWidth / 6)
+                .padding()
+        }
+        .buttonStyle(.bordered)
+    }
+    
+    var contentView2: some View {
+        VStack(){
+            Text(title)
+                .font(.title.weight(.light))
+            Spacer()
+        }
+        .frame(minWidth: screenWidth * 0.7)
+        .padding()
+        .padding(.top)
+    }
+    
+    func editSheet() -> some View {
+        if #available(iOS 17.1, *) {
+#if DEBUG
+            Self._logChanges()
+            Self._printChanges()
+#endif
+        }
+        return VStack(){
+            TextField("Title", text: $title).textFieldStyle(.roundedBorder)
+            Toggle("Active", isOn: $active)
+        }
+        .padding()
+    }
+    
+}
+
+struct WeddingFunctionView: WeddingItemView {
+    
+    var id: String {
+        get {
+            "\(systemImage)/\(title)"
+        }
+        nonmutating set {}
+    }
+    
+    
+    @State var editMode: EditingState = .inactive
+    @State var editButtonPlacement: Alignment = .topTrailing
+    @State var editButtonOffset: CGSize = .init(width: 0, height: 50)
+    @State public var active: Bool = false
+    
+    var editModeBinding: Binding<EditingState> { $editMode }
+    
+    @State var title: String //= "Our Story"
+    @State var systemImage: String //= "book.fill"
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    
+    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
+    
+    init(title: String, systemImage: String, editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero) {
         self._editButtonPlacement = State(initialValue: editPlacement)
         self._editButtonOffset = State(initialValue: editOffset)
+        self._title = State(initialValue: title)
+        self._systemImage = State(initialValue: systemImage)
     }
     
     var navButton: some View {
@@ -68,13 +151,25 @@ struct WeddingStoryView: WeddingItemView {
     var contentView: some View {
         VStack(){
             Text(title)
+                .font(.title.weight(.light))
+            Spacer()
         }
+        .frame(minWidth: screenWidth * 0.7)
+        .padding()
+        .padding(.top)
     }
     
     func editSheet() -> some View {
-        VStack(){
-            TextField("Title", text: $title)
-                .textFieldStyle(.roundedBorder)
+        if #available(iOS 17.1, *) {
+#if DEBUG
+            Self._logChanges()
+            Self._printChanges()
+#endif
+        } else {
+                // Fallback on earlier versions
+        }
+        return VStack(){
+            TextField("Title", text: $title).textFieldStyle(.roundedBorder)
             Toggle("Active", isOn: $active)
         }
         .padding()

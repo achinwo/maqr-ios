@@ -78,7 +78,7 @@ public protocol EditableView: JoliView & Identifiable {
     
     var editModeBinding: Binding<EditingState> { get }
     var isEditing: Bool { get }
-    var id: UUID { get nonmutating set }
+    var id: String { get nonmutating set }
     
     func editSheet() -> SheetContent
     
@@ -136,6 +136,7 @@ public protocol EditContainerView: JoliView {
     
     var viewMode: ViewMode { get nonmutating set }
     var modals: [EditSheetWrapper] { get nonmutating set }
+    var modalViewOffset: CGFloat { get nonmutating set }
     
 }
 
@@ -174,11 +175,9 @@ extension EditContainerView {
                                 
                                 VStack(spacing: .zero){
                                     Spacer()
-                                        .onTapGesture(){
-                                            print("Tapped Spacer!")
-                                        }
                                     
                                     Divider()
+                                        .offset(y: modalViewOffset)
                                     
                                     ZStack(alignment: .center){
                                         modalView
@@ -186,14 +185,15 @@ extension EditContainerView {
                                     .frame(minHeight: screenHeight * 0.3)
                                     .frame(width: proxy.frame(in: .global).width)
                                     .background(Color.systemGroupedBackground)
-                                    .offset(y: modalView.active ? 0 : screenHeight * 0.3)
+                                    .offset(y: modalViewOffset)
+                                    //.offset(y: modalView.active ? 0 : screenHeight * 0.3)
                                 }
                                 .background(
                                     Color.black.opacity(0.2)
                                         .onTapGesture(){
-                                            print("Tapped Background!")
                                             
                                             withAnimation(){
+                                                modalViewOffset = 0
                                                 for modal in self.modals {
                                                     guard modal.active else { continue }
                                                     modal.onDismiss()
@@ -201,6 +201,16 @@ extension EditContainerView {
                                             }
                                         }
                                 )
+                                .onAppear() {
+                                    withAnimation(){
+                                        modalViewOffset = 0
+                                    }
+                                }
+                                .onDisappear() {
+                                    withAnimation(){
+                                        modalViewOffset = screenHeight * 0.3
+                                    }
+                                }
                             }
                             
                         }
@@ -219,7 +229,7 @@ extension EditContainerView {
 struct PencilButton<SheetContent: View>: View {
     
     @Binding var editMode: EditingState
-    @State var parentViewId: UUID
+    @State var parentViewId: String
     var sheetContent: () -> SheetContent
     
     var isEditing: Bool {
@@ -265,11 +275,9 @@ struct PencilButton<SheetContent: View>: View {
         .onChange(of: editMode) { val in
             
             guard val == .active else {
-                isSheetPresented = false
                 return
             }
             
-            isSheetPresented = true
             print("[\(Self.self)] edit mode changed: \(val) - \(isSheetPresented)")
         }
     }
