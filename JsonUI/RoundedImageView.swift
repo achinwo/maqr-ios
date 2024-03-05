@@ -10,10 +10,11 @@ import Foundation
 import SwiftUI
 import SharedUI
 
+
 struct RoundedImageView: EditableView {
     
     @State var id: String = UUID().uuidString
-    
+    @State var attribute: TextAttribute = .empty
     @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
     @State var editMode: EditingState = .inactive
     @State var editButtonOffset: CGSize = .init(width: 0, height: 50)

@@ -9,6 +9,7 @@
 import Foundation
 import SwiftUI
 import SharedUI
+import JoliCore
 
 //WeddingFunctionView(imageName: "book.fill", title: "Our Story"),
 //WeddingFunctionView(imageName: "chair.lounge", title: "Seating"),
@@ -35,8 +36,12 @@ struct WeddingStoryView: WeddingItemView {
     @State var editMode: EditingState = .inactive
     @State var editButtonPlacement: Alignment = .topTrailing
     @State var editButtonOffset: CGSize = .init(width: 0, height: 0)
-    @State public var active: Bool = false
-    
+    @State public var active: Bool = true
+    @State var attribute: TextAttribute = .init(["bold": true,
+                                                 "color": "#000000",
+                                                 "fontUrl": "http://themes.googleusercontent.com/static/fonts/montserrat/v3/zhcz-_WihjSQC0oHJ9TCYC3USBnSvpkopQaUR-2r7iU.ttf",
+                                                 //"fontName": "Montserrat-Regular"
+    ] as Json)
     var editModeBinding: Binding<EditingState> { $editMode }
     
     @Binding var title: String
@@ -61,6 +66,7 @@ struct WeddingStoryView: WeddingItemView {
                 .multilineTextAlignment(.center)
                 .fixedSize()
                 .padding(.top)
+                .applyAttribute(attribute)
         }
     }
     
@@ -73,6 +79,7 @@ struct WeddingStoryView: WeddingItemView {
                 .padding()
         }
         .buttonStyle(.bordered)
+        .disabled(!active)
     }
     
     var contentView2: some View {
@@ -111,7 +118,7 @@ struct WeddingFunctionView: WeddingItemView {
         nonmutating set {}
     }
     
-    
+    @State var attribute: TextAttribute = .init(["bold": false] as Json)
     @State var editMode: EditingState = .inactive
     @State var editButtonPlacement: Alignment = .topTrailing
     @State var editButtonOffset: CGSize = .init(width: 0, height: 50)
@@ -144,6 +151,7 @@ struct WeddingFunctionView: WeddingItemView {
                 .multilineTextAlignment(.center)
                 .fixedSize()
                 .padding(.top)
+                .applyAttribute(attribute)
             
         }
     }
@@ -176,3 +184,9 @@ struct WeddingFunctionView: WeddingItemView {
     }
     
 }
+
+#Preview {
+    ContentView()
+        .environmentObject(AppCoordinator())
+}
+

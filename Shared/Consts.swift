@@ -111,6 +111,18 @@ public enum Sizing {
     
     public static let xxxLarge = xxLarge * 2.0
     
+    public static let largeTitle = UIFont.preferredFont(forTextStyle: .largeTitle).pointSize
+    public static let title1 = UIFont.preferredFont(forTextStyle: .title1).pointSize
+    public static let title2 = UIFont.preferredFont(forTextStyle: .title2).pointSize
+    public static let headline = UIFont.preferredFont(forTextStyle: .headline).pointSize
+    public static let subheadline = UIFont.preferredFont(forTextStyle: .subheadline).pointSize
+    public static let body = UIFont.preferredFont(forTextStyle: .body).pointSize
+    
+    public static let title3 = UIFont.preferredFont(forTextStyle: .title3).pointSize
+    public static let callout = UIFont.preferredFont(forTextStyle: .callout).pointSize
+    public static let caption1 = UIFont.preferredFont(forTextStyle: .caption1).pointSize
+    public static let caption2 = UIFont.preferredFont(forTextStyle: .caption2).pointSize
+    
 }
 
 public enum Colors {

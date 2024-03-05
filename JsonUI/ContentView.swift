@@ -15,7 +15,7 @@ struct EditableContentView<Content: View, SheetContent: View>: EditableView {
     @State var id: String = UUID().uuidString
     
     @State var editButtonOffset: CGSize = .zero
-    
+    @State var attribute: TextAttribute = .empty
     @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
     @State var editMode: EditingState = .inactive
     
@@ -63,6 +63,8 @@ struct ContentView: EditContainerView {
     @State var keyboardHeight: CGFloat = 0
     @State var modalViewOffset: CGFloat = 0
     @State var modals: [EditSheetWrapper] = []
+    
+    @State var fontLoaded: CGFont? = nil
     
     var contentView: some View {
         NavigationView(){
@@ -126,8 +128,9 @@ struct ContentView: EditContainerView {
                     
                     VStack {
                         EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: 0)){
-                            Text(self.weddingTitle)
-                                .font(.title.weight(.light))
+                            Text("Hello & Welcome")//self.weddingTitle)
+                                //.font(.title.weight(.light))
+                                .font(fontLoaded == nil ? .title.weight(.light) : .custom(self.fontLoaded!.postScriptName as! String, size: Sizing.largeTitle))
                                 .padding()
                         } sheetContent: {
                             TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder).padding()
@@ -147,15 +150,20 @@ struct ContentView: EditContainerView {
                     .padding(.bottom, 50)
                 }
                 
+                
             }
             .edgesIgnoringSafeArea(.vertical)
             
         }
-        //.statusBarHidden()
         .onChange(of: appCoordinator.keyboardHeight) { keyboardHeight in
             self.keyboardHeight = keyboardHeight
         }
         .background(Color.teal.opacity(0.1))
+        .task {
+            
+            self.fontLoaded = FontLoader.remoteFont(url: URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"))
+            print("Loaded the font: \(String(describing: self.fontLoaded?.postScriptName))")
+        }
         
     }
     

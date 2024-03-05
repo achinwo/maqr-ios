@@ -9,6 +9,8 @@
 import Foundation
 import SharedUI
 import SwiftUI
+import JoliApi
+import JoliCore
 
 #if os(macOS)
 public enum EditingState: Hashable, Equatable {
@@ -68,13 +70,15 @@ extension UIImagePickerController.SourceType: Identifiable {
 }
 
 public protocol EditableView: JoliView & Identifiable {
-    associatedtype SheetContent: View
-    
+    associatedtype SheetContent: View = Never
+    associatedtype AttributeType: ViewAttribute = Never
     
     var viewModeGlobal: ViewMode { get }
     var editMode: EditingState { get nonmutating set }
     var editButtonPlacement: Alignment { get nonmutating set}
     var editButtonOffset: CGSize { get nonmutating set}
+    
+    var attribute: AttributeType { get nonmutating set}
     
     var editModeBinding: Binding<EditingState> { get }
     var isEditing: Bool { get }
@@ -93,7 +97,6 @@ public extension EditableView {
     var body: some View {
         
         return self.contentView
-            //.environment(\.currentEditTarget, isEditing ? .active(id) : nil)
             .overlay(alignment: editButtonPlacement){
                 if viewModeGlobal == .editing {
                     PencilButton(editMode: editModeBinding, parentViewId: id, sheetContent: self.editSheet)
@@ -152,7 +155,7 @@ extension EditContainerView {
                         Button(){
                             viewMode = viewMode == .editing ? .preview : .editing
                         } label: {
-                            Label("\(viewMode == .editing ? "Preview" : "Edit")", systemImage: "\(viewMode == .editing ? "eye" : "pencil")")
+                            Label("\(viewMode == .editing ? "Preview" : "Edit")", systemImage: viewMode == .editing ? "eye" : "pencil")
                         }
                         .buttonStyle(.bordered)
                         .padding()
@@ -238,7 +241,6 @@ struct PencilButton<SheetContent: View>: View {
     
     @Namespace var nspace
     @State private var sourceType: UIImagePickerController.SourceType? = nil
-    @State var isSheetPresented: Bool = false
     
     private let height = 32.0
     
@@ -278,7 +280,7 @@ struct PencilButton<SheetContent: View>: View {
                 return
             }
             
-            print("[\(Self.self)] edit mode changed: \(val) - \(isSheetPresented)")
+            print("[\(Self.self)] edit mode changed: \(val)")
         }
     }
     

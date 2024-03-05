@@ -187,7 +187,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         let request = URLRequest(url: appUrl.appendingPathComponent(urlComp), multipartFormData: multipart)
         let session = urlSession ?? URLSession.shared
         
-        let (data, _) = try await session.data(from: request)
+        let (data, _) = try await session.data(for: request) //.data(from: request)
         
         let decoder = Musicroom.jsonDecoder()
         
@@ -411,13 +411,9 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         res.cardSubtitle = experienceData.cardSubtitle
         res.cardImageUrl = URL.fromString(experienceData.cardImageUrl)
         
-        if let color1 = experienceData.backgroundColor1 {
-            res.backgroundColor1 = Color.init(hex: color1)
-        }
-        
-        if let color2 = experienceData.backgroundColor2 {
-            res.backgroundColor2 = Color.init(hex: color2)
-        }
+        res.backgroundColor1 = Color.init(experienceData.backgroundColor1)
+    
+        res.backgroundColor2 = Color.init(experienceData.backgroundColor2)
         
         res.stored = experienceData
         

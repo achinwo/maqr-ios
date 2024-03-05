@@ -119,6 +119,7 @@
 		924E971626E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
 		924E971826E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
 		924E971926E5620800FF41E3 /* TrackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924E971526E5620800FF41E3 /* TrackView.swift */; };
+		9250B4F62B9650E200CBE795 /* ViewAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9250B4F52B9650E200CBE795 /* ViewAttribute.swift */; };
 		9251F1C525CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		9251F1C625CE190200906D9D /* RefreshableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9251F1C425CE190200906D9D /* RefreshableScrollView.swift */; };
 		9252603C261B376F00316AE1 /* SpotifyConnectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */; };
@@ -586,6 +587,7 @@
 		9246B81F263090C6004D2ADF /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		9249A95E2808E4DE00A5F7F6 /* WeddingEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeddingEventView.swift; sourceTree = "<group>"; };
 		924E971526E5620800FF41E3 /* TrackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackView.swift; sourceTree = "<group>"; };
+		9250B4F52B9650E200CBE795 /* ViewAttribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewAttribute.swift; sourceTree = "<group>"; };
 		9251F1C425CE190200906D9D /* RefreshableScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableScrollView.swift; sourceTree = "<group>"; };
 		9252603B261B376F00316AE1 /* SpotifyConnectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyConnectButton.swift; sourceTree = "<group>"; };
 		92562E2F266D3C38004972E6 /* SiseMealboxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiseMealboxView.swift; sourceTree = "<group>"; };
@@ -904,11 +906,12 @@
 			children = (
 				92305FB42B800E4F00DFAF44 /* JsonUIApp.swift */,
 				92305FB62B800E4F00DFAF44 /* ContentView.swift */,
-				92305FB82B800E5000DFAF44 /* Assets.xcassets */,
-				92305FBA2B800E5000DFAF44 /* Preview Content */,
 				9268F1252B8613DA00E3BC68 /* RoundedImageView.swift */,
 				9268F1272B86175600E3BC68 /* EditableView.swift */,
+				9250B4F52B9650E200CBE795 /* ViewAttribute.swift */,
 				92F2893B2B863E5C00336AF4 /* WeddingFunctions.swift */,
+				92305FB82B800E5000DFAF44 /* Assets.xcassets */,
+				92305FBA2B800E5000DFAF44 /* Preview Content */,
 			);
 			path = JsonUI;
 			sourceTree = "<group>";
@@ -1902,6 +1905,7 @@
 				92F2893C2B863E5C00336AF4 /* WeddingFunctions.swift in Sources */,
 				9268F1282B86175600E3BC68 /* EditableView.swift in Sources */,
 				9268F1262B8613DA00E3BC68 /* RoundedImageView.swift in Sources */,
+				9250B4F62B9650E200CBE795 /* ViewAttribute.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
