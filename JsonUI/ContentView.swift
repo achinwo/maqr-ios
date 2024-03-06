@@ -8,7 +8,7 @@
 
 import SwiftUI
 import SharedUI
-
+import JoliCore
 
 struct EditableContentView<Content: View, SheetContent: View>: EditableView {
     
@@ -128,9 +128,9 @@ struct ContentView: EditContainerView {
                     
                     VStack {
                         EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: 0)){
-                            Text("Hello & Welcome")//self.weddingTitle)
-                                //.font(.title.weight(.light))
-                                .font(fontLoaded == nil ? .title.weight(.light) : .custom(self.fontLoaded!.postScriptName as! String, size: Sizing.largeTitle))
+                            Text(self.weddingTitle)
+                                .applyAttribute(TextAttribute(["fontName": "Cedarville-Cursive", "fontSize": Sizing.largeTitle] as Json).withFonts(fontNames))
+                                //.font(fontLoaded == nil ? .title.weight(.light) : .custom(self.fontLoaded!.postScriptName! as String, size: Sizing.largeTitle))
                                 .padding()
                         } sheetContent: {
                             TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder).padding()
@@ -159,13 +159,23 @@ struct ContentView: EditContainerView {
             self.keyboardHeight = keyboardHeight
         }
         .background(Color.teal.opacity(0.1))
-        .task {
+        .task() {
             
-            self.fontLoaded = FontLoader.remoteFont(url: URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"))
-            print("Loaded the font: \(String(describing: self.fontLoaded?.postScriptName))")
+            DispatchQueue.global(qos: .background).async {
+                let fontLoaded = FontLoader.remoteFont(url: URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"))
+                
+                DispatchQueue.main.async {
+                    self.fontNames = fontNames + [fontLoaded!.postScriptName! as String]
+                    print("Loaded the font: \(String(describing: fontLoaded?.postScriptName)) - \(fontNames)")
+                }
+            }
+            
         }
         
+        
     }
+    
+    @State var fontNames: [String] = []
     
     var columns: [GridItem] {
         [

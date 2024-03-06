@@ -38,9 +38,8 @@ struct WeddingStoryView: WeddingItemView {
     @State var editButtonOffset: CGSize = .init(width: 0, height: 0)
     @State public var active: Bool = true
     @State var attribute: TextAttribute = .init(["bold": true,
-                                                 "color": "#000000",
-                                                 "fontUrl": "http://themes.googleusercontent.com/static/fonts/montserrat/v3/zhcz-_WihjSQC0oHJ9TCYC3USBnSvpkopQaUR-2r7iU.ttf",
-                                                 //"fontName": "Montserrat-Regular"
+                                                 //"color": "#000000",
+                                                 "fontName": "Cedarville-Cursive"
     ] as Json)
     var editModeBinding: Binding<EditingState> { $editMode }
     
@@ -49,6 +48,7 @@ struct WeddingStoryView: WeddingItemView {
     @EnvironmentObject var appCoordinator: AppCoordinator
     
     @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
+    @State var fontNames: [String] = []
     
     init(title: Binding<String>, systemImage: Binding<String>){
         _title = title
@@ -60,14 +60,27 @@ struct WeddingStoryView: WeddingItemView {
             Image(systemName: systemImage)
                 .renderingMode(.original)
                 .font(.title)
+            
             Text(title)
-                .font(.subheadline)
                 .lineLimit(3)
                 .multilineTextAlignment(.center)
                 .fixedSize()
                 .padding(.top)
-                .applyAttribute(attribute)
+                .applyAttribute(attribute.withFonts(fontNames))
         }
+        .task() {
+            
+            DispatchQueue.global(qos: .background).async {
+                let fontLoaded = FontLoader.remoteFont(url: URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"))
+                
+                DispatchQueue.main.async {
+                    self.fontNames = fontNames + [fontLoaded!.postScriptName! as String]
+                    print("Loaded the font: \(String(describing: fontLoaded?.postScriptName)) - \(fontNames)")
+                }
+            }
+            
+        }
+        
     }
     
     var contentView: some View {

@@ -43,7 +43,9 @@ final class FontLoader: ObservableObject {
 
 public protocol ViewAttribute: ViewModifier {
     
-    init(_ json: Json)
+    init(_ json: Json, fontNames: [String])
+    
+    func withFonts(_ fontNames: [String]) -> Self
     
     static var empty: Self { get }
 }
@@ -51,7 +53,7 @@ public protocol ViewAttribute: ViewModifier {
 extension ViewAttribute {
     
     public static var empty: Self {
-        Self.init([:] as Json)
+        Self.init([:] as Json, fontNames: [])
     }
     
 }
@@ -60,11 +62,17 @@ extension ViewAttribute {
 public struct TextAttribute: ViewAttribute {
     
     let json: Json
+    let fontNames: [String]
     
     @State var postscriptName: Font? = nil
     
-    public init(_ json: Json) {
+    public init(_ json: Json, fontNames: [String] = []) {
         self.json = json
+        self.fontNames = fontNames
+    }
+    
+    public func withFonts(_ fontNames: [String]) -> TextAttribute {
+        return Self.init(json, fontNames: fontNames)
     }
     
     @ViewBuilder
@@ -72,37 +80,29 @@ public struct TextAttribute: ViewAttribute {
         content
     }
     
+    var font: Font? {
+        guard let fontName = json["fontName"] as? String, fontNames.contains(fontName) else {
+            return nil
+        }
+        
+        return .custom(fontName, size: json["fontSize"] as? CGFloat ?? Sizing.headline, relativeTo: .headline)
+    }
+    
+    var foregroundColor: Color? {
+        guard let color = json["color"] as? String else {
+            return nil
+        }
+        
+        return Color.init(hex: color)
+    }
+    
     @available(iOS 16.0, *)
     @ViewBuilder
     public func bodyContent(_ content: Content) -> some View {
-        let view = content
+        content
             .bold(json["bold"] as? Bool ?? false)
-            .font(.custom("Montserrat-Regular", size: 12))
-            .task {
-                    // Load font from URL using our FontLoader.
-                guard let fontName = json["fontName"] as? String,
-                      let fontUrlString = json["fontUrl"] as? String,
-                      let fontUrl = URL(string: fontUrlString),
-                      let font = FontLoader.remoteFont(url: fontUrl) else {
-                    return
-                }
-                    
-                print("Loaded font: \(String(describing: font.postScriptName))")
-                
-                if let postscriptName = font.postScriptName {
-                    withAnimation {
-                        self.postscriptName = .custom(postscriptName as String, size: 12)
-                    }
-                }
-            }
-        
-        
-        
-        if let color = json["color"] as? String {
-            view.foregroundStyle(Color.init(hex: color))
-        } else {
-            view
-        }
+            .font(self.font)
+            .foreground(self.foregroundColor)
     }
     
     @ViewBuilder
@@ -118,8 +118,17 @@ public struct TextAttribute: ViewAttribute {
 
 extension View {
     
-    public func applyAttribute<AttrType: ViewAttribute>(_ attribute: AttrType) -> ModifiedContent<Self, AttrType> {
+    public func applyAttribute<AttrType: ViewAttribute>(_ attribute: AttrType, availiableFontNames: [String] = []) -> ModifiedContent<Self, AttrType> {
         return .init(content: self, modifier: attribute)
+    }
+    
+    @ViewBuilder
+    public func foreground<S>(_ style: S?) -> some View where S: ShapeStyle {
+        if let style {
+            self.foregroundStyle(style)
+        } else {
+            self
+        }
     }
     
 }
