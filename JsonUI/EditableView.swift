@@ -71,14 +71,11 @@ extension UIImagePickerController.SourceType: Identifiable {
 
 public protocol EditableView: JoliView & Identifiable {
     associatedtype SheetContent: View = Never
-    associatedtype AttributeType: ViewAttribute = Never
     
     var viewModeGlobal: ViewMode { get }
     var editMode: EditingState { get nonmutating set }
     var editButtonPlacement: Alignment { get nonmutating set}
     var editButtonOffset: CGSize { get nonmutating set}
-    
-    var attribute: AttributeType { get nonmutating set}
     
     var editModeBinding: Binding<EditingState> { get }
     var isEditing: Bool { get }
@@ -140,6 +137,7 @@ public protocol EditContainerView: JoliView {
     var viewMode: ViewMode { get nonmutating set }
     var modals: [EditSheetWrapper] { get nonmutating set }
     var modalViewOffset: CGFloat { get nonmutating set }
+    var availableFontNames: Set<String> { get nonmutating set }
     
 }
 
@@ -148,6 +146,7 @@ extension EditContainerView {
     var body: some View {
         self.contentView
             .environment(\.viewModeGlobal, viewMode)
+            .environment(\.availableFontNames, availableFontNames)
             .overlay() {
                 GeometryReader() { proxy in
                     HStack(){
@@ -167,6 +166,18 @@ extension EditContainerView {
             }
             .onPreferenceChange(EditViewsKey.self) { views in
                 self.modals = views
+            }
+            .task() {
+                
+                let fontLoaded = await FontLoader.remoteFont(url: URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"))
+                
+                guard let postScriptName = fontLoaded?.postScriptName as? String else {
+                    print("Unable to load font")
+                    return
+                }
+                
+                self.availableFontNames =  availableFontNames.union([postScriptName])
+                print("Loaded the font: \(postScriptName) - \(availableFontNames)")
             }
             .overlay(alignment: .init(horizontal: .center, vertical: .bottom)) {
                 

@@ -37,10 +37,10 @@ struct WeddingStoryView: WeddingItemView {
     @State var editButtonPlacement: Alignment = .topTrailing
     @State var editButtonOffset: CGSize = .init(width: 0, height: 0)
     @State public var active: Bool = true
-    @State var attribute: TextAttribute = .init(["bold": true,
-                                                 //"color": "#000000",
-                                                 "fontName": "Cedarville-Cursive"
-    ] as Json)
+    @State var attribute: TextAttribute = .init([.bold: true,
+                                                 .color: "#FFD700",
+                                                 .fontName: "Cedarville-Cursive"
+    ])
     var editModeBinding: Binding<EditingState> { $editMode }
     
     @Binding var title: String
@@ -66,19 +66,7 @@ struct WeddingStoryView: WeddingItemView {
                 .multilineTextAlignment(.center)
                 .fixedSize()
                 .padding(.top)
-                .applyAttribute(attribute.withFonts(fontNames))
-        }
-        .task() {
-            
-            DispatchQueue.global(qos: .background).async {
-                let fontLoaded = FontLoader.remoteFont(url: URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"))
-                
-                DispatchQueue.main.async {
-                    self.fontNames = fontNames + [fontLoaded!.postScriptName! as String]
-                    print("Loaded the font: \(String(describing: fontLoaded?.postScriptName)) - \(fontNames)")
-                }
-            }
-            
+                .applyAttribute(attribute)
         }
         
     }
@@ -131,7 +119,7 @@ struct WeddingFunctionView: WeddingItemView {
         nonmutating set {}
     }
     
-    @State var attribute: TextAttribute = .init(["bold": false] as Json)
+    @State var attribute: TextAttribute = .init([.bold: false])
     @State var editMode: EditingState = .inactive
     @State var editButtonPlacement: Alignment = .topTrailing
     @State var editButtonOffset: CGSize = .init(width: 0, height: 50)

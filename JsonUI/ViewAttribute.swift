@@ -15,25 +15,29 @@ final class FontLoader: ObservableObject {
     
     static var loaded: [URL: CGFont] = [:]
     
-    static func remoteFont(url: URL) -> CGFont? {
+    static func remoteFont(url: URL) async -> CGFont? {
         
         guard loaded[url] == nil else {
             return loaded[url]
         }
         
-        guard let dataProvider = CGDataProvider(url: url as CFURL) else {
-            //assertionFailure("Unable to create CGDataProvider")
-            print("ERROR: Unable to create CGDataProvider")
-            return nil
-        }
+        let font: CGFont? = await Task<CGFont?, Never> {
+            guard let dataProvider = CGDataProvider(url: url as CFURL) else {
+                    //assertionFailure("Unable to create CGDataProvider")
+                print("ERROR: Unable to create CGDataProvider")
+                return nil
+            }
+            
+            guard let font = CGFont(dataProvider) else {
+                    //assertionFailure("Unable to create font from data provider")
+                print("ERROR: Unable to create font from data provider")
+                return nil
+            }
+            
+            CTFontManagerRegisterGraphicsFont(font, nil)
+            return font
+        }.value
         
-        guard let font = CGFont(dataProvider) else {
-            //assertionFailure("Unable to create font from data provider")
-            print("ERROR: Unable to create font from data provider")
-            return nil
-        }
-        
-        CTFontManagerRegisterGraphicsFont(font, nil)
         loaded[url] = font
         
         return font
@@ -43,17 +47,23 @@ final class FontLoader: ObservableObject {
 
 public protocol ViewAttribute: ViewModifier {
     
-    init(_ json: Json, fontNames: [String])
+    associatedtype CodingKeys = Never
     
-    func withFonts(_ fontNames: [String]) -> Self
+    init()
     
     static var empty: Self { get }
+}
+
+public extension ViewAttribute where CodingKeys: Hashable {
+    
+    typealias PropertiesDict = [Self.CodingKeys: Codable]
+    
 }
 
 extension ViewAttribute {
     
     public static var empty: Self {
-        Self.init([:] as Json, fontNames: [])
+        Self.init()
     }
     
 }
@@ -61,18 +71,22 @@ extension ViewAttribute {
 
 public struct TextAttribute: ViewAttribute {
     
-    let json: Json
-    let fontNames: [String]
-    
-    @State var postscriptName: Font? = nil
-    
-    public init(_ json: Json, fontNames: [String] = []) {
-        self.json = json
-        self.fontNames = fontNames
+    public enum CodingKeys: String, CodingKey {
+        case fontName = "fontName"
+        case fontSize = "fontSize"
+        case color = "color"
+        case bold = "bold"
     }
     
-    public func withFonts(_ fontNames: [String]) -> TextAttribute {
-        return Self.init(json, fontNames: fontNames)
+    let json: PropertiesDict
+    @Environment(\.availableFontNames) var availableFontNames: Set<String>
+    
+    public init(_ json: PropertiesDict) {
+        self.json = json
+    }
+    
+    public init() {
+        self.json = [:]
     }
     
     @ViewBuilder
@@ -81,15 +95,15 @@ public struct TextAttribute: ViewAttribute {
     }
     
     var font: Font? {
-        guard let fontName = json["fontName"] as? String, fontNames.contains(fontName) else {
+        guard let fontName = json[.fontName] as? String, availableFontNames.contains(fontName) else {
             return nil
         }
         
-        return .custom(fontName, size: json["fontSize"] as? CGFloat ?? Sizing.headline, relativeTo: .headline)
+        return .custom(fontName, size: json[.fontSize] as? CGFloat ?? Sizing.headline, relativeTo: .headline)
     }
     
     var foregroundColor: Color? {
-        guard let color = json["color"] as? String else {
+        guard let color = json[.color] as? String else {
             return nil
         }
         
@@ -100,7 +114,7 @@ public struct TextAttribute: ViewAttribute {
     @ViewBuilder
     public func bodyContent(_ content: Content) -> some View {
         content
-            .bold(json["bold"] as? Bool ?? false)
+            .bold(json[.bold] as? Bool ?? false)
             .font(self.font)
             .foreground(self.foregroundColor)
     }
@@ -129,6 +143,19 @@ extension View {
         } else {
             self
         }
+    }
+    
+}
+
+public struct FontNamesKey: EnvironmentKey {
+    public static let defaultValue: Set<String> = []
+}
+
+extension EnvironmentValues {
+    
+    var availableFontNames: Set<String> {
+        get { self[FontNamesKey.self] }
+        set { self[FontNamesKey.self] = newValue }
     }
     
 }

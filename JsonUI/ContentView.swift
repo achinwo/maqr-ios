@@ -64,7 +64,17 @@ struct ContentView: EditContainerView {
     @State var modalViewOffset: CGFloat = 0
     @State var modals: [EditSheetWrapper] = []
     
-    @State var fontLoaded: CGFont? = nil
+    @State var availableFontNames: Set<String> = []
+    
+    var columns: [GridItem] {
+        [
+            GridItem(.fixed(screenWidth / 2.5), spacing: 10),
+            GridItem(.fixed(screenWidth / 2.5), spacing: 10)
+        ]
+    }
+    
+    @State var title: String = "Our Story"
+    @State var systemImage: String = "book.fill"
     
     var contentView: some View {
         NavigationView(){
@@ -129,7 +139,9 @@ struct ContentView: EditContainerView {
                     VStack {
                         EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: 0)){
                             Text(self.weddingTitle)
-                                .applyAttribute(TextAttribute(["fontName": "Cedarville-Cursive", "fontSize": Sizing.largeTitle] as Json).withFonts(fontNames))
+                                .applyAttribute(TextAttribute([
+                                    .fontName: "Cedarville-Cursive",
+                                    .fontSize: Sizing.largeTitle]))
                                 //.font(fontLoaded == nil ? .title.weight(.light) : .custom(self.fontLoaded!.postScriptName! as String, size: Sizing.largeTitle))
                                 .padding()
                         } sheetContent: {
@@ -159,33 +171,7 @@ struct ContentView: EditContainerView {
             self.keyboardHeight = keyboardHeight
         }
         .background(Color.teal.opacity(0.1))
-        .task() {
-            
-            DispatchQueue.global(qos: .background).async {
-                let fontLoaded = FontLoader.remoteFont(url: URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"))
-                
-                DispatchQueue.main.async {
-                    self.fontNames = fontNames + [fontLoaded!.postScriptName! as String]
-                    print("Loaded the font: \(String(describing: fontLoaded?.postScriptName)) - \(fontNames)")
-                }
-            }
-            
-        }
-        
-        
     }
-    
-    @State var fontNames: [String] = []
-    
-    var columns: [GridItem] {
-        [
-            GridItem(.fixed(screenWidth / 2.5), spacing: 10),
-            GridItem(.fixed(screenWidth / 2.5), spacing: 10)
-        ]
-    }
-    
-    @State var title: String = "Our Story"
-    @State var systemImage: String = "book.fill"
     
     var bodyGridView: some View {
         //
