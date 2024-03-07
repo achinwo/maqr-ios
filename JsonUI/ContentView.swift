@@ -140,12 +140,33 @@ struct ContentView: EditContainerView {
                         EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: 0)){
                             Text(self.weddingTitle)
                                 .applyAttribute(TextAttribute([
-                                    .fontName: "Cedarville-Cursive",
-                                    .fontSize: Sizing.largeTitle]))
-                                //.font(fontLoaded == nil ? .title.weight(.light) : .custom(self.fontLoaded!.postScriptName! as String, size: Sizing.largeTitle))
+                                    .color: color.hexString,
+                                    .fontName: (selectedFontName == 0 ? nil : titles[selectedFontName]) as String?,
+                                    .fontSize: Sizing.largeTitle])
+                                )
                                 .padding()
                         } sheetContent: {
-                            TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder).padding()
+                            ScrollView(){
+                                
+                                VStack(spacing: Sizing.small){
+                                    TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder)
+                                    Picker(selection: self.$selectedFontName){
+                                        ForEach(Array(titles.enumerated()), id: \.offset) { index, element in
+                                            Text(element.split(separator: "-")[0])
+                                                .tag(index)
+                                        }
+                                    } label: {
+                                        HStack(){
+                                            Text("Label: \(String(describing: self.selectedFontName))")
+                                        }
+                                    }
+                                    .pickerStyle(SegmentedPickerStyle())
+                                    
+                                    ColorPicker("Color", selection: $color, supportsOpacity: true).padding(.horizontal)
+                                }
+                                .padding()
+                                .padding(.top)
+                            }
                         }
                         .padding(.top, 60)
                         
@@ -172,6 +193,10 @@ struct ContentView: EditContainerView {
         }
         .background(Color.teal.opacity(0.1))
     }
+    
+    @State var color: Color = .primary
+    @State var selectedFontName: Int = 0
+    let titles = ["Default", "Outfit-Regular", "Cedarville-Cursive", "DancingScript-Regular"]
     
     var bodyGridView: some View {
         //

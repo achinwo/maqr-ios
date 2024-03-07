@@ -168,16 +168,25 @@ extension EditContainerView {
                 self.modals = views
             }
             .task() {
+                let urls = [
+                    URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"),
+                    URL(staticString: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Ew-Y3tcoqK5.ttf"),
+                    URL(staticString: "https://fonts.gstatic.com/s/outfit/v11/QGYyz_MVcBeNP4NjuGObqx1XmO1I4TC1C4G-EiAou6Y.ttf"),
+                    URL(staticString: "https://fonts.gstatic.com/s/dancingscript/v25/If2cXTr6YS-zF4S-kcSWSVi_sxjsohD9F50Ruu7BMSoHTeB9ptDqpw.ttf"),
+                ]
                 
-                let fontLoaded = await FontLoader.remoteFont(url: URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"))
-                
-                guard let postScriptName = fontLoaded?.postScriptName as? String else {
-                    print("Unable to load font")
-                    return
+                for url in urls {
+                    let fontLoaded = await FontLoader.remoteFont(url: url)
+                    
+                    guard let postScriptName = fontLoaded?.postScriptName as? String else {
+                        print("Unable to load font")
+                        continue
+                    }
+                    
+                    self.availableFontNames =  availableFontNames.union([postScriptName])
+                    print("Loaded the font: \(postScriptName) - \(availableFontNames)")
                 }
                 
-                self.availableFontNames =  availableFontNames.union([postScriptName])
-                print("Loaded the font: \(postScriptName) - \(availableFontNames)")
             }
             .overlay(alignment: .init(horizontal: .center, vertical: .bottom)) {
                 
@@ -196,7 +205,7 @@ extension EditContainerView {
                                     ZStack(alignment: .center){
                                         modalView
                                     }
-                                    .frame(minHeight: screenHeight * 0.3)
+                                    .frame(height: screenHeight * 0.36)
                                     .frame(width: proxy.frame(in: .global).width)
                                     .background(Color.systemGroupedBackground)
                                     .offset(y: modalViewOffset)

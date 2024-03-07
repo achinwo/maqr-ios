@@ -94,9 +94,17 @@ public struct TextAttribute: ViewAttribute {
         content
     }
     
+    var defaultFont: Font? {
+        guard let fontSize = json[.fontSize] as? CGFloat else {
+            return nil
+        }
+        
+        return .system(size: fontSize)
+    }
+    
     var font: Font? {
         guard let fontName = json[.fontName] as? String, availableFontNames.contains(fontName) else {
-            return nil
+            return defaultFont
         }
         
         return .custom(fontName, size: json[.fontSize] as? CGFloat ?? Sizing.headline, relativeTo: .headline)
