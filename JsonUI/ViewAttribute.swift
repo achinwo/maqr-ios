@@ -15,61 +15,202 @@ final class FontLoader: ObservableObject {
     
     static var loaded: [URL: CGFont] = [:]
     
-    static func remoteFont(url: URL) async -> CGFont? {
+    static func remoteFont(url: URL, priority: TaskPriority = .userInitiated) async -> CGFont? {
         
         guard loaded[url] == nil else {
             return loaded[url]
         }
         
-        let font: CGFont? = await Task<CGFont?, Never> {
-            guard let dataProvider = CGDataProvider(url: url as CFURL) else {
-                    //assertionFailure("Unable to create CGDataProvider")
+        let font: CGFont? = await Task<CGFont?, Never>(priority: priority) {
+            
+            let request = URLRequest(url: url)
+    
+            guard let (data, _) = try? await URLSession.shared.data(for: request),
+                  let dataProvider = CGDataProvider(data: data as CFData) else {
+            //guard let dataProvider = CGDataProvider(url: url as CFURL) else {
                 print("ERROR: Unable to create CGDataProvider")
                 return nil
             }
             
             guard let font = CGFont(dataProvider) else {
-                    //assertionFailure("Unable to create font from data provider")
                 print("ERROR: Unable to create font from data provider")
                 return nil
             }
             
             CTFontManagerRegisterGraphicsFont(font, nil)
+            
             return font
         }.value
         
         loaded[url] = font
         
+//        var request = URLRequest(url: url)
+//        
+//        
+//        
+//        guard let (data, _) = try? await URLSession.shared.data(for: request),
+//              let dataProvider = CGDataProvider(data: data as CFData) else {
+//        
         return font
     }
     
 }
 
-public protocol ViewAttribute: ViewModifier {
+extension Never: CodingKey {
     
-    associatedtype CodingKeys = Never
-    
-    init()
-    
-    static var empty: Self { get }
 }
 
-public extension ViewAttribute where CodingKeys: Hashable {
+//public protocol ViewAttributeEdit: View {
+//    associatedtype ViewAttributeType: ViewAttribute
+//    
+//    init(_ stateObject: ViewAttributeType.Model)
+//}
+
+public protocol ViewAttribute: ViewModifier {
+    
+    associatedtype CodingKeys: CodingKey & Hashable = Never
+    //associatedtype Model: ObservableObject = Never
+    //associatedtype EditView: ViewAttributeEdit
     
     typealias PropertiesDict = [Self.CodingKeys: Codable]
     
+    var json: PropertiesDict { get }
+    
+    init(_ json: PropertiesDict)
+    
+    static var empty: Self { get }
+
 }
 
 extension ViewAttribute {
     
     public static var empty: Self {
-        Self.init()
+        Self.init([:])
+    }
+    
+}
+
+public struct BackgroundAttribute: ViewAttribute {
+    
+//    public final class Model: ObservableObject {
+//        
+//    }
+//    
+//    public struct EditView: ViewAttributeEdit {
+//        public typealias ViewAttributeType = BackgroundAttribute
+//        
+//        
+//        
+//        public init(_ stateObject: ViewAttributeType.Model) {
+//            
+//        }
+//        
+//        public var body: some View {
+//            EmptyView()
+//        }
+//        
+//    }
+    
+    public enum CodingKeys: String, CodingKey {
+        case backgroundColor = "backgroundColor"
+        case backgroundColor2 = "backgroundColor2"
+        case backgroundImageUrl = "backgroundImageUrl"
+        case backgroundMode = "backgroundMode"
+        case backgroundOpacity = "backgroundOpacity"
+    }
+    
+    public enum Mode: String, CaseIterable, Identifiable {
+        
+        case solid
+        case gradient
+        case image
+        case none
+        
+        public var id: String {
+            return self.rawValue
+        }
+    }
+    
+    public let json: PropertiesDict
+    
+    public init(_ json: PropertiesDict) {
+        self.json = json
+    }
+    
+    public var imageUrl: URL? {
+        guard let urlString = json[.backgroundImageUrl] as? String else { return nil }
+        
+        return URL(string: urlString)
+    }
+    
+    public var mode: Mode {
+        guard let mode = json[.backgroundMode] as? String else {
+            return .solid
+        }
+        
+        return Mode.init(rawValue: mode) ?? .solid
+    }
+    
+    public var color: Color? {
+        guard let bgColor = json[.backgroundColor] as? String else {
+            return nil
+        }
+        
+        return Color(hex: bgColor)
+    }
+    
+    public var backgroundImage: some View {
+        AsyncImage(url: imageUrl) { image in
+            image
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        } placeholder: {
+            self.color
+        }
+    }
+    
+    @ViewBuilder
+    public func background() -> some View {
+        switch mode {
+            case .image:
+                backgroundImage
+            case .gradient:
+                gradient()
+            case .solid:
+                color
+            case .none:
+                EmptyView()
+        }
+    }
+    
+    public var opacity: CGFloat {
+        return 1
+    }
+    
+    @ViewBuilder
+    public func gradient() -> some View {
+        if let colorStart = color,
+           let colorEndHex = json[.backgroundColor2] as? String {
+            LinearGradient(colors: [colorStart, Color(hex: colorEndHex)], startPoint: .top, endPoint: .bottom)
+        } else {
+            backgroundImage
+        }
+    }
+    
+    @ViewBuilder
+    public func body(content: Content) -> some View {
+        content
+            .background(background().opacity(opacity))
     }
     
 }
 
 
 public struct TextAttribute: ViewAttribute {
+    
+    public final class Model: ObservableObject {
+        
+    }
     
     public enum CodingKeys: String, CodingKey {
         case fontName = "fontName"
@@ -78,20 +219,11 @@ public struct TextAttribute: ViewAttribute {
         case bold = "bold"
     }
     
-    let json: PropertiesDict
+    public let json: PropertiesDict
     @Environment(\.availableFontNames) var availableFontNames: Set<String>
     
     public init(_ json: PropertiesDict) {
         self.json = json
-    }
-    
-    public init() {
-        self.json = [:]
-    }
-    
-    @ViewBuilder
-    public func bodyLegacy(content: Content) -> some View {
-        content
     }
     
     var defaultFont: Font? {
@@ -123,6 +255,13 @@ public struct TextAttribute: ViewAttribute {
     public func bodyContent(_ content: Content) -> some View {
         content
             .bold(json[.bold] as? Bool ?? false)
+            .font(self.font)
+            .foreground(self.foregroundColor)
+    }
+    
+    @ViewBuilder
+    public func bodyLegacy(content: Content) -> some View {
+        content
             .font(self.font)
             .foreground(self.foregroundColor)
     }

@@ -75,6 +75,7 @@ struct ContentView: EditContainerView {
     
     @State var title: String = "Our Story"
     @State var systemImage: String = "book.fill"
+    @State var backgroundColor = Color.init(hex: "#1930B0C7")
     
     var contentView: some View {
         NavigationView(){
@@ -133,56 +134,83 @@ struct ContentView: EditContainerView {
                         }
                     }
                 }
+                .zIndex(1.0)
                 
-                ScrollView(.vertical){
-                    
-                    VStack {
-                        EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: 0)){
-                            Text(self.weddingTitle)
-                                .applyAttribute(TextAttribute([
-                                    .color: color.hexString,
-                                    .fontName: (selectedFontName == 0 ? nil : titles[selectedFontName]) as String?,
-                                    .fontSize: Sizing.largeTitle])
-                                )
-                                .padding()
-                        } sheetContent: {
-                            ScrollView(){
-                                
-                                VStack(spacing: Sizing.small){
-                                    TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder)
-                                    Picker(selection: self.$selectedFontName){
-                                        ForEach(Array(titles.enumerated()), id: \.offset) { index, element in
-                                            Text(element.split(separator: "-")[0])
-                                                .tag(index)
-                                        }
-                                    } label: {
-                                        HStack(){
-                                            Text("Label: \(String(describing: self.selectedFontName))")
-                                        }
-                                    }
-                                    .pickerStyle(SegmentedPickerStyle())
+//                RoundedImageView()
+//                    .offset(y: -100)
+//                    .padding(.bottom, -100)
+//                    .zIndex(1.0)
+                
+                EditableContentView(editPlacement: .topLeading, editOffset: .init(width: 5, height: 5)){
+                    ScrollView(.vertical){
+                        
+                        VStack {
+                            EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: 0)){
+                                Text(self.weddingTitle)
+                                    .applyAttribute(TextAttribute([
+                                        .color: color.hexString,
+                                        .fontName: (selectedFontName == 0 ? nil : titles[selectedFontName]) as String?,
+                                        .fontSize: Sizing.largeTitle])
+                                    )
+                                    .padding()
+                            } sheetContent: {
+                                ScrollView(){
                                     
-                                    ColorPicker("Color", selection: $color, supportsOpacity: true).padding(.horizontal)
+                                    VStack(spacing: Sizing.small){
+                                        TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder)
+                                        Picker(selection: self.$selectedFontName){
+                                            ForEach(Array(titles.enumerated()), id: \.offset) { index, element in
+                                                Text(element.split(separator: "-")[0])
+                                                    .tag(index)
+                                            }
+                                        } label: {
+                                            HStack(){
+                                                Text("Label: \(String(describing: self.selectedFontName))")
+                                            }
+                                        }
+                                        .pickerStyle(SegmentedPickerStyle())
+                                        
+                                        ColorPicker("Color", selection: $color, supportsOpacity: true).padding(.horizontal)
+                                    }
+                                    .padding()
+                                    .padding(.top)
                                 }
-                                .padding()
+                            }
+                            .padding(.top, 60)
+                            
+                            EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: -5)){
+                                Text(self.weddingSubtitle)
+                                    .font(.subheadline.weight(.light))
+                            } sheetContent: {
+                                TextField("Subtitle", text: self.$weddingSubtitle).textFieldStyle(.roundedBorder).padding()
+                            }
+                            
+                            self.bodyGridView
                                 .padding(.top)
+                        }
+                        .padding(.bottom, 50)
+                        .backgroundColor(Color.clear)
+                        //.applyAttribute(BackgroundAttribute([.backgroundColor: backgroundColor.hexString]))
+                    }
+                } sheetContent: {
+                    VStack(spacing: Sizing.medium){
+                        ColorPicker("Background Color", selection: $backgroundColor, supportsOpacity: true)
+                        Picker("Mode", systemImage: "pencil", selection: $backgroundModeSelection) {
+                            ForEach(Array(BackgroundAttribute.Mode.allCases.enumerated()), id: \.offset) { offset, element in
+                                Text(element.rawValue.capitalized)
+                                    .tag(offset)
                             }
                         }
-                        .padding(.top, 60)
-                        
-                        EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: -5)){
-                            Text(self.weddingSubtitle)
-                                .font(.subheadline.weight(.light))
-                        } sheetContent: {
-                            TextField("Subtitle", text: self.$weddingSubtitle).textFieldStyle(.roundedBorder).padding()
-                        }
-                        
-                        self.bodyGridView
-                        .padding(.top)
+                        .pickerStyle(SegmentedPickerStyle())
                     }
-                    .padding(.bottom, 50)
+                    .padding()
                 }
-                
+                .applyAttribute(BackgroundAttribute([
+                    .backgroundMode: BackgroundAttribute.Mode.allCases[backgroundModeSelection].rawValue,
+                    .backgroundColor: backgroundColor.hexString,
+                    .backgroundColor2: Color.white.hexString,
+                    .backgroundImageUrl: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                ]))
                 
             }
             .edgesIgnoringSafeArea(.vertical)
@@ -191,8 +219,9 @@ struct ContentView: EditContainerView {
         .onChange(of: appCoordinator.keyboardHeight) { keyboardHeight in
             self.keyboardHeight = keyboardHeight
         }
-        .background(Color.teal.opacity(0.1))
     }
+    
+    @State var backgroundModeSelection: Int = 0
     
     @State var color: Color = .primary
     @State var selectedFontName: Int = 0

@@ -38,7 +38,7 @@ struct WeddingStoryView: WeddingItemView {
     @State var editButtonOffset: CGSize = .init(width: 0, height: 0)
     @State public var active: Bool = true
     @State var attribute: TextAttribute = .init([.bold: true,
-                                                 .color: "#FFD700",
+                                                 //.color: "#FFD700",
                                                  .fontName: "Cedarville-Cursive"
     ])
     var editModeBinding: Binding<EditingState> { $editMode }

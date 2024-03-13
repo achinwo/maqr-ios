@@ -152,7 +152,13 @@ extension EditContainerView {
                     HStack(){
                         Spacer()
                         Button(){
-                            viewMode = viewMode == .editing ? .preview : .editing
+//                            let generator = UINotificationFeedbackGenerator()
+//                            generator.notificationOccurred(.warning)
+                            
+                            self.appCoordinator.withImpact(.light) {
+                                viewMode = viewMode == .editing ? .preview : .editing
+                            }
+                            
                         } label: {
                             Label("\(viewMode == .editing ? "Preview" : "Edit")", systemImage: viewMode == .editing ? "eye" : "pencil")
                         }
@@ -167,7 +173,7 @@ extension EditContainerView {
             .onPreferenceChange(EditViewsKey.self) { views in
                 self.modals = views
             }
-            .task() {
+            .task(priority: .userInitiated) {
                 let urls = [
                     URL(staticString: "https://fonts.gstatic.com/s/cedarvillecursive/v17/yYL00g_a2veiudhUmxjo5VKkoqA-B_neJbBxw8BeTg.ttf"),
                     URL(staticString: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Ew-Y3tcoqK5.ttf"),

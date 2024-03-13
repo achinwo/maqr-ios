@@ -241,8 +241,13 @@ public extension Collection where Element: Hashable {
 
 public extension View {
     
-    func backgroundColor(_ color: Color) -> some View {
-        return self.background(color)
+    @ViewBuilder
+    func backgroundColor(_ color: Color?) -> some View {
+        if let color {
+            self.background(color)
+        } else {
+            self
+        }
     }
     
 }
