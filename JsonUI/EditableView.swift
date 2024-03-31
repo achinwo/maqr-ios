@@ -273,6 +273,11 @@ struct PencilButton<SheetContent: View>: View {
     var body: some View {
         
         let button = Button(){
+            guard editMode != .transient else {
+                print("transient: \(parentViewId)")
+                return
+            }
+            print("toggling: \(parentViewId)")
             editMode.toggle()
         } label: {
             VStack(){
@@ -281,7 +286,7 @@ struct PencilButton<SheetContent: View>: View {
             }
             .frame(width: height, height: height)
         }
-            .disabled(editMode == .transient)
+            //.disabled(editMode == .transient)
         
         Group(){
             if editMode == .active {

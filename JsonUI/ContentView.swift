@@ -97,9 +97,6 @@ struct ContentView: EditContainerView {
                     }
                     .frame(maxHeight: screenHeight * 0.25)
                     .clipped()
-                    .overlay(alignment: .init(horizontal: .center, vertical: .bottom)) {
-                        RoundedImageView()
-                    }
                 } sheetContent: {
                     HStack(){
                         Button("Camera", systemImage: "camera.viewfinder"){
@@ -134,12 +131,11 @@ struct ContentView: EditContainerView {
                         }
                     }
                 }
-                .zIndex(1.0)
                 
-//                RoundedImageView()
-//                    .offset(y: -100)
-//                    .padding(.bottom, -100)
-//                    .zIndex(1.0)
+                RoundedImageView()
+                    .offset(y: -100)
+                    .padding(.bottom, -100)
+                    .zIndex(1.0)
                 
                 EditableContentView(editPlacement: .topLeading, editOffset: .init(width: 5, height: 5)){
                     ScrollView(.vertical){
