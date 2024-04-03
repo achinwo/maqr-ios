@@ -72,11 +72,9 @@ public protocol ViewAttribute: ViewModifier {
     //associatedtype Model: ObservableObject = Never
     //associatedtype EditView: ViewAttributeEdit
     
-    typealias PropertiesDict = [Self.CodingKeys: Codable]
+    var attribute: ContentAttributeData { get }
     
-    var json: PropertiesDict { get }
-    
-    init(_ json: PropertiesDict)
+    init(_ attribute: ContentAttributeData)
     
     static var empty: Self { get }
 
@@ -85,7 +83,7 @@ public protocol ViewAttribute: ViewModifier {
 extension ViewAttribute {
     
     public static var empty: Self {
-        Self.init([:])
+        Self.init(ContentAttributeData([:]))
     }
     
 }
@@ -111,14 +109,6 @@ public struct BackgroundAttribute: ViewAttribute {
 //        
 //    }
     
-    public enum CodingKeys: String, CodingKey {
-        case backgroundColor = "backgroundColor"
-        case backgroundColor2 = "backgroundColor2"
-        case backgroundImageUrl = "backgroundImageUrl"
-        case backgroundMode = "backgroundMode"
-        case backgroundOpacity = "backgroundOpacity"
-    }
-    
     public enum Mode: String, CaseIterable, Identifiable {
         
         case solid
@@ -131,20 +121,20 @@ public struct BackgroundAttribute: ViewAttribute {
         }
     }
     
-    public let json: PropertiesDict
+    public let attribute: ContentAttributeData
     
-    public init(_ json: PropertiesDict) {
-        self.json = json
+    public init(_ attribute: ContentAttributeData) {
+        self.attribute = attribute
     }
     
     public var imageUrl: URL? {
-        guard let urlString = json[.backgroundImageUrl] as? String else { return nil }
+        guard let urlString = attribute.backgroundImageUrl else { return nil }
         
         return URL(string: urlString)
     }
     
     public var mode: Mode {
-        guard let mode = json[.backgroundMode] as? String else {
+        guard let mode = attribute.backgroundMode else {
             return .solid
         }
         
@@ -152,7 +142,7 @@ public struct BackgroundAttribute: ViewAttribute {
     }
     
     public var color: Color? {
-        guard let bgColor = json[.backgroundColor] as? String else {
+        guard let bgColor = attribute.backgroundColor else {
             return nil
         }
         
@@ -190,7 +180,7 @@ public struct BackgroundAttribute: ViewAttribute {
     @ViewBuilder
     public func gradient() -> some View {
         if let colorStart = color,
-           let colorEndHex = json[.backgroundColor2] as? String {
+           let colorEndHex = attribute.backgroundColor2 {
             LinearGradient(colors: [colorStart, Color(hex: colorEndHex)], startPoint: .top, endPoint: .bottom)
         } else {
             backgroundImage
@@ -219,15 +209,15 @@ public struct TextAttribute: ViewAttribute {
         case bold = "bold"
     }
     
-    public let json: PropertiesDict
+    public let attribute: ContentAttributeData
     @Environment(\.availableFontNames) var availableFontNames: Set<String>
     
-    public init(_ json: PropertiesDict) {
-        self.json = json
+    public init(_ attribute: ContentAttributeData) {
+        self.attribute = attribute
     }
     
     var defaultFont: Font? {
-        guard let fontSize = json[.fontSize] as? CGFloat else {
+        guard let fontSize = attribute.fontSize else {
             return nil
         }
         
@@ -235,15 +225,15 @@ public struct TextAttribute: ViewAttribute {
     }
     
     var font: Font? {
-        guard let fontName = json[.fontName] as? String, availableFontNames.contains(fontName) else {
+        guard let fontName = attribute.fontName, availableFontNames.contains(fontName) else {
             return defaultFont
         }
         
-        return .custom(fontName, size: json[.fontSize] as? CGFloat ?? Sizing.headline, relativeTo: .headline)
+        return .custom(fontName, size: attribute.fontSize ?? Sizing.headline, relativeTo: .headline)
     }
     
     var foregroundColor: Color? {
-        guard let color = json[.color] as? String else {
+        guard let color = attribute.color else {
             return nil
         }
         
@@ -254,7 +244,7 @@ public struct TextAttribute: ViewAttribute {
     @ViewBuilder
     public func bodyContent(_ content: Content) -> some View {
         content
-            .bold(json[.bold] as? Bool ?? false)
+            .bold(attribute.bold ?? false)
             .font(self.font)
             .foreground(self.foregroundColor)
     }

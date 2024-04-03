@@ -108,10 +108,10 @@ struct ContentView: EditContainerView {
                         VStack {
                             EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: 0)){
                                 Text(self.weddingTitle)
-                                    .applyAttribute(TextAttribute([
+                                    .applyAttribute(TextAttribute(.init([
                                         .color: color.hexString,
                                         .fontName: (selectedFontName == 0 ? nil : titles[selectedFontName]) as String?,
-                                        .fontSize: Sizing.largeTitle])
+                                        .fontSize: Sizing.largeTitle]))
                                     )
                                     .padding()
                             } sheetContent: {
@@ -179,12 +179,12 @@ struct ContentView: EditContainerView {
     
     @State var backgroundModeSelection: Int = 0
     var backgroundAttribute: BackgroundAttribute {
-        BackgroundAttribute([
+        BackgroundAttribute(.init([
             .backgroundMode: BackgroundAttribute.Mode.allCases[backgroundModeSelection].rawValue,
             .backgroundColor: backgroundColor.hexString,
             .backgroundColor2: Color.white.hexString,
-            .backgroundImageUrl: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        ])
+            .backgroundImageUrl: "https://images.unsplash.com/photo-1508717272800-9fff97da7e8f"
+        ]))
     }
     
     @State var color: Color = .primary

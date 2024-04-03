@@ -37,10 +37,10 @@ struct WeddingStoryView: WeddingItemView {
     @State var editButtonPlacement: Alignment = .topTrailing
     @State var editButtonOffset: CGSize = .init(width: 0, height: 0)
     @State public var active: Bool = true
-    @State var attribute: TextAttribute = .init([.bold: true,
+    @State var attribute: TextAttribute = .init(.init([.bold: true,
                                                  //.color: "#FFD700",
                                                  .fontName: "Cedarville-Cursive"
-    ])
+    ]))
     var editModeBinding: Binding<EditingState> { $editMode }
     
     @Binding var title: String
@@ -119,7 +119,7 @@ struct WeddingFunctionView: WeddingItemView {
         nonmutating set {}
     }
     
-    @State var attribute: TextAttribute = .init([.bold: false])
+    @State var attribute: TextAttribute = .init(.init([.bold: false]))
     @State var editMode: EditingState = .inactive
     @State var editButtonPlacement: Alignment = .topTrailing
     @State var editButtonOffset: CGSize = .init(width: 0, height: 50)
