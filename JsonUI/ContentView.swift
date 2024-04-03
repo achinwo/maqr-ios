@@ -10,41 +10,6 @@ import SwiftUI
 import SharedUI
 import JoliCore
 
-struct EditableContentView<Content: View, SheetContent: View>: EditableView {
-    
-    @State var id: String = UUID().uuidString
-    
-    @State var editButtonOffset: CGSize = .zero
-    @State var attribute: TextAttribute = .empty
-    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
-    @State var editMode: EditingState = .inactive
-    
-    @State var editButtonPlacement: Alignment
-    var callback: ((_ img: UIImage?) -> Void)?
-    
-    var editModeBinding: Binding<EditingState> { $editMode }
-    
-    @EnvironmentObject var appCoordinator: SharedUI.AppCoordinator
-    
-    private let content: () -> Content
-    private let sheetContent: () -> SheetContent
-    
-    init(editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero, @ViewBuilder content: @escaping () -> Content, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
-        self._editButtonPlacement = State(initialValue: editPlacement)
-        self.content = content
-        self._editButtonOffset = State(initialValue: editOffset)
-        self.sheetContent = sheetContent
-    }
-    
-    var contentView: some View {
-        self.content()
-    }
-    
-    func editSheet() -> SheetContent {
-        sheetContent()
-    }
-}
-
 struct ContentView: EditContainerView {
     
     @State var viewMode: ViewMode = .editing
@@ -201,12 +166,7 @@ struct ContentView: EditContainerView {
                     }
                     .padding()
                 }
-                .applyAttribute(BackgroundAttribute([
-                    .backgroundMode: BackgroundAttribute.Mode.allCases[backgroundModeSelection].rawValue,
-                    .backgroundColor: backgroundColor.hexString,
-                    .backgroundColor2: Color.white.hexString,
-                    .backgroundImageUrl: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                ]))
+                .applyAttribute(backgroundAttribute)
                 
             }
             .edgesIgnoringSafeArea(.vertical)
@@ -218,6 +178,14 @@ struct ContentView: EditContainerView {
     }
     
     @State var backgroundModeSelection: Int = 0
+    var backgroundAttribute: BackgroundAttribute {
+        BackgroundAttribute([
+            .backgroundMode: BackgroundAttribute.Mode.allCases[backgroundModeSelection].rawValue,
+            .backgroundColor: backgroundColor.hexString,
+            .backgroundColor2: Color.white.hexString,
+            .backgroundImageUrl: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        ])
+    }
     
     @State var color: Color = .primary
     @State var selectedFontName: Int = 0

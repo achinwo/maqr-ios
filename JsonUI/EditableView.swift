@@ -317,6 +317,42 @@ struct PencilButton<SheetContent: View>: View {
     
 }
 
+struct EditableContentView<Content: View, SheetContent: View>: EditableView {
+    
+    @State var id: String = UUID().uuidString
+    
+    @State var editButtonOffset: CGSize = .zero
+    @State var attribute: TextAttribute = .empty
+    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
+    @State var editMode: EditingState = .inactive
+    
+    @State var editButtonPlacement: Alignment
+    var callback: ((_ img: UIImage?) -> Void)?
+    
+    var editModeBinding: Binding<EditingState> { $editMode }
+    
+    @EnvironmentObject var appCoordinator: SharedUI.AppCoordinator
+    
+    private let content: () -> Content
+    private let sheetContent: () -> SheetContent
+    
+    init(editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero, @ViewBuilder content: @escaping () -> Content, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
+        self._editButtonPlacement = State(initialValue: editPlacement)
+        self.content = content
+        self._editButtonOffset = State(initialValue: editOffset)
+        self.sheetContent = sheetContent
+    }
+    
+    var contentView: some View {
+        self.content()
+    }
+    
+    func editSheet() -> SheetContent {
+        sheetContent()
+    }
+}
+
+
 #Preview {
     ContentView()
         .environmentObject(AppCoordinator())
