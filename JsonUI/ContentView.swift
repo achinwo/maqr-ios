@@ -9,8 +9,26 @@
 import SwiftUI
 import SharedUI
 import JoliCore
+import JoliApi
+import Combine
+
+extension JoliApi {
+    
+    func fetchContentAttributes(_ names: [String], experienceId: Int) async throws -> [ContentAttribute] {
+        return []
+    }
+    
+}
 
 struct ContentView: EditContainerView {
+    
+    var contentAttributeDataPublisher: PassthroughSubject<ContentAttributeDataItem, Never> = PassthroughSubject()
+    @State var contentAttributes: [ContentAttribute] = []
+    @State var contentAttributeData: [ContentAttributeData] = []
+    
+    @State var contentAttributeDataPendingSave: [ContentAttributeName: ContentAttributeData] = [:]
+    
+    @State var isSavingChanges: Bool = false
     
     @State var viewMode: ViewMode = .editing
     @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
@@ -20,7 +38,6 @@ struct ContentView: EditContainerView {
     @State var imageUrl = URL(string: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
     @State var uiImage: UIImage? = nil
     
-    @State var weddingTitle = "Esther & Jide"
     @State var weddingSubtitle = "Hello & Welcome!"
     
     @State private var sourceType: UIImagePickerController.SourceType? = nil
@@ -30,6 +47,10 @@ struct ContentView: EditContainerView {
     @State var modals: [EditSheetWrapper] = []
     
     @State var availableFontNames: Set<String> = []
+    
+    static var contentAttributeNames: [ContentAttributeName] {
+        []
+    }
     
     var columns: [GridItem] {
         [
@@ -106,38 +127,8 @@ struct ContentView: EditContainerView {
                     ScrollView(.vertical){
                         
                         VStack {
-                            EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: 0)){
-                                Text(self.weddingTitle)
-                                    .applyAttribute(TextAttribute(.init([
-                                        .color: color.hexString,
-                                        .fontName: (selectedFontName == 0 ? nil : titles[selectedFontName]) as String?,
-                                        .fontSize: Sizing.largeTitle]))
-                                    )
-                                    .padding()
-                            } sheetContent: {
-                                ScrollView(){
-                                    
-                                    VStack(spacing: Sizing.small){
-                                        TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder)
-                                        Picker(selection: self.$selectedFontName){
-                                            ForEach(Array(titles.enumerated()), id: \.offset) { index, element in
-                                                Text(element.split(separator: "-")[0])
-                                                    .tag(index)
-                                            }
-                                        } label: {
-                                            HStack(){
-                                                Text("Label: \(String(describing: self.selectedFontName))")
-                                            }
-                                        }
-                                        .pickerStyle(SegmentedPickerStyle())
-                                        
-                                        ColorPicker("Color", selection: $color, supportsOpacity: true).padding(.horizontal)
-                                    }
-                                    .padding()
-                                    .padding(.top)
-                                }
-                            }
-                            .padding(.top, 60)
+                            TextEditView()
+                                .padding(.top, 60)
                             
                             EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: -5)){
                                 Text(self.weddingSubtitle)
@@ -175,16 +166,24 @@ struct ContentView: EditContainerView {
         .onChange(of: appCoordinator.keyboardHeight) { keyboardHeight in
             self.keyboardHeight = keyboardHeight
         }
+        .task(){
+            //self.contentAttributes = (try? await api.fetchContentAttributes(Self.contentAttributeNames, experienceId: 1)) ?? []
+            
+            //print("ContentView: \(self.contentAttributes)")
+        }
     }
     
     @State var backgroundModeSelection: Int = 0
     var backgroundAttribute: BackgroundAttribute {
-        BackgroundAttribute(.init([
-            .backgroundMode: BackgroundAttribute.Mode.allCases[backgroundModeSelection].rawValue,
-            .backgroundColor: backgroundColor.hexString,
-            .backgroundColor2: Color.white.hexString,
-            .backgroundImageUrl: "https://images.unsplash.com/photo-1508717272800-9fff97da7e8f"
-        ]))
+        BackgroundAttribute(.init(
+//            [
+//            .backgroundMode: BackgroundAttribute.Mode.allCases[backgroundModeSelection].rawValue,
+//            .backgroundColor: backgroundColor.hexString,
+//            .backgroundColor2: Color.white.hexString,
+//            .backgroundImageUrl: "https://images.unsplash.com/photo-1508717272800-9fff97da7e8f"
+//        ]
+            [.contentAttributeUuid: UUID().uuidString]
+        ))
     }
     
     @State var color: Color = .primary
@@ -246,6 +245,81 @@ struct ContentView: EditContainerView {
     
 }
 
+struct TextEditView: EditableView {
+    
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    
+    @State var id: String = UUID().uuidString
+    
+    @Environment(\.contentAttributes) var contentAttributesByName: [String: ContentAttribute]
+    @Environment(\.contentAttributeDataPublisher) var contentAttributeDataPublisher: PassthroughSubject<ContentAttributeDataItem, Never>
+    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
+    
+    @State var editMode: EditingState = .inactive
+    
+    @State var editButtonPlacement: Alignment = .topTrailing
+    
+    @State var editButtonOffset: CGSize = .init(width: 10, height: 0)
+    
+    
+    @State var weddingTitle = "Esther & Jide"
+    
+    @State var color: Color = .primary
+    @State var selectedFontName: Int = 0
+    let titles = ["Default", "Outfit-Regular", "Cedarville-Cursive", "DancingScript-Regular"]
+    
+    static var contentAttributeNames: [ContentAttributeName] {
+        return [ContentAttributeName.titleText,]
+    }
+    
+    var editModeBinding: Binding<EditingState> {
+        self.$editMode
+    }
+    
+    var titleTextAttribute: TextAttribute {
+        TextAttribute(.init([
+            .color: color.hexString,
+            .contentAttributeUuid: id,
+            .fontName: (selectedFontName == 0 ? nil : titles[selectedFontName]) as String?,
+            .fontSize: Sizing.largeTitle]))
+    }
+    
+    var contentView: some View {
+        Text(self.weddingTitle)
+            .applyAttribute(self.titleTextAttribute)
+            .padding()
+    }
+    
+    func onSheetDismissed() {
+        print("[onSheetDismissed] sent message!")
+        contentAttributeDataPublisher.send(.init(name: ContentAttributeName.titleText, value: self.titleTextAttribute.attribute))
+    }
+    
+    func editSheet() -> some View {
+        ScrollView(){
+            
+            VStack(spacing: Sizing.small){
+                TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder)
+                Picker(selection: self.$selectedFontName){
+                    ForEach(Array(titles.enumerated()), id: \.offset) { index, element in
+                        Text(element.split(separator: "-")[0])
+                            .tag(index)
+                    }
+                } label: {
+                    HStack(){
+                        Text("Label: \(String(describing: self.selectedFontName))")
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                
+                ColorPicker("Color", selection: $color, supportsOpacity: true).padding(.horizontal)
+            }
+            .padding()
+            .padding(.top)
+        }
+    }
+    
+}
 
 
 public struct EditSheetWrapper: View, Identifiable, Equatable {

@@ -9,7 +9,7 @@
 import Foundation
 import SwiftUI
 import SharedUI
-
+import JoliCore
 
 struct RoundedImageView: EditableView {
     
@@ -28,6 +28,12 @@ struct RoundedImageView: EditableView {
     @State var imageUrl = URL(string: "https://images.unsplash.com/photo-1521510186458-bbbda7aef46b?q=80&w=480&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
     @State var uiImage: UIImage? = nil
     @State var sourceType: UIImagePickerController.SourceType? = nil
+    
+    @Environment(\.contentAttributes) var contentAttributesByName: [String: ContentAttribute]
+    
+    static var contentAttributeNames: [ContentAttributeName] {
+        []
+    }
     
     @ViewBuilder
     func editSheet() -> some View {

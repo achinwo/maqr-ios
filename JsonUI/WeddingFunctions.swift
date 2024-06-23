@@ -29,6 +29,14 @@ public protocol WeddingItemView: EditableView, Identifiable {
     var navButton: NavButtonView { get }
 }
 
+extension WeddingItemView {
+    
+    static var contentAttributeNames: [ContentAttributeName] {
+        []
+    }
+    
+}
+
 struct WeddingStoryView: WeddingItemView {
     
     @State var id: String = "wedding/story"
@@ -49,6 +57,8 @@ struct WeddingStoryView: WeddingItemView {
     
     @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
     @State var fontNames: [String] = []
+    
+    @Environment(\.contentAttributes) var contentAttributesByName: [String: ContentAttribute]
     
     init(title: Binding<String>, systemImage: Binding<String>){
         _title = title
@@ -111,6 +121,8 @@ struct WeddingStoryView: WeddingItemView {
 }
 
 struct WeddingFunctionView: WeddingItemView {
+    
+    @Environment(\.contentAttributes) var contentAttributesByName: [String: ContentAttribute]
     
     var id: String {
         get {

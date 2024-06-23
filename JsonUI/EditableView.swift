@@ -11,6 +11,7 @@ import SharedUI
 import SwiftUI
 import JoliApi
 import JoliCore
+import Combine
 
 #if os(macOS)
 public enum EditingState: Hashable, Equatable {
@@ -69,8 +70,16 @@ extension UIImagePickerController.SourceType: Identifiable {
     
 }
 
+public enum ContentAttributeName: String, CaseIterable {
+    case titleText = "main.text.title"
+}
+
 public protocol EditableView: JoliView & Identifiable {
     associatedtype SheetContent: View = Never
+    
+    static var contentAttributeNames: [ContentAttributeName] { get }
+    
+    var contentAttributesByName: [String: ContentAttribute] { get }
     
     var viewModeGlobal: ViewMode { get }
     var editMode: EditingState { get nonmutating set }
@@ -82,10 +91,15 @@ public protocol EditableView: JoliView & Identifiable {
     var id: String { get nonmutating set }
     
     func editSheet() -> SheetContent
+    func onSheetDismissed() -> Void
     
 }
 
 public extension EditableView {
+    
+    func onSheetDismissed() {
+        print("Sheet dismissed -> \(id)")
+    }
     
     var isEditing: Bool {
         editMode == .active
@@ -96,7 +110,7 @@ public extension EditableView {
         return self.contentView
             .overlay(alignment: editButtonPlacement){
                 if viewModeGlobal == .editing {
-                    PencilButton(editMode: editModeBinding, parentViewId: id, sheetContent: self.editSheet)
+                    PencilButton(editMode: editModeBinding, parentViewId: id, sheetContent: self.editSheet, onDismiss: self.onSheetDismissed)
                         .offset(editButtonOffset)
                         .shadow(radius: 1)
                         .opacity(editMode.opacity)
@@ -132,43 +146,92 @@ public extension EditableView {
     
 }
 
+public struct ContentAttributeDataItem: Hashable, Equatable {
+    var name: ContentAttributeName
+    var value: ContentAttributeData
+}
+
 public protocol EditContainerView: JoliView {
     
     var viewMode: ViewMode { get nonmutating set }
     var modals: [EditSheetWrapper] { get nonmutating set }
+    
+    static var contentAttributeNames: [ContentAttributeName] { get }
+    var contentAttributeDataPublisher: PassthroughSubject<ContentAttributeDataItem, Never> { get }
+    var contentAttributeData: [ContentAttributeData] { get nonmutating set }
+    var contentAttributeDataPendingSave: [ContentAttributeName: ContentAttributeData] { get nonmutating set }
+    
     var modalViewOffset: CGFloat { get nonmutating set }
     var availableFontNames: Set<String> { get nonmutating set }
+    var isSavingChanges: Bool { get nonmutating set }
     
 }
 
 extension EditContainerView {
     
+    @ViewBuilder
+    func controlButtons() -> some View {
+        Button(){
+                //                            let generator = UINotificationFeedbackGenerator()
+                //                            generator.notificationOccurred(.warning)
+            
+            self.appCoordinator.withImpact(.light) {
+                viewMode = viewMode == .editing ? .preview : .editing
+            }
+            
+        } label: {
+            Label(viewMode == .editing ? "" : "Edit", systemImage: viewMode == .editing ? "eye" : "pencil")
+        }
+        .buttonStyle(.bordered)
+            //.padding()
+        
+        if viewMode == .editing {
+            Button(){
+                print("Save Changes")
+                
+                isSavingChanges = true
+                
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)){
+                    isSavingChanges = false
+                    viewMode = .preview
+                }
+            } label: {
+                Label("Save", systemImage: "checkmark")
+            }
+            .buttonStyle(.borderedProminent)
+        }
+    }
+    
     var body: some View {
         self.contentView
             .environment(\.viewModeGlobal, viewMode)
             .environment(\.availableFontNames, availableFontNames)
+            .environment(\.contentAttributeDataPublisher, contentAttributeDataPublisher)
             .overlay() {
                 GeometryReader() { proxy in
                     HStack(){
                         Spacer()
-                        Button(){
-//                            let generator = UINotificationFeedbackGenerator()
-//                            generator.notificationOccurred(.warning)
-                            
-                            self.appCoordinator.withImpact(.light) {
-                                viewMode = viewMode == .editing ? .preview : .editing
+                        if isSavingChanges {
+                            HStack() {
+                                ProgressView()
+                                Text("Saving...")
+                                    .padding(.leading)
                             }
-                            
-                        } label: {
-                            Label("\(viewMode == .editing ? "Preview" : "Edit")", systemImage: viewMode == .editing ? "eye" : "pencil")
+                        } else {
+                            controlButtons()
                         }
-                        .buttonStyle(.bordered)
-                        .padding()
                     }
+                    .padding()
+                    .animation(.easeInOut, value: viewMode)
                 }
             }
             .onReceive(appCoordinator.connectionStateSubject) { state in
                 self.onConnectionStateChange(state.state)
+            }
+            .onReceive(contentAttributeDataPublisher) { attributeData in
+                print("Got attributes: \(attributeData)")
+                self.contentAttributeDataPendingSave[attributeData.name] = attributeData.value
             }
             .onPreferenceChange(EditViewsKey.self) { views in
                 self.modals = views
@@ -260,6 +323,7 @@ struct PencilButton<SheetContent: View>: View {
     @Binding var editMode: EditingState
     @State var parentViewId: String
     var sheetContent: () -> SheetContent
+    var onDismiss: () -> Void
     
     var isEditing: Bool {
         editMode == .active
@@ -286,7 +350,6 @@ struct PencilButton<SheetContent: View>: View {
             }
             .frame(width: height, height: height)
         }
-            //.disabled(editMode == .transient)
         
         Group(){
             if editMode == .active {
@@ -294,6 +357,7 @@ struct PencilButton<SheetContent: View>: View {
                     .preference(key: EditViewsKey.self, value: [
                         .init(id: parentViewId, active: self.editMode == .active){
                             self.editMode = .inactive
+                            self.onDismiss()
                         } content: {
                             AnyView(self.sheetContent())
                         }
@@ -333,6 +397,8 @@ struct EditableContentView<Content: View, SheetContent: View>: EditableView {
     
     @EnvironmentObject var appCoordinator: SharedUI.AppCoordinator
     
+    @Environment(\.contentAttributes) var contentAttributesByName: [String: ContentAttribute]
+    
     private let content: () -> Content
     private let sheetContent: () -> SheetContent
     
@@ -343,6 +409,10 @@ struct EditableContentView<Content: View, SheetContent: View>: EditableView {
         self.sheetContent = sheetContent
     }
     
+    static var contentAttributeNames: [ContentAttributeName] {
+        []
+    }
+    
     var contentView: some View {
         self.content()
     }
@@ -350,6 +420,32 @@ struct EditableContentView<Content: View, SheetContent: View>: EditableView {
     func editSheet() -> SheetContent {
         sheetContent()
     }
+}
+
+public struct ContentAttributeDataPublisherKey: EnvironmentKey {
+    public static var defaultValue: PassthroughSubject<ContentAttributeDataItem, Never> = PassthroughSubject<ContentAttributeDataItem, Never>()
+}
+
+public struct ContentAttributesKey: EnvironmentKey {
+    public static var defaultValue: [String: ContentAttribute] = [:]
+}
+
+public extension EnvironmentValues {
+    
+    var contentAttributes: [String: ContentAttribute] {
+        get { self[ContentAttributesKey.self] }
+        set {
+            self[ContentAttributesKey.self] = newValue
+        }
+    }
+    
+    var contentAttributeDataPublisher: PassthroughSubject<ContentAttributeDataItem, Never> {
+        get { self[ContentAttributeDataPublisherKey.self] }
+        set {
+            self[ContentAttributeDataPublisherKey.self] = newValue
+        }
+    }
+    
 }
 
 
