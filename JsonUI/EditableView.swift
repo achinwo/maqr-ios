@@ -72,6 +72,7 @@ extension UIImagePickerController.SourceType: Identifiable {
 
 public enum ContentAttributeName: String, CaseIterable {
     case titleText = "main.text.title"
+    case subtitleText = "main.text.subtitle"
 }
 
 public protocol EditableView: JoliView & Identifiable {
@@ -167,6 +168,36 @@ public protocol EditContainerView: JoliView {
     
 }
 
+
+extension JoliApi {
+    
+    //MARK: Fetch attribute data
+    func fetchContentAttributes(_ names: [String], experienceId: Int, baseUrl: URL, urlSession: URLSession) async throws -> [ContentAttribute] {
+        let res = try await ContentAttribute.all(baseUrl: baseUrl, urlSession: urlSession)
+        
+        print("[fetchContentAttributes] \(res)")
+        return res
+    }
+    
+    //MARK: Post Content Attribute
+    func postContentAttributes(_ contentAttributes: [ContentAttributeName: ContentAttributeData], baseUrl: URL, urlSession: URLSession) async throws -> Bool {
+        
+//        let cnt: [String: AnyObject] = Dictionary(uniqueKeysWithValues: contentAttributes.map() { (key, value) in
+//            return (key.rawValue, value.toData())
+//        })
+        
+        //guard let one = contentAttributes.first?.value else { return false }
+        let decoder = Musicroom.jsonDecoder()
+        
+        let result = try await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/db/contentattributedata")!, payload: .data(try Musicroom.jsonEncoder().encode(Array(contentAttributes.values))), baseUrl: baseUrl, urlSession: urlSession)
+        
+        let res = try decoder.decode([ContentAttribute].self, from: try JSONSerialization.data(withJSONObject: result["data"] as Any))
+        
+        return true
+    }
+    
+}
+
 extension EditContainerView {
     
     @ViewBuilder
@@ -184,18 +215,21 @@ extension EditContainerView {
         }
         .buttonStyle(.bordered)
             //.padding()
+
         
-        if viewMode == .editing {
+        if viewMode == .editing && !self.contentAttributeDataPendingSave.isEmpty {
             Button(){
-                print("Save Changes")
+                //MARK: Save content attribute
                 
                 isSavingChanges = true
                 
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)){
-                    isSavingChanges = false
-                    viewMode = .preview
+                Task(){
+                    try await api.postContentAttributes(self.contentAttributeDataPendingSave, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
                 }
+                
+                isSavingChanges = false
+                viewMode = .preview
             } label: {
                 Label("Save", systemImage: "checkmark")
             }
@@ -230,8 +264,10 @@ extension EditContainerView {
                 self.onConnectionStateChange(state.state)
             }
             .onReceive(contentAttributeDataPublisher) { attributeData in
-                print("Got attributes: \(attributeData)")
-                self.contentAttributeDataPendingSave[attributeData.name] = attributeData.value
+                var dataCopy = attributeData.value
+                dataCopy.contentAttributeName = attributeData.name.rawValue
+                print("Got attributes: \(dataCopy)")
+                self.contentAttributeDataPendingSave[attributeData.name] = dataCopy
             }
             .onPreferenceChange(EditViewsKey.self) { views in
                 self.modals = views

@@ -9,6 +9,7 @@
 import SwiftUI
 import SharedUI
 import JoliApi
+import JoliCore
 
 @main
 struct JsonUIApp: App {

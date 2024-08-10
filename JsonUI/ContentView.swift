@@ -12,13 +12,6 @@ import JoliCore
 import JoliApi
 import Combine
 
-extension JoliApi {
-    
-    func fetchContentAttributes(_ names: [String], experienceId: Int) async throws -> [ContentAttribute] {
-        return []
-    }
-    
-}
 
 struct ContentView: EditContainerView {
     
@@ -37,8 +30,6 @@ struct ContentView: EditContainerView {
     
     @State var imageUrl = URL(string: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
     @State var uiImage: UIImage? = nil
-    
-    @State var weddingSubtitle = "Hello & Welcome!"
     
     @State private var sourceType: UIImagePickerController.SourceType? = nil
     
@@ -62,6 +53,19 @@ struct ContentView: EditContainerView {
     @State var title: String = "Our Story"
     @State var systemImage: String = "book.fill"
     @State var backgroundColor = Color.init(hex: "#1930B0C7")
+    
+    @State var backgroundModeSelection: Int = 0
+    
+    var backgroundAttribute: BackgroundAttribute {
+        BackgroundAttribute(.init(
+                [
+                .backgroundMode: BackgroundAttribute.Mode.allCases[backgroundModeSelection].rawValue,
+                .backgroundColor: backgroundColor.hexString,
+                .backgroundColor2: Color.white.hexString,
+                .backgroundImageUrl: "https://images.unsplash.com/photo-1508717272800-9fff97da7e8f"
+            ]
+        ))
+    }
     
     var contentView: some View {
         NavigationView(){
@@ -127,15 +131,17 @@ struct ContentView: EditContainerView {
                     ScrollView(.vertical){
                         
                         VStack {
-                            TextEditView()
+                            TextEditView("Esther & Jide", attributeName: .titleText)
                                 .padding(.top, 60)
                             
-                            EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: -5)){
-                                Text(self.weddingSubtitle)
-                                    .font(.subheadline.weight(.light))
-                            } sheetContent: {
-                                TextField("Subtitle", text: self.$weddingSubtitle).textFieldStyle(.roundedBorder).padding()
-                            }
+                            TextEditView("Hello & Welcome!", attributeName: .subtitleText)
+                            
+//                            EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: -5)){
+//                                Text(self.weddingSubtitle)
+//                                    .font(.subheadline.weight(.light))
+//                            } sheetContent: {
+//                                TextField("Subtitle", text: self.$weddingSubtitle).textFieldStyle(.roundedBorder).padding()
+//                            }
                             
                             self.bodyGridView
                                 .padding(.top)
@@ -167,28 +173,27 @@ struct ContentView: EditContainerView {
             self.keyboardHeight = keyboardHeight
         }
         .task(){
-            //self.contentAttributes = (try? await api.fetchContentAttributes(Self.contentAttributeNames, experienceId: 1)) ?? []
-            
-            //print("ContentView: \(self.contentAttributes)")
+            self.contentAttributes = (try? await api.fetchContentAttributes(Self.contentAttributeNames.map(){ $0.rawValue }, experienceId: 92, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)) ?? []
         }
+        .environment(\.contentAttributes, self.contentAttributesByName)
+        
     }
     
-    @State var backgroundModeSelection: Int = 0
-    var backgroundAttribute: BackgroundAttribute {
-        BackgroundAttribute(.init(
-//            [
-//            .backgroundMode: BackgroundAttribute.Mode.allCases[backgroundModeSelection].rawValue,
-//            .backgroundColor: backgroundColor.hexString,
-//            .backgroundColor2: Color.white.hexString,
-//            .backgroundImageUrl: "https://images.unsplash.com/photo-1508717272800-9fff97da7e8f"
-//        ]
-            [.contentAttributeUuid: UUID().uuidString]
-        ))
+    var contentAttributesByName: [String: ContentAttribute] {
+        var uniq: [String: ContentAttribute] = [:]
+        
+        for attr in self.contentAttributes {
+            
+            guard let current = uniq[attr.name] else {
+                uniq[attr.name] = attr
+                continue
+            }
+            
+            uniq[attr.name] = current.updatedAt > attr.updatedAt ? current : attr
+        }
+        
+        return uniq
     }
-    
-    @State var color: Color = .primary
-    @State var selectedFontName: Int = 0
-    let titles = ["Default", "Outfit-Regular", "Cedarville-Cursive", "DancingScript-Regular"]
     
     var bodyGridView: some View {
         //
@@ -249,7 +254,7 @@ struct TextEditView: EditableView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    @State var id: String = UUID().uuidString
+    @State var id: String = UUID().uuidString.lowercased()
     
     @Environment(\.contentAttributes) var contentAttributesByName: [String: ContentAttribute]
     @Environment(\.contentAttributeDataPublisher) var contentAttributeDataPublisher: PassthroughSubject<ContentAttributeDataItem, Never>
@@ -261,12 +266,19 @@ struct TextEditView: EditableView {
     
     @State var editButtonOffset: CGSize = .init(width: 10, height: 0)
     
+    let attributeName: ContentAttributeName
     
-    @State var weddingTitle = "Esther & Jide"
+    @State var textContent: String
     
     @State var color: Color = .primary
     @State var selectedFontName: Int = 0
+    @State var fontSize = 24.0
     let titles = ["Default", "Outfit-Regular", "Cedarville-Cursive", "DancingScript-Regular"]
+    
+    init(_ defaultText: String, attributeName: ContentAttributeName) {
+        self.attributeName = attributeName
+        self._textContent = State(initialValue: defaultText)
+    }
     
     static var contentAttributeNames: [ContentAttributeName] {
         return [ContentAttributeName.titleText,]
@@ -276,30 +288,43 @@ struct TextEditView: EditableView {
         self.$editMode
     }
     
-    var titleTextAttribute: TextAttribute {
+    var textAttribute: TextAttribute {
         TextAttribute(.init([
+            .textContent: textContent,
             .color: color.hexString,
             .contentAttributeUuid: id,
             .fontName: (selectedFontName == 0 ? nil : titles[selectedFontName]) as String?,
-            .fontSize: Sizing.largeTitle]))
+            .fontSize: fontSize]))
     }
     
     var contentView: some View {
-        Text(self.weddingTitle)
-            .applyAttribute(self.titleTextAttribute)
+        Text(self.textContent)
+            .applyAttribute(self.textAttribute)
             .padding()
+            .onChange(of: self.contentAttributesByName) { attrs in
+                
+                guard let attr = attrs[attributeName.rawValue] else { return }
+                
+                let data = attr.data
+                color = Color(attr.data.color) ?? .primary
+                
+                selectedFontName = titles.firstIndex(of: data.fontName ?? titles[selectedFontName]) ?? selectedFontName
+                id = attr.uuid
+                textContent = (data.textContent ?? textContent).trimmingCharacters(in: .whitespacesAndNewlines)
+                fontSize = data.fontSize ?? Sizing.largeTitle
+            }
     }
     
     func onSheetDismissed() {
         print("[onSheetDismissed] sent message!")
-        contentAttributeDataPublisher.send(.init(name: ContentAttributeName.titleText, value: self.titleTextAttribute.attribute))
+        contentAttributeDataPublisher.send(.init(name: attributeName, value: self.textAttribute.attribute))
     }
     
     func editSheet() -> some View {
         ScrollView(){
             
             VStack(spacing: Sizing.small){
-                TextField("Title", text: self.$weddingTitle).textFieldStyle(.roundedBorder)
+                TextField("Title", text: self.$textContent).textFieldStyle(.roundedBorder)
                 Picker(selection: self.$selectedFontName){
                     ForEach(Array(titles.enumerated()), id: \.offset) { index, element in
                         Text(element.split(separator: "-")[0])
@@ -313,6 +338,15 @@ struct TextEditView: EditableView {
                 .pickerStyle(SegmentedPickerStyle())
                 
                 ColorPicker("Color", selection: $color, supportsOpacity: true).padding(.horizontal)
+                
+                HStack(){
+                    Text("Font Size: \(Int(fontSize))")
+                    Spacer()
+                    Stepper("Font Size:", value: $fontSize, in: 12...50).labelsHidden()
+                }
+                .padding(.horizontal)
+                
+                
             }
             .padding()
             .padding(.top)
