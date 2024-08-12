@@ -28,11 +28,6 @@ struct ContentView: EditContainerView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     
-    @State var imageUrl = URL(string: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-    @State var uiImage: UIImage? = nil
-    
-    @State private var sourceType: UIImagePickerController.SourceType? = nil
-    
     @State var keyboardHeight: CGFloat = 0
     @State var modalViewOffset: CGFloat = 0
     @State var modals: [EditSheetWrapper] = []
@@ -71,70 +66,30 @@ struct ContentView: EditContainerView {
         NavigationView(){
             VStack(spacing: .zero) {
                 
-                EditableContentView(editPlacement: .bottomTrailing, editOffset: .init(width: 0, height: -5)){
-                    Group(){
-                        if let image = uiImage {
-                            Image(platformImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } else {
-                            AsyncImage(url: imageUrl) { image in
-                                image.resizable()
-                            } placeholder: {
-                                ProgressView()
-                            }
-                        }
-                    }
+                ImageEditView(editButtonOffset: .init(width: 0, height: -5))
                     .frame(maxHeight: screenHeight * 0.25)
-                    .clipped()
-                } sheetContent: {
-                    HStack(){
-                        Button("Camera", systemImage: "camera.viewfinder"){
-                            print("open camera!")
-                            sourceType = .camera
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .padding()
-                        
-                        Button("Gallery", systemImage: "photo.on.rectangle.angled"){
-                            print("open Gallery!")
-                            sourceType = .photoLibrary
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .padding()
-                    }
-                    .sheet(item: $sourceType) { item in
-                        if item == .camera {
-                            CameraImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
-                                self.sourceType = nil
-                                print("CAM| image: \(String(describing: img)), assestName: \(String(describing: assetName)), error: \(String(describing: error))")
-                                self.uiImage = img
-                            }
-                            .edgesIgnoringSafeArea(.bottom)
-                        } else {
-                            SingleImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
-                                self.sourceType = nil
-                                print("image: \(String(describing: img)), assestName: \(String(describing: assetName)), error: \(String(describing: error))")
-                                self.uiImage = img
-                            }
-                            .edgesIgnoringSafeArea(.bottom)
-                        }
-                    }
-                }
                 
-                RoundedImageView()
+                ImageEditView(rounded: true, frame: CGSize(width: 100, height: 100))
+                    .offset(.init(width: 0, height: 50))
+                    //.clipShape(Circle())
+                    //.overlay(Circle().stroke(Color.white, lineWidth: 4))
                     .offset(y: -100)
                     .padding(.bottom, -100)
                     .zIndex(1.0)
+                
+//                RoundedImageView()
+//                    .offset(y: -100)
+//                    .padding(.bottom, -100)
+//                    .zIndex(1.0)
                 
                 EditableContentView(editPlacement: .topLeading, editOffset: .init(width: 5, height: 5)){
                     ScrollView(.vertical){
                         
                         VStack {
-                            TextEditView("Esther & Jide", attributeName: .titleText)
+                            TextEditView(attributeName: .titleText, placeholder: "Title")
                                 .padding(.top, 60)
                             
-                            TextEditView("Hello & Welcome!", attributeName: .subtitleText)
+                            TextEditView(attributeName: .subtitleText, placeholder: "Subtitle")
                             
 //                            EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: -5)){
 //                                Text(self.weddingSubtitle)
@@ -250,6 +205,123 @@ struct ContentView: EditContainerView {
     
 }
 
+
+struct ImageEditView: EditableView {
+    
+    @EnvironmentObject var appCoordinator: AppCoordinator
+    
+    @State var id: String = UUID().uuidString.lowercased()
+    
+    @Environment(\.contentAttributes) var contentAttributesByName: [String: ContentAttribute]
+    @Environment(\.contentAttributeDataPublisher) var contentAttributeDataPublisher: PassthroughSubject<ContentAttributeDataItem, Never>
+    @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
+    
+    @State var editMode: EditingState = .inactive
+    
+    @State var editButtonPlacement: Alignment = .bottomTrailing
+    
+    @State var editButtonOffset: CGSize
+    
+    @State var imageUrl = URL(string: "https://images.unsplash.com/photo-1707922172778-c59c96446d76?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+    
+    @State var uiImage: UIImage? = nil
+    @State var frame: CGSize? = nil
+    
+    @State var rounded = false
+    @State private var sourceType: UIImagePickerController.SourceType? = nil
+    
+    static var contentAttributeNames: [ContentAttributeName] {
+        return [ContentAttributeName.titleText,]
+    }
+    
+    init(rounded: Bool = false, frame: CGSize? = nil, editButtonOffset: CGSize? = nil){
+        self._editButtonOffset = State(initialValue: editButtonOffset ?? .init(width: 0, height: 0))
+        self._rounded = State(initialValue: rounded)
+        self._frame = State(initialValue: frame)
+    }
+    
+    var editModeBinding: Binding<EditingState> {
+        self.$editMode
+    }
+    
+    @ViewBuilder
+    var imageView: some View {
+        let group = Group(){
+            if let image = uiImage {
+                Image(platformImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                AsyncImage(url: imageUrl) { image in
+                    image.resizable()
+                } placeholder: {
+                    ProgressView()
+                }
+            }
+        }
+        
+        if let frame = self.frame {
+            group.frame(width: frame.width, height: frame.height)
+        } else {
+            group
+        }
+    }
+    
+    @ViewBuilder
+    var contentView: some View {
+        if rounded {
+            imageView
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+        } else {
+            imageView
+                .clipped()
+        }
+    }
+    
+    func editSheet() -> some View {
+        HStack(){
+            Button("Camera", systemImage: "camera.viewfinder"){
+                print("open camera!")
+                sourceType = .camera
+            }
+            .buttonStyle(.borderedProminent)
+            .padding()
+            
+            Button("Gallery", systemImage: "photo.on.rectangle.angled"){
+                print("open Gallery!")
+                sourceType = .photoLibrary
+            }
+            .buttonStyle(.borderedProminent)
+            .padding()
+        }
+        .sheet(item: $sourceType) { item in
+            if item == .camera {
+                CameraImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
+                    self.sourceType = nil
+                    print("CAM| image: \(String(describing: img)), assestName: \(String(describing: assetName)), error: \(String(describing: error))")
+                    self.uiImage = img
+                }
+                .edgesIgnoringSafeArea(.bottom)
+            } else {
+                SingleImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
+                    self.sourceType = nil
+                    print("image: \(String(describing: img)), assestName: \(String(describing: assetName)), error: \(String(describing: error))")
+                    self.uiImage = img
+                }
+                .edgesIgnoringSafeArea(.bottom)
+            }
+        }
+    }
+    
+}
+
+class TextModel: ObservableObject, Identifiable {
+    @Published var fontSize = 24.0
+    
+    let id = UUID() // A unique identifier that never changes.
+}
+
 struct TextEditView: EditableView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
@@ -269,15 +341,20 @@ struct TextEditView: EditableView {
     let attributeName: ContentAttributeName
     
     @State var textContent: String
+    @State var placeholder: String
     
     @State var color: Color = .primary
     @State var selectedFontName: Int = 0
-    @State var fontSize = 24.0
+    
+    @StateObject var model: TextModel
+    
     let titles = ["Default", "Outfit-Regular", "Cedarville-Cursive", "DancingScript-Regular"]
     
-    init(_ defaultText: String, attributeName: ContentAttributeName) {
+    init(_ defaultText: String? = nil, attributeName: ContentAttributeName, placeholder: String) {
         self.attributeName = attributeName
-        self._textContent = State(initialValue: defaultText)
+        self._textContent = State(initialValue: defaultText ?? .empty)
+        self._model = StateObject(wrappedValue: TextModel())
+        self._placeholder = State(initialValue: placeholder)
     }
     
     static var contentAttributeNames: [ContentAttributeName] {
@@ -294,12 +371,14 @@ struct TextEditView: EditableView {
             .color: color.hexString,
             .contentAttributeUuid: id,
             .fontName: (selectedFontName == 0 ? nil : titles[selectedFontName]) as String?,
-            .fontSize: fontSize]))
+            .fontSize: FontSize.allCases[self.selectedFontSizeIndex].value
+        ]))
     }
     
     var contentView: some View {
         Text(self.textContent)
             .applyAttribute(self.textAttribute)
+            .frame(minWidth: screenWidth / 3)
             .padding()
             .onChange(of: self.contentAttributesByName) { attrs in
                 
@@ -311,7 +390,7 @@ struct TextEditView: EditableView {
                 selectedFontName = titles.firstIndex(of: data.fontName ?? titles[selectedFontName]) ?? selectedFontName
                 id = attr.uuid
                 textContent = (data.textContent ?? textContent).trimmingCharacters(in: .whitespacesAndNewlines)
-                fontSize = data.fontSize ?? Sizing.largeTitle
+                model.fontSize = data.fontSize ?? FontSize.medium.value
             }
     }
     
@@ -320,11 +399,45 @@ struct TextEditView: EditableView {
         contentAttributeDataPublisher.send(.init(name: attributeName, value: self.textAttribute.attribute))
     }
     
+    @State var selectedFontSizeIndex = 1
+    
+    enum FontSize: String, CaseIterable {
+        case small
+        case medium
+        case large
+        
+        init(fontSize: Double) {
+            switch abs(fontSize) {
+                case 0 ..< 17.0:
+                    self = .small
+                case 16.0..<25.0:
+                    self = .medium
+                case 24.0..<33.0:
+                    self = .large
+                default:
+                    self = .medium
+            }
+        }
+        
+        var value: Double {
+            switch self {
+                case .large:
+                    return 32.0
+                case .medium:
+                    return 24.0
+                    
+                case .small:
+                    return 16.0
+            }
+        }
+    }
+    
     func editSheet() -> some View {
         ScrollView(){
             
             VStack(spacing: Sizing.small){
-                TextField("Title", text: self.$textContent).textFieldStyle(.roundedBorder)
+                TextField(self.placeholder, text: self.$textContent).textFieldStyle(.roundedBorder)
+                
                 Picker(selection: self.$selectedFontName){
                     ForEach(Array(titles.enumerated()), id: \.offset) { index, element in
                         Text(element.split(separator: "-")[0])
@@ -337,14 +450,35 @@ struct TextEditView: EditableView {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 
-                ColorPicker("Color", selection: $color, supportsOpacity: true).padding(.horizontal)
-                
-                HStack(){
-                    Text("Font Size: \(Int(fontSize))")
-                    Spacer()
-                    Stepper("Font Size:", value: $fontSize, in: 12...50).labelsHidden()
+                Section() {
+                    Picker(selection: self.$selectedFontSizeIndex){
+                        ForEach(Array(FontSize.allCases.enumerated()), id: \.offset) { index, element in
+                            Text(element.rawValue.capitalized).tag(index)
+                        }
+                    } label: {
+                        HStack(){
+                            Text("Label: \(String(describing: self.selectedFontSizeIndex))")
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                } header: {
+                    HStack() {
+                        Text("Font Size")
+                        Spacer()
+                    }
                 }
-                .padding(.horizontal)
+                
+                
+//                HStack(){
+//                    Text("Font Size")
+//                    Spacer()
+//                    //Stepper("Font Size:", value: $model.fontSize, in: 12...50).labelsHidden()
+//                    
+//
+//                }
+                
+                ColorPicker("Color", selection: $color, supportsOpacity: true)
+                    .padding(.horizontal)
                 
                 
             }
