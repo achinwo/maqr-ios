@@ -163,7 +163,7 @@ public protocol EditContainerView: JoliView {
     static var contentAttributeNames: [ContentAttributeName] { get }
     var contentAttributeDataPublisher: PassthroughSubject<ContentAttributeDataItem, Never> { get }
     var contentAttributeData: [ContentAttributeData] { get nonmutating set }
-    var contentAttributeDataPendingSave: [ContentAttributeName: ContentAttributeData] { get nonmutating set }
+    var contentAttributeDataPendingSave: [ContentAttributeName: ContentAttributeDataItem] { get nonmutating set }
     
     var modalViewOffset: CGFloat { get nonmutating set }
     var availableFontNames: Set<String> { get nonmutating set }
@@ -183,7 +183,7 @@ extension JoliApi {
     }
     
     //MARK: Post Content Attribute
-    func postContentAttributes(_ contentAttributes: [ContentAttributeName: ContentAttributeData], baseUrl: URL, urlSession: URLSession) async throws -> Bool {
+    func postContentAttributes(_ contentAttributes: [ContentAttributeName: ContentAttributeDataItem], baseUrl: URL, urlSession: URLSession) async throws -> Bool {
         
 //        let cnt: [String: AnyObject] = Dictionary(uniqueKeysWithValues: contentAttributes.map() { (key, value) in
 //            return (key.rawValue, value.toData())
@@ -191,8 +191,26 @@ extension JoliApi {
         
         //guard let one = contentAttributes.first?.value else { return false }
         let decoder = Musicroom.jsonDecoder()
+        var values: [ContentAttributeData] = []
         
-        let result = try await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/db/contentattributedata")!, payload: .data(try Musicroom.jsonEncoder().encode(Array(contentAttributes.values))), baseUrl: baseUrl, urlSession: urlSession)
+        for (name, item) in contentAttributes {
+            var cd = item.value
+            cd.contentAttributeName = name.rawValue
+            
+            for (kp, image) in item.images {
+                
+                guard let image else { continue }
+                
+                let (imgUrl, json) = try await Self.upload(image, baseUrl: baseUrl, urlSession: urlSession)
+                
+                cd[keyPath: kp] = (URL.fromString(json["gcloudPublicUrl"] as? String) ?? imgUrl).absoluteString
+                print("Uploaded image \(kp): \(imgUrl.absoluteString)")
+            }
+            
+            values.append(cd)
+        }
+        
+        let result = try await HttpMethod.post.fetchJson(urlPath: URLComponents(string: "/api/db/contentattributedata")!, payload: .data(try Musicroom.jsonEncoder().encode(values)), baseUrl: baseUrl, urlSession: urlSession)
         
         let res = try decoder.decode([ContentAttribute].self, from: try JSONSerialization.data(withJSONObject: result["data"] as Any))
         
@@ -267,10 +285,7 @@ extension EditContainerView {
                 self.onConnectionStateChange(state.state)
             }
             .onReceive(contentAttributeDataPublisher) { attributeData in
-                var dataCopy = attributeData.value
-                dataCopy.contentAttributeName = attributeData.name.rawValue
-                print("Got attributes: \(dataCopy) | \(attributeData.images.values)")
-                self.contentAttributeDataPendingSave[attributeData.name] = dataCopy
+                self.contentAttributeDataPendingSave[attributeData.name] = attributeData
             }
             .onPreferenceChange(EditViewsKey.self) { views in
                 self.modals = views

@@ -19,7 +19,7 @@ struct ContentView: EditContainerView {
     @State var contentAttributes: [ContentAttribute] = []
     @State var contentAttributeData: [ContentAttributeData] = []
     
-    @State var contentAttributeDataPendingSave: [ContentAttributeName: ContentAttributeData] = [:]
+    @State var contentAttributeDataPendingSave: [ContentAttributeName: ContentAttributeDataItem] = [:]
     
     @State var isSavingChanges: Bool = false
     
