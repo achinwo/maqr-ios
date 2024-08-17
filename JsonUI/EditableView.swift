@@ -73,6 +73,8 @@ extension UIImagePickerController.SourceType: Identifiable {
 public enum ContentAttributeName: String, CaseIterable {
     case titleText = "main.text.title"
     case subtitleText = "main.text.subtitle"
+    case avatarMainImage = "main.image.avatar"
+    case bannerMainImage = "main.image.banner"
 }
 
 public protocol EditableView: JoliView & Identifiable {
@@ -150,6 +152,7 @@ public extension EditableView {
 public struct ContentAttributeDataItem: Hashable, Equatable {
     var name: ContentAttributeName
     var value: ContentAttributeData
+    var images: [WritableKeyPath<ContentAttributeData, String?>: UIImage?]
 }
 
 public protocol EditContainerView: JoliView {
@@ -175,7 +178,7 @@ extension JoliApi {
     func fetchContentAttributes(_ names: [String], experienceId: Int, baseUrl: URL, urlSession: URLSession) async throws -> [ContentAttribute] {
         let res = try await ContentAttribute.all(baseUrl: baseUrl, urlSession: urlSession)
         
-        print("[fetchContentAttributes] \(res)")
+        //print("[fetchContentAttributes] \(res)")
         return res
     }
     
@@ -266,7 +269,7 @@ extension EditContainerView {
             .onReceive(contentAttributeDataPublisher) { attributeData in
                 var dataCopy = attributeData.value
                 dataCopy.contentAttributeName = attributeData.name.rawValue
-                print("Got attributes: \(dataCopy)")
+                print("Got attributes: \(dataCopy) | \(attributeData.images.values)")
                 self.contentAttributeDataPendingSave[attributeData.name] = dataCopy
             }
             .onPreferenceChange(EditViewsKey.self) { views in
@@ -411,7 +414,7 @@ struct PencilButton<SheetContent: View>: View {
                 return
             }
             
-            print("[\(Self.self)] edit mode changed: \(val)")
+            //print("[\(Self.self)] edit mode changed: \(val)")
         }
     }
     

@@ -66,13 +66,11 @@ struct ContentView: EditContainerView {
         NavigationView(){
             VStack(spacing: .zero) {
                 
-                ImageEditView(editButtonOffset: .init(width: 0, height: -5))
-                    .frame(maxHeight: screenHeight * 0.25)
+                ImageEditView(attributeName: .bannerMainImage, frame: .init(width: screenWidth, height: screenHeight * 0.25), editButtonOffset: .init(width: 0, height: -5))
+                    //.frame(maxHeight: screenHeight * 0.25)
                 
-                ImageEditView(rounded: true, frame: CGSize(width: 100, height: 100))
+                ImageEditView(attributeName: .avatarMainImage, rounded: true, frame: CGSize(width: 100, height: 100))
                     .offset(.init(width: 0, height: 50))
-                    //.clipShape(Circle())
-                    //.overlay(Circle().stroke(Color.white, lineWidth: 4))
                     .offset(y: -100)
                     .padding(.bottom, -100)
                     .zIndex(1.0)
@@ -90,13 +88,6 @@ struct ContentView: EditContainerView {
                                 .padding(.top, 60)
                             
                             TextEditView(attributeName: .subtitleText, placeholder: "Subtitle")
-                            
-//                            EditableContentView(editPlacement: .topTrailing, editOffset: .init(width: 10, height: -5)){
-//                                Text(self.weddingSubtitle)
-//                                    .font(.subheadline.weight(.light))
-//                            } sheetContent: {
-//                                TextField("Subtitle", text: self.$weddingSubtitle).textFieldStyle(.roundedBorder).padding()
-//                            }
                             
                             self.bodyGridView
                                 .padding(.top)
@@ -216,6 +207,8 @@ struct ImageEditView: EditableView {
     @Environment(\.contentAttributeDataPublisher) var contentAttributeDataPublisher: PassthroughSubject<ContentAttributeDataItem, Never>
     @Environment(\.viewModeGlobal) var viewModeGlobal: ViewMode
     
+    @State var attributeName: ContentAttributeName
+    
     @State var editMode: EditingState = .inactive
     
     @State var editButtonPlacement: Alignment = .bottomTrailing
@@ -234,10 +227,24 @@ struct ImageEditView: EditableView {
         return [ContentAttributeName.titleText,]
     }
     
-    init(rounded: Bool = false, frame: CGSize? = nil, editButtonOffset: CGSize? = nil){
+    init(attributeName: ContentAttributeName, rounded: Bool = false, frame: CGSize? = nil, editButtonOffset: CGSize? = nil){
         self._editButtonOffset = State(initialValue: editButtonOffset ?? .init(width: 0, height: 0))
         self._rounded = State(initialValue: rounded)
         self._frame = State(initialValue: frame)
+        self._attributeName = State(initialValue: attributeName)
+    }
+    
+    func onSheetDismissed() {
+        contentAttributeDataPublisher.send(.init(name: attributeName, value: self.imageAttribute.attribute, images: [\.backgroundImageUrl: uiImage]))
+    }
+    
+    var imageAttribute: BackgroundAttribute {
+        return BackgroundAttribute(.init([
+            .backgroundImageUrl: imageUrl?.absoluteString,
+            .contentAttributeName: attributeName.rawValue,
+            .contentAttributeUuid: id
+        ])
+        )
     }
     
     var editModeBinding: Binding<EditingState> {
@@ -254,14 +261,25 @@ struct ImageEditView: EditableView {
             } else {
                 AsyncImage(url: imageUrl) { image in
                     image.resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .clipped()
                 } placeholder: {
                     ProgressView()
                 }
             }
         }
+        .onChange(of: self.contentAttributesByName) { attrs in
+            
+            guard let attr = attrs[attributeName.rawValue] else { return }
+            
+            let data = attr.data
+            
+            id = attr.uuid
+            imageUrl = URL.fromString(data.backgroundImageUrl) ?? imageUrl
+        }
         
         if let frame = self.frame {
-            group.frame(width: frame.width, height: frame.height)
+            group.frame(maxWidth: frame.width, maxHeight: frame.height)
         } else {
             group
         }
@@ -395,8 +413,7 @@ struct TextEditView: EditableView {
     }
     
     func onSheetDismissed() {
-        print("[onSheetDismissed] sent message!")
-        contentAttributeDataPublisher.send(.init(name: attributeName, value: self.textAttribute.attribute))
+        contentAttributeDataPublisher.send(.init(name: attributeName, value: self.textAttribute.attribute, images: [:]))
     }
     
     @State var selectedFontSizeIndex = 1
@@ -467,15 +484,6 @@ struct TextEditView: EditableView {
                         Spacer()
                     }
                 }
-                
-                
-//                HStack(){
-//                    Text("Font Size")
-//                    Spacer()
-//                    //Stepper("Font Size:", value: $model.fontSize, in: 12...50).labelsHidden()
-//                    
-//
-//                }
                 
                 ColorPicker("Color", selection: $color, supportsOpacity: true)
                     .padding(.horizontal)
