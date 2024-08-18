@@ -35,7 +35,7 @@ struct ContentView: EditContainerView {
     @State var availableFontNames: Set<String> = []
     
     static var contentAttributeNames: [ContentAttributeName] {
-        []
+        [.backgroundMainImage]
     }
     
     var columns: [GridItem] {
@@ -45,21 +45,29 @@ struct ContentView: EditContainerView {
         ]
     }
     
+    @State private var sourceType: UIImagePickerController.SourceType? = nil
+    
     @State var title: String = "Our Story"
     @State var systemImage: String = "book.fill"
+    
     @State var backgroundColor = Color.init(hex: "#1930B0C7")
+    @State var backgroundColor2 = Color.white
     
     @State var backgroundModeSelection: Int = 0
+    @State var backgroungImage: UIImage? = nil
+    @State var backgroungImageUrl: URL? = nil
+    @State var backgroundOpacity: Double = 0.8
     
     var backgroundAttribute: BackgroundAttribute {
         BackgroundAttribute(.init(
                 [
                 .backgroundMode: BackgroundAttribute.Mode.allCases[backgroundModeSelection].rawValue,
                 .backgroundColor: backgroundColor.hexString,
-                .backgroundColor2: Color.white.hexString,
-                .backgroundImageUrl: "https://images.unsplash.com/photo-1508717272800-9fff97da7e8f"
+                .backgroundColor2: backgroundColor2.hexString,
+                .backgroundImageUrl: backgroungImageUrl?.absoluteString, //"https://images.unsplash.com/photo-1508717272800-9fff97da7e8f"
+                .backgroundOpacity: backgroundOpacity,
             ]
-        ))
+        ), rawImage: backgroungImage)
     }
     
     var contentView: some View {
@@ -67,18 +75,12 @@ struct ContentView: EditContainerView {
             VStack(spacing: .zero) {
                 
                 ImageEditView(attributeName: .bannerMainImage, frame: .init(width: screenWidth, height: screenHeight * 0.25), editButtonOffset: .init(width: 0, height: -5))
-                    //.frame(maxHeight: screenHeight * 0.25)
                 
                 ImageEditView(attributeName: .avatarMainImage, rounded: true, frame: CGSize(width: 100, height: 100))
                     .offset(.init(width: 0, height: 50))
                     .offset(y: -100)
                     .padding(.bottom, -100)
-                    .zIndex(1.0)
-                
-//                RoundedImageView()
-//                    .offset(y: -100)
-//                    .padding(.bottom, -100)
-//                    .zIndex(1.0)
+                    .zIndex(10.0)
                 
                 EditableContentView(editPlacement: .topLeading, editOffset: .init(width: 5, height: 5)){
                     ScrollView(.vertical){
@@ -98,7 +100,12 @@ struct ContentView: EditContainerView {
                     }
                 } sheetContent: {
                     VStack(spacing: Sizing.medium){
-                        ColorPicker("Background Color", selection: $backgroundColor, supportsOpacity: true)
+                        ColorPicker("Background Color", selection: $backgroundColor, supportsOpacity: false)
+                        
+                        ColorPicker("Background Color 2", selection: $backgroundColor2, supportsOpacity: false)
+                        
+                        Stepper("Opacity", value: $backgroundOpacity, in: 0.2...0.9, step: 0.1)
+                        
                         Picker("Mode", systemImage: "pencil", selection: $backgroundModeSelection) {
                             ForEach(Array(BackgroundAttribute.Mode.allCases.enumerated()), id: \.offset) { offset, element in
                                 Text(element.rawValue.capitalized)
@@ -106,10 +113,48 @@ struct ContentView: EditContainerView {
                             }
                         }
                         .pickerStyle(SegmentedPickerStyle())
+                        
+                        //if BackgroundAttribute.Mode.allCases[backgroundModeSelection] == .image {
+                            HStack(){
+                                Button("Camera", systemImage: "camera.viewfinder"){
+                                    print("open camera!")
+                                    sourceType = .camera
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .padding()
+                                
+                                Button("Gallery", systemImage: "photo.on.rectangle.angled"){
+                                    print("open Gallery!")
+                                    sourceType = .photoLibrary
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .padding()
+                            }
+                            .sheet(item: $sourceType) { item in
+                                if item == .camera {
+                                    CameraImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
+                                        self.sourceType = nil
+                                        self.backgroungImage = img
+                                    }
+                                    .edgesIgnoringSafeArea(.bottom)
+                                } else {
+                                    SingleImagePicker() {(img: UIImage?, assetName: String?, error: Error?) in
+                                        self.sourceType = nil
+                                        self.backgroungImage = img
+                                    }
+                                    .edgesIgnoringSafeArea(.bottom)
+                                }
+                            }
+                            
+                        //}
+                        
                     }
                     .padding()
+                } onSheetDismissed: {
+                    contentAttributeDataPublisher.send(.init(name: .backgroundMainImage, value: self.backgroundAttribute.attribute, images: [\.backgroundImageUrl: backgroungImage]))
                 }
                 .applyAttribute(backgroundAttribute)
+                .clipped()
                 
             }
             .edgesIgnoringSafeArea(.vertical)
@@ -120,6 +165,23 @@ struct ContentView: EditContainerView {
         }
         .task(){
             self.contentAttributes = (try? await api.fetchContentAttributes(Self.contentAttributeNames.map(){ $0.rawValue }, experienceId: 92, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)) ?? []
+        }
+        .onChange(of: self.contentAttributes){ _ in
+            guard let attr = self.contentAttributesByName[ContentAttributeName.backgroundMainImage.rawValue] else { return }
+            
+            let data = attr.data
+            
+            backgroungImageUrl = URL.fromString(data.backgroundImageUrl) ?? backgroungImageUrl
+            backgroundColor2 = Color(hex: data.backgroundColor2 ?? backgroundColor2.hexString)
+            backgroundColor = Color(hex: data.backgroundColor ?? backgroundColor.hexString)
+            backgroundOpacity = data.backgroundOpacity ?? 1.0
+            
+            guard let mode = data.backgroundMode, let enm = BackgroundAttribute.Mode.init(rawValue: mode) else {
+                return
+            }
+            
+            backgroundModeSelection = BackgroundAttribute.Mode.allCases.firstIndex(of: enm) ?? 0
+            
         }
         .environment(\.contentAttributes, self.contentAttributesByName)
         

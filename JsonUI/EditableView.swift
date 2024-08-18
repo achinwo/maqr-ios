@@ -75,6 +75,7 @@ public enum ContentAttributeName: String, CaseIterable {
     case subtitleText = "main.text.subtitle"
     case avatarMainImage = "main.image.avatar"
     case bannerMainImage = "main.image.banner"
+    case backgroundMainImage = "main.image.background"
 }
 
 public protocol EditableView: JoliView & Identifiable {
@@ -453,18 +454,24 @@ struct EditableContentView<Content: View, SheetContent: View>: EditableView {
     
     @Environment(\.contentAttributes) var contentAttributesByName: [String: ContentAttribute]
     
+    private let onDismiss: (() -> ())?
     private let content: () -> Content
     private let sheetContent: () -> SheetContent
     
-    init(editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero, @ViewBuilder content: @escaping () -> Content, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
+    init(editPlacement: Alignment = .topTrailing, editOffset: CGSize = .zero, @ViewBuilder content: @escaping () -> Content, @ViewBuilder sheetContent: @escaping () -> SheetContent, onSheetDismissed: (() -> ())? = nil) {
         self._editButtonPlacement = State(initialValue: editPlacement)
         self.content = content
         self._editButtonOffset = State(initialValue: editOffset)
         self.sheetContent = sheetContent
+        self.onDismiss = onSheetDismissed
     }
     
     static var contentAttributeNames: [ContentAttributeName] {
         []
+    }
+    
+    func onSheetDismissed() {
+        self.onDismiss?()
     }
     
     var contentView: some View {

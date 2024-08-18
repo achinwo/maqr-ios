@@ -122,13 +122,20 @@ public struct BackgroundAttribute: ViewAttribute {
     }
     
     public let attribute: ContentAttributeData
+    public let image: UIImage?
     
     public init(_ attribute: ContentAttributeData) {
+        self.init(attribute, rawImage: nil)
+    }
+    
+    public init(_ attribute: ContentAttributeData, rawImage: UIImage? = nil) {
         self.attribute = attribute
+        self.image = rawImage
     }
     
     public var imageUrl: URL? {
         guard let urlString = attribute.backgroundImageUrl else { return nil }
+        
         
         return URL(string: urlString)
     }
@@ -149,13 +156,20 @@ public struct BackgroundAttribute: ViewAttribute {
         return Color(hex: bgColor)
     }
     
+    @ViewBuilder
     public var backgroundImage: some View {
-        AsyncImage(url: imageUrl) { image in
-            image
+        if let image {
+            Image(platformImage: image)
                 .resizable()
+                .clipped()
                 .aspectRatio(contentMode: .fill)
-        } placeholder: {
-            self.color
+        } else {
+            AsyncImage(url: imageUrl) { image in
+                image.resizable()
+                    .aspectRatio(contentMode: .fill)
+            } placeholder: {
+                self.color
+            }
         }
     }
     
@@ -174,7 +188,7 @@ public struct BackgroundAttribute: ViewAttribute {
     }
     
     public var opacity: CGFloat {
-        return 1
+        return attribute.backgroundOpacity ?? 1.0
     }
     
     @ViewBuilder
@@ -190,7 +204,10 @@ public struct BackgroundAttribute: ViewAttribute {
     @ViewBuilder
     public func body(content: Content) -> some View {
         content
-            .background(background().opacity(opacity))
+            .background(
+                background()
+                    .opacity(opacity)
+            )
     }
     
 }
