@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import JoliCore
+import MaqrApi
 import UserNotifications
 
 #if !os(macOS)
@@ -339,7 +339,7 @@ struct EshopView: JoliView, Experience {
             //let req = URLRequest(url: URL(staticString: "https://fakestoreapi.com/products"))
             //let (data, _) = try! await api.urlSession.data(for: req)
 //            let data: Data = SAMPLE_DATA.data(using: .utf8)!
-//            let products: [DummyProduct] = try! Musicroom.jsonDecoder().decode([DummyProduct].self, from: data)
+//            let products: [DummyProduct] = try! JSONCoding.decoder().decode([DummyProduct].self, from: data)
 //
 //            let itemss = products.map() { p in
 //                ExperienceData.Item(experienceItemType: .product, defaultPrice: Int(p.price * 100),

@@ -8,7 +8,7 @@
 
 import Foundation
 import SwiftUI
-import JoliApi
+import MaqrApi
 
 #if os(OSX)
 import AppKit
@@ -58,11 +58,9 @@ public enum Strings {
     static let appSupportEmail = "joli.notifications@gmail.com"
     
     static let URL_SCHEME = "joli"
-    static let SPOTIFY_URL_BASEPATH = "spotify-callback"
     
     public static let KEY_DEVICE_UUID = "device-uuid-ephemeral"
     
-    public static let volume = NSLocalizedString("volume", comment: "Sound volume")
     public static let profile = NSLocalizedString("profile", comment: "User Profile Label")
     public static let photoUpload = NSLocalizedString("photoUpload", comment: "Upload picture")
     public static let reallyLogoutTitle = NSLocalizedString("reallyLogoutTitle", comment: "Confirm user really wants to log out")
@@ -89,7 +87,6 @@ public enum Images: String {
     case joliIcon = "joli_icon"
     case appclipBarcodeClearExample = "appclip_barcode_clear_example"
     case stockPhotoPartyPeople = "party-people"
-    case spotifyLogo = "Spotify_Icon_RGB_Green.png"
     
     var image: Image {
         return Image(self.rawValue)

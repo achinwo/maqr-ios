@@ -15,7 +15,7 @@ import AppKit
 import UIKit
 #endif
 
-import JoliCore
+import MaqrApi
 
 public extension Array where Element: Persistable {
     

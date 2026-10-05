@@ -8,8 +8,7 @@
 
 import Foundation
 import SwiftUI
-import JoliApi
-import JoliCore
+import MaqrApi
 import Combine
 import AuthenticationServices
 import Version
@@ -59,15 +58,11 @@ public typealias FeedbackStyle = UIImpactFeedbackGenerator.FeedbackStyle
 #endif
 
 
-public enum SpotifyError: Error {
-    case unathorized
-}
-
 public protocol JoliView: View {
     associatedtype Content: View
     
     var appCoordinator: AppCoordinator { get }
-    var api: JoliApi { get }
+    var api: MaqrApi { get }
     
     var contentView: Content { get }
 //    var visibility: (appearedAt: Date?, disappearedAt: Date?)  { nonmutating set get }
@@ -111,7 +106,7 @@ public extension JoliView {
 //            }
     }
     
-    var api: JoliApi {
+    var api: MaqrApi {
         return appCoordinator.api
     }
     
@@ -130,10 +125,7 @@ public extension JoliView {
 
 public protocol JoliContentView: JoliView {
     
-    associatedtype PlaybackControllerType
-    var localPlaybackController: PlaybackControllerType { get }
     var websocket: Socket { get }
-    var websocketCancel: AnyCancellable? { get nonmutating set }
     
     var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? { get nonmutating set }
 }
@@ -184,47 +176,6 @@ extension JoliContentView {
             }
     }
     
-    static var defaultIdleTime: Double {
-        return Strings.appName == "Joli" ? 4 : 6
-    }
-    
-    private var playbackRefreshRate: TimeInterval {
-        return 0.15
-    }
-    
-    private var callback: Publishers.Smooth<PlayState.Publisher, String>.StateGetter {
-        
-        return { (state, now) in
-            
-            let uid = state.trackUri == nil ? nil : state.trackUri! + state.id.description
-            
-            guard let duration = state.durationMs, state.playingState == .playing else {
-                return (id: uid, value: state.progressMs, duration: nil, idleTimeout: Self.defaultIdleTime)
-            }
-            
-            return (id: uid, value: state.progressMs, duration: TimeInterval(duration), idleTimeout: Self.defaultIdleTime)
-        }
-        
-    }
-    
-    private func updatePublishers() {
-        print("[\(tag)] updating publishers")
-        
-        let publisher: PlayState.Publisher = self.websocket.publish(PlayState.self, interval: self.playbackRefreshRate, path: \.progressMs, resolver: callback)
-        
-        let votesPubs: QueuedTrackVote.Publisher = self.websocket
-            .deserialize(QueuedTrackVote.self)
-            .autoconnect()
-            .multicast() {
-                return PassthroughSubject<QueuedTrackVote, SocketError>()
-            }
-            .autoconnect()
-            .eraseToAnyPublisher()
-        
-        self.appCoordinator.playStatePublisher = publisher
-        self.appCoordinator.votesPublisher = votesPubs
-    }
-    
     public func assertWebsocketConnected() {
         //print("[AppView#assertWebsocketConnected] attempting...")
         
@@ -260,53 +211,11 @@ extension JoliContentView {
             return
         }
         
-        socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_NOW_PLAYING"]) { error in
-            print("[App] updated subscriptions: PLAYER_STATE_NOW_PLAYING - \(String(describing: error))")
-            
-            
-            DispatchQueue.main.async {
-//                self.reconnectingTasks.cancelAll()
-//                self.reconnectingTasks.removeAll()
-                self.updatePublishers()
-            }
-        }
-        
-        socket.write(topic: "/subscribe", body: ["subject": "PLAYER_STATE_CHANGED"]) { error in
-            
-            guard error == nil else {
-                print("[App] updated subscriptions (error): PLAYER_STATE_CHANGED - \(String(describing: error))")
-                return
-            }
-            
-            self.websocketCancel = self.websocket
-                .sink() { completion in
-                    websocketCancel?.cancel()
-                    websocketCancel = nil
-                } receiveValue: { message in
-                    
-                    guard case let .text(_, _, _, subjectValue) = message, let subject = subjectValue, subject == "PLAYER_STATE_CHANGED" else {
-                        return
-                    }
-                    
-                    self.appCoordinator.playStateChangeSubject.send(Date())
-                }
-        }
-        
         socket.write(topic: "/subscribe", body: ["subject": "database_updates"]) { error in
             print("[App] updated subscriptions: database_updates - \(String(describing: error))")
         }
     }
     
-}
-
-public enum ViewIdentifier: String, Identifiable {
-    case explore = "views.explore"
-    case listen = "views.listen"
-    case notset = "views.none"
-    
-    public var id: String {
-        return rawValue
-    }
 }
 
 #if !os(macOS)
@@ -381,7 +290,7 @@ public protocol AppClip: App {
     associatedtype Content: View
     associatedtype ModalView: View
     
-    var env: JoliApi.Environment { get }
+    var env: MaqrApi.Environment { get }
     var appDelegate: AppDelegate { get }
     var contentView: Content { get }
     var scenePhase: ScenePhase { get }
@@ -420,7 +329,7 @@ public protocol AppClip: App {
     func onInternalError(_ error: Error) -> Void
     func onNotificationRecieved(_ message: Data) async -> Void
     
-    func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) async throws -> Auth?
+    func authenticate(_ credentials: MaqrApi.AuthCredentials, alertOnFail: Bool) async throws -> Auth?
 }
 
 extension Bundle {
@@ -482,7 +391,7 @@ public extension AppClip {
     }
     
     static var wssUrlRequest: URLRequest {
-        let url = JoliApi.Environment.current.baseUrl.ws
+        let url = MaqrApi.Environment.current.baseUrl.ws
         var request = URLRequest(url: url.appendingPathComponent(Self.debug ? "/api/ws" : "/ws"), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 5)
         request.allHTTPHeaderFields = Self.defaultHeaders
         return request
@@ -526,13 +435,13 @@ public extension AppClip {
         return headers
     }
     
-    var env: JoliApi.Environment {
+    var env: MaqrApi.Environment {
         guard Self.debug else {
             return .production
         }
         
-        let json = JoliApi.Environment.CACHED_ENV_CONFIG
-        return JoliApi.Environment(rawValue: json["env"] as? String ?? JoliApi.Environment.local.rawValue) ?? .development
+        let json = MaqrApi.Environment.CACHED_ENV_CONFIG
+        return MaqrApi.Environment(rawValue: json["env"] as? String ?? MaqrApi.Environment.local.rawValue) ?? .development
     }
     
     func presentSignInWithApple(callback: @escaping (Bool) -> Void) {
@@ -650,12 +559,6 @@ public extension AppClip {
                 switch authFlow {
                     case .apple(let cb):
                         self.presentSignInWithApple(callback: cb)
-                    case .spotify(let cb):
-                        self.coordinator.pendingSpotifyAuthCallback.send() { success in
-                            self.coordinator.pendingSpotifyAuthCallback.send(nil)
-                            cb(success)
-                        }
-                        self.coordinator.spotifyAuthRequestedAt = Date()
                 }
             }
             .onReceive(coordinator.requestedNotificationPermission) { ts in
@@ -682,7 +585,7 @@ public extension AppClip {
                 
                 Task() {
                     do {
-                        let info = try await JoliApi.resolveServer(self.coordinator.api.baseUrl.http)
+                        let info = try await MaqrApi.resolveServer(self.coordinator.api.baseUrl.http)
                         await MainActor.run() {
                             logger.info("[\(Self.self)] server info: host=\(self.coordinator.api.baseUrl.http), version=\(info.version), features: \(info.feature), prefferedClientVersion: \(String(describing: info.preferredClientVersion))")
                             self.serverInfo = info
@@ -756,7 +659,7 @@ public extension AppClip {
     }
     
     func storeToKeychain(_ auths: [Auth]) {
-        let jsonEncoder = Musicroom.jsonEncoder()
+        let jsonEncoder = JSONCoding.encoder()
         
         for auth in auths {
             
@@ -776,7 +679,7 @@ public extension AppClip {
     
     static func resolveAuths(_ keychain: Keychain) -> [Auth] {
         var auths: [Auth] = []
-        let jsonDecoder = Musicroom.jsonDecoder()
+        let jsonDecoder = JSONCoding.decoder()
         let items = keychain.allKeys()
         
         for item in items {

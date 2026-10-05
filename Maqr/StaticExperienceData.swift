@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import JoliCore
+import MaqrApi
 import SwiftUI
 
 public extension Spicy {

@@ -8,7 +8,15 @@
 
 import SwiftUI
 import SharedUI
-import JoliCore
+import MaqrApi
+
+extension Array where Element == ExperienceDataKeyPath.Metadata {
+    
+    public func first(keypath: ExperienceDataKeyPath) -> Element? {
+        return self.first() { $0.keypath == keypath }
+    }
+    
+}
 
 public func createImageCb(_ setter: @escaping (URL) -> Void) -> (UIImage?, String?, Error?) -> Void {
     return { (img: UIImage?, imgName: String?, error: Error?) in

@@ -8,7 +8,7 @@
 
 import Foundation
 import SharedMacOS
-import JoliCore
+import MaqrApi
 import EFQRCode
 import AppKit
 import Algorithms

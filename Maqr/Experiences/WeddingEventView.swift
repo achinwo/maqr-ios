@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import JoliCore
+import MaqrApi
 import AlertToast
 
 #if !os(macOS)

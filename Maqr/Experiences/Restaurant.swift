@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import JoliCore
+import MaqrApi
 
 protocol Priceable {
     var defaultPrice: Decimal? { get }
@@ -129,7 +129,7 @@ struct JoeysData: Codable {
     public static func load(from bundle: Bundle? = nil) throws -> Self? {
         //https://storage.googleapis.com/joli-app-bucket/images/joey_sherway_data.json
         
-        let decoder = Musicroom.jsonDecoder()
+        let decoder = JSONCoding.decoder()
         let bundle = bundle ?? Bundle.main
         
         guard let filePath = bundle.path(forResource: "joey_sherway_data", ofType: "json") else {

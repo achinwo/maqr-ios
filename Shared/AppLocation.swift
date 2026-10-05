@@ -67,8 +67,6 @@ public extension Regex {
 
 public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     
-    case invited(String) // joli.live/r/abc
-    case playroom(String)
     case rsvp(String)
     case reward(String)
     case product(String, String)
@@ -91,11 +89,7 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     public init?(rawValue: String) {
         let patterns = AppLocation.patterns
         
-        if let matches = patterns.invited.matchGroups(rawValue), let inviteId = matches["inviteId"] {
-            self = .invited(inviteId)
-        } else if let matches = patterns.playroom.matchGroups(rawValue), let roomId = matches["roomId"] {
-            self = .playroom(roomId)
-        } else if let matches = patterns.experienceMeal.matchGroups(rawValue), let experienceId = matches["experienceId"] {
+        if let matches = patterns.experienceMeal.matchGroups(rawValue), let experienceId = matches["experienceId"] {
             self = .experienceMeal(experienceId)
         } else if let matches = patterns.experienceBrand.matchGroups(rawValue), let experienceId = matches["experienceId"] {
             self = .experienceBrand(experienceId)
@@ -152,10 +146,6 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
         switch self {
             case .upgrade:
                 return "/upgrade"
-            case .invited(let inviteId):
-                return "/i/\(inviteId)"
-            case .playroom(let roomId):
-                return "/r/\(roomId)"
             case .unset:
                 return .empty
             case .rsvp(let eventId):
@@ -185,8 +175,6 @@ public enum AppLocation: RawRepresentable, CustomStringConvertible, Equatable {
     
     static var patterns = (
         home: Regex("^/$"),
-        invited: Regex("^/(playroom/invite|i)/(?<inviteId>.+)$"),
-        playroom: Regex("^/r/(?<roomId>.+)$"),
         rsvp: Regex("^/rsvp/b/(?<eventId>.+)$"),
         reward: Regex("^/ir/(?<rewardId>.+)$"),
         product: Regex("^/s/(?<storeId>.+)/(?<productId>.+)$"),

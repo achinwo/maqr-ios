@@ -8,7 +8,7 @@
 
 import SwiftUI
 import SharedUI
-import JoliCore
+import MaqrApi
 
 struct ExperienceDataItemSummaryView: View {
     

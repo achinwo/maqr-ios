@@ -4,7 +4,7 @@
 
 import Foundation
 import SwiftUI
-import JoliCore
+import MaqrApi
 //import SharedUI
 
 public typealias ExperienceDataKeyPath = PartialKeyPath<ExperienceData>

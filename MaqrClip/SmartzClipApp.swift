@@ -10,8 +10,7 @@ import SwiftUI
 import SharedUI
 import KeychainAccess
 import Version
-import JoliApi
-import JoliCore
+import MaqrApi
 import MessageUI
 
 @main
@@ -57,12 +56,11 @@ struct SmartzClipApp: AppClip, AppAuthentication {
     @State var auths: [Auth] = []
     
     @State var activeSessionToken: String? = nil
-    var api: JoliApi
+    var api: MaqrApi
     @State var alertInfo: Alert? = nil
     @State var isActionSheetPresented: Bool = false
     
     @State var currentUser: User? = nil
-    let videoController = VideoPlaybackController()
     
     @State var mailComposeResult: Result<MFMailComposeResult, Error>? = nil
     
@@ -73,10 +71,8 @@ struct SmartzClipApp: AppClip, AppAuthentication {
     
     init() {
         //let a = AttributedString()
-        JoliApi.BaseUrl.defaultDevUrl = URL(staticString: "https://maqr.co")
-        JoliApi.BaseUrl.defaultProdUrl = URL(staticString: "https://maqr.co")
         
-        JoliApi.Environment.loadEnvConfig(from: Bundle.main)
+        MaqrApi.Environment.loadEnvConfig(from: Bundle.main)
         
         let coordinator = AppCoordinator()
         self.coordinator = coordinator
@@ -84,9 +80,9 @@ struct SmartzClipApp: AppClip, AppAuthentication {
         let request = Self.wssUrlRequest
         self.websocket = Socket(request: request)
         
-        let baseUrls = JoliApi.Environment.current.baseUrl
+        let baseUrls = MaqrApi.Environment.current.baseUrl
         
-        self.api = JoliApi(baseUrl: baseUrls, headers: request.allHTTPHeaderFields ?? [:])
+        self.api = MaqrApi(baseUrl: baseUrls, headers: request.allHTTPHeaderFields ?? [:])
         print("[\(Self.self)] isAppClip: \(Self.isAppclip)")
         
         self.coordinator.api = api
@@ -96,16 +92,16 @@ struct SmartzClipApp: AppClip, AppAuthentication {
         Group(){
                 if case let AppLocation.product(storeId, _) = currentLocation,
                    storeId.lowercased() == "joey" {
-                    JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                    JoeyRestuarantView(currentUser: $currentUser, websocket: websocket)
                 } else if case let AppLocation.product(storeId, _) = currentLocation,
                           storeId.lowercased() == "shows" {
                     BrandPromoView(crazyworldDemo)
                 } else if case let AppLocation.product(_, productId) = currentLocation, productId.lowercased() == "inventory" {
                     InventoryView(hospitalPharmacy)
                 } else if currentLocation.isExperience {
-                    DynamicExperienceView<VideoPlaybackController>(currentLocation, currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                    DynamicExperienceView(currentLocation, currentUser: $currentUser, websocket: websocket)
                 } else {
-                    SiseMealboxView<VideoPlaybackController>(siseMealboxDemo, currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                    SiseMealboxView(siseMealboxDemo, currentUser: $currentUser, websocket: websocket)
                 }
             }
             .onReceive(coordinator.$currentLocation, assign: \.currentLocation, target: self)

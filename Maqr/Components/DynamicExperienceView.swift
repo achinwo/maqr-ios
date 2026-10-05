@@ -8,7 +8,7 @@
 
 import SwiftUI
 import SharedUI
-import JoliCore
+import MaqrApi
 import Combine
 import AlertToast
 
@@ -27,16 +27,14 @@ extension AppLocation {
     
 }
 
-struct DynamicExperienceView<PlaybackControllerType: PlaybackController>: JoliContentView {
+struct DynamicExperienceView: JoliContentView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
-    var localPlaybackController: PlaybackControllerType
     
     var websocket: Socket
     
-    @State var websocketCancel: AnyCancellable?
     @State var experienceData: ExperienceData? = nil
     @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
     @State var loadingData: Bool = false
@@ -46,10 +44,9 @@ struct DynamicExperienceView<PlaybackControllerType: PlaybackController>: JoliCo
     @Environment(\.colorScheme) var colorScheme
     let appLocation: AppLocation
     
-    public init(_ location: AppLocation, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
+    public init(_ location: AppLocation, currentUser: Binding<User?>, websocket: Socket){
         self._currentUser = currentUser
         self.websocket = websocket
-        self.localPlaybackController = localPlaybackController
         self.appLocation = location
     }
     

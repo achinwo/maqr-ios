@@ -10,8 +10,7 @@ import SwiftUI
 import SharedUI
 import KeychainAccess
 import Version
-import JoliApi
-import JoliCore
+import MaqrApi
 import os
 import MessageUI
 import AuthenticationServices
@@ -63,22 +62,18 @@ struct SmartzApp: AppClip, AppAuthentication {
     @State var auths: [Auth] = []
     
     @State var activeSessionToken: String? = nil
-    var api: JoliApi
+    var api: MaqrApi
     @State var alertInfo: Alert? = nil
     @State var isActionSheetPresented: Bool = false
     
     @State var currentUser: User? = nil
-    let videoController: VideoPlaybackController
     
     init() {
-        JoliApi.BaseUrl.defaultDevUrl = URL(staticString: "https://maqr.co")
-        JoliApi.BaseUrl.defaultProdUrl = URL(staticString: "https://maqr.co")
         
-        JoliApi.Environment.loadEnvConfig(from: Bundle.main)
+        MaqrApi.Environment.loadEnvConfig(from: Bundle.main)
         
         apnTokenPublisher = NotificationCenter.default.publisher(for: Notifications.apnToken)
         keychain = Keychain(service: "com.smartstickr.session-token")
-        videoController = VideoPlaybackController()
         
         _safeAreaInsets = State(initialValue: EdgeInsets())
         
@@ -91,9 +86,9 @@ struct SmartzApp: AppClip, AppAuthentication {
         let request = Self.wssUrlRequest
         self.websocket = Socket(request: request)
         
-        let baseUrls = JoliApi.Environment.current.baseUrl
+        let baseUrls = MaqrApi.Environment.current.baseUrl
         
-        self.api = JoliApi(baseUrl: baseUrls, headers: request.allHTTPHeaderFields ?? [:])
+        self.api = MaqrApi(baseUrl: baseUrls, headers: request.allHTTPHeaderFields ?? [:])
         
         let appclipsSessionId = self.activeSessionIdFromAppclip.isEmpty ? nil : self.activeSessionIdFromAppclip
         let location = self.activeLocationFromAppclip
@@ -186,7 +181,7 @@ struct SmartzApp: AppClip, AppAuthentication {
             }
         }
         
-        return ContentView(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController, trialInfo: $trialData)
+        return ContentView(currentUser: $currentUser, websocket: websocket, trialInfo: $trialData)
             //.font(.custom("AvenirLTStd-Roman", size: 46))
             .overlay(
                 GeometryReader(){ proxy in
@@ -198,16 +193,16 @@ struct SmartzApp: AppClip, AppAuthentication {
                             Group(){
                                 if case let AppLocation.product(storeId, _) = currentLocation,
                                    storeId.lowercased() == "joey" {
-                                    JoeyRestuarantView<VideoPlaybackController>(currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                                    JoeyRestuarantView(currentUser: $currentUser, websocket: websocket)
                                 } else if case let AppLocation.product(storeId, _) = currentLocation,
                                           storeId.lowercased() == "shows" {
                                     BrandPromoView(crazyworldDemo)
                                 } else if case let AppLocation.product(_, productId) = currentLocation, productId.lowercased() == "inventory" {
                                     InventoryView(hospitalPharmacy)
                                 } else if currentLocation.isExperience {
-                                    DynamicExperienceView<VideoPlaybackController>(currentLocation, currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                                    DynamicExperienceView(currentLocation, currentUser: $currentUser, websocket: websocket)
                                 } else {
-                                    SiseMealboxView<VideoPlaybackController>(siseMealboxDemo, currentUser: $currentUser, websocket: websocket, localPlaybackController: videoController)
+                                    SiseMealboxView(siseMealboxDemo, currentUser: $currentUser, websocket: websocket)
                                 }
                             }
                             .overlay(exitButton)

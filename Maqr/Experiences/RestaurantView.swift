@@ -9,7 +9,7 @@
 import SwiftUI
 import Combine
 import AlertToast
-import JoliCore
+import MaqrApi
 
 #if os(macOS)
 import AppKit
@@ -21,16 +21,14 @@ import AVKit
 import AVFoundation
 
 
-struct JoeyRestuarantView<PlaybackControllerType: PlaybackController>: JoliContentView {
+struct JoeyRestuarantView: JoliContentView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
-    var localPlaybackController: PlaybackControllerType
     
     var websocket: Socket
     
-    @State var websocketCancel: AnyCancellable?
     
     @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
     
@@ -40,10 +38,9 @@ struct JoeyRestuarantView<PlaybackControllerType: PlaybackController>: JoliConte
     //@AppStorage("active-tab-mealprep") var selectedTab = Tab.information
     
     
-    public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
+    public init(currentUser: Binding<User?>, websocket: Socket){
         self._currentUser = currentUser
         self.websocket = websocket
-        self.localPlaybackController = localPlaybackController
     }
         
     var contentView: some View {

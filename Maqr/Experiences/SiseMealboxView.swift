@@ -8,9 +8,8 @@
 
 import SwiftUI
 import Combine
-import JoliApi
+import MaqrApi
 import AlertToast
-import JoliCore
 
 #if os(macOS)
 import AppKit
@@ -19,26 +18,23 @@ import SharedUI
 import UIKit
 #endif
 
-struct SiseMealboxView<PlaybackControllerType: PlaybackController>: JoliContentView {
+struct SiseMealboxView: JoliContentView {
     
     @EnvironmentObject var appCoordinator: AppCoordinator
     @Environment(\.safeAreaInsets) var safeAreaInsets
     
-    var localPlaybackController: PlaybackControllerType
     
     var websocket: Socket
     
-    @State var websocketCancel: AnyCancellable?
     
     @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
     
     @Binding var currentUser: User?
     @State var experienceData: ExperienceData?
     
-    public init(_ experienceData: ExperienceData? = nil, currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
+    public init(_ experienceData: ExperienceData? = nil, currentUser: Binding<User?>, websocket: Socket){
         self._currentUser = currentUser
         self.websocket = websocket
-        self.localPlaybackController = localPlaybackController
         self._experienceData = State(initialValue: experienceData)
     }
     

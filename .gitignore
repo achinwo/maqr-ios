@@ -9,13 +9,7 @@ Generated/
 .vscode
 .DS_Store
 **/.DS_Store
-Joli.xcodeproj/xcuserdata/
-Joli/env.json
 env.json
-
-JoliApi
-
-SpotifyiOS
 
 ## Various settings
 *.pbxuser

@@ -10,7 +10,7 @@ import UIKit
 #endif
 
 import SwiftUI
-import JoliCore
+import MaqrApi
 
 
 
@@ -40,34 +40,7 @@ struct SignInSheetView: JoliView {
                         self.appCoordinator.requestedSignIn.send(.apple(callback))
                     }
                     .frame(width: screenWidth - 100, height: 60)
-                Text("Allows voting ONLY")
-                    .font(.footnote.weight(.light))
-                    .foregroundColor(.secondaryLabel)
-                    .padding(.bottom)
-                
-                Button(){
-                    print("perform spotify auth!")
-                    self.appCoordinator.requestedSignIn.send(.spotify(callback))
-                } label: {
-                    HStack(){
-                        Spacer()
-                        Image(platformImage: Images.spotifyLogo.uiImage)
-                            .resizable()
-                            .frame(width: 24, height: 24, alignment: .center)
-                        Text("Sign in with Spotify")
-                            .font(.title3)
-                            .foregroundColor(.label)
-                        Spacer()
-                    }
-                }
-                .frame(width: screenWidth - 100, height: 60)
-                .buttonStyle(OutlineButton())
-                
-                Text("Allows voting & playback")
-                    .font(.footnote.weight(.light))
-                    .foregroundColor(.secondaryLabel)
                     .padding(.bottom, Sizing.xxLarge)
-                
 
             }
             .padding(.bottom, Sizing.xxLarge)
@@ -102,18 +75,9 @@ public enum AppPreview: View, Equatable {
                 }
             case .view2(let viewFunc):
                 viewFunc().clipped()
-            case .track(let track):
-                VStack() {
-                    NetworkImage(string: track.albumCoverUrl) {
-                        Text("\(track.title)")
-                    }
-                }
             case .event(let evt, let ent, let cb):
                 EventView(evt, entitlement: ent, callback: cb)
                     .id(evt.uuid)
-            case .playroomCreate:
-                PlayroomCreateView()
-                    .background(Color.clear)
             default:
                 EmptyView()
         }
@@ -121,11 +85,9 @@ public enum AppPreview: View, Equatable {
     
     case userAccount
     case userProfile(UserIdentifiable)
-    case track(Track)
     case event(Event, Entitlement? = nil, (Entitlement) -> Void)
     case view(Axis.Set? = nil, () -> AnyView)
     case view2(() -> AnyView) /// no scrollview embedding
-    case playroomCreate
 }
 
 
@@ -712,24 +674,5 @@ public struct AppPreviewView: JoliView {
             }
         }
         
-    }
-}
-
-struct Preview_Previews: PreviewProvider {
-    
-    struct SampleView: View {
-        @Namespace var namespace
-        @State var preview: AppPreview? = .userProfile(SEED_DATA.users.first!.builder())
-        
-        var body: some View {
-            return AppPreviewView(preview: self.$preview,
-                                  currentUser: .constant(SEED_DATA.users.first),
-                                  animation: namespace)
-        }
-    }
-    
-    
-    static var previews: some View {
-        SampleView()
     }
 }

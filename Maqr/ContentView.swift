@@ -9,8 +9,7 @@
 import SwiftUI
 import AVKit
 import SharedUI
-import JoliApi
-import JoliCore
+import MaqrApi
 import AlertToast
 import Combine
 import KeychainAccess
@@ -78,7 +77,12 @@ public let products: [ProductOffering] = [
             experienceCls: ReorderNowView.self)
 ]
 
-struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView {
+extension AppStorageKey {
+    static let activeTab = AppStorageKey("active-tab")
+    static let activeAccessLevel = AppStorageKey("active-access-level")
+}
+
+struct ContentView: JoliContentView {
     
     enum Tab: Int, Identifiable, CaseIterable {
         case home
@@ -131,25 +135,22 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
     
     @Binding var trialInfo: TrialInfo?
     
-    var localPlaybackController: PlaybackControllerType
     
     var websocket: Socket
     
-    @State var websocketCancel: AnyCancellable?
     
     @State var toastInfo: (alert: AlertToast, onDismiss: (Bool) -> Void)? = nil
     
     @Binding var currentUser: User?
     
-    public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType, trialInfo: Binding<TrialInfo?>){
+    public init(currentUser: Binding<User?>, websocket: Socket, trialInfo: Binding<TrialInfo?>){
         self._trialInfo = trialInfo
         self._currentUser = currentUser
         self.websocket = websocket
-        self.localPlaybackController = localPlaybackController
     }
     
-    public init(currentUser: Binding<User?>, websocket: Socket, localPlaybackController: PlaybackControllerType){
-        self.init(currentUser: currentUser, websocket: websocket, localPlaybackController: localPlaybackController, trialInfo: .constant(nil))
+    public init(currentUser: Binding<User?>, websocket: Socket){
+        self.init(currentUser: currentUser, websocket: websocket, trialInfo: .constant(nil))
     }
     
     @State var activeSectionIdx: Int? = nil
@@ -448,10 +449,12 @@ struct ContentView<PlaybackControllerType: PlaybackController>: JoliContentView 
                     }
                     .id(Tab.about)
                 } else if self.selectedTab == .appClipCreator {
-                    CodeDesignerView() { experienceData in
-                        self.trialInfo = experienceData
-                    }
-                    .edgesIgnoringSafeArea(.bottom)
+                    ExperienceDesignerView(host: .live(api: api))
+                        // The designer brings its own navigation stack.
+                        .navigationBarHidden(true)
+                        // Keeps its step buttons clear of the floating tab bar.
+                        .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
+                        .id(Tab.appClipCreator)
                 }
             }
         }

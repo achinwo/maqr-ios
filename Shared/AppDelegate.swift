@@ -8,7 +8,7 @@
 
 import UIKit
 import AVKit
-import JoliApi
+import MaqrApi
 import UserNotifications
 import Combine
 
@@ -78,13 +78,13 @@ public class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotification
         }
     }
     
-    public var env: JoliApi.Environment {
+    public var env: MaqrApi.Environment {
         guard self.debug else {
             return .production
         }
         
-        let json = JoliApi.Environment.CACHED_ENV_CONFIG
-        return JoliApi.Environment(rawValue: json["env"] as? String ?? JoliApi.Environment.local.rawValue) ?? .development
+        let json = MaqrApi.Environment.CACHED_ENV_CONFIG
+        return MaqrApi.Environment(rawValue: json["env"] as? String ?? MaqrApi.Environment.local.rawValue) ?? .development
     }
     
     public func registerForPushNotifications() {
@@ -154,7 +154,7 @@ public class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotification
         UNUserNotificationCenter.current().delegate = self
         
         if debug {
-            JoliApi.Environment.loadEnvConfig()
+            MaqrApi.Environment.loadEnvConfig()
         }
         
         application.applicationIconBadgeNumber = 0

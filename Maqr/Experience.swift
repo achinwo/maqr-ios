@@ -8,7 +8,7 @@
 
 import SwiftUI
 //import SharedUI
-import JoliCore
+import MaqrApi
 import Combine
 
 extension ExperienceItemType: Identifiable {

@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import JoliCore
+import MaqrApi
 import AuthenticationServices
 import SwiftUI
 
@@ -67,24 +67,6 @@ public enum UserName: Equatable {
         return name
     }
 }
-//
-//public enum ImageReference: Equatable, UrlConvertible {
-//    case small(String)
-//    case medium(String)
-//    case large(String)
-//
-//    var fileName: String? {
-//        switch self {
-//        case .small(let fileName), .large(let fileName), .medium(let fileName):
-//            return fileName
-//        }
-//    }
-//
-//    public func url(relativeTo: URL? = nil) -> URL? {
-//        return self.fileName?.url(relativeTo: relativeTo)
-//    }
-//}
-
 public protocol UserIdentifiable {
     var displayName: UserName { get }
     var emailAddress: EmailAddress { get }
@@ -94,8 +76,6 @@ public protocol UserIdentifiable {
     var imageLarge: String? { get }
     var imageMedium: String? { get }
     var imageSmall: String? { get }
-    
-    var ranking: DiscjockeyPosition { get }
 }
 
 import CryptoKit
@@ -162,63 +142,6 @@ public protocol UserVerified: UserIdentifiable, Identifiable {
     var emailApi: Any { get }
 }
 
-//@dynamicMemberLookup
-public struct PlayroomMembership: UserIdentifiable, Identifiable, Equatable, Hashable {
-    
-    public var id: String {
-        return "membership:\(playroom.id)/\(user.id)"
-    }
-    
-    public enum InviteStatus {
-        case pending
-        case accepted
-    }
-    
-    public enum ActivityStatus: Int {
-        case online = 1
-        case offline = 0
-    }
-    
-    public var inviteStatus: InviteStatus
-    public var activityStatus: ActivityStatus
-    
-    public var playroom: Musicroom
-    public var user: User
-    public var membership: Membership = .inviteOnly
-    
-    public var displayName: UserName {
-        return user.displayName
-    }
-    
-    public var emailAddress: EmailAddress {
-        return user.emailAddress
-    }
-    
-    public var deviceUid: DeviceUid {
-        return user.deviceUid
-    }
-    
-    public var imageLarge: String? {
-        return user.imageLarge
-    }
-    
-    public var imageMedium: String? {
-        return user.imageMedium
-    }
-    
-    public var imageSmall: String? {
-        return user.imageSmall
-    }
-    
-    public var ranking: DiscjockeyPosition {
-        return user.ranking
-    }
-    
-//    subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
-//        get { user[keyPath: keyPath] }
-//    }
-}
-
 extension Builder: UserIdentifiable where PersistedType == User {
     
     public var displayName: UserName {
@@ -277,193 +200,6 @@ extension User: UserVerified {
     
     public var emailApi: Any {
         return self.email as Any
-    }
-    
-}
-
-public protocol Room {
-    
-    var musicroom: Musicroom { get }
-    
-    var inviteUrl: URL? { get }
-    var baseUrl: URL? { get }
-    
-    func inviteUrl<U: UserIdentifiable & Identifiable>(for: U) -> URL? where U.ID == Int
-    func inviteUrl<U: UserIdentifiable & Identifiable>(for: U?, fallback: URL?) -> URL? where U.ID == Int
-    
-    var themeAlbumIds: String?  { get }
-    var themeArtistIds: String? { get }
-    var themeGenreNames: String? { get }
-    
-    var uuid: String? { get }
-    var createdByUser: User { get }
-    var deletedAt: Date? { get }
-    var deletedById: Int? { get }
-    var deletedByUser: User? { get }
-    var details: String { get }
-    var entitlements: [Entitlement]? { get set }
-    var imageLarge: String? { get }
-    var imageMedium: String? { get }
-    var imageSmall: String? { get }
-    var membership: Membership { get }
-    var name: String { get set }
-    var playingState: PlayingState? { get }
-    var playlistUri: String? { get }
-    var progressMs: Int? { get }
-    var snapshotId: String? { get }
-    var themeTrackUri: String { get }
-    var themeTrackUri2: String? { get }
-    var trackUri: String? { get }
-    var updatedAt: Date { get }
-    var updatedById: Int { get }
-    var updatedByUser: User? { get }
-    
-    var genres: [String] { get }
-    
-    var themeTracks: [Track] { get }
-}
-
-public extension Room {
-    
-    var themeTracks: [Track] {
-        return []
-    }
-    
-    var baseUrl: URL? {
-        return nil
-    }
-    
-    var inviteUrl: URL? {
-        guard let uuid = uuid, let url = URL(string: uuid, relativeTo: baseUrl) else {
-            return nil
-        }
-        return url
-    }
-    
-    func inviteUrl<U: UserIdentifiable & Identifiable>(for user: U) -> URL? where U.ID == Int {
-        
-        let entitlement: Entitlement? = entitlements?.first() { $0.createdById == user.id }
-        
-        guard let uuid = entitlement?.uuid ?? uuid, let url = URL(string: "/i/\(uuid)", relativeTo: baseUrl) else {
-            return nil
-        }
-        
-        return url
-    }
-    
-    func inviteUrl<U: UserIdentifiable & Identifiable>(for user: U?, fallback: URL?) -> URL? where U.ID == Int {
-        
-        guard let user = user else {
-            return fallback
-        }
-        
-        return inviteUrl(for: user)
-    }
-    
-    var genres: [String] {
-        guard let genreNames = themeGenreNames else { return [] }
-        
-        return Array(genreNames.split(separator: ",").map() {String($0)}) //?? []
-    }
-    
-    var themeAlbumIds: String?  {
-        musicroom.themeAlbumIds
-    }
-    
-    var themeArtistIds: String? {
-        musicroom.themeArtistIds
-    }
-    
-    var themeGenreNames: String? {
-        musicroom.themeGenreNames
-    }
-    
-    var uuid: String? {
-        return musicroom.uuid
-    }
-    
-    var createdByUser: User {
-        return musicroom.createdByUser
-    }
-    
-    var deletedAt: Date? {
-        return musicroom.deletedAt
-    }
-    
-    var deletedById: Int? {
-        return musicroom.deletedById
-    }
-    
-    var deletedByUser: User? {
-        return musicroom.deletedByUser
-    }
-    
-    var details: String {
-        return musicroom.details
-    }
-    
-    var imageLarge: String? {
-        return musicroom.imageLarge
-    }
-    
-    var imageMedium: String? {
-        return musicroom.imageMedium
-    }
-    
-    var imageSmall: String? {
-        return musicroom.imageSmall
-    }
-    
-    var membership: Membership {
-        return musicroom.membership
-    }
-    
-    var playingState: PlayingState? {
-        return musicroom.playingState
-    }
-    
-    var playlistUri: String? {
-        return musicroom.playlistUri
-    }
-    
-    var progressMs: Int? {
-        return musicroom.progressMs
-    }
-    
-    var snapshotId: String? {
-        return musicroom.snapshotId
-    }
-    
-    var themeTrackUri: String {
-        return musicroom.themeTrackUri
-    }
-    
-    var themeTrackUri2: String? {
-        return musicroom.themeTrackUri2
-    }
-    
-    var trackUri: String? {
-        return musicroom.trackUri
-    }
-    
-    var updatedAt: Date {
-        return musicroom.updatedAt
-    }
-    
-    var updatedById: Int {
-        return musicroom.updatedById
-    }
-    
-    var updatedByUser: User? {
-        return musicroom.updatedByUser
-    }
-    
-}
-
-extension Musicroom: Room {
-    
-    public var musicroom: Musicroom {
-        return self
     }
     
 }

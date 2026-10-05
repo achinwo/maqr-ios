@@ -7,9 +7,8 @@
 //
 
 import Foundation
-import JoliApi
+import MaqrApi
 import SwiftUI
-import JoliCore
 
 #if os(macOS)
 import AppKit
@@ -79,32 +78,6 @@ public extension UIImageColors {
     
 }
 
-extension QueuedTrack {
-    
-    public var colors: UIImageColors? {
-        guard let bg = track?.colorBackground, let primary = track?.colorPrimary, let sec = track?.colorSecondary, let detail = track?.colorDetail else {
-            return nil
-        }
-        return .init(background: UIColor(hex: bg),
-                     primary: UIColor(hex: primary),
-                     secondary: UIColor(hex: sec),
-                     detail: UIColor(hex: detail))
-    }
-    
-}
-
-public extension Builder where T == User {
-    
-    var ranking: DiscjockeyPosition {
-        guard let djPosition = self[.djRanking, Int?.self] as? Int else {
-            return DiscjockeyPosition.personal
-        }
-        
-        return DiscjockeyPosition(rawValue: djPosition) ?? DiscjockeyPosition.personal
-    }
-}
-
-
 public extension View {
     
     func eraseToAnyView() -> AnyView {
@@ -133,27 +106,6 @@ extension Array where Element == DispatchWorkItem {
 }
 
 
-public extension PlayState {
-    
-    static var allColors: [Color] {
-        return [
-            .systemRed,
-            .systemYellow,
-            .systemBlue,
-            .systemPink,
-            .systemGreen,
-            .systemOrange,
-            .systemPurple,
-        ]
-    }
-    
-    var color: Color {
-        let colors = Self.allColors
-        let color = colors[(userName.count + userName.lowercased().count(of: "g")) % colors.count ]
-        return color
-    }
-}
-
 #if os(macOS)
 public typealias UIActivityIndicatorView = NSProgressIndicator
 public typealias UIViewRepresentable = NSViewRepresentable
@@ -161,34 +113,6 @@ public typealias UIViewRepresentableContext = NSViewRepresentableContext
 public typealias UIView = NSView
 public typealias UIColor = NSColor
 #endif
-
-public extension Search.Category {
- 
-    mutating func empty() {
-        for cat in Self.allCases {
-            self.remove(cat)
-        }
-    }
-    
-}
-
-
-public extension Search.Engine {
-    
-    typealias SearchMethod2 = (String, Set<Search.Category>, Int) -> AnyPublisher<Spotify.SearchResult?, Never>
-    
-    func search(_ q: String, _ categories: Set<Search.Category>, limit: Int = 6, search searchFn: SearchMethod2) -> AnyPublisher<Spotify.SearchResult?, Never> {
-        let supported = categories.filter(){ supportedCategories.contains($0) }
-        
-        guard !supported.isEmpty else {
-            return Just(nil).eraseToAnyPublisher()
-        }
-        
-        return searchFn(q, supported, limit)
-    }
-    
-}
-
 
 public extension Character {
     var stringValue: String {
@@ -209,26 +133,6 @@ public extension Image {
 }
 
 
-
-
-public extension Array where Element == Spotify.Image {
-    
-    var smallestImage: Spotify.Image? {
-        return self.last
-    }
-    
-    var largestImage: Spotify.Image? {
-        return self.first
-    }
-    
-    var mediumImage: Spotify.Image? {
-        guard count >= 2 else {
-            return self.largestImage
-        }
-        return self[1]
-    }
-    
-}
 
 
 public extension Collection where Element: Hashable {
@@ -266,40 +170,6 @@ extension Collection where Element: Identifiable {
         return self.map() { $0.id }
     }
     
-}
-
-public extension Search {
-    
-    struct ResultView: JoliView, Identifiable {
-        
-        @EnvironmentObject public var appCoordinator: AppCoordinator
-        
-        @GestureState var isTapping = false
-        
-        public var result: Result
-        
-        public var id: String {
-            return result.id
-        }
-        
-        private let content: () -> GeometryReader<AnyView>
-        
-        public init(result: Result, @ViewBuilder content: @escaping () -> GeometryReader<AnyView>){
-            self.result = result
-            self.content = content
-        }
-        
-        public var contentView: some View {
-//            let tap = TapGesture()
-//                .updating($isTapping) { currentState, state, transaction in
-//                    state = true
-//                }
-            content()
-                .id(self.id)
-//                .scaleEffect(x: isTapping ? 0.8 : 1, y: isTapping ? 0.8 : 1)
-//                .simultaneousGesture(tap)
-        }
-    }
 }
 
 public extension View {
@@ -345,42 +215,10 @@ extension View {
     }
 }
 
-extension Spotify.Device {
-    
-    var imageName: String {
-        switch type {
-            case .smartphone:
-                return "iphone"
-            case .computer:
-                return "laptopcomputer"
-            case .automobile:
-                return "car"
-            case .tablet:
-                return "ipad"
-            case .tv:
-                return "tv"
-            default:
-                return "hifispeaker"
-        }
-    }
-}
-
-
-extension JoliApi {
-    
-    @discardableResult
-    func playMusicroom(_ room: Musicroom, device: Spotify.Device, on: DispatchQueue? = nil) async throws -> Musicroom {
-        return try await HttpMethod.Fetch.post(url: "/api/musicrooms/\(room.id)/play?deviceId=\(device.id)", dataType: Musicroom.self, baseUrl: self.baseUrl.http, urlSession: self.urlSession)
-    }
-    
-    //fetch<T: Codable>(urlString: String, dataType: T.Type, baseUrl: URL? = nil, urlSession: URLSession? = nil, on: DispatchQueue? = nil)
+extension MaqrApi {
     
     public func save<T>(_ model: T, on: DispatchQueue? = nil) async throws -> T.PersistedType where T: Persistable {
         return try await model.save(baseUrl: self.baseUrl.rawValue.http, urlSession: urlSession)
-    }
-    
-    func fetchQueuedTracks(room: Musicroom, on: DispatchQueue? = nil) async throws -> [QueuedTrack] {
-        return try await HttpMethod.Fetch.get(url: "/api/musicrooms/\(room.id)/queued", dataType: [QueuedTrack].self, baseUrl: self.baseUrl.http, urlSession: self.urlSession)
     }
     
 }

@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import JoliCore
+import MaqrApi
 
 #if !os(macOS)
 import SharedUI

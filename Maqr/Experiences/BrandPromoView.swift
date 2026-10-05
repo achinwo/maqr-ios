@@ -8,7 +8,7 @@
 
 import SwiftUI
 import Combine
-import JoliCore
+import MaqrApi
 
 #if !os(macOS)
 import SharedUI
@@ -28,7 +28,7 @@ struct TvShowCastInfo: Codable, Identifiable {
     public static func load(from bundle: Bundle? = nil) throws -> [Self]? {
         //https://storage.googleapis.com/joli-app-bucket/images/joey_sherway_data.json
         
-        let decoder = Musicroom.jsonDecoder()
+        let decoder = JSONCoding.decoder()
         let bundle = bundle ?? Bundle.main
         
         guard let filePath = bundle.path(forResource: "show_cast_data", ofType: "json") else {

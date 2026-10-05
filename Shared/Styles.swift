@@ -7,8 +7,7 @@
 //
 
 import SwiftUI
-import JoliCore
-import JoliApi
+import MaqrApi
 
 #if os(macOS)
 import AppKit

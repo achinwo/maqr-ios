@@ -8,7 +8,7 @@
 
 import SwiftUI
 import SwiftUI
-import JoliCore
+import MaqrApi
 import AlertToast
 
 #if os(macOS)
@@ -18,17 +18,6 @@ public typealias UIVisualEffectView = NSVisualEffectView
 #else
 //import LetterAvatarKit
 #endif
-
-//protocol User {
-//    var name: String { get }
-//}
-//
-//extension JoliCore.User: User {
-//
-//}
-
-
-
 
 #if os(macOS)
 

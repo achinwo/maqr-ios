@@ -7,9 +7,8 @@
 //
 
 import Foundation
-import JoliCore
+import MaqrApi
 import SwiftUI
-import JoliApi
 import MultipartFormData
 
 #if !os(macOS)
@@ -75,7 +74,7 @@ extension ExperienceItemType {
 public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable {
     
     lazy var jsonEncoder: JSONEncoder = {
-        var encoder = Musicroom.jsonEncoder(outputFormatting: .prettyPrinted)
+        var encoder = JSONCoding.encoder(outputFormatting: .prettyPrinted)
         return encoder
     }()
     
@@ -180,7 +179,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
     
     @MainActor
     public func save(baseUrl: URL? = nil, urlSession: URLSession? = nil) async throws -> PersistedType {
-        let appUrl = baseUrl ?? LocalhostApi.default.baseUrlHttp
+        let appUrl = baseUrl ?? HttpDefaults.baseUrl
 
         let urlComp = "/api/db/experiences"
         let multipart = try self.toMultipartFormData()
@@ -189,7 +188,7 @@ public class ExperienceData: ObservableObject, Persistable, Decodable, Equatable
         
         let (data, _) = try await session.data(for: request) //.data(from: request)
         
-        let decoder = Musicroom.jsonDecoder()
+        let decoder = JSONCoding.decoder()
         
         let object = try decoder.decode(Response<PersistedType>.self, from: data)
         

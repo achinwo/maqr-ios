@@ -9,7 +9,7 @@
 import Foundation
 import StoreKit
 import Combine
-import JoliCore
+import MaqrApi
 //
 //open class SKProductSubscriptionPeriod : NSObject {
 //

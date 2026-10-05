@@ -7,14 +7,13 @@
 //
 
 import Foundation
-import JoliCore
-import JoliApi
+import MaqrApi
 
 //public let logger = Logger(subsystem: "com.smartstickr.Smartz", category: "global.client")
 
 public protocol AppAuthentication: AppClip {
     
-    //func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) async -> Auth?
+    //func authenticate(_ credentials: MaqrApi.AuthCredentials, alertOnFail: Bool) async -> Auth?
     
 }
 
@@ -22,7 +21,7 @@ public extension AppAuthentication {
     
     @discardableResult
     @MainActor
-    func authenticate(_ credentials: JoliApi.AuthCredentials, alertOnFail: Bool) async -> Auth? {
+    func authenticate(_ credentials: MaqrApi.AuthCredentials, alertOnFail: Bool) async -> Auth? {
         print("[authenticate] authenticating cred \(credentials)")
         
         

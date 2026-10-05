@@ -7,8 +7,7 @@
 //
 
 import SwiftUI
-import JoliCore
-import JoliApi
+import MaqrApi
 
 #if !os(macOS)
 import UIKit
@@ -115,7 +114,7 @@ public struct UserProfileView2: JoliView {
                 }
             
             
-                let (res, _) = try await JoliApi.upload(image, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
+                let (res, _) = try await MaqrApi.upload(image, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
                 print("Result: \(res.absoluteString) - \(user)")
                 
                 user.imageLarge = res.lastPathComponent
@@ -167,13 +166,6 @@ public struct UserProfileView2: JoliView {
             
             VStack(alignment: .leading){
                 Text(userName).font(.headline)
-                Text(user.ranking.description.lowercased())
-                    .font(.footnote)
-                    .foregroundColor(.gray)
-            }
-            
-            Section(header: Text("Music Provider")) {
-                Text("Spotify")
             }
             
             Section(header: Text("Password Reset")){

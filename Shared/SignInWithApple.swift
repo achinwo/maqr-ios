@@ -17,7 +17,7 @@ import UIKit
 import SwiftUI
 import AuthenticationServices
 import KeychainAccess
-import JoliCore
+import MaqrApi
 
 public struct SignInWithApple: UIViewRepresentable {
     
@@ -93,7 +93,7 @@ extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
                                 identifier: credential.user)
         
         do {
-            let data = try Musicroom.jsonEncoder().encode(userData)
+            let data = try JSONCoding.encoder().encode(userData)
             try keychain.label("apple-signin").set(data, key: userData.identifier)
         } catch {
             self.signInSucceeded(nil, SignInWithAppleError.keychainPersist(error))
@@ -108,7 +108,7 @@ extension SignInWithAppleDelegates: ASAuthorizationControllerDelegate {
     }
     
     func retreiveUserDataStored(_ appleUserIdentifier: String) -> UserData? {
-        let jsonDecoder = Musicroom.jsonDecoder()
+        let jsonDecoder = JSONCoding.decoder()
         let items = keychain.allKeys()
         
         for item in items {

@@ -8,8 +8,7 @@
 
 import Foundation
 import Combine
-import JoliApi
-import JoliCore
+import MaqrApi
 import SwiftUI
 import Version
 import AlertToast
@@ -19,7 +18,6 @@ import PartialSheet
 
 public enum AuthenticationFlow {
     case apple((Bool) -> Void)
-    case spotify((Bool) -> Void)
 }
 
 public enum EditTarget: Equatable {
@@ -123,7 +121,7 @@ public final class AppCoordinator: ObservableObject {
     
     @Published public var currentLocation: AppLocation = .unset
     
-    public var api: JoliApi!
+    public var api: MaqrApi!
     public lazy var serverLogDestination: ServerDestination = {
         return ServerDestination(url: api.baseUrlHttp, urlSession: api.urlSession)
     }()
@@ -141,18 +139,16 @@ public final class AppCoordinator: ObservableObject {
         configuration.httpAdditionalHeaders = ["Accept": "image/*"]
         
         guard api.env == .production else {
-            return NetworkImageLoader(urlSession: URLSession(configuration: configuration, delegate: JoliApi.sharedUrlSessionDelegate, delegateQueue: .current), imageCache: NetworkImageCache())
+            return NetworkImageLoader(urlSession: URLSession(configuration: configuration, delegate: MaqrApi.sharedUrlSessionDelegate, delegateQueue: .current), imageCache: NetworkImageCache())
         }
         
         return NetworkImageLoader(urlSession: URLSession(configuration: configuration), imageCache: NetworkImageCache())
     }()
     
     @Published public var serverInfo: ServerInfo? = nil
-    @Published public var isSearching: Search.Category = []
     @Published public var isSharePresented = false
     @Published public var namespace: Namespace.ID? = nil
     @Published public var keyboardHeight: CGFloat = 0
-    @Published public var insufficientPointsAttempt = 0
     @Published public var apnToken: String? = nil
     @Published public var currentEditTarget: EditTarget? = nil
     
@@ -165,42 +161,9 @@ public final class AppCoordinator: ObservableObject {
     public let purchaseNotificationSubject = PassthroughSubject<String?, Never>()
     
     public let storeKitHelper: StoreKitHelper
-    @Published public var playStatePublisher: PlayState.Publisher? = nil
-    @Published public var votesPublisher: QueuedTrackVote.Publisher? = nil {
-        
-        didSet {
-            
-            guard let votesPub = self.votesPublisher else {
-                return
-            }
-            
-            votesPub.sink() { completion in
-                logger.warning("[AppCoordinator] votes listener closed unexpectedly: \(String(describing: completion))")
-            } receiveValue: { value in
-                self.voteCastSubject.send(value)
-            }
-            .store(in: &cancellableSet)
-        }
-        
-    }
-    
-    @Published public var devices: [Spotify.Device] = []
-    
     public typealias ErrorInfo = (error: Error, file: String, function: String, line: Int)
     
     public let internalErrorSubject = PassthroughSubject<ErrorInfo, Never>()
-    
-    public let voteCastSubject: AutoResetSubject<QueuedTrackVote?, Never, RunLoop> = AutoResetSubject(nil, delay: .milliseconds(300), scheduler: RunLoop.main)
-    
-    public let activeDeviceSubject = CurrentValueSubject<Spotify.Device?, Never>(nil)
-    public let playingSubject = CurrentValueSubject<(track: Playable, playState: PlayState)?, Never>(nil)
-    public let volumeSubject = PassthroughSubject<Int, Never>()
-    
-    public let playStateChangeSubject = PassthroughSubject<Date, Never>()
-    
-    public let playRequestedSubject = CurrentValueSubject<String?, Never>(nil)
-    public let voteRequestedSubject = CurrentValueSubject<Int?, Never>(nil)
-    public let queueRequestedSubject = CurrentValueSubject<(uri: String, room: Musicroom)?, Never>(nil)
     
     public let modal = ModalCoordinator() //PassthroughSubject<AppPreview?, Never>()
     public let globalPreviewSubject = PassthroughSubject<AppPreview?, Never>()
@@ -209,49 +172,20 @@ public final class AppCoordinator: ObservableObject {
     
     public let authSubject = PassthroughSubject<Auth?, Never>()
     
-    public let userHeartsSubject = CurrentValueSubject<Hearts?, Never>(nil)
     public let authsSubject = CurrentValueSubject<[Auth], Never>([])
     
-    public let pendingSpotifyAuthCallback = CurrentValueSubject<((Bool) -> Void)?, Never>(nil)
-    
-    @Published public var localPlayRequested: (track: Playable, positionMs: Int?, contentOffset: ContentOffset?)? = nil
     @Published public var connectionStateSubject: CurrentValueSubject<(state: ConnectionState, changedAt: Date?), Never> = CurrentValueSubject((.stopped, nil))
     
     @Published public var activeSessionToken: String? = nil {
         didSet {
             self.authSubject.send(activeAuth)
-            self.activeDeviceSubject.send(nil)
-            self.devices = []
-            self.playingSubject.send(nil)
         }
     }
     
-    private var volumeCancel: AnyCancellable? = nil
-    
-    public var initialActiveDeviceId: String? = nil
-    
-    @Published public var authorizedSpotify: AuthToken? = nil
-    @Published public var spotifyAuthCallback: ((AuthToken?) -> Void)? = nil
-    @Published public var spotifyAuthRequestedAt: Date? = nil
-    
-    @Published public var pendingTrackChoice: (category: Search.Category, callback: (Playable) -> Void)? = nil
-    
     public var appViewScrollPosition = PassthroughSubject<ScrollPosition, Never>()
-    
-    @Published var refreshingDevices = false
-    
-    private var localPlaybackConnect: (deferred: Deferred<Future<ConnectionState, Error>>, createdAt: Date)? = nil
-    
-    //public let playRequestedSubject = CurrentValueSubject([:] as [AppPreview: ])
-    
-    private var allSearchengines = [spotifyEngine]
     
     public var isPaymentEnabled: Bool {
         serverInfo?.feature.paymentsEnabled == true
-    }
-    
-    public enum ActionError: Error {
-        case insufficientHeartPoints
     }
     
     public func globalErrorHandler(file: String = #file, function: String = #function, line: Int = #line) -> (Error) -> Void {
@@ -308,77 +242,8 @@ public final class AppCoordinator: ObservableObject {
         self.withAlert(title, message: message, dismissLabel: dismissLabel, label: nil, dismissAction: action)
     }
     
-    public func authorizeSpotify(){
-        
-        self.spotifyAuthCallback = { (auth: AuthToken?) -> Void in
-            self.spotifyAuthCallback = nil
-            print("[AppCoordinator#authorizeSpotify] callback auth: \(String(describing: auth))")
-        }
-    }
-    
     public var activeAuth: Auth? {
         return self.authsSubject.value.first() { $0.session.token == activeSessionToken }
-    }
-    
-    public func pickTrack(callback: @escaping (_ track: Playable) -> Void) -> Void {
-        logger.debug("[AppCoordinator#pickTrack] picking track")
-        dismissKeyboard()
-        self.appViewScrollPosition.send(.leadingEdge)
-        self.pendingTrackChoice = (category: .tracks,
-                                   callback: { tck in
-                                        self.pendingTrackChoice = nil
-                                        self.appViewScrollPosition.send(.trailingEdge)
-                                        callback(tck)
-                                   })
-    }
-    
-    @MainActor
-    public func refreshDevices() async {
-        print("[AppCoordinator#devicesPublisher] fetching devices")
-        
-        defer { self.refreshingDevices = false }
-        
-        self.refreshingDevices = true
-        
-        do {
-            let devices = try await api?.fetchSpotifyDevices() ?? []
-            self.devices = devices
-            let device = devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.id == self.initialActiveDeviceId }) ?? devices.first(where: { $0.type == .computer })
-            
-            guard let activeDevice = device ?? devices.last else {
-                return
-            }
-            
-            self.activeDeviceSubject.send(activeDevice)
-        } catch {
-            self.globalErrorHandler()(error)
-        }
-        
-    }
-    
-    @Published var localPlaybackConnectRequest: Future<ConnectionState, Error>.Promise? = nil {
-        didSet {
-            guard localPlaybackConnectRequest == nil else { return }
-            localPlaybackConnect = nil
-        }
-    }
-    
-    @discardableResult
-    public func requestLocalPlaybackConnect() -> Deferred<Future<ConnectionState, Error>> {
-        
-        let makeRequest = { () -> Future<ConnectionState, Error> in
-            return Future<ConnectionState, Error>() { promise in
-                self.localPlaybackConnectRequest = promise
-            }
-        }
-        
-        guard let deferred = localPlaybackConnect else {
-            let def = Deferred(createPublisher: makeRequest)
-            localPlaybackConnect = (deferred: def, createdAt: Date())
-            return def
-        }
-        
-        return deferred.deferred
     }
     
     public static var version: Version {
@@ -391,35 +256,9 @@ public final class AppCoordinator: ObservableObject {
         return version
     }
     
-    public init(_ playStatePublisher: PlayState.Publisher? = nil, _ votesPublisher: QueuedTrackVote.Publisher? = nil, namespace: Namespace.ID? = nil){
+    public init(namespace: Namespace.ID? = nil){
         self.namespace = namespace
-        self.playStatePublisher = playStatePublisher
-        self.votesPublisher = votesPublisher
-        
         self.storeKitHelper = StoreKitHelper()
-        
-        self.volumeCancel = self.volumeSubject
-            .removeDuplicates()
-            .debounce(for: 0.2, scheduler: DispatchQueue.global(qos: .userInitiated))
-            .receive(on: DispatchQueue.main)
-            .sink() { value in
-                
-                guard let device = self.activeDeviceSubject.value else {
-                    return
-                }
-                
-                Task(){
-                    do {
-                        let res = try await self.api.setVolume(value, deviceId: device.id)
-                        print("[AppCoord] updated volume: \(res)")
-                            //                        device.volumePercent = value
-                            //
-                            //                        self.activeDeviceSubject.send(device)
-                    } catch {
-                        self.globalErrorHandler()(error)
-                    }
-                }
-            }
         
         let notificationCenter = NotificationCenter.default
         
@@ -452,155 +291,10 @@ public final class AppCoordinator: ObservableObject {
         #endif
     }
     
-    @MainActor
-    public func synchronizePlayroom(_ playroom: Musicroom) async -> Void {
-        print("[synchronizePlayroom] button clicked \"Synchronize Playlist\"")
-                    
-        do {
-            let playroom = try await HttpMethod.Fetch.get(url: "/api/musicrooms/\(playroom.id)/sync", dataType: Musicroom.self, baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            print("[synchronizePlayroom] sync completed by server \(String(describing: playroom.playlistUri))")
-        } catch {
-            self.globalErrorHandler()(error)
-        }
-    }
-    
-    
     public func dismissKeyboard() {
         #if !os(macOS)
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         #endif
-    }
-    
-    @discardableResult
-    @MainActor
-    public func voteTrack(_ track: QueuedTrack) async throws -> QueuedTrackVote {
-        
-        guard let hearts = self.userHeartsSubject.value,
-              let newHearts = hearts.subtracting(HeartLevel.quarter),
-              var user = self.activeAuth?.user else {
-            
-            throw ActionError.insufficientHeartPoints
-        }
-        
-        let builder = Builder<QueuedTrackVote>()
-        self.voteRequestedSubject.send(track.id)
-        
-        defer { self.voteRequestedSubject.send(nil) }
-        
-        do {
-            let vote = try await builder.update(.queuedTrackId, track.id as AnyObject)
-                                        .save(baseUrl: api.baseUrlHttp, urlSession: api.urlSession)
-            user.heartPoints = Int(newHearts.score)
-            let _ = try await user.save(baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession)
-            
-            self.userHeartsSubject.send(newHearts)
-            return vote
-        } catch {
-            self.globalErrorHandler()(error)
-            throw error
-        }
-    }
-    
-    public func play(_ track: Playable, positionMs: Int? = nil, contentOffset: ContentOffset? = nil, device: Spotify.Device? = nil) async -> PlayState? {
-        self.playRequestedSubject.send(track.uri)
-        
-        let performPlay = { @MainActor (device: Spotify.Device?) async throws -> PlayState?  in
-            
-            guard let device = device, ![.smartphone, .tablet].contains(device.type) else {
-                self.localPlayRequested = (track, positionMs, contentOffset)
-                return nil
-            }
-            
-            self.localPlayRequested = nil
-            
-            var ps: PlayState
-            
-            if case let .uri(contextUri) = contentOffset {
-                ps = try await Track.playContent(contextUri, deviceId: device.id, positionMs: positionMs, offset: .uri(track.uri), baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession)
-            } else if case let .both(contextUri, _) = contentOffset {
-                ps = try await Track.playContent(contextUri, deviceId: device.id, positionMs: positionMs, offset: .uri(track.uri), baseUrl: self.api.baseUrlHttp, urlSession: self.api.urlSession)
-            } else {
-                ps = try await track.play(deviceId: device.id, positionMs: positionMs, baseUrl: self.api.baseUrl.http, urlSession: self.api.urlSession)
-            }
-            
-            self.playingSubject.send((track, ps))
-            
-            return ps
-        }
-        
-        guard let device = device else {
-            
-            if self.activeAuth != nil {
-                
-                do {
-                    let devices = try await api.fetchSpotifyDevices()
-                    logger.debug("Devices: \(devices)")
-                    return try await performPlay(devices.first(where: { $0.isActive }) ?? devices.first(where: { $0.type == .computer }))
-                } catch {
-                    self.globalErrorHandler()(error)
-                    return nil
-                }
-            } else {
-                return try? await performPlay(nil)
-            }
-        }
-        
-        return try? await performPlay(device)
-    }
-    
-    @discardableResult
-    func pausePlayback() async -> Json {
-        //                self.spotifyRemote.playerAPI?.pause(){ info, error in
-        //                    logger.debug("[pauseTrack] \(String(describing: info)) - \(String(describing: error))")
-        //
-        let path = URLComponents(string: "/api/spotify/me/player/pause")!
-        return (try? await HttpMethod.put.fetchJson(urlPath: path, payload: [:], baseUrl: api.baseUrl.http, urlSession: api.urlSession)) ?? Json()
-    }
-    
-    @discardableResult
-    func queueTrack(_ track: Playable, playroom activeRoom: Musicroom) async throws -> QueuedTrack {
-        
-        self.queueRequestedSubject.send((track.uri, activeRoom))
-        
-        defer {
-            self.queueRequestedSubject.send(nil)
-        }
-        
-        do {
-            let queuedTrack = try await activeRoom.queueTrack(track, baseUrl: api.baseUrl.http, urlSession: api.urlSession)
-            logger.info("[queueTrack] queued: \(queuedTrack)")
-            return queuedTrack
-        } catch {
-            self.globalErrorHandler()(error)
-            throw error
-        }
-    }
-    
-    public func share(track: Playable, completionHandler: ((Bool) -> Void)? = nil){
-        
-        let spotifyUrl = URL(string: "https://open.spotify.com")
-        let trackId = track.uri.replacingOccurrences(of: "spotify:track:", with: String.empty)
-        
-        guard let url = URL(string: "/track/\(trackId)", relativeTo: spotifyUrl) else {
-            completionHandler?(false)
-            return
-        }
-
-        let someText: String = "Here's a song suggestion for you \"\(track.title)\" by \(track.artistName) \(url.absoluteString)"
-        
-        self.share(text: someText, url: url, completionHandler: completionHandler)
-    }
-    
-    public func share(room: Room, completionHandler: ((Bool) -> Void)? = nil){
-        
-        guard let url = room.inviteUrl(for: activeAuth?.user, fallback: room.inviteUrl) else {
-            completionHandler?(false)
-            return
-        }
-        
-        let someText: String = "Hi, lets listen to songs together in \"\(room.name)\" \(url.absoluteString)"
-        
-        self.share(text: someText, url: url, completionHandler: completionHandler)
     }
     
     public func share(text: String, url: URL, completionHandler: ((Bool) -> Void)? = nil){
