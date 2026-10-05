@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1320"
+   LastUpgradeVersion = "2700"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -17,7 +17,7 @@
                BlueprintIdentifier = "9202D4062659BC0B00D5974F"
                BuildableName = "MaqrClip.app"
                BlueprintName = "MaqrClip"
-               ReferencedContainer = "container:Joli.xcodeproj">
+               ReferencedContainer = "container:Maqr.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -49,7 +49,7 @@
             BlueprintIdentifier = "9202D4062659BC0B00D5974F"
             BuildableName = "MaqrClip.app"
             BlueprintName = "MaqrClip"
-            ReferencedContainer = "container:Joli.xcodeproj">
+            ReferencedContainer = "container:Maqr.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
@@ -119,7 +119,7 @@
             BlueprintIdentifier = "9202D4062659BC0B00D5974F"
             BuildableName = "MaqrClip.app"
             BlueprintName = "MaqrClip"
-            ReferencedContainer = "container:Joli.xcodeproj">
+            ReferencedContainer = "container:Maqr.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

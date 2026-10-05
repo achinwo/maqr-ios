@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "container:Joli.xcodeproj">
+      location = "container:Maqr.xcodeproj">
    </FileRef>
 </Workspace>
