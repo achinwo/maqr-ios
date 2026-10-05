@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9202D4062659BC0B00D5974F"
-               BuildableName = "SmartzClip.app"
-               BlueprintName = "SmartzClip"
+               BuildableName = "MaqrClip.app"
+               BlueprintName = "MaqrClip"
                ReferencedContainer = "container:Joli.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -47,8 +47,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9202D4062659BC0B00D5974F"
-            BuildableName = "SmartzClip.app"
-            BlueprintName = "SmartzClip"
+            BuildableName = "MaqrClip.app"
+            BlueprintName = "MaqrClip"
             ReferencedContainer = "container:Joli.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -117,8 +117,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9202D4062659BC0B00D5974F"
-            BuildableName = "SmartzClip.app"
-            BlueprintName = "SmartzClip"
+            BuildableName = "MaqrClip.app"
+            BlueprintName = "MaqrClip"
             ReferencedContainer = "container:Joli.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9202D3D12659B6E700D5974F"
-               BuildableName = "Smartz.app"
-               BlueprintName = "Smartz"
+               BuildableName = "Maqr.app"
+               BlueprintName = "Maqr"
                ReferencedContainer = "container:Joli.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,8 +45,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9202D3D12659B6E700D5974F"
-            BuildableName = "Smartz.app"
-            BlueprintName = "Smartz"
+            BuildableName = "Maqr.app"
+            BlueprintName = "Maqr"
             ReferencedContainer = "container:Joli.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -69,8 +69,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9202D3D12659B6E700D5974F"
-            BuildableName = "Smartz.app"
-            BlueprintName = "Smartz"
+            BuildableName = "Maqr.app"
+            BlueprintName = "Maqr"
             ReferencedContainer = "container:Joli.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

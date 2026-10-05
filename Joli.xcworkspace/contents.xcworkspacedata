@@ -2,9 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "container:JoliDemos.playground">
-   </FileRef>
-   <FileRef
       location = "container:Joli.xcodeproj">
    </FileRef>
 </Workspace>
