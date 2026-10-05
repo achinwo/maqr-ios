@@ -1,0 +1,3 @@
+[submodule "MaqrCore"]
+	path = MaqrCore
+	url = https://github.com/achinwo/maqr-core
