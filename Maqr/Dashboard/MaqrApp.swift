@@ -5,6 +5,7 @@
 //  The maQR app: the /my dashboard, drawn natively over MaqrDashboard.
 //
 
+import GuestExperience
 import MaqrDashboard
 import SwiftData
 import SwiftUI
@@ -39,6 +40,8 @@ struct MaqrApp: App {
             name: UIDevice.current.name,
             model: UIDevice.current.model)
         let client = MaqrClient(site: site, device: device, urlSession: urlSession)
+        // Catalogue typefaces, for the guest pages and the designer.
+        GuestFonts.install(client: client)
 
         // A store that cannot be opened (a failed migration, a full disk)
         // costs the offline copy, not the app: it runs from memory instead.
@@ -62,7 +65,6 @@ struct MaqrApp: App {
                     if let link = UserDefaults.standard.string(forKey: "maqrOpen"), let url = URL(string: link) {
                         model.open(url)
                     }
-                    if let l = UserDefaults.standard.string(forKey: "maqrTmpLaunch"), let u = URL(string: l) { model.launching = WebHandoff(url: u, title: "Esther & Jide", session: nil) } // TMP
                     #endif
                 }
         }

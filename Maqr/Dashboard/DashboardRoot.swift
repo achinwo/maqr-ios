@@ -7,6 +7,7 @@
 //  presented over them.
 //
 
+import GuestExperience
 import MaqrDashboard
 import SwiftUI
 
@@ -78,8 +79,8 @@ struct DashboardRoot: View {
         .sheet(item: $model.webHandoff) { handoff in
             WebHandoffSheet(handoff: handoff)
         }
-        .fullScreenCover(item: $model.launching) { handoff in
-            WebHandoffSheet(handoff: handoff, sharesLink: true)
+        .fullScreenCover(item: $model.launching) { link in
+            LaunchCover(link: link, client: dashboard.client)
         }
         .onOpenURL { model.open($0) }
         .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
@@ -123,6 +124,31 @@ private struct DesignerCover: View {
     private func saved(_ uuid: String) {
         // The experience is new or changed; the hub re-reads it next time.
         Task { await model.experienceStore(uuid).refresh() }
+    }
+}
+
+/// An experience as its guests see it, over everything — the App Clip's own
+/// views, with a way back and the link to pass on.
+private struct LaunchCover: View {
+    let link: GuestLink
+    let client: MaqrClient
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        GuestLoaderView(link: link, client: client)
+            .overlay(alignment: .topTrailing) {
+                HStack(spacing: 8) {
+                    ShareLink(item: link.webURL(site: client.site)) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    Button { dismiss() } label: { Image(systemName: "xmark") }
+                        .accessibilityLabel(Text("Close"))
+                }
+                .font(.body.weight(.semibold))
+                .padding(.horizontal, 14).padding(.vertical, 9)
+                .background(.regularMaterial, in: Capsule())
+                .padding(.trailing, 16)
+            }
     }
 }
 

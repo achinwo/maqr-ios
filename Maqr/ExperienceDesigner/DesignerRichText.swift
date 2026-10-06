@@ -76,7 +76,7 @@ struct RichTextEditorField: View {
         Button { run(button) } label: {
             HStack(spacing: 6) {
                 Image(systemName: "textformat")
-                Text(button.label).lineLimit(1)
+                Text(button.label).lineLimit(1).designerTextStyle(button.style)
                 Image(systemName: "chevron.right").font(.caption2.weight(.bold)).foregroundStyle(.tertiary)
             }
             .font(.subheadline.weight(.medium))

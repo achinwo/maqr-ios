@@ -5,6 +5,7 @@
 
 import DesignerFoundation
 import ExperienceModel
+import GuestExperience
 import PhotosUI
 import SwiftUI
 
@@ -228,7 +229,11 @@ struct FontPane: View {
         } label: {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(title).foregroundStyle(Color.primary)
+                    // Each name in its own face, once it has arrived.
+                    Text(title)
+                        .font(font.flatMap { GuestFonts.shared.isAvailable($0.family) ? Font.custom($0.family, size: 20, relativeTo: .body) : nil } ?? .body)
+                        .foregroundStyle(Color.primary)
+                        .animation(.easeOut, value: font.map { GuestFonts.shared.isAvailable($0.family) })
                     Text(detail).font(.caption).foregroundStyle(Color.secondary)
                 }
                 Spacer()

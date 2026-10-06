@@ -5,6 +5,7 @@
 
 import DesignerFoundation
 import ExperienceModel
+import GuestExperience
 import MaqrDashboard
 import SwiftUI
 
@@ -171,26 +172,21 @@ struct ExperienceDesignerView: View {
             }
         }
         .sheet(isPresented: $isPreviewing) {
-            NavigationStack {
-                ScrollView {
-                    DesignerPreview(document: document, schema: schema, step: step)
-                        .frame(minHeight: 560, alignment: .top)
-                        .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 40, style: .continuous)
-                                .strokeBorder(Color.primary.opacity(0.85), lineWidth: 8)
-                        }
-                        .shadow(color: .black.opacity(0.2), radius: 16, y: 8)
-                        .padding(.horizontal, 28)
-                        .padding(.vertical)
+            // The guest page itself, from the document being edited — the
+            // App Clip's own views — opened on the page this step is about.
+            GuestExperienceView(
+                source: .document(document, uuid: document.savedUuid),
+                focus: GuestFocus(designerStep: step.id, type: document.type))
+                .overlay(alignment: .topTrailing) {
+                    Button("Done") { isPreviewing = false }
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(.regularMaterial, in: Capsule())
+                        .padding(.trailing, 16).padding(.top, 10)
                 }
-                .background(Color(.systemGroupedBackground))
-                .navigationTitle(step.previewTitle)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar { Button("Done") { isPreviewing = false } }
-            }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
         }
         .disabled(isSaving)
         .overlay {

@@ -7,6 +7,7 @@
 //  lives in MaqrDashboard; this only moves between them.
 //
 
+import GuestExperience
 import MaqrDashboard
 import SwiftUI
 
@@ -74,7 +75,7 @@ final class AppModel {
     var designer: DesignerRequest?
     var webHandoff: WebHandoff?
     /// An experience opened as guests see it, over everything.
-    var launching: WebHandoff?
+    var launching: GuestLink?
 
     @ObservationIgnored private var experienceStores: [String: ExperienceStore] = [:]
 
@@ -144,7 +145,7 @@ final class AppModel {
 
     /// Opens the experience's guest page, full screen.
     func launch(_ design: Design) {
-        launching = dashboard.launch(design)
+        launching = design.liveURL.flatMap(GuestLink.init(url:))
     }
 
     /// Opens the designer on a copy of someone else's design.
@@ -159,6 +160,11 @@ final class AppModel {
     /// A maqr.co link, opened as the screen it names — `/my/experience/:id`,
     /// `/my/design/:id`, `/my/invite/:token` and the rest of src/my's routes.
     func open(_ url: URL) {
+        // A guest page — `/ewed/<id>` and the rest — opens as guests see it.
+        if let link = GuestLink(url: url) {
+            launching = link
+            return
+        }
         var parts = url.pathComponents.filter { $0 != "/" }
         guard parts.first == "my" else { return }
         parts.removeFirst()

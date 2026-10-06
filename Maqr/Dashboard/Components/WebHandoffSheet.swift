@@ -12,9 +12,6 @@ import WebKit
 
 struct WebHandoffSheet: View {
     let handoff: WebHandoff
-    /// Whether the page is one worth passing on — a launched experience —
-    /// rather than checkout.
-    var sharesLink = false
     /// Called as the sheet closes, so the screen behind can refresh what the
     /// web may have changed.
     var onClose: () -> Void = {}
@@ -38,11 +35,6 @@ struct WebHandoffSheet: View {
                             Image(systemName: "safari")
                         }
                         .accessibilityLabel(Text("Open in Safari"))
-                    }
-                    if sharesLink {
-                        ToolbarItem(placement: .topBarLeading) {
-                            ShareLink(item: handoff.url, subject: Text(handoff.title))
-                        }
                     }
                 }
         }

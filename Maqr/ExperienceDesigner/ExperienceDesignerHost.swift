@@ -6,6 +6,7 @@
 import DesignerFoundation
 import ExperienceModel
 import Foundation
+import GuestExperience
 import MaqrDashboard
 import UIKit
 
@@ -36,7 +37,7 @@ struct ExperienceDesignerHost {
     }
 
     /// Points the model's host hooks at this host. The designer calls it as it
-    /// appears; until then the font picker offers only the page's own font.
+    /// is made, before anything it draws asks for a font.
     @MainActor
     func install() {
         let fetchFonts = self.fetchFonts
@@ -45,9 +46,12 @@ struct ExperienceDesignerHost {
                 FontCatalog.receive((try? await fetchFonts()) ?? "")
             }
         }
-        // Catalogue fonts are web stylesheets; the native preview draws in the
-        // system's faces, so there is nothing to load.
-        FontCatalog.loadStylesheet = { _ in }
+        // Catalogue fonts are web stylesheets; their TrueType faces are
+        // registered for this process, so the preview and the font list draw
+        // in them as they arrive.
+        FontCatalog.loadStylesheet = { url in
+            Task { @MainActor in await GuestFonts.shared.load(stylesheet: url) }
+        }
     }
 }
 

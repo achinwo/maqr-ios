@@ -29,12 +29,10 @@
 		<key>NSAppClipRequestLocationConfirmation</key>
 		<false/>
 	</dict>
-	<key>NSCameraUsageDescription</key>
-	<string>Capture images for customised brand experience creation</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Required to save QR and App Clip code images to Photo libarary</string>
+	<string>Save photos from the album to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Photo library access is required for uploading brand assets</string>
+	<string>Choose photos to add to the album or to a guest book message.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -44,10 +42,6 @@
 	<true/>
 	<key>UILaunchScreen</key>
 	<dict/>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>armv7</string>
-	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -59,7 +53,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>UIUserInterfaceStyle</key>
-	<string>Light</string>
 </dict>
 </plist>

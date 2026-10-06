@@ -5,6 +5,7 @@
 
 import DesignerFoundation
 import ExperienceModel
+import GuestExperience
 import SwiftUI
 
 extension SwiftUI.Binding where Value == String {
@@ -46,6 +47,7 @@ extension View {
         var strikethrough = false
         var alignment: TextAlignment?
         var size: CGFloat?
+        var family: String?
 
         for (key, value) in style {
             switch key {
@@ -61,6 +63,8 @@ extension View {
                 case "left": alignment = .leading
                 default: break
                 }
+            case "font-family":
+                family = value.split(separator: ",").first.map { $0.trimmingCharacters(in: CharacterSet(charactersIn: "\"' ")) }
             case "font-size":
                 if let points = Double(value.replacingOccurrences(of: "px", with: "")) {
                     size = CGFloat(points)
@@ -76,18 +80,29 @@ extension View {
             .underline(underline)
             .strikethrough(strikethrough)
             .multilineTextAlignment(alignment ?? .leading)
-            .modifier(OptionalFontSize(size: size))
+            .modifier(OptionalFontSize(size: size, family: family))
     }
 }
 
+/// The size, and the author's face once it has been registered.
 private struct OptionalFontSize: ViewModifier {
     let size: CGFloat?
+    let family: String?
 
     func body(content: Content) -> some View {
-        if let size {
-            content.font(.system(size: size))
-        } else {
-            content
+        Group {
+            if let family, GuestFonts.shared.isAvailable(family) {
+                content.font(.custom(family, size: size ?? 17, relativeTo: .body))
+            } else if let size {
+                content.font(.system(size: size))
+            } else {
+                content
+            }
+        }
+        // Asks for the face — again once the catalogue has arrived, since a
+        // family cannot be looked up before then.
+        .task(id: "\(family ?? "")|\(FontCatalog.state.hasArrived)") {
+            if let family, !family.isEmpty { FontCatalog.load(family) }
         }
     }
 }
