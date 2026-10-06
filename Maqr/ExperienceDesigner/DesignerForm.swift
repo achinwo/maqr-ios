@@ -26,14 +26,33 @@ struct DesignerSection: View {
                     }
                 }
                 Spacer()
-                ForEach(Array(spec.actions.enumerated()), id: \.offset) { _, action in
-                    Button(role: action.isDestructive ? .destructive : nil, action: action.run) {
-                        Text(action.label)
+                if !spec.actions.isEmpty {
+                    // Reorder and remove, for a repeating card, behind one menu.
+                    Menu {
+                        ForEach(Array(spec.actions.enumerated()), id: \.offset) { _, action in
+                            Button(role: action.isDestructive ? .destructive : nil) {
+                                withAnimation(.snappy) { action.run() }
+                            } label: {
+                                Label(action.title, systemImage: symbol(for: action))
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.body)
+                            .imageScale(.large)
                     }
-                    .accessibilityLabel(action.title)
-                    .buttonStyle(.borderless)
+                    .accessibilityLabel(Text("Card actions"))
                 }
             }
+        }
+    }
+
+    private func symbol(for action: SectionAction) -> String {
+        if action.isDestructive { return "trash" }
+        switch action.label {
+        case "\u{2191}": return "arrow.up"
+        case "\u{2193}": return "arrow.down"
+        default: return "circle"
         }
     }
 }
@@ -53,6 +72,7 @@ struct FieldRow: View {
                     .textInputAutocapitalization(type == .text ? .sentences : .never)
                     .autocorrectionDisabled(type != .text)
                     .disabled(spec.isReadOnly)
+                    .foregroundStyle(spec.isReadOnly ? .secondary : .primary)
             }
 
         case .textArea:
@@ -62,85 +82,120 @@ struct FieldRow: View {
             }
 
         case .richText, .richTextArea:
-            labelled {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(Array(spec.toolbar.enumerated()), id: \.offset) { _, row in
-                        ToolbarRow(buttons: row)
-                    }
-                    TextField(spec.placeholder, text: text, axis: spec.isMultiline ? .vertical : .horizontal)
-                        .lineLimit(spec.isMultiline ? 3...8 : 1...1)
-                        .designerTextStyle(spec.inputStyle)
-                }
-            }
+            RichTextEditorField(spec: spec, text: text)
 
         case .color:
-            Button(action: spec.onEdit) {
-                HStack {
-                    Text(spec.label).foregroundStyle(.primary)
-                    Spacer()
-                    Text(spec.value.wrappedValue.isEmpty ? "Default" : spec.value.wrappedValue)
-                        .foregroundStyle(.secondary)
-                    Circle()
-                        .fill(Color(designerHex: spec.value.wrappedValue) ?? .clear)
-                        .overlay(Circle().strokeBorder(.secondary.opacity(0.4)))
-                        .frame(width: 24, height: 24)
+            // The compact system well opens the picker in place: no pane to push.
+            ColorPicker(
+                selection: SwiftUI.Binding(
+                    get: { Color(designerHex: spec.value.wrappedValue) ?? .gray },
+                    set: { spec.value.wrappedValue = $0.designerHex }),
+                supportsOpacity: false
+            ) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(spec.label)
+                    Text(spec.value.wrappedValue.isEmpty ? String(localized: "Default") : spec.value.wrappedValue.uppercased())
+                        .font(.caption.monospaced())
+                        .foregroundStyle(Color.secondary)
+                        .contentTransition(.numericText())
                 }
             }
+            .animation(.snappy, value: spec.value.wrappedValue)
 
         case .image:
             Button(action: spec.onEdit) {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(spec.label).foregroundStyle(.primary)
-                        if let hint = spec.hint { Text(hint).font(.caption).foregroundStyle(.secondary) }
+                HStack(spacing: 12) {
+                    DesignerImage(url: spec.value.wrappedValue)
+                        .frame(width: 56, height: 56)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(.quaternary)
+                        }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(spec.label).foregroundStyle(Color.primary)
+                        Text(spec.value.wrappedValue.isEmpty ? String(localized: "Add a photo") : (spec.hint ?? String(localized: "Tap to change")))
+                            .font(.caption)
+                            .foregroundStyle(Color.secondary)
                     }
                     Spacer()
-                    DesignerImage(url: spec.value.wrappedValue)
-                        .frame(width: 44, height: 44)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                }
+            }
+            .contextMenu {
+                if !spec.value.wrappedValue.isEmpty {
+                    Button("Remove photo", systemImage: "trash", role: .destructive) { spec.value.wrappedValue = "" }
                 }
             }
 
         case .choice(let options):
-            labelled {
-                let picker = Picker(spec.label, selection: text) {
+            if options.count <= 3 {
+                // Segments while they fit across a phone.
+                labelled {
+                    Picker(spec.label, selection: text) {
+                        ForEach(options, id: \.self) { Text($0).tag($0) }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                }
+            } else {
+                Picker(spec.label, selection: text) {
                     ForEach(options, id: \.self) { Text($0).tag($0) }
                 }
-                .labelsHidden()
-                // Segments while they fit across a phone; a menu after that.
-                if options.count <= 3 {
-                    picker.pickerStyle(.segmented)
-                } else {
-                    picker.pickerStyle(.menu)
-                }
+                .pickerStyle(.menu)
             }
 
         case .fontPicker:
             Button(action: spec.onEdit) {
                 HStack {
-                    Text(spec.label).foregroundStyle(.primary)
+                    Label {
+                        Text(spec.label).foregroundStyle(Color.primary)
+                    } icon: {
+                        Image(systemName: "textformat").foregroundStyle(.tint)
+                    }
                     Spacer()
                     Text(spec.value.wrappedValue)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.secondary)
                         .designerTextStyle(spec.inputStyle)
+                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
                 }
             }
 
         case .action(let style):
-            Button(role: style == .danger ? .destructive : nil, action: spec.onEdit) {
-                Text(spec.label)
-                    .frame(maxWidth: .infinity)
+            VStack(spacing: 6) {
+                switch style {
+                case .primary:
+                    Button(action: spec.onEdit) {
+                        Text(spec.label).font(.headline).frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                case .secondary:
+                    Button(action: spec.onEdit) {
+                        Text(spec.label).frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                case .danger:
+                    Button(role: .destructive, action: spec.onEdit) {
+                        Text(spec.label).frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                }
+                if let hint = spec.hint {
+                    Text(hint).font(.caption).foregroundStyle(Color.secondary).multilineTextAlignment(.center)
+                }
             }
-            .buttonStyle(.borderedProminent)
-            .tint(style == .primary ? .accentColor : (style == .danger ? .red : .secondary))
-            if let hint = spec.hint {
-                Text(hint).font(.caption).foregroundStyle(.secondary)
-            }
+            .buttonBorderShape(.capsule)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
 
         case .note:
-            VStack(alignment: .leading, spacing: 4) {
-                Text(spec.label).font(.subheadline)
-                if let detail = spec.hint { Text(detail).font(.caption).foregroundStyle(.secondary) }
+            Label {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(spec.label).font(.subheadline)
+                    if let detail = spec.hint { Text(detail).font(.caption).foregroundStyle(Color.secondary) }
+                }
+            } icon: {
+                Image(systemName: "info.circle.fill").foregroundStyle(.tint)
             }
         }
     }
@@ -155,41 +210,18 @@ struct FieldRow: View {
 
     private func labelled(@ViewBuilder _ control: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(spec.label).font(.subheadline).foregroundStyle(.secondary)
+            Text(spec.label).font(.subheadline.weight(.medium)).foregroundStyle(Color.secondary)
             control()
             if let error = spec.error {
-                Text(error).font(.caption).foregroundStyle(.red)
+                Label(error, systemImage: "exclamationmark.circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             } else if let hint = spec.hint {
-                Text(hint).font(.caption).foregroundStyle(.secondary)
+                Text(hint).font(.caption).foregroundStyle(Color.secondary)
             }
         }
-    }
-}
-
-/// A rich-text field's formatting buttons. Their actions hand a new format to
-/// the document; the colour and font buttons push the designer's own panes.
-private struct ToolbarRow: View {
-    let buttons: [ToolbarButton]
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
-                ForEach(Array(buttons.enumerated()), id: \.offset) { _, button in
-                    Button(action: button.run) {
-                        Text(button.label)
-                            .designerTextStyle(button.style)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(
-                                button.isOn ? Color.accentColor.opacity(0.25) : Color.secondary.opacity(0.12),
-                                in: Capsule())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(button.title)
-                    .accessibilityAddTraits(button.isOn ? .isSelected : [])
-                }
-            }
-        }
+        .animation(.snappy, value: spec.error)
     }
 }
 
@@ -206,7 +238,7 @@ struct DesignerImage: View {
             }
         } else {
             Color.secondary.opacity(0.15)
-                .overlay(Image(systemName: "photo").foregroundStyle(.secondary))
+                .overlay(Image(systemName: "photo").foregroundStyle(Color.secondary))
         }
     }
 }

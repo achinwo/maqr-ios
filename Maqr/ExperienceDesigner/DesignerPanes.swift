@@ -8,37 +8,6 @@ import ExperienceModel
 import PhotosUI
 import SwiftUI
 
-/// Edits one colour field — ``ColorSlot`` says which.
-struct ColorPane: View {
-    let document: ExperienceDocument
-    let slot: ColorSlot
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        let value = SwiftUI.Binding(DocumentBinding.field(document, slot.key))
-        Form {
-            ColorPicker(
-                slot.title,
-                selection: SwiftUI.Binding(
-                    get: { Color(designerHex: value.wrappedValue) ?? .gray },
-                    set: { value.wrappedValue = $0.designerHex }),
-                supportsOpacity: false)
-
-            TextField("#rrggbb", text: value)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-
-            if slot.isOptional {
-                Button("Use the page's own", role: .destructive) {
-                    value.wrappedValue = ""
-                    dismiss()
-                }
-            }
-        }
-        .navigationTitle(slot.title)
-    }
-}
-
 /// Picks a photo for one image field: from the library, uploaded and cropped
 /// to the shape ``ImageSlot`` asks for, or as a link.
 struct ImagePane: View {
@@ -57,29 +26,53 @@ struct ImagePane: View {
             Section {
                 DesignerImage(url: value.wrappedValue)
                     .aspectRatio(slot.aspectRatio.map { CGFloat($0) } ?? 1, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .overlay {
+                        if isUploading {
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(.ultraThinMaterial)
+                                .overlay { ProgressView("Uploading…") }
+                                .transition(.opacity)
+                        }
+                    }
+                    .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
+                    .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets())
+                    .animation(.snappy, value: isUploading)
+                    .animation(.smooth, value: value.wrappedValue)
             }
 
             Section {
                 PhotosPicker(selection: $pick, matching: .images) {
-                    Label(isUploading ? "Uploading…" : "Choose a photo", systemImage: "photo.on.rectangle")
+                    Label("Choose from Photos", systemImage: "photo.on.rectangle.angled")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+                .controlSize(.large)
                 .disabled(isUploading)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+            }
 
+            Section {
                 TextField("Or paste a link", text: value)
                     .keyboardType(.URL)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
 
                 if !value.wrappedValue.isEmpty {
-                    Button("Remove photo", role: .destructive) { value.wrappedValue = "" }
+                    Button("Remove photo", systemImage: "trash", role: .destructive) { value.wrappedValue = "" }
                 }
             } footer: {
-                if let failure { Text(failure).foregroundStyle(.red) }
+                if let failure {
+                    Label(failure, systemImage: "exclamationmark.circle.fill").foregroundStyle(.red)
+                }
             }
         }
         .navigationTitle(slot.title)
+        .navigationBarTitleDisplayMode(.inline)
         .onChange(of: pick) { _, item in
             guard let item else { return }
             Task { await upload(item, into: value) }
@@ -149,7 +142,7 @@ struct CopyPane: View {
                 ProgressView()
             } else if filtered.isEmpty {
                 Text(entries.isEmpty ? "Nothing saved yet." : "No matches.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.secondary)
             }
             ForEach(Array(filtered.enumerated()), id: \.offset) { _, entry in
                 Button {
@@ -161,8 +154,8 @@ struct CopyPane: View {
                             .frame(width: 40, height: 40)
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                         VStack(alignment: .leading) {
-                            Text(entry.title).foregroundStyle(.primary)
-                            Text(entry.experienceName).font(.caption).foregroundStyle(.secondary)
+                            Text(entry.title).foregroundStyle(Color.primary)
+                            Text(entry.experienceName).font(.caption).foregroundStyle(Color.secondary)
                         }
                     }
                 }
@@ -191,19 +184,41 @@ struct FontPane: View {
     let document: ExperienceDocument
     let slot: FontSlot
     @Environment(\.dismiss) private var dismiss
+    @State private var query = ""
 
     var body: some View {
         List {
-            row(nil, title: "Default", detail: slot.defaultDetail)
-            if !FontCatalog.state.hasArrived {
-                ProgressView()
+            if query.isEmpty {
+                row(nil, title: String(localized: "Default"), detail: slot.defaultDetail)
             }
-            ForEach(FontCatalog.state.fonts, id: \.family) { font in
+            if !FontCatalog.state.hasArrived {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                }
+            }
+            ForEach(fonts, id: \.family) { font in
                 row(font, title: font.family, detail: font.category)
             }
         }
+        .searchable(text: $query, prompt: Text("Search fonts"))
+        .overlay {
+            if FontCatalog.state.hasArrived, !query.isEmpty, fonts.isEmpty {
+                ContentUnavailableView.search(text: query)
+            }
+        }
         .navigationTitle(slot.title)
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear { FontCatalog.loadAll() }
+    }
+
+    private var fonts: [FontEntry] {
+        let needle = query.trimmingCharacters(in: .whitespaces)
+        guard !needle.isEmpty else { return FontCatalog.state.fonts }
+        return FontCatalog.state.fonts.filter {
+            $0.family.localizedCaseInsensitiveContains(needle) || $0.category.localizedCaseInsensitiveContains(needle)
+        }
     }
 
     private func row(_ font: FontEntry?, title: String, detail: String) -> some View {
@@ -213,12 +228,12 @@ struct FontPane: View {
         } label: {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(title).foregroundStyle(.primary)
-                    Text(detail).font(.caption).foregroundStyle(.secondary)
+                    Text(title).foregroundStyle(Color.primary)
+                    Text(detail).font(.caption).foregroundStyle(Color.secondary)
                 }
                 Spacer()
                 if slot.chosenFamily(in: document) == (font?.family ?? "") {
-                    Image(systemName: "checkmark").foregroundStyle(.tint)
+                    Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(.tint)
                 }
             }
         }

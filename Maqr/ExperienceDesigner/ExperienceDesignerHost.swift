@@ -6,7 +6,7 @@
 import DesignerFoundation
 import ExperienceModel
 import Foundation
-import MaqrApi
+import MaqrDashboard
 import UIKit
 
 /// What the designer needs from the app around it: somewhere to save, to put
@@ -29,7 +29,7 @@ struct ExperienceDesignerHost {
 
         var errorDescription: String? {
             switch self {
-            case .unreadableResponse: return "The server's answer couldn't be read."
+            case .unreadableResponse: return String(localized: "The server's answer couldn't be read.")
             case .server(let message): return message
             }
         }
@@ -52,36 +52,20 @@ struct ExperienceDesignerHost {
 }
 
 extension ExperienceDesignerHost {
-    /// The Maqr server, through the app's API client.
-    static func live(api: MaqrApi) -> ExperienceDesignerHost {
+    /// The Maqr server, through the dashboard's client — so the designer
+    /// saves as whoever is signed in to the dashboard.
+    static func live(client: MaqrClient) -> ExperienceDesignerHost {
         ExperienceDesignerHost(
-            save: { json in
-                var request = URLRequest(url: api.baseUrlHttp.appendingPathComponent("/api/db/experiences"))
-                request.httpMethod = HttpMethod.post.rawValue
-                request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-                request.httpBody = Data(json.utf8)
-
-                let (data, _) = try await api.urlSession.data(for: request)
-                let reply = JSONValue.parse(String(decoding: data, as: UTF8.self))
-                if let uuid = reply?["data"]["uuid"].string {
-                    return uuid
-                }
-                if let message = reply?["error"]["message"].string {
-                    throw HostError.server(message)
-                }
-                throw HostError.unreadableResponse
-            },
+            save: { json in try await client.saveExperience(json: json) },
             uploadImage: { image in
-                try await MaqrApi.upload(image, baseUrl: api.baseUrlHttp, urlSession: api.urlSession).fileUrl
+                guard let data = image.jpegData(compressionQuality: 0.8) else {
+                    throw HostError.server(String(localized: "That photo couldn't be read."))
+                }
+                let address = try await client.uploadImage(data, fileExtension: "jpg", prefix: "designer")
+                guard let url = URL(string: address) else { throw HostError.unreadableResponse }
+                return url
             },
-            fetchFonts: {
-                let url = api.baseUrlHttp.appendingPathComponent("/api/db/fonts")
-                let (data, _) = try await api.urlSession.data(from: url)
-                // The endpoint wraps its rows in `data`, like every `/api/db` one.
-                let reply = JSONValue.parse(String(decoding: data, as: UTF8.self))
-                let rows = reply?["data"] ?? reply ?? .array([])
-                return rows.stringified()
-            }
+            fetchFonts: { try await client.fontsJSON() }
         )
     }
 
@@ -89,7 +73,7 @@ extension ExperienceDesignerHost {
     /// whole flow.
     static let offline = ExperienceDesignerHost(
         save: { _ in UUID().uuidString.lowercased() },
-        uploadImage: { _ in throw HostError.server("Uploads need a connection.") },
+        uploadImage: { _ in throw HostError.server(String(localized: "Uploads need a connection.")) },
         fetchFonts: { "[]" }
     )
 }
