@@ -14,6 +14,7 @@
 		47E611AA6D3288D9BF19EDD4 /* GuestLoaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9207931A3075A55200793E7B /* GuestLoaderView.swift */; };
 		5E3279AC8E699E79276524F4 /* GuestExperienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793193075A54700793E7B /* GuestExperienceView.swift */; };
 		86A4019F756A5D5D61E42A12 /* GuestExperience in Frameworks */ = {isa = PBXBuildFile; productRef = 6338212C3E157485904ABCD4 /* GuestExperience */; };
+		877E1FFE5F5BF77B1BE3BF4B /* StoreKitPurchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 878B5A013970554735C1619F /* StoreKitPurchases.swift */; };
 		9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D3D82659B6E900D5974F /* Assets.xcassets */; };
 		9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D40D2659BC0E00D5974F /* Assets.xcassets */; };
 		9202D42C2659BC0E00D5974F /* MaqrClip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 9202D4072659BC0B00D5974F /* MaqrClip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -46,7 +47,6 @@
 		92E4854530756B8E00654001 /* PublishingScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E4854430756B8E00654001 /* PublishingScreens.swift */; };
 		92E4854730756BE600654001 /* AppClipScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E4854630756BE600654001 /* AppClipScreens.swift */; };
 		92E4854930756BE700654001 /* AccountScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E4854830756BE700654001 /* AccountScreens.swift */; };
-		92F1D5FB2708CF7A00D0743B /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 92F1D5FA2708CF7A00D0743B /* Configuration.storekit */; };
 		9737779041C4F4E2243A237B /* ExperienceModel in Frameworks */ = {isa = PBXBuildFile; productRef = F50C9865F6EF5F36623F9DAB /* ExperienceModel */; };
 		9BD5FCFE93E7E54800C689AA /* MaqrDashboard in Frameworks */ = {isa = PBXBuildFile; productRef = 2F8F786339118F4A036E8CFF /* MaqrDashboard */; };
 		B6F7C238F245DCC848947688 /* GuestShareViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793183075A51200793E7B /* GuestShareViews.swift */; };
@@ -102,6 +102,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		686C3A84749948155E996869 /* Maqr.storekit */ = {isa = PBXFileReference; includeInIndex = 1; path = Maqr.storekit; sourceTree = "<group>"; };
+		878B5A013970554735C1619F /* StoreKitPurchases.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StoreKitPurchases.swift; sourceTree = "<group>"; };
 		9202D3D22659B6E700D5974F /* Maqr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Maqr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9202D3D82659B6E900D5974F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9202D3DD2659B6E900D5974F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -143,7 +145,6 @@
 		92E4854430756B8E00654001 /* PublishingScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishingScreens.swift; sourceTree = "<group>"; };
 		92E4854630756BE600654001 /* AppClipScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppClipScreens.swift; sourceTree = "<group>"; };
 		92E4854830756BE700654001 /* AccountScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountScreens.swift; sourceTree = "<group>"; };
-		92F1D5FA2708CF7A00D0743B /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		957660812076AFF97C505C2B /* MaqrClipApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MaqrClipApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -260,6 +261,7 @@
 				92E4853430756A6100654001 /* CodeViews.swift */,
 				92E4853630756A6100654001 /* WebHandoffSheet.swift */,
 				92E4853C30756AAD00654001 /* Cards.swift */,
+				878B5A013970554735C1619F /* StoreKitPurchases.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -280,7 +282,7 @@
 		92F1D5F92708CF5B00D0743B /* StoreKit */ = {
 			isa = PBXGroup;
 			children = (
-				92F1D5FA2708CF7A00D0743B /* Configuration.storekit */,
+				686C3A84749948155E996869 /* Maqr.storekit */,
 			);
 			path = StoreKit;
 			sourceTree = "<group>";
@@ -413,7 +415,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				92F1D5FB2708CF7A00D0743B /* Configuration.storekit in Resources */,
 				921F6C3926BE9DF80061D236 /* Preview Assets.xcassets in Resources */,
 				9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */,
 				92562E2E266C003D004972E6 /* Assets.xcassets in Resources */,
@@ -465,6 +466,7 @@
 				D341706E066F7F5D3F5DCB99 /* GuestShareViews.swift in Sources */,
 				5E3279AC8E699E79276524F4 /* GuestExperienceView.swift in Sources */,
 				47E611AA6D3288D9BF19EDD4 /* GuestLoaderView.swift in Sources */,
+				877E1FFE5F5BF77B1BE3BF4B /* StoreKitPurchases.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

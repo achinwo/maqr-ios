@@ -47,14 +47,24 @@ struct MaqrApp: App {
         // costs the offline copy, not the app: it runs from memory instead.
         let container = (try? DashboardSchema.container()) ?? (try! DashboardSchema.container(inMemory: true))
 
-        _model = State(initialValue: AppModel(dashboard: Dashboard(client: client, container: container)))
+        let dashboard = Dashboard(client: client, container: container)
+        // Publishing is bought through the App Store (Purchasing.swift).
+        let purchases = StoreKitPurchases(client: client, isSignedIn: { @MainActor in dashboard.session.isSignedIn })
+        dashboard.purchasing = purchases
+        self.purchases = purchases
+
+        _model = State(initialValue: AppModel(dashboard: dashboard))
     }
+
+    private let purchases: StoreKitPurchases
 
     var body: some Scene {
         WindowGroup {
             DashboardRoot(model: model)
                 .task {
                     await adoptLegacySession()
+                    // Purchases interrupted last time, or approved since.
+                    purchases.startListening()
                     #if DEBUG
                     // `-maqrToken <session token>` signs in as that session.
                     if let token = UserDefaults.standard.string(forKey: "maqrToken") {

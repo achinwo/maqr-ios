@@ -3,10 +3,12 @@
 //  Maqr
 //
 //  C3 review, G1–G6 publishing, H1/H6 plan and billing. Paying happens in
-//  the web checkout, opened over these screens already signed in.
+//  the App Store (StoreKit), through MaqrDashboard's Purchasing.swift — the
+//  app never sends anyone to a web checkout.
 //
 
 import MaqrDashboard
+import StoreKit
 import SwiftUI
 
 // MARK: - C3 · Review
@@ -78,6 +80,7 @@ struct ReviewScreen: View {
 struct PublishScreen: View {
     @Environment(AppModel.self) private var model
     @State private var store: PublishStore
+    @State private var managingSubscription = false
 
     init(dashboard: Dashboard, experience: ExperienceStore) {
         _store = State(initialValue: PublishStore(dashboard: dashboard, experience: experience))
@@ -92,6 +95,12 @@ struct PublishScreen: View {
         }
         .navigationTitle("Publish")
         .navigationBarTitleDisplayMode(.inline)
+        .manageSubscriptionsSheet(isPresented: $managingSubscription)
+        .onChange(of: managingSubscription) { _, open in
+            // Back from Apple's sheet: a change there reaches us as a server
+            // notification, so read the state again.
+            if !open { Task { await store.refresh() } }
+        }
         .refreshable { await store.refresh() }
         .sensoryFeedback(.success, trigger: store.view?.state.isLive)
         .task { await store.load() }
@@ -198,6 +207,9 @@ struct PublishScreen: View {
                         Text(store.isTrial ? (store.region.fromPrice.map { String(localized: "From \($0)") } ?? "") : String(localized: "Compare"))
                     }
                 }
+                if store.managedByAppStore {
+                    Button("Manage subscription") { managingSubscription = true }
+                }
                 if store.showsAutoRenew {
                     Toggle(isOn: Binding(get: { store.autoRenew ?? store.term?.autoRenew ?? false },
                                          set: { on in Task { await store.setAutoRenew(on) } })) {
@@ -223,7 +235,7 @@ struct PublishScreen: View {
         .safeAreaInset(edge: .bottom) {
             if let renew = store.renewNowLabel {
                 VStack(spacing: 6) {
-                    primary(renew) { model.webHandoff = store.checkout() }
+                    primary(renew) { model.push(.plans(view.experience.uuid)) }
                     if let term = store.term {
                         Text("Or let it end on \(Formatting.date(term.expiresAt))").font(.footnote).foregroundStyle(.secondary)
                     }
@@ -254,6 +266,10 @@ struct PublishScreen: View {
 struct PlanCardView: View {
     let plan: Plan
     let isSelected: Bool
+    /// The App Store's price when the plan is sold in the app; the catalogue's
+    /// label otherwise (the free trial).
+    var price: String? = nil
+    var priceLoading = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -268,7 +284,11 @@ struct PlanCardView: View {
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 0) {
-                    Text(plan.priceLabel).font(.headline)
+                    if priceLoading && price == nil {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Text(price ?? plan.priceLabel).font(.headline)
+                    }
                     Text(plan.period).font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
                 }
             }
@@ -293,9 +313,12 @@ struct PlansScreen: View {
     let experience: ExperienceStore
     @State private var store: PlansStore
 
-    init(dashboard: Dashboard, experience: ExperienceStore) {
+    init(dashboard: Dashboard, experience: ExperienceStore, initialKind: PlanKind = .oneOff) {
         self.experience = experience
-        _store = State(initialValue: PlansStore(dashboard: dashboard))
+        let store = PlansStore(dashboard: dashboard, uuid: experience.id,
+                               currentPlan: experience.publication.value?.term?.planCode)
+        if initialKind != .oneOff { store.kind = initialKind }
+        _store = State(initialValue: store)
     }
 
     var body: some View {
@@ -304,24 +327,38 @@ struct PlansScreen: View {
             VStack(alignment: .leading, spacing: 14) {
                 Text(store.title).font(.title2.weight(.bold)).contentTransition(.opacity)
                 Text(store.detail).font(.footnote).foregroundStyle(.secondary)
-                if store.sellsSubscriptions {
-                    Picker("Kind", selection: $store.kind) {
-                        Text("One-off").tag(PlanKind.oneOff)
-                        Text("Subscription").tag(PlanKind.subscription)
-                    }
-                    .pickerStyle(.segmented)
+                Picker("Kind", selection: $store.kind) {
+                    Text("One-off").tag(PlanKind.oneOff)
+                    Text("Subscription").tag(PlanKind.subscription)
                 }
+                .pickerStyle(.segmented)
                 ForEach(store.plans) { plan in
                     Button { store.chosen = plan.code } label: {
-                        PlanCardView(plan: plan, isSelected: plan.code == store.selected?.code)
+                        PlanCardView(plan: plan, isSelected: plan.code == store.selected?.code,
+                                     price: store.price(for: plan), priceLoading: !store.pricesLoaded)
                     }
                     .buttonStyle(.plain)
                     .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))
+                }
+                if store.renewing {
+                    NoticeCard(title: String(localized: "Another year on Single"),
+                               message: String(localized: "This adds twelve months from the end of the current term, at the renewal price."))
                 }
                 if experience.publication.value?.state == .lapsed {
                     NoticeCard(title: String(localized: "Nothing needs reprinting"),
                                message: String(localized: "The code never changes. Whichever of these you choose, the experience is republished at the same address the printed codes already point at."))
                 }
+                if store.pricesLoaded && store.prices.isEmpty {
+                    NoticeCard(title: String(localized: "Plans couldn't be loaded"),
+                               message: String(localized: "The App Store didn't answer. Check your connection and try again."), kind: .alert)
+                }
+                if let failure = store.failure {
+                    NoticeCard(title: String(localized: "That didn't work"), message: failure, kind: .alert)
+                }
+                if let restored = store.restoreMessage {
+                    NoticeCard(title: String(localized: "Restore purchases"), message: restored)
+                }
+                legal
             }
             .padding()
             .animation(.smooth, value: store.kind)
@@ -329,14 +366,26 @@ struct PlansScreen: View {
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 6) {
                 Button {
-                    model.webHandoff = experience.checkoutHandoff(model.dashboard, plan: store.selected?.code)
+                    Task {
+                        if let view = await store.buy() {
+                            experience.adopt(view)
+                            model.push(.published(view.experience.uuid))
+                        }
+                    }
                 } label: {
                     Text(store.continueLabel).frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .disabled(store.selected == nil)
-                Text("You'll see the total before paying. VAT included.").font(.footnote).foregroundStyle(.secondary)
+                .disabled(!store.canBuy)
+                Button(store.isRestoring ? String(localized: "Restoring…") : String(localized: "Restore Purchases")) {
+                    Task {
+                        await store.restore()
+                        await experience.refresh()
+                    }
+                }
+                .font(.footnote)
+                .disabled(store.isRestoring || store.isBuying)
             }
             .padding()
             .background(.bar)
@@ -344,17 +393,21 @@ struct PlansScreen: View {
         .navigationTitle("Choose a plan")
         .navigationBarTitleDisplayMode(.inline)
         .sensoryFeedback(.selection, trigger: store.chosen)
-        .onChange(of: model.webHandoff == nil) { _, closed in
-            // Back from checkout: whatever was paid is on the server now.
-            if closed { Task { await experience.refresh() } }
-        }
         .task { await store.load() }
     }
-}
 
-extension ExperienceStore {
-    func checkoutHandoff(_ dashboard: Dashboard, plan: PlanCode?) -> WebHandoff {
-        dashboard.checkout(id, plan: plan)
+    /// What the App Store requires beside a purchase — what it is, how it
+    /// renews, and the terms and privacy policy.
+    private var legal: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(store.disclosure).font(.caption).foregroundStyle(.secondary)
+            HStack(spacing: 16) {
+                Link("Terms of Use", destination: model.dashboard.webURL("/joli_end_user_license_agreement.html"))
+                Link("Privacy Policy", destination: model.dashboard.webURL("/joli_privacy_policy.html"))
+            }
+            .font(.caption)
+        }
+        .padding(.top, 4)
     }
 }
 
@@ -427,6 +480,7 @@ struct PublishedScreen: View {
 struct BillingScreen: View {
     @Environment(AppModel.self) private var model
     @State private var store: BillingStore
+    @State private var managingSubscriptions = false
 
     init(dashboard: Dashboard) {
         _store = State(initialValue: BillingStore(dashboard: dashboard))
@@ -453,19 +507,19 @@ struct BillingScreen: View {
                 }
                 if store.showsPayment {
                     Section("Payment") {
-                        LabeledContent("Payment method", value: store.cardValue)
-                        if store.savesCards {
-                            Button((store.card.value ?? nil) == nil ? "Add a card" : "Replace card") {
-                                model.webHandoff = store.manageCardOnWeb()
-                            }
-                            if (store.card.value ?? nil) != nil {
-                                Button("Remove card", role: .destructive) { Task { await store.removeCard() } }
-                                    .disabled(store.isRemovingCard)
-                            }
-                        }
                         LabeledContent("Receipts", value: "\(view.payments.count)")
-                        if let failure = store.cardFailure { Text(failure).foregroundStyle(.red) }
                     }
+                }
+                Section {
+                    Button(store.isRestoring ? String(localized: "Restoring…") : String(localized: "Restore Purchases")) {
+                        Task { await store.restore() }
+                    }
+                    .disabled(store.isRestoring)
+                    Button("Manage subscriptions") { managingSubscriptions = true }
+                } header: {
+                    Text("App Store")
+                } footer: {
+                    if let message = store.restoreMessage { Text(message) }
                 }
                 if !store.unpublished.isEmpty {
                     Section("Unpublished") { rows(store.unpublished) }
@@ -480,8 +534,10 @@ struct BillingScreen: View {
                                 .listRowInsets(EdgeInsets())
                                 .listRowBackground(Color.clear)
                         }
-                        Button(restart) { model.webHandoff = store.restartCheckout() }
-                            .disabled(store.unpublished.isEmpty)
+                        Button(restart) {
+                            if let uuid = store.restartExperience { model.push(.plans(uuid)) }
+                        }
+                        .disabled(store.restartExperience == nil)
                     } header: {
                         Text("Put them back")
                     } footer: {
@@ -494,8 +550,9 @@ struct BillingScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.refresh() }
         .savedCopyBanner(store.billing)
-        .onChange(of: model.webHandoff == nil) { _, closed in
-            if closed { Task { await store.refresh() } }
+        .manageSubscriptionsSheet(isPresented: $managingSubscriptions)
+        .onChange(of: managingSubscriptions) { _, open in
+            if !open { Task { await store.refresh() } }
         }
         .task { await store.load() }
     }
@@ -535,3 +592,39 @@ struct BillingScreen: View {
         }
     }
 }
+
+#if DEBUG
+// MARK: - Previews
+
+/// The App Store, as a preview needs it: the prices in Maqr/StoreKit/Maqr.storekit
+/// and no purchases. Used for the plans screen's previews, which are also the
+/// App Review screenshots for the in-app purchases.
+private final class PreviewPurchasing: StorePurchasing, @unchecked Sendable {
+    let prices = [
+        "com.smartstickr.Smartz.publish.weekend": "£11.99",
+        "com.smartstickr.Smartz.publish.single": "£28.99",
+        "com.smartstickr.Smartz.publish.single.renew": "£18.99",
+        "com.smartstickr.Smartz.plan.creator.yearly": "£76.99",
+        "com.smartstickr.Smartz.plan.studio.yearly": "£229.99",
+    ]
+    func displayPrices(for productIds: [String]) async -> [String: String] { prices }
+    func purchase(productId: String, appAccountToken: UUID) async throws -> PurchaseOutcome { .cancelled }
+    func restorableTransactions() async throws -> [String] { [] }
+}
+
+private func previewPlans(_ kind: PlanKind) -> some View {
+    let client = MaqrClient(site: URL(string: "https://maqr.co")!,
+                            device: DeviceIdentity(uuid: "preview", name: "Preview", model: "iPhone"))
+    let dashboard = Dashboard(client: client, container: try! DashboardSchema.container(inMemory: true))
+    dashboard.purchasing = PreviewPurchasing()
+    let model = AppModel(dashboard: dashboard)
+    return NavigationStack {
+        PlansScreen(dashboard: dashboard, experience: ExperienceStore(dashboard: dashboard, id: "demo-harbour-chilli"),
+                    initialKind: kind)
+    }
+    .environment(model)
+}
+
+#Preview("Plans · one-off") { previewPlans(.oneOff) }
+#Preview("Plans · subscription") { previewPlans(.subscription) }
+#endif

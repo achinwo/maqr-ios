@@ -19,6 +19,7 @@ struct MeScreen: View {
     @State private var mine: MyExperiencesStore
     @State private var deleting = false
     @State private var confirmingSignOut = false
+    @State private var confirmingDemoReset = false
 
     init(dashboard: Dashboard) {
         _store = State(initialValue: AccountStore(dashboard: dashboard))
@@ -37,6 +38,10 @@ struct MeScreen: View {
                             if let verified = store.isVerified {
                                 StatusBadge(text: verified ? String(localized: "Confirmed") : String(localized: "Unconfirmed"),
                                             tone: verified ? .live : .muted)
+                            }
+                            // Only staff are ever told a role (src/lib/roles.ts on the server).
+                            if let role = store.staffRole {
+                                StatusBadge(text: role.uppercased(), tone: .accent)
                             }
                         }
                     }
@@ -68,10 +73,23 @@ struct MeScreen: View {
                     LabeledContent { Text("Browse everything") } label: { Label("Explore", systemImage: "safari") }
                 }
                 .foregroundStyle(.primary)
-                Link(destination: model.dashboard.webURL("/")) {
-                    LabeledContent { Text("The main site") } label: { Label("maQR home", systemImage: "globe") }
+            }
+
+            if store.canResetDemo {
+                Section {
+                    Button(store.demoReset == .resetting ? String(localized: "Resetting…") : String(localized: "Reset demo data")) {
+                        confirmingDemoReset = true
+                    }
+                    .disabled(store.demoReset == .resetting)
+                } header: {
+                    Text("Demo account")
+                } footer: {
+                    switch store.demoReset {
+                    case .done: Text("Demo data restored. The sample drafts are unpublished again, so the purchase flow can be tried once more.")
+                    case let .failed(message): Text(message)
+                    default: Text("Restores the sample experiences and clears this account's purchases, so the purchase flow can be tried again. App Store subscriptions stay on your Apple ID — use Restore Purchases to re-apply them.")
+                    }
                 }
-                .foregroundStyle(.primary)
             }
 
             Section("Appearance") {
@@ -102,6 +120,11 @@ struct MeScreen: View {
         .refreshable { await store.load() }
         .confirmationDialog("Sign out of maQR?", isPresented: $confirmingSignOut, titleVisibility: .visible) {
             Button("Sign out", role: .destructive) { Task { await store.signOut() } }
+        }
+        .confirmationDialog("Reset the demo data?", isPresented: $confirmingDemoReset, titleVisibility: .visible) {
+            Button("Reset demo data", role: .destructive) { Task { await store.resetDemo() } }
+        } message: {
+            Text("Purchases made with this account are cleared and the sample drafts become unpublished again.")
         }
         .sheet(isPresented: $deleting) {
             DeleteAccountSheet(dashboard: model.dashboard)

@@ -1,0 +1,108 @@
+{
+  "identifier" : "6B1F0A11",
+  "nonRenewingSubscriptions" : [
+    {
+      "displayPrice" : "11.99",
+      "familyShareable" : false,
+      "internalID" : "6B1F0A12",
+      "localizations" : [
+        {
+          "description" : "Publish one experience for 30 days.",
+          "displayName" : "Weekend pass",
+          "locale" : "en_GB"
+        }
+      ],
+      "productID" : "com.smartstickr.Smartz.publish.weekend",
+      "referenceName" : "Weekend pass (30 days)",
+      "type" : "NonRenewingSubscription"
+    },
+    {
+      "displayPrice" : "28.99",
+      "familyShareable" : false,
+      "internalID" : "6B1F0A13",
+      "localizations" : [
+        {
+          "description" : "Publish one experience for 12 months.",
+          "displayName" : "Single experience",
+          "locale" : "en_GB"
+        }
+      ],
+      "productID" : "com.smartstickr.Smartz.publish.single",
+      "referenceName" : "Single experience (12 months)",
+      "type" : "NonRenewingSubscription"
+    },
+    {
+      "displayPrice" : "18.99",
+      "familyShareable" : false,
+      "internalID" : "6B1F0A14",
+      "localizations" : [
+        {
+          "description" : "Another 12 months for an experience already on Single.",
+          "displayName" : "Single experience \u2014 another year",
+          "locale" : "en_GB"
+        }
+      ],
+      "productID" : "com.smartstickr.Smartz.publish.single.renew",
+      "referenceName" : "Single experience renewal (12 months)",
+      "type" : "NonRenewingSubscription"
+    }
+  ],
+  "products" : [],
+  "settings" : {
+    "_locale" : "en_GB",
+    "_storefront" : "GBR"
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "6B1F0A20",
+      "localizations" : [],
+      "name" : "maQR Plans",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "displayPrice" : "229.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6B1F0A21",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited live experiences, renewing yearly.",
+              "displayName" : "Studio",
+              "locale" : "en_GB"
+            }
+          ],
+          "productID" : "com.smartstickr.Smartz.plan.studio.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Studio (yearly)",
+          "subscriptionGroupID" : "6B1F0A20",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [],
+          "displayPrice" : "76.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6B1F0A22",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Three live experiences at once, renewing yearly.",
+              "displayName" : "Creator",
+              "locale" : "en_GB"
+            }
+          ],
+          "productID" : "com.smartstickr.Smartz.plan.creator.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Creator (yearly)",
+          "subscriptionGroupID" : "6B1F0A20",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 1,
+    "minor" : 1
+  }
+}
