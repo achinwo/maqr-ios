@@ -18,6 +18,9 @@ struct WeddingGuestView: View {
     var page: WeddingPage = .home
 
     @State private var path: [WeddingPage] = []
+    /// The page last reported, so a link's page shown on appear is not
+    /// counted again by the path change it causes.
+    @State private var reported: WeddingPage?
     @State private var stream: StreamStore
     @State private var book: GuestBookStore
     @State private var album: AlbumStore
@@ -49,9 +52,19 @@ struct WeddingGuestView: View {
         .tint(paint.gold)
         .environment(\.colorScheme, .dark)
         .sensoryFeedback(.selection, trigger: path.count)
-        .onAppear { show(page, animated: false) }
+        .onAppear {
+            show(page, animated: false)
+            report(page)
+        }
+        .onChange(of: path) { _, path in report(path.last ?? .home) }
         .onChange(of: page) { _, page in show(page, animated: true) }
         .task { await stream.watch() }
+    }
+
+    private func report(_ page: WeddingPage) {
+        guard let connection, page != reported else { return }
+        reported = page
+        connection.record("page", page: page.analyticsSlug)
     }
 
     private func show(_ page: WeddingPage, animated: Bool) {

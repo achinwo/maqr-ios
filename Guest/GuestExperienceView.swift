@@ -43,6 +43,14 @@ struct GuestExperienceView: View {
             }
         }
         .environment(\.guestFamily, experience.look.displayFamily)
+        .task(id: experience.uuid) {
+            // Only a guest's page has a connection; the designer's preview,
+            // which must never count, has none. A wedding reports its own
+            // pages as they open; the others have only the one.
+            guard let connection else { return }
+            connection.record("scan")
+            if case .wedding = experience.kind {} else { connection.record("page", page: WeddingPage.home.analyticsSlug) }
+        }
     }
 }
 
