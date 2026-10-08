@@ -102,7 +102,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		686C3A84749948155E996869 /* Maqr.storekit */ = {isa = PBXFileReference; includeInIndex = 1; path = Maqr.storekit; sourceTree = "<group>"; };
+		686C3A84749948155E996869 /* Maqr.storekit */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = Maqr.storekit; sourceTree = "<group>"; };
 		878B5A013970554735C1619F /* StoreKitPurchases.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StoreKitPurchases.swift; sourceTree = "<group>"; };
 		9202D3D22659B6E700D5974F /* Maqr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Maqr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9202D3D82659B6E900D5974F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -501,7 +501,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Maqr/Maqr.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Maqr/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
@@ -530,7 +530,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Maqr/Maqr.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"Maqr/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Maqr/Info.plist;
@@ -558,7 +558,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MaqrClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"MaqrClip/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
@@ -588,7 +588,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MaqrClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"MaqrClip/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MaqrClip/Info.plist;
