@@ -14,8 +14,10 @@ import SwiftUI
 
 // MARK: - Album
 
-struct AlbumPage: View {
+struct AlbumSection: View {
     let experience: GuestExperience
+    let settings: AlbumSettings
+    let title: String
     @Bindable var store: AlbumStore
     @State private var picks: [PhotosPickerItem] = []
     @State private var viewing: AlbumPhoto?
@@ -24,66 +26,58 @@ struct AlbumPage: View {
 
     var body: some View {
         let photos = store.photos(of: experience)
-        ScrollView {
-            VStack(spacing: 16) {
-                PageHeading(title: String(localized: "Photos"), subtitle: String(localized: "Every picture from the day, in one place"))
-                if store.uploading > 0 {
-                    HStack(spacing: 10) {
-                        ProgressView().tint(paint.gold)
-                        Text("^[Uploading \(store.uploading) photo](inflect: true)…").font(.subheadline).foregroundStyle(paint.soft)
-                    }
-                    .padding(12).glassCard(cornerRadius: 14)
-                    .transition(.scale.combined(with: .opacity))
-                }
-                if store.hasLoaded, photos.isEmpty {
-                    EmptyPage(symbol: "photo.on.rectangle.angled", message: String(localized: "Be the first to add a photo."))
-                }
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 4)], spacing: 4) {
-                    ForEach(photos) { photo in
-                        Button { viewing = photo } label: {
-                            // A square the grid sizes, with the picture filling
-                            // it — the picture never decides the cell's size.
-                            Color.clear
-                                .aspectRatio(1, contentMode: .fit)
-                                .overlay { GuestImage(url: photo.thumbnailURL) }
-                                .clipped()
-                                .overlay(alignment: .bottomLeading) {
-                                    if photo.isVideo {
-                                        Label(photo.durationText ?? "", systemImage: "play.fill")
-                                            .labelStyle(.titleAndIcon)
-                                            .font(.caption2.weight(.semibold).monospacedDigit())
-                                            .foregroundStyle(.white)
-                                            .padding(.horizontal, 6).padding(.vertical, 3)
-                                            .background(.black.opacity(0.5), in: Capsule())
-                                            .padding(6)
-                                    }
-                                }
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(PressableStyle())
-                        .contextMenu {
-                            if let url = photo.mediaURL { ShareLink(item: url) }
-                            if photo.mine {
-                                Button("Delete", systemImage: "trash", role: .destructive) { deleting = photo }
-                            }
-                        }
-                    }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .padding(.horizontal, 12)
-                .animation(.snappy, value: photos.count)
-            }
-            .padding(.top, 16).padding(.bottom, 110)
-        }
-        .refreshable { await store.load() }
-        .safeAreaInset(edge: .bottom) {
-            if store.canUpload {
+        VStack(spacing: 16) {
+            PageHeading(title: title, subtitle: String(localized: "Every picture, in one place"))
+            if store.canUpload, settings.takesUploads, experience.isLive {
                 PhotosPicker(selection: $picks, maxSelectionCount: 20, matching: .images) {
                     Label("Add your photos", systemImage: "plus")
                 }
-                .buttonStyle(GoldButtonStyle())
-                .padding(.horizontal, 24).padding(.bottom, 8)
+                .buttonStyle(PrimaryButtonStyle())
             }
+            if store.uploading > 0 {
+                HStack(spacing: 10) {
+                    ProgressView().tint(paint.primary)
+                    Text("^[Uploading \(store.uploading) photo](inflect: true)…").font(.subheadline).foregroundStyle(paint.soft)
+                }
+                .padding(12).panel(cornerRadius: 14)
+                .transition(.scale.combined(with: .opacity))
+            }
+            if store.hasLoaded, photos.isEmpty {
+                EmptyPage(symbol: "photo.on.rectangle.angled", message: String(localized: "Be the first to add a photo."))
+            }
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 4)], spacing: 4) {
+                ForEach(photos) { photo in
+                    Button { viewing = photo } label: {
+                        // A square the grid sizes, with the picture filling
+                        // it — the picture never decides the cell's size.
+                        Color.clear
+                            .aspectRatio(1, contentMode: .fit)
+                            .overlay { GuestImage(url: photo.thumbnailURL) }
+                            .clipped()
+                            .overlay(alignment: .bottomLeading) {
+                                if photo.isVideo {
+                                    Label(photo.durationText ?? "", systemImage: "play.fill")
+                                        .labelStyle(.titleAndIcon)
+                                        .font(.caption2.weight(.semibold).monospacedDigit())
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 6).padding(.vertical, 3)
+                                        .background(.black.opacity(0.5), in: Capsule())
+                                        .padding(6)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(PressableStyle())
+                    .contextMenu {
+                        if let url = photo.mediaURL { ShareLink(item: url) }
+                        if photo.mine {
+                            Button("Delete", systemImage: "trash", role: .destructive) { deleting = photo }
+                        }
+                    }
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .animation(.snappy, value: photos.count)
         }
         .task { await store.load() }
         .onChange(of: picks) { _, items in
@@ -203,36 +197,31 @@ enum GuestPhotos {
 
 // MARK: - Guest book
 
-struct GuestBookPage: View {
+struct GuestBookSection: View {
     let wording: GuestBookWording
     @Bindable var store: GuestBookStore
     @State private var isWriting = false
     @Environment(\.guestPaint) private var paint
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                PageHeading(title: store.book?.title ?? wording.title, subtitle: store.book?.message ?? wording.message)
-                if store.isOpen {
-                    Button { isWriting = true } label: { Label("Leave a message", systemImage: "square.and.pencil") }
-                        .buttonStyle(GoldButtonStyle())
-                        .padding(.horizontal, 8)
-                        .reveal(delay: 0.2)
-                }
-                if store.isLoading {
-                    ProgressView().tint(paint.gold).padding()
-                } else if store.entries.isEmpty {
-                    EmptyPage(symbol: "signature", message: String(localized: "No messages yet."))
-                }
-                ForEach(Array(store.entries.enumerated()), id: \.element.id) { index, entry in
-                    EntryCard(entry: entry) { Task { await store.delete(entry) } }
-                        .reveal(delay: min(0.3 + Double(index) * 0.05, 0.8))
-                }
+        VStack(spacing: 14) {
+            PageHeading(title: store.book?.title ?? wording.title, subtitle: store.book?.message ?? wording.message)
+            if store.isOpen {
+                Button { isWriting = true } label: { Label("Leave a message", systemImage: "square.and.pencil") }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .reveal(delay: 0.2)
             }
-            .padding(.horizontal, 16).padding(.top, 16).padding(.bottom, 40)
-            .animation(.snappy, value: store.entries)
+            if store.isLoading {
+                ProgressView().tint(paint.primary).padding()
+            } else if store.entries.isEmpty {
+                EmptyPage(symbol: "signature", message: String(localized: "No messages yet."))
+            }
+            ForEach(Array(store.entries.enumerated()), id: \.element.id) { index, entry in
+                EntryCard(entry: entry) { Task { await store.delete(entry) } }
+                    .reveal(delay: min(0.3 + Double(index) * 0.05, 0.8))
+            }
         }
-        .refreshable { await store.load() }
+        .animation(.snappy, value: store.entries)
         .task { await store.load() }
         .sheet(isPresented: $isWriting) { ComposeMessage(store: store) }
     }
@@ -251,20 +240,20 @@ private struct EntryCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
             if !entry.title.isEmpty {
-                Text(markdown(entry.title)).displayFont(22, relativeTo: .title3).foregroundStyle(paint.gold)
+                Text(markdown(entry.title)).displayFont(22, relativeTo: .title3).foregroundStyle(paint.primary)
             }
             Text(markdown(entry.message))
-                .font(GuestType.body(17))
+                .font(paint.body(17))
                 .lineSpacing(4)
                 .foregroundStyle(paint.text.opacity(0.92))
                 .lineLimit(isExpanded ? nil : 7)
             if entry.message.count > 260 {
                 Button(isExpanded ? "Show less" : "Read more") { withAnimation(.snappy) { isExpanded.toggle() } }
-                    .font(.footnote.weight(.semibold)).tint(paint.gold)
+                    .font(.footnote.weight(.semibold)).tint(paint.primary)
             }
             HStack {
                 if !entry.signature.isEmpty {
-                    Text("— \(entry.signature)").font(GuestType.body(16)).italic().foregroundStyle(paint.soft)
+                    Text("— \(entry.signature)").font(paint.body(16)).italic().foregroundStyle(paint.soft)
                 }
                 Spacer()
                 if let posted = entry.posted {
@@ -273,7 +262,7 @@ private struct EntryCard: View {
             }
         }
         .padding(18)
-        .glassCard()
+        .panel()
         .contextMenu {
             if entry.mine {
                 Button("Delete my message", systemImage: "trash", role: .destructive, action: delete)

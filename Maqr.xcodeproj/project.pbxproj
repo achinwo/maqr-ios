@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		15D3A0E406C1BDF8FA32C232 /* WeddingGuestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793173075A4ED00793E7B /* WeddingGuestView.swift */; };
+		15D3A0E406C1BDF8FA32C232 /* BlockViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793173075A4ED00793E7B /* BlockViews.swift */; };
 		18DB3B8A84C6E025CD1C7ABD /* GuestExperienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793193075A54700793E7B /* GuestExperienceView.swift */; };
 		39A7344B1B12E0CF9FBAB7F6 /* MaqrClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957660812076AFF97C505C2B /* MaqrClipApp.swift */; };
 		46221C42F66DADBB16D000D1 /* GuestTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793163075A46400793E7B /* GuestTheme.swift */; };
@@ -18,15 +18,13 @@
 		9202D3D92659B6E900D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D3D82659B6E900D5974F /* Assets.xcassets */; };
 		9202D40E2659BC0E00D5974F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D40D2659BC0E00D5974F /* Assets.xcassets */; };
 		9202D42C2659BC0E00D5974F /* MaqrClip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 9202D4072659BC0B00D5974F /* MaqrClip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		920793123075908F00793E7B /* DesignerTypePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793113075908F00793E7B /* DesignerTypePicker.swift */; };
-		92079314307590A700793E7B /* DesignerRichText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92079313307590A700793E7B /* DesignerRichText.swift */; };
+		920793123075908F00793E7B /* TemplatePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793113075908F00793E7B /* TemplatePicker.swift */; };
 		921F6C3926BE9DF80061D236 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 921F6C3826BE9DF80061D236 /* Preview Assets.xcassets */; };
 		92562E2E266C003D004972E6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9202D40D2659BC0E00D5974F /* Assets.xcassets */; };
 		92A69A5E30745831001DD663 /* ExperienceDesignerHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A69A5D30745831001DD663 /* ExperienceDesignerHost.swift */; };
-		92A69A603074583D001DD663 /* DesignerStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A69A5F3074583D001DD663 /* DesignerStyle.swift */; };
+		92A69A603074583D001DD663 /* CompositionDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A69A5F3074583D001DD663 /* CompositionDraft.swift */; };
 		92A69A6130743CD9001DD663 /* ExperienceModel in Frameworks */ = {isa = PBXBuildFile; productRef = 92A69A6030743CD9001DD663 /* ExperienceModel */; };
-		92A69A6230745857001DD663 /* DesignerForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A69A6130745857001DD663 /* DesignerForm.swift */; };
-		92A69A6430745871001DD663 /* DesignerPanes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A69A6330745871001DD663 /* DesignerPanes.swift */; };
+		92A69A6230745857001DD663 /* DesignerFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A69A6130745857001DD663 /* DesignerFields.swift */; };
 		92A69A68307458A8001DD663 /* ExperienceDesignerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A69A67307458A8001DD663 /* ExperienceDesignerView.swift */; };
 		92C1A24B26626BF800A11E0F /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
 		92C1A24C26626BF900A11E0F /* env.json in Resources */ = {isa = PBXBuildFile; fileRef = 929BA5CB24C7925F00B11188 /* env.json */; };
@@ -53,7 +51,7 @@
 		D341706E066F7F5D3F5DCB99 /* GuestShareViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793183075A51200793E7B /* GuestShareViews.swift */; };
 		D37AB96EDCD53BDB3AC06213 /* GuestTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793163075A46400793E7B /* GuestTheme.swift */; };
 		E48CDC92DC38B1B3671D6816 /* GuestExperience in Frameworks */ = {isa = PBXBuildFile; productRef = C858C6D2808DCEB64B19C6E8 /* GuestExperience */; };
-		EAA59FD848A765513FB0CF15 /* WeddingGuestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793173075A4ED00793E7B /* WeddingGuestView.swift */; };
+		EAA59FD848A765513FB0CF15 /* BlockViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920793173075A4ED00793E7B /* BlockViews.swift */; };
 		EDD2E43E33818C92E09E4762 /* GuestLoaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9207931A3075A55200793E7B /* GuestLoaderView.swift */; };
 /* End PBXBuildFile section */
 
@@ -113,10 +111,9 @@
 		9202D4102659BC0E00D5974F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9202D4122659BC0E00D5974F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9202D4132659BC0E00D5974F /* SmartzClip.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SmartzClip.entitlements; sourceTree = "<group>"; };
-		920793113075908F00793E7B /* DesignerTypePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignerTypePicker.swift; sourceTree = "<group>"; };
-		92079313307590A700793E7B /* DesignerRichText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignerRichText.swift; sourceTree = "<group>"; };
+		920793113075908F00793E7B /* TemplatePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplatePicker.swift; sourceTree = "<group>"; };
 		920793163075A46400793E7B /* GuestTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestTheme.swift; sourceTree = "<group>"; };
-		920793173075A4ED00793E7B /* WeddingGuestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeddingGuestView.swift; sourceTree = "<group>"; };
+		920793173075A4ED00793E7B /* BlockViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockViews.swift; sourceTree = "<group>"; };
 		920793183075A51200793E7B /* GuestShareViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestShareViews.swift; sourceTree = "<group>"; };
 		920793193075A54700793E7B /* GuestExperienceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestExperienceView.swift; sourceTree = "<group>"; };
 		9207931A3075A55200793E7B /* GuestLoaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestLoaderView.swift; sourceTree = "<group>"; };
@@ -126,9 +123,8 @@
 		92A2EDE024D001EE00D6640A /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		92A69A5730743BE2001DD663 /* MaqrCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = MaqrCore; sourceTree = "<group>"; };
 		92A69A5D30745831001DD663 /* ExperienceDesignerHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceDesignerHost.swift; sourceTree = "<group>"; };
-		92A69A5F3074583D001DD663 /* DesignerStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignerStyle.swift; sourceTree = "<group>"; };
-		92A69A6130745857001DD663 /* DesignerForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignerForm.swift; sourceTree = "<group>"; };
-		92A69A6330745871001DD663 /* DesignerPanes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignerPanes.swift; sourceTree = "<group>"; };
+		92A69A5F3074583D001DD663 /* CompositionDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositionDraft.swift; sourceTree = "<group>"; };
+		92A69A6130745857001DD663 /* DesignerFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignerFields.swift; sourceTree = "<group>"; };
 		92A69A67307458A8001DD663 /* ExperienceDesignerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceDesignerView.swift; sourceTree = "<group>"; };
 		92E485273075698600654001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		92E4852E307569FB00654001 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -211,7 +207,7 @@
 			isa = PBXGroup;
 			children = (
 				920793163075A46400793E7B /* GuestTheme.swift */,
-				920793173075A4ED00793E7B /* WeddingGuestView.swift */,
+				920793173075A4ED00793E7B /* BlockViews.swift */,
 				920793183075A51200793E7B /* GuestShareViews.swift */,
 				920793193075A54700793E7B /* GuestExperienceView.swift */,
 				9207931A3075A55200793E7B /* GuestLoaderView.swift */,
@@ -231,12 +227,10 @@
 			isa = PBXGroup;
 			children = (
 				92A69A5D30745831001DD663 /* ExperienceDesignerHost.swift */,
-				92A69A5F3074583D001DD663 /* DesignerStyle.swift */,
-				92A69A6130745857001DD663 /* DesignerForm.swift */,
-				92A69A6330745871001DD663 /* DesignerPanes.swift */,
+				92A69A5F3074583D001DD663 /* CompositionDraft.swift */,
+				92A69A6130745857001DD663 /* DesignerFields.swift */,
 				92A69A67307458A8001DD663 /* ExperienceDesignerView.swift */,
-				920793113075908F00793E7B /* DesignerTypePicker.swift */,
-				92079313307590A700793E7B /* DesignerRichText.swift */,
+				920793113075908F00793E7B /* TemplatePicker.swift */,
 			);
 			path = ExperienceDesigner;
 			sourceTree = "<group>";
@@ -442,27 +436,25 @@
 			files = (
 				92A69A68307458A8001DD663 /* ExperienceDesignerView.swift in Sources */,
 				92E4853330756A6100654001 /* RemoteContent.swift in Sources */,
-				92A69A6430745871001DD663 /* DesignerPanes.swift in Sources */,
-				920793123075908F00793E7B /* DesignerTypePicker.swift in Sources */,
+				920793123075908F00793E7B /* TemplatePicker.swift in Sources */,
 				92A69A5E30745831001DD663 /* ExperienceDesignerHost.swift in Sources */,
 				92E4853130756A3D00654001 /* AppModel.swift in Sources */,
 				92E4853530756A6100654001 /* CodeViews.swift in Sources */,
 				92E4853F30756ADB00654001 /* BrowseScreens.swift in Sources */,
 				92E4853930756A8100654001 /* DashboardRoot.swift in Sources */,
-				92A69A6230745857001DD663 /* DesignerForm.swift in Sources */,
-				92079314307590A700793E7B /* DesignerRichText.swift in Sources */,
+				92A69A6230745857001DD663 /* DesignerFields.swift in Sources */,
 				92E4854530756B8E00654001 /* PublishingScreens.swift in Sources */,
 				92E4853B30756A9100654001 /* MaqrApp.swift in Sources */,
 				92E4854730756BE600654001 /* AppClipScreens.swift in Sources */,
 				92E4854330756B5100654001 /* GuestScreens.swift in Sources */,
-				92A69A603074583D001DD663 /* DesignerStyle.swift in Sources */,
+				92A69A603074583D001DD663 /* CompositionDraft.swift in Sources */,
 				92E4853D30756AAD00654001 /* Cards.swift in Sources */,
 				92E4854130756B1B00654001 /* ExperienceScreens.swift in Sources */,
 				92E4852F307569FB00654001 /* Theme.swift in Sources */,
 				92E4853730756A6100654001 /* WebHandoffSheet.swift in Sources */,
 				92E4854930756BE700654001 /* AccountScreens.swift in Sources */,
 				46221C42F66DADBB16D000D1 /* GuestTheme.swift in Sources */,
-				15D3A0E406C1BDF8FA32C232 /* WeddingGuestView.swift in Sources */,
+				15D3A0E406C1BDF8FA32C232 /* BlockViews.swift in Sources */,
 				D341706E066F7F5D3F5DCB99 /* GuestShareViews.swift in Sources */,
 				5E3279AC8E699E79276524F4 /* GuestExperienceView.swift in Sources */,
 				47E611AA6D3288D9BF19EDD4 /* GuestLoaderView.swift in Sources */,
@@ -475,7 +467,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D37AB96EDCD53BDB3AC06213 /* GuestTheme.swift in Sources */,
-				EAA59FD848A765513FB0CF15 /* WeddingGuestView.swift in Sources */,
+				EAA59FD848A765513FB0CF15 /* BlockViews.swift in Sources */,
 				B6F7C238F245DCC848947688 /* GuestShareViews.swift in Sources */,
 				18DB3B8A84C6E025CD1C7ABD /* GuestExperienceView.swift in Sources */,
 				EDD2E43E33818C92E09E4762 /* GuestLoaderView.swift in Sources */,
@@ -501,7 +493,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Maqr/Maqr.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"Maqr/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
@@ -513,7 +505,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 1.45;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -530,7 +522,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Maqr/Maqr.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"Maqr/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Maqr/Info.plist;
@@ -541,7 +533,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 1.45;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -558,7 +550,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MaqrClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"MaqrClip/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
@@ -570,7 +562,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 1.45;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG APPCLIP";
@@ -588,7 +580,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MaqrClip/SmartzClip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_ASSET_PATHS = "\"MaqrClip/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MaqrClip/Info.plist;
@@ -599,7 +591,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 1.45;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartstickr.Smartz.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APPCLIP;

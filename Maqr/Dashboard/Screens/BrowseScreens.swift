@@ -66,7 +66,7 @@ struct ExploreScreen: View {
             ForEach(store.shown) { design in
                 NavigationLink(value: Route.design(design.id)) {
                     DesignCard(design: design) {
-                        model.remix(design, row: model.dashboard.local.experience(design.id)?.json)
+                        model.remix(design)
                     }
                 }
                 .buttonStyle(.plain)
@@ -96,7 +96,7 @@ private struct DesignMenu: View {
 
     var body: some View {
         Button("Remix this design", systemImage: "wand.and.stars") {
-            model.remix(design, row: model.dashboard.local.experience(design.id)?.json)
+            model.remix(design)
         }
         if let live = design.liveURL {
             Link(destination: live) { Label("Open as a guest sees it", systemImage: "safari") }
@@ -191,10 +191,10 @@ struct DesignDetailScreen: View {
         let action = store.primaryAction
         return VStack(spacing: 8) {
             Button {
-                if store.isMine, let row = store.rowJSON {
-                    model.designer = .edit(uuid: design.id, row: row)
+                if store.isMine {
+                    model.designer = .edit(uuid: design.id)
                 } else {
-                    model.remix(design, row: store.rowJSON)
+                    model.remix(design)
                 }
             } label: {
                 Text(action.label).frame(maxWidth: .infinity)
@@ -264,7 +264,7 @@ struct HomeScreen: View {
                 row(store.communityRow.map { design in
                     (design.id, Route.design(design.id),
                      MiniCard(title: design.title, meta: design.category, image: design.image, symbol: design.symbol,
-                              action: ("Remix this", { model.remix(design, row: model.dashboard.local.experience(design.id)?.json) })))
+                              action: ("Remix this", { model.remix(design) })))
                 })
             }
             .padding()

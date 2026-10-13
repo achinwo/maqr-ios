@@ -187,8 +187,7 @@ struct ExperienceHubScreen: View {
     }
 
     private func openDesigner(_ detail: ExperienceDetail) {
-        guard let row = experience.rowJSON else { return }
-        model.designer = .edit(uuid: detail.id, row: row)
+        model.designer = .edit(uuid: detail.id)
     }
 
     private func delete() async {

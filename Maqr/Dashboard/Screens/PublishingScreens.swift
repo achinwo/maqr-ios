@@ -64,7 +64,7 @@ struct ReviewScreen: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Edit") {
-                        if let row = experience.rowJSON { model.designer = .edit(uuid: detail.id, row: row) }
+                        model.designer = .edit(uuid: detail.id)
                     }
                 }
             }

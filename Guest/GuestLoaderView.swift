@@ -25,15 +25,10 @@ struct GuestLoaderView: View {
             switch loader.state {
             case .loading:
                 LoadingMark()
-            case .loaded(let experience, let connection, let document):
-                Group {
-                    if let document {
-                        GuestExperienceView(source: .document(document, uuid: experience.uuid), connection: connection, focus: link.focus, table: link.table)
-                    } else {
-                        GuestExperienceView(source: .experience(experience), connection: connection, focus: link.focus, table: link.table)
-                    }
-                }
-                .transition(.opacity)
+            case .loaded(let experience, let connection):
+                GuestExperienceView(experience: experience, connection: connection, focus: link.slug, table: link.table)
+                    .id(experience.uuid)
+                    .transition(.opacity)
             case .failed(let message):
                 ContentUnavailableView {
                     Label("Couldn't open this", systemImage: "qrcode.viewfinder")

@@ -113,10 +113,10 @@ private struct DesignerCover: View {
             switch request {
             case .new:
                 ExperienceDesignerView(host: host, onSaved: saved)
-            case .remix(_, let row):
-                ExperienceDesignerView(host: host, seed: .remix(row: row), onSaved: saved)
-            case .edit(let uuid, let row):
-                ExperienceDesignerView(host: host, seed: .edit(uuid: uuid, row: row), onSaved: saved)
+            case .remix(let uuid):
+                ExperienceDesignerView(host: host, seed: .remix(uuid: uuid), onSaved: saved)
+            case .edit(let uuid):
+                ExperienceDesignerView(host: host, seed: .edit(uuid: uuid), onSaved: saved)
             }
         }
     }

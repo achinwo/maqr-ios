@@ -42,14 +42,15 @@ enum AppTab: Hashable {
 /// What the designer is opened on.
 enum DesignerRequest: Identifiable {
     case new
-    case remix(title: String, row: Data)
-    case edit(uuid: String, row: Data)
+    /// A copy of the experience the uuid names.
+    case remix(uuid: String)
+    case edit(uuid: String)
 
     var id: String {
         switch self {
         case .new: return "new"
-        case .remix(let title, _): return "remix-\(title)"
-        case .edit(let uuid, _): return "edit-\(uuid)"
+        case .remix(let uuid): return "remix-\(uuid)"
+        case .edit(let uuid): return "edit-\(uuid)"
         }
     }
 }
@@ -143,15 +144,16 @@ final class AppModel {
         requireAccount { self.designer = .new }
     }
 
-    /// Opens the experience's guest page, full screen.
+    /// Opens the experience's guest page, full screen — drawn from its
+    /// document by the native engine, whatever kind it is.
     func launch(_ design: Design) {
-        launching = design.liveURL.flatMap(GuestLink.init(url:))
+        launching = GuestLink(id: design.id)
     }
 
     /// Opens the designer on a copy of someone else's design.
-    func remix(_ design: Design, row: Data?) {
+    func remix(_ design: Design) {
         requireAccount(designTitle: design.title) {
-            if let row { self.designer = .remix(title: design.title, row: row) }
+            self.designer = .remix(uuid: design.id)
         }
     }
 
