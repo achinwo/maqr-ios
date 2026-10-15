@@ -237,13 +237,21 @@ private struct DesignerEditor: View {
 
     @ViewBuilder private var welcomeStep: some View {
         heading(String(localized: "Welcome"), String(localized: "The name, the line under it and the pictures guests see first."))
-        fields(String(localized: "Welcome"), [
-            BlockField(path: "identity.title", label: String(localized: "Name"), type: "text", placeholder: String(localized: "Esther & Jide")),
-            BlockField(path: "identity.subtitle", label: String(localized: "Welcome message"), type: "textarea",
-                       placeholder: String(localized: "Saturday 12 June · Lagos")),
-            BlockField(path: "identity.when", label: String(localized: "Date"), type: "date",
-                       hint: String(localized: "Optional. What makes it an event: the dashboard counts down to it.")),
-        ])
+        Section {
+            RichTextEditorField(
+                label: String(localized: "Name"), placeholder: String(localized: "Esther & Jide"), field: "brandName",
+                text: text("identity.title"), format: textFormat("theme.typography.styles.title", field: "brandName"))
+            RichTextEditorField(
+                label: String(localized: "Welcome message"), placeholder: String(localized: "Saturday 12 June · Lagos"),
+                isMultiline: true, field: "landingPageText",
+                text: text("identity.subtitle"), format: textFormat("theme.typography.styles.subtitle", field: "landingPageText"))
+            FieldRow(
+                field: BlockField(path: "identity.when", label: String(localized: "Date"), type: "date",
+                                  hint: String(localized: "Optional. What makes it an event: the dashboard counts down to it.")),
+                value: draft.value("identity.when"), set: { draft.set("identity.when", $0) }, host: host)
+        } header: {
+            Text("Welcome")
+        }
         fields(String(localized: "Pictures"), [
             BlockField(path: "identity.banner", label: String(localized: "Banner"), type: "image"),
             BlockField(path: "identity.logo", label: String(localized: "Portrait or logo"), type: "image"),
@@ -259,11 +267,6 @@ private struct DesignerEditor: View {
             BlockField(path: "identity.links.facebook", label: "Facebook", type: "text"),
             BlockField(path: "identity.links.website", label: String(localized: "Website"), type: "url"),
             BlockField(path: "identity.links.websiteLabel", label: String(localized: "Website label"), type: "text"),
-        ])
-        fields(String(localized: "App Clip card"), footer: String(localized: "What a phone shows before the page opens. Empty uses the name and banner."), [
-            BlockField(path: "identity.card.title", label: String(localized: "Card title"), type: "text"),
-            BlockField(path: "identity.card.subtitle", label: String(localized: "Card subtitle"), type: "text"),
-            BlockField(path: "identity.card.image", label: String(localized: "Card image"), type: "image"),
         ])
     }
 
@@ -298,23 +301,19 @@ private struct DesignerEditor: View {
         fields(String(localized: "Type"), [
             BlockField(path: "theme.typography.display", label: String(localized: "Typeface"), type: "font"),
         ])
-        textStyle(String(localized: "Name style"), path: "theme.typography.styles.title")
-        textStyle(String(localized: "Welcome style"), path: "theme.typography.styles.subtitle")
     }
 
-    /// A text style — `TextStyle` in shared/text_style.ts — field by field.
-    private func textStyle(_ title: String, path: String) -> some View {
-        fields(title, [
-            BlockField(path: "\(path).bold", label: String(localized: "Bold"), type: "toggle"),
-            BlockField(path: "\(path).italic", label: String(localized: "Italic"), type: "toggle"),
-            BlockField(path: "\(path).textAlign", label: String(localized: "Alignment"), type: "choice", options: [
-                BlockOption(value: "left", label: String(localized: "Left")),
-                BlockOption(value: "center", label: String(localized: "Centre")),
-                BlockOption(value: "right", label: String(localized: "Right")),
-            ]),
-            BlockField(path: "\(path).fontSize", label: String(localized: "Size"), type: "number", placeholder: String(localized: "Automatic")),
-            BlockField(path: "\(path).color", label: String(localized: "Colour"), type: "color"),
-        ])
+    /// A text field's words in the draft; empty stores no value.
+    private func text(_ path: String) -> SwiftUI.Binding<String> {
+        SwiftUI.Binding(get: { draft.value(path).text }, set: { draft.setText(path, $0) })
+    }
+
+    /// A text style — `TextStyle` in shared/text_style.ts — as the rich-text
+    /// field edits it whole; nothing set stores no value.
+    private func textFormat(_ path: String, field: String) -> SwiftUI.Binding<TextFormat> {
+        SwiftUI.Binding(
+            get: { TextFormat(json: draft.value(path).object ?? JSONObject()).validated(in: .forField(field)) },
+            set: { draft.set(path, $0.jsonValue) })
     }
 
     @ViewBuilder private func blockStep(_ id: String) -> some View {
@@ -386,10 +385,10 @@ private struct DesignerEditor: View {
     }
 
     @ViewBuilder private var reviewStep: some View {
-        heading(String(localized: "Review"), draft.uuid == nil
+        heading(String(localized: "Review"), draft.uuid.isEmpty
             ? String(localized: "Save to create the experience. You can keep editing afterwards.")
             : String(localized: "Save your changes. Guests see them as soon as they're saved."))
-        if draft.uuid == nil {
+        if draft.uuid.isEmpty {
             Section {
                 TextField("Optional, e.g. estherandjide", text: $address)
                     .textInputAutocapitalization(.never)
@@ -406,7 +405,7 @@ private struct DesignerEditor: View {
         }
         Section {
             Button { save() } label: {
-                Label(draft.uuid == nil ? String(localized: "Create experience") : String(localized: "Save changes"), systemImage: "checkmark.circle.fill")
+                Label(draft.uuid.isEmpty ? String(localized: "Create experience") : String(localized: "Save changes"), systemImage: "checkmark.circle.fill")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
@@ -507,7 +506,7 @@ private struct DesignerEditor: View {
                 .buttonBorderShape(.capsule)
             } else {
                 Button { save() } label: {
-                    Text(draft.uuid == nil ? "Create" : "Save").font(.body.weight(.semibold)).padding(.horizontal, 10)
+                    Text(draft.uuid.isEmpty ? "Create" : "Save").font(.body.weight(.semibold)).padding(.horizontal, 10)
                 }
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.capsule)
@@ -553,7 +552,7 @@ private struct DesignerEditor: View {
     private var preview: some View {
         let focus: String = if case .block(let id) = step { draft.composition.block(id: id)?.anchor ?? "" } else { "" }
         return GuestExperienceView(
-            experience: GuestExperience(composition: draft.composition, uuid: draft.uuid ?? "", canEdit: true),
+            experience: GuestExperience(composition: draft.composition, uuid: draft.uuid, canEdit: true),
             focus: focus)
             .overlay(alignment: .topTrailing) {
                 Button("Done") { isPreviewing = false }
@@ -613,14 +612,14 @@ private struct DesignerEditor: View {
         Task {
             defer { isSaving = false }
             do {
-                let envelope = if let uuid {
+                let envelope = if !uuid.isEmpty {
                     try await host.save(uuid, json)
                 } else {
                     try await host.create(json, draft.templateCode, draft.category, chosen.isEmpty ? nil : chosen)
                 }
                 draft.adopt(savedUuid: envelope.uuid)
                 messageIsSuccess = true
-                message = uuid == nil ? String(localized: "Created.") : String(localized: "Saved.")
+                message = uuid.isEmpty ? String(localized: "Created.") : String(localized: "Saved.")
                 saves += 1
                 onSaved(envelope.uuid)
             } catch {

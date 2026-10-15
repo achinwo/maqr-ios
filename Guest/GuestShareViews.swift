@@ -28,11 +28,22 @@ struct AlbumSection: View {
         let photos = store.photos(of: experience)
         VStack(spacing: 16) {
             PageHeading(title: title, subtitle: String(localized: "Every picture, in one place"))
-            if store.canUpload, settings.takesUploads, experience.isLive {
-                PhotosPicker(selection: $picks, maxSelectionCount: 20, matching: .images) {
-                    Label("Add your photos", systemImage: "plus")
+            // Guests add photos while the term is live; the owner always can,
+            // and the designer's preview shows the button the guests will see.
+            if settings.takesUploads, !store.canUpload || experience.isLive || experience.canEdit {
+                if store.canUpload {
+                    PhotosPicker(selection: $picks, maxSelectionCount: 20, matching: .images) {
+                        Label("Add your photos", systemImage: "plus")
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                } else {
+                    // Nowhere to send a photo from the preview.
+                    Button {} label: {
+                        Label("Add your photos", systemImage: "plus")
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .allowsHitTesting(false)
                 }
-                .buttonStyle(PrimaryButtonStyle())
             }
             if store.uploading > 0 {
                 HStack(spacing: 10) {

@@ -283,7 +283,7 @@ private struct DateField: View {
 }
 
 /// The catalogue's families, each set in itself as it arrives.
-private struct FontList: View {
+struct FontList: View {
     let selected: String
     let choose: (String) -> Void
     @State private var query = ""
@@ -314,11 +314,270 @@ private struct FontList: View {
     }
 }
 
+// MARK: - Rich text
+
+/// A rich-text field, as the web designer draws one: the words, set in the
+/// style the author chose, over a formatting bar — font and size, then weight,
+/// slant, lines, alignment, colour and clear.
+///
+/// The controls are ``RichTextToolbar``'s, the same ones the web designer
+/// draws, recognised by what they are and given the look of an iOS
+/// formatting bar: grouped toggles, a size stepper, a colour well. The text
+/// and its format are kept apart in the document (`identity.title` and
+/// `theme.typography.styles.title`), as they are on the web.
+struct RichTextEditorField: View {
+    let label: String
+    var placeholder = ""
+    var isMultiline = false
+    /// `brandName` or `landingPageText` — which size range the field steps through.
+    let field: String
+    let text: SwiftUI.Binding<String>
+    let format: SwiftUI.Binding<TextFormat>
+
+    @FocusState private var isFocused: Bool
+    @State private var taps = 0
+    @State private var choosingFont = false
+
+    var body: some View {
+        let range = TextFormat.SizeRange.forField(field)
+        let buttons = RichTextToolbar.rows(
+            format.wrappedValue, range: range, fontFallback: "serif",
+            pickers: .inlineColor(font: { choosingFont = true }),
+            onChange: { format.wrappedValue = $0.validated(in: range) }
+        ).flatMap { $0 }
+
+        VStack(alignment: .leading, spacing: 10) {
+            Text(label).font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+
+            TextField(placeholder, text: text, axis: isMultiline ? .vertical : .horizontal)
+                .lineLimit(isMultiline ? 3...8 : 1...1)
+                .richTextFormat(format.wrappedValue)
+                .focused($isFocused)
+                .padding(12)
+                .frame(minHeight: isMultiline ? 96 : nil, alignment: .topLeading)
+                .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(isFocused ? Color.accentColor : .clear, lineWidth: 1.5)
+                }
+                .animation(.easeOut(duration: 0.15), value: isFocused)
+
+            HStack(spacing: 8) {
+                ForEach(Array(buttons.enumerated()), id: \.offset) { _, button in
+                    if RichTextPart(button) == .font { fontChip(button) }
+                }
+                Spacer(minLength: 0)
+                group(buttons.filter { [.smaller, .size, .larger].contains(RichTextPart($0)) })
+            }
+            HStack(spacing: 8) {
+                group(buttons.filter { [.bold, .italic, .underline, .strikethrough].contains(RichTextPart($0)) })
+                group(buttons.filter { RichTextPart($0) == .align })
+                Spacer(minLength: 0)
+                ForEach(Array(buttons.enumerated()), id: \.offset) { _, button in
+                    if RichTextPart(button) == .color { colorWell(button) }
+                }
+                group(buttons.filter { RichTextPart($0) == .clear })
+            }
+        }
+        .padding(.vertical, 4)
+        .sensoryFeedback(.impact(weight: .light), trigger: taps)
+        .navigationDestination(isPresented: $choosingFont) {
+            FontList(selected: format.wrappedValue.font) { family in
+                var next = format.wrappedValue
+                next.font = family
+                format.wrappedValue = next.validated(in: range)
+            }
+        }
+    }
+
+    // MARK: Pieces
+
+    private func run(_ button: ToolbarButton) {
+        taps += 1
+        withAnimation(.snappy(duration: 0.2)) { button.run() }
+    }
+
+    private func fontChip(_ button: ToolbarButton) -> some View {
+        Button { run(button) } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "textformat")
+                Text(button.label).lineLimit(1).richTextFamily(format.wrappedValue.font)
+                Image(systemName: "chevron.right").font(.caption2.weight(.bold)).foregroundStyle(.tertiary)
+            }
+            .font(.subheadline.weight(.medium))
+            .padding(.horizontal, 12)
+            .frame(height: 34)
+            .foregroundStyle(button.isOn ? Color.accentColor : .primary)
+            .background(.fill.tertiary, in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(button.title)
+    }
+
+    /// Buttons that belong together, in one capsule.
+    @ViewBuilder private func group(_ buttons: [ToolbarButton]) -> some View {
+        if !buttons.isEmpty {
+            HStack(spacing: 2) {
+                ForEach(Array(buttons.enumerated()), id: \.offset) { _, button in
+                    toolButton(button)
+                }
+            }
+            .padding(2)
+            .background(.fill.tertiary, in: Capsule())
+        }
+    }
+
+    private func toolButton(_ button: ToolbarButton) -> some View {
+        let part = RichTextPart(button)
+        return Button { run(button) } label: {
+            Group {
+                if let symbol = part.symbol(for: button) {
+                    Image(systemName: symbol)
+                        .contentTransition(.symbolEffect(.replace))
+                } else {
+                    Text(button.label).monospacedDigit()
+                }
+            }
+            .font(.subheadline.weight(.semibold))
+            .frame(minWidth: 32, minHeight: 30)
+            .padding(.horizontal, part == .size ? 4 : 0)
+            .foregroundStyle(button.isOn ? Color.white : .primary)
+            .background {
+                if button.isOn { Capsule().fill(Color.accentColor) }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(button.title)
+        .accessibilityAddTraits(button.isOn ? .isSelected : [])
+    }
+
+    @ViewBuilder private func colorWell(_ button: ToolbarButton) -> some View {
+        if case .color(let hex, let set) = button.control {
+            ColorPicker(
+                button.title,
+                selection: SwiftUI.Binding(
+                    get: { Color(guestHex: hex, fallback: .primary) },
+                    set: { set($0.hexString) }),
+                supportsOpacity: false)
+                .labelsHidden()
+                .contextMenu {
+                    if !hex.isEmpty {
+                        Button("Use the page's colour", systemImage: "arrow.uturn.backward") { set("") }
+                    }
+                }
+                .accessibilityLabel(button.title)
+        }
+    }
+}
+
+/// What a toolbar button is, recognised from the classes and glyphs
+/// ``RichTextToolbar`` gives it.
+private enum RichTextPart: Equatable {
+    case font, smaller, size, larger, bold, italic, underline, strikethrough, align, color, clear, other
+
+    init(_ button: ToolbarButton) {
+        let classes = button.className.split(separator: " ")
+        if classes.contains("rte-font") { self = .font }
+        else if classes.contains("rte-size-step") { self = button.label == "A+" ? .larger : .smaller }
+        else if classes.contains("rte-size") { self = .size }
+        else if classes.contains("rte-align") { self = .align }
+        else if classes.contains("rte-color") { self = .color }
+        else if classes.contains("rte-clear") { self = .clear }
+        else {
+            switch button.label {
+            case "B": self = .bold
+            case "I": self = .italic
+            case "U": self = .underline
+            case "S": self = .strikethrough
+            default: self = .other
+            }
+        }
+    }
+
+    func symbol(for button: ToolbarButton) -> String? {
+        switch self {
+        case .smaller: return "minus"
+        case .larger: return "plus"
+        case .bold: return "bold"
+        case .italic: return "italic"
+        case .underline: return "underline"
+        case .strikethrough: return "strikethrough"
+        case .clear: return "eraser"
+        case .align:
+            if button.className.contains("rte-align-center") { return "text.aligncenter" }
+            if button.className.contains("rte-align-right") { return "text.alignright" }
+            return "text.alignleft"
+        case .font, .size, .color, .other: return nil
+        }
+    }
+}
+
+extension View {
+    /// The parts of an author's text style the field's own input honours —
+    /// weight, slant, lines, alignment and face. Size and colour are left to
+    /// the field, as ``TextFormat/declarations(fontFallback:)`` leaves them to
+    /// the web designer's: a colour chosen for the page's background can be
+    /// unreadable on the editor's.
+    func richTextFormat(_ format: TextFormat) -> some View {
+        let alignment: TextAlignment = switch format.align {
+        case "center": .center
+        case "right": .trailing
+        default: .leading
+        }
+        return self
+            .bold(format.bold)
+            .italic(format.italic)
+            .underline(format.underline)
+            .strikethrough(format.strikethrough)
+            .multilineTextAlignment(alignment)
+            .richTextFamily(format.font)
+    }
+
+    /// The author's face, once it has been registered.
+    func richTextFamily(_ family: String) -> some View {
+        modifier(RichTextFamily(family: family))
+    }
+}
+
+private struct RichTextFamily: ViewModifier {
+    let family: String
+
+    func body(content: Content) -> some View {
+        Group {
+            if !family.isEmpty, GuestFonts.shared.isAvailable(family) {
+                content.font(.custom(family, size: 17, relativeTo: .body))
+            } else {
+                content
+            }
+        }
+        // Asks for the face — again once the catalogue has arrived, since a
+        // family cannot be looked up before then.
+        .task(id: "\(family)|\(FontCatalog.state.hasArrived)") {
+            if !family.isEmpty { FontCatalog.load(family) }
+        }
+    }
+}
+
 extension Color {
     /// `#rrggbb`, for writing back into the document.
     var hexString: String {
         let resolved = resolve(in: EnvironmentValues())
         func channel(_ value: Float) -> Int { Int((min(max(value, 0), 1) * 255).rounded()) }
         return RGBColor(red: channel(resolved.red), green: channel(resolved.green), blue: channel(resolved.blue)).hexString
+    }
+}
+
+#Preview("Rich text") {
+    @Previewable @State var name = "Esther & Jide"
+    @Previewable @State var nameFormat = TextFormat(bold: true, align: "center", size: 40, color: "#c9b375")
+    @Previewable @State var welcome = "Saturday 12 June · Lagos"
+    @Previewable @State var welcomeFormat = TextFormat(italic: true)
+    NavigationStack {
+        Form {
+            Section("Welcome") {
+                RichTextEditorField(label: "Name", field: "brandName", text: $name, format: $nameFormat)
+                RichTextEditorField(label: "Welcome message", isMultiline: true, field: "landingPageText", text: $welcome, format: $welcomeFormat)
+            }
+        }
     }
 }

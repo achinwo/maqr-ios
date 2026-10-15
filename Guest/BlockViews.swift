@@ -26,6 +26,7 @@ final class GuestServices {
     let gift: GiftStore
     let meal: MealChoiceStore
     let stream: StreamStore
+    let feedback: FeedbackStore
 
     init(connection: GuestConnection?, table: Int?) {
         self.connection = connection
@@ -34,6 +35,7 @@ final class GuestServices {
         gift = GiftStore(connection: connection)
         meal = MealChoiceStore(connection: connection, table: table)
         stream = StreamStore(connection: connection)
+        feedback = FeedbackStore(connection: connection)
     }
 }
 
@@ -54,7 +56,8 @@ struct BlockView: View {
         case "photos": AlbumSection(experience: experience, settings: AlbumSettings(block: block), title: experience.title(of: block), store: services.album)
         case "guestbook": GuestBookSection(wording: GuestBookWording(block: block), store: services.book)
         case "cards": CardsSection(deck: CardDeck(block: block), title: experience.title(of: block))
-        case "recipe": RecipeSection(recipe: Recipe(block: block, identity: experience.composition.identity), title: experience.title(of: block))
+        case "recipe": RecipeHost(recipe: Recipe(block: block, identity: experience.composition.identity), title: experience.title(of: block))
+        case "feedback": FeedbackSection(block: block, wording: FeedbackWording(block: block), store: services.feedback)
         case "notice":
             if let notice = GuestNotice(block: block) { GuestNoticeCard(notice: notice) }
         case "livestream":
@@ -750,16 +753,32 @@ private struct ProductCarousel: View {
 // MARK: - Recipe
 
 /// The dish, its ingredients, and steps a cook ticks off — ecook.tsx.
-struct RecipeSection: View {
+/// A recipe that keeps its own progress — on a hub page or a long one.
+struct RecipeHost: View {
     let recipe: Recipe
     let title: String
     @State private var progress = CookingProgress()
+
+    var body: some View {
+        RecipeSection(recipe: recipe, title: title, progress: $progress)
+    }
+}
+
+struct RecipeSection: View {
+    let recipe: Recipe
+    let title: String
+    @SwiftUI.Binding var progress: CookingProgress
+    /// In a tab, the title and the progress are the screen's — its navigation
+    /// title and the bar pinned under it — so the section draws neither.
+    var inTab = false
     @Environment(\.guestPaint) private var paint
     @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            PageHeading(title: recipe.dishName.isEmpty ? title : String(localized: "Preparing \(recipe.dishName)"))
+            if !inTab {
+                PageHeading(title: recipe.dishName.isEmpty ? title : String(localized: "Preparing \(recipe.dishName)"))
+            }
             if recipe.dishImageURL != nil {
                 GuestImage(url: recipe.dishImageURL, contentMode: .fit)
                     .frame(maxWidth: .infinity, maxHeight: 240)
@@ -791,13 +810,15 @@ struct RecipeSection: View {
                 HStack {
                     Text("Method").font(.title3.bold()).foregroundStyle(paint.primary)
                     Spacer()
-                    if progress.lastDone != nil {
+                    if progress.lastDone != nil, !inTab {
                         Text("\(min((progress.lastDone ?? 0) + 1, recipe.steps.count)) of \(recipe.steps.count) done")
                             .font(.footnote.weight(.medium)).foregroundStyle(paint.soft)
                             .contentTransition(.numericText())
                     }
                 }
-                ProgressView(value: progress.fraction(of: recipe.steps.count)).tint(.green)
+                if !inTab {
+                    ProgressView(value: progress.fraction(of: recipe.steps.count)).tint(.green)
+                }
                 ForEach(Array(recipe.steps.enumerated()), id: \.element.id) { index, step in
                     stepRow(step, index: index)
                 }
@@ -871,6 +892,75 @@ struct RecipeSection: View {
         if let duration = step.duration { badges.append((duration, "timer", paint.soft)) }
         if !step.caution.isEmpty { badges.append((step.caution, "exclamationmark.triangle.fill", .orange)) }
         return badges
+    }
+}
+
+// MARK: - Feedback
+
+/// A private note to the author — ecook.tsx's Feedback tab. Kept with the
+/// experience as a response rather than handed to the guest's mail app.
+struct FeedbackSection: View {
+    let block: ComposedBlock
+    let wording: FeedbackWording
+    let store: FeedbackStore
+    @State private var message = ""
+    @State private var sent = false
+    @FocusState private var editing: Bool
+    @Environment(\.guestPaint) private var paint
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text(wording.heading)
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(paint.text)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 8)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(wording.prompt).font(.subheadline.weight(.medium)).foregroundStyle(paint.soft)
+                TextEditor(text: $message)
+                    .focused($editing)
+                    .frame(minHeight: 160)
+                    .scrollContentBackground(.hidden)
+                    .foregroundStyle(paint.text)
+                    .padding(10)
+                    .panel(cornerRadius: 14)
+            }
+
+            if let failure = store.failure {
+                Label(failure, systemImage: "exclamationmark.triangle.fill").font(.footnote).foregroundStyle(.orange)
+            }
+
+            Button {
+                Task {
+                    if await store.send(message, block: block.id) {
+                        message = ""
+                        editing = false
+                        sent = true
+                    }
+                }
+            } label: {
+                if store.isSending { ProgressView().tint(paint.onPrimary) } else { Text(wording.button) }
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .disabled(message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || store.isSending || !store.canSend)
+
+            HStack(spacing: 8) {
+                Text("Powered by")
+                Image(systemName: "qrcode").foregroundStyle(paint.primary)
+                Text(verbatim: "maQR").fontWeight(.semibold).foregroundStyle(paint.text)
+            }
+            .font(.title3)
+            .foregroundStyle(paint.soft)
+            .padding(.top, 36)
+        }
+        .sensoryFeedback(.success, trigger: sent)
+        .alert("Thank you!", isPresented: $sent) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your message was sent.")
+        }
     }
 }
 
