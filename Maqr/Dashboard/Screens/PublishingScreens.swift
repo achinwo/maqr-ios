@@ -80,10 +80,12 @@ struct ReviewScreen: View {
 struct PublishScreen: View {
     @Environment(AppModel.self) private var model
     @State private var store: PublishStore
+    @State private var passes: PassesStore
     @State private var managingSubscription = false
 
     init(dashboard: Dashboard, experience: ExperienceStore) {
         _store = State(initialValue: PublishStore(dashboard: dashboard, experience: experience))
+        _passes = State(initialValue: PassesStore(dashboard: dashboard, uuid: experience.id))
     }
 
     var body: some View {
@@ -104,6 +106,7 @@ struct PublishScreen: View {
         .refreshable { await store.refresh() }
         .sensoryFeedback(.success, trigger: store.view?.state.isLive)
         .task { await store.load() }
+        .task { await passes.load() }
     }
 
     // Not published, or lapsed: what it would take.
@@ -131,6 +134,16 @@ struct PublishScreen: View {
                     Text(store.offerTitle).font(.title2.weight(.bold))
                     Text(store.offerDetail).font(.footnote).foregroundStyle(.secondary)
                 }
+                .listRowBackground(Color.clear)
+            }
+            if !passes.passes.isEmpty {
+                Section {
+                    HeldPassesView(passes: passes) { published in
+                        store.experience.adopt(published)
+                        model.push(.published(published.experience.uuid))
+                    }
+                }
+                .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
             }
             if store.covering == nil && view.trialAvailable, let trial = store.region.trialPlan {
@@ -306,12 +319,77 @@ struct PlanCardView: View {
     }
 }
 
+/// A sale the App Store gives, above the plans.
+struct SaleBanner: View {
+    let headline: String
+    let detail: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "tag.fill")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color.maqrAccent)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(headline).font(.subheadline.weight(.semibold))
+                Text(detail).font(.footnote).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.maqrAccent.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// "Use a pass you already have": passes from offer codes redeemed outside
+/// the app, each spent on this experience with one tap.
+struct HeldPassesView: View {
+    let passes: PassesStore
+    let onUsed: (PublicationView) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Use a pass you already have").font(.subheadline.weight(.semibold))
+                Text("Redeemed with an App Store offer code and not used yet. Nothing more is charged.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+            ForEach(passes.passes) { pass in
+                HStack(spacing: 12) {
+                    Image(systemName: "ticket.fill").foregroundStyle(Color.maqrAccent)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(passes.name(of: pass)).font(.subheadline.weight(.semibold))
+                        Text(passes.detail(of: pass)).font(.footnote).foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 8)
+                    Button(passes.useLabel(for: pass)) {
+                        Task { if let view = await passes.use(pass) { onUsed(view) } }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .disabled(passes.using != nil)
+                }
+                .padding(12)
+                .background(.background.secondary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            if let failure = passes.failure {
+                NoticeCard(title: String(localized: "That pass couldn't be used"), message: failure, kind: .alert)
+            }
+        }
+    }
+}
+
 // MARK: - G3 · Plans
 
 struct PlansScreen: View {
     @Environment(AppModel.self) private var model
     let experience: ExperienceStore
     @State private var store: PlansStore
+    @State private var passes: PassesStore
+    /// Apple's offer code sheet. Never a maQR code field: an in-app purchase
+    /// is discounted only by the App Store (guideline 3.1.1).
+    @State private var redeemingCode = false
 
     init(dashboard: Dashboard, experience: ExperienceStore, initialKind: PlanKind = .oneOff) {
         self.experience = experience
@@ -319,6 +397,7 @@ struct PlansScreen: View {
                                currentPlan: experience.publication.value?.term?.planCode)
         if initialKind != .oneOff { store.kind = initialKind }
         _store = State(initialValue: store)
+        _passes = State(initialValue: PassesStore(dashboard: dashboard, uuid: experience.id))
     }
 
     var body: some View {
@@ -327,6 +406,12 @@ struct PlansScreen: View {
             VStack(alignment: .leading, spacing: 14) {
                 Text(store.title).font(.title2.weight(.bold)).contentTransition(.opacity)
                 Text(store.detail).font(.footnote).foregroundStyle(.secondary)
+                ForEach(store.sales) { sale in
+                    SaleBanner(headline: sale.headline, detail: store.detail(for: sale))
+                }
+                if !passes.passes.isEmpty {
+                    HeldPassesView(passes: passes) { published($0) }
+                }
                 Picker("Kind", selection: $store.kind) {
                     Text("One-off").tag(PlanKind.oneOff)
                     Text("Subscription").tag(PlanKind.subscription)
@@ -367,10 +452,7 @@ struct PlansScreen: View {
             VStack(spacing: 6) {
                 Button {
                     Task {
-                        if let view = await store.buy() {
-                            experience.adopt(view)
-                            model.push(.published(view.experience.uuid))
-                        }
+                        if let view = await store.buy() { published(view) }
                     }
                 } label: {
                     Text(store.continueLabel).frame(maxWidth: .infinity)
@@ -378,10 +460,18 @@ struct PlansScreen: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .disabled(!store.canBuy)
-                Button(store.isRestoring ? String(localized: "Restoring…") : String(localized: "Restore Purchases")) {
-                    Task {
-                        await store.restore()
-                        await experience.refresh()
+                HStack(spacing: 20) {
+                    Button(store.isRestoring ? String(localized: "Restoring…") : String(localized: "Restore Purchases")) {
+                        Task {
+                            await store.restore()
+                            await experience.refresh()
+                            // A restored offer code with no experience is kept as a pass.
+                            await passes.load()
+                        }
+                    }
+                    Button("Redeem Offer Code") {
+                        store.expectOfferCode()
+                        redeemingCode = true
                     }
                 }
                 .font(.footnote)
@@ -393,7 +483,25 @@ struct PlansScreen: View {
         .navigationTitle("Choose a plan")
         .navigationBarTitleDisplayMode(.inline)
         .sensoryFeedback(.selection, trigger: store.chosen)
+        .offerCodeRedemption(isPresented: $redeemingCode) { result in
+            if case let .failure(error) = result { store.offerCodeFailed(error) }
+        }
+        // The code's transaction reaches the listener in StoreKitPurchases,
+        // which sends it with this experience and reports back here.
+        .onChange(of: model.dashboard.offerCodeRedemption) { _, redemption in
+            if let view = store.published(by: redemption) {
+                published(view)
+            } else if redemption?.isUnassigned == true {
+                Task { await passes.load() }
+            }
+        }
         .task { await store.load() }
+        .task { await passes.load() }
+    }
+
+    private func published(_ view: PublicationView) {
+        experience.adopt(view)
+        model.push(.published(view.experience.uuid))
     }
 
     /// What the App Store requires beside a purchase — what it is, how it
@@ -610,6 +718,7 @@ private final class PreviewPurchasing: StorePurchasing, @unchecked Sendable {
     func displayPrices(for productIds: [String]) async -> [String: String] { prices }
     func purchase(productId: String, appAccountToken: UUID) async throws -> PurchaseOutcome { .cancelled }
     func restorableTransactions() async throws -> [String] { [] }
+    func signedTransaction(id: String) async -> String? { nil }
 }
 
 private func previewPlans(_ kind: PlanKind) -> some View {

@@ -49,7 +49,10 @@ struct MaqrApp: App {
 
         let dashboard = Dashboard(client: client, container: container)
         // Publishing is bought through the App Store (Purchasing.swift).
-        let purchases = StoreKitPurchases(client: client, isSignedIn: { @MainActor in dashboard.session.isSignedIn })
+        let purchases = StoreKitPurchases(client: client,
+                                          isSignedIn: { @MainActor in dashboard.session.isSignedIn },
+                                          offerCodeExperience: { @MainActor in dashboard.offerCodeExperience },
+                                          offerCodeRedeemed: { @MainActor redemption in dashboard.offerCodeRedeemed(redemption) })
         dashboard.purchasing = purchases
         self.purchases = purchases
 
