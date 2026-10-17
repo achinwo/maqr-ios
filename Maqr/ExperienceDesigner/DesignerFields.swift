@@ -318,7 +318,7 @@ struct FontList: View {
 
 /// A rich-text field, as the web designer draws one: the words, set in the
 /// style the author chose, over a formatting bar — font and size, then weight,
-/// slant, lines, alignment, colour and clear.
+/// slant, lines, alignment, colour and clear, then the shadow.
 ///
 /// The controls are ``RichTextToolbar``'s, the same ones the web designer
 /// draws, recognised by what they are and given the look of an iOS
@@ -377,6 +377,17 @@ struct RichTextEditorField: View {
                     if RichTextPart(button) == .color { colorWell(button) }
                 }
                 group(buttons.filter { RichTextPart($0) == .clear })
+            }
+            HStack(spacing: 8) {
+                Image(systemName: "shadow")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+                group(buttons.filter { RichTextPart($0) == .shadow })
+                Spacer(minLength: 0)
+                ForEach(Array(buttons.enumerated()), id: \.offset) { _, button in
+                    if RichTextPart(button) == .shadowColor { colorWell(button) }
+                }
             }
         }
         .padding(.vertical, 4)
@@ -461,7 +472,7 @@ struct RichTextEditorField: View {
                 supportsOpacity: false)
                 .labelsHidden()
                 .contextMenu {
-                    if !hex.isEmpty {
+                    if !hex.isEmpty, RichTextPart(button) == .color {
                         Button("Use the page's colour", systemImage: "arrow.uturn.backward") { set("") }
                     }
                 }
@@ -473,11 +484,14 @@ struct RichTextEditorField: View {
 /// What a toolbar button is, recognised from the classes and glyphs
 /// ``RichTextToolbar`` gives it.
 private enum RichTextPart: Equatable {
-    case font, smaller, size, larger, bold, italic, underline, strikethrough, align, color, clear, other
+    case font, smaller, size, larger, bold, italic, underline, strikethrough, align, color, clear
+    case shadow, shadowColor, other
 
     init(_ button: ToolbarButton) {
         let classes = button.className.split(separator: " ")
-        if classes.contains("rte-font") { self = .font }
+        if classes.contains("rte-shadow-color") { self = .shadowColor }
+        else if classes.contains("rte-shadow") { self = .shadow }
+        else if classes.contains("rte-font") { self = .font }
         else if classes.contains("rte-size-step") { self = button.label == "A+" ? .larger : .smaller }
         else if classes.contains("rte-size") { self = .size }
         else if classes.contains("rte-align") { self = .align }
@@ -507,14 +521,14 @@ private enum RichTextPart: Equatable {
             if button.className.contains("rte-align-center") { return "text.aligncenter" }
             if button.className.contains("rte-align-right") { return "text.alignright" }
             return "text.alignleft"
-        case .font, .size, .color, .other: return nil
+        case .font, .size, .color, .shadow, .shadowColor, .other: return nil
         }
     }
 }
 
 extension View {
     /// The parts of an author's text style the field's own input honours —
-    /// weight, slant, lines, alignment and face. Size and colour are left to
+    /// weight, slant, lines, alignment, face and shadow. Size and colour are left to
     /// the field, as ``TextFormat/declarations(fontFallback:)`` leaves them to
     /// the web designer's: a colour chosen for the page's background can be
     /// unreadable on the editor's.
@@ -531,6 +545,7 @@ extension View {
             .strikethrough(format.strikethrough)
             .multilineTextAlignment(alignment)
             .richTextFamily(format.font)
+            .textShadow(format.shadow)
     }
 
     /// The author's face, once it has been registered.

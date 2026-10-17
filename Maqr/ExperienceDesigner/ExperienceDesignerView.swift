@@ -12,9 +12,9 @@ import SwiftUI
 /// The experience designer, composing sections (Phase 3 of
 /// docs/architecture/composable-experiences.md in maqr-server).
 ///
-/// The steps are derived from the document: Welcome (identity), Style
-/// (theme and layout), one step per section in document order, Sections
-/// (add, reorder, hide, remove), then Review. Each section's form is its
+/// The steps are derived from the document: Welcome (identity), Sections
+/// (add, reorder, hide, remove), Style (theme and layout), one step per
+/// section in document order, then Review. Each section's form is its
 /// manifest's; the preview is the guest engine itself, drawing the document
 /// as it is typed. Saves are whole documents through `POST` / `PUT
 /// /api/experiences`.
@@ -156,7 +156,7 @@ private struct DesignerEditor: View {
     private var registry: BlockRegistry { GuestEngine.registry }
 
     private var steps: [DesignerStep] {
-        [.welcome, .style] + draft.blocks.compactMap { $0["id"].string.map(DesignerStep.block) } + [.sections, .review]
+        [.welcome, .sections, .style] + draft.blocks.compactMap { $0["id"].string.map(DesignerStep.block) } + [.review]
     }
 
     private var stepIndex: Int { steps.firstIndex(of: step) ?? 0 }
@@ -276,7 +276,13 @@ private struct DesignerEditor: View {
             BlockField(path: "layout.kind", label: String(localized: "Layout"), type: "choice", options: [
                 BlockOption(value: "hub", label: String(localized: "Home screen with tiles")),
                 BlockOption(value: "scroll", label: String(localized: "One long page")),
+                BlockOption(value: "tabs", label: String(localized: "Tabs along the bottom")),
             ]),
+        ] + (draft.layoutKind == "tabs" ? [
+            BlockField(path: "layout.start", label: String(localized: "Start button"), type: "text",
+                       hint: String(localized: "Optional. A button on the welcome tab that opens the first section."),
+                       placeholder: String(localized: "Get started")),
+        ] : []) + [
             BlockField(path: "theme.surface", label: String(localized: "Surface"), type: "choice", options: [
                 BlockOption(value: "glass-dark", label: String(localized: "Dark glass")),
                 BlockOption(value: "card-light", label: String(localized: "Light cards")),
@@ -570,7 +576,7 @@ private struct DesignerEditor: View {
     /// already here.
     private var library: some View {
         let existing = draft.blocks.compactMap { $0["kind"].string }
-        let offered = registry.library(layout: draft.isHub ? "hub" : "scroll", existingKinds: existing)
+        let offered = registry.library(layout: draft.layoutKind, existingKinds: existing)
         return NavigationStack {
             List(offered, id: \.kind) { manifest in
                 Button {

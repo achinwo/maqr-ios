@@ -159,8 +159,8 @@ private struct HubHome: View {
                     Text(experience.title)
                         .foregroundStyle(paint.primary)
                         .multilineTextAlignment(.center)
-                        .guestFormat(experience.titleFormat, size: 42, face: .display, relativeTo: .largeTitle)
-                        .shadow(color: .black.opacity(paint.isDark ? 0.4 : 0), radius: 14, y: 2)
+                        .guestFormat(experience.titleFormat, size: 42, face: .display, relativeTo: .largeTitle,
+                                     pageShadow: GuestShadow(color: .black.opacity(paint.isDark ? 0.4 : 0), radius: 14, y: 2))
                         .reveal(delay: 0.3)
                     Ornament().reveal(delay: 0.38)
                     if !experience.welcome.isEmpty {

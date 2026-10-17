@@ -129,10 +129,39 @@ extension View {
     /// An author's text style over a field's own look — weight, slant,
     /// lines, alignment, colour, and the face and size, which replace the
     /// field's own only where the author set them, as `useTextStyles`
-    /// spreads them last on the web.
-    func guestFormat(_ format: TextFormat, size: CGFloat, face: GuestFace, relativeTo style: Font.TextStyle = .title) -> some View {
+    /// spreads them last on the web. `pageShadow` is the field's own shadow,
+    /// drawn unless the author turned it off or chose one of theirs.
+    func guestFormat(
+        _ format: TextFormat, size: CGFloat, face: GuestFace, relativeTo style: Font.TextStyle = .title,
+        pageShadow: GuestShadow? = nil
+    ) -> some View {
         modifier(GuestFormat(format: format, size: size, face: face, relativeTo: style))
+            .textShadow(format.shadow, page: pageShadow)
     }
+
+    /// A text style's shadow: the page's own (`page`, if any), none, or the
+    /// author's — CSS's blur radius halved, which is how far SwiftUI's
+    /// radius spreads the same shadow.
+    func textShadow(_ setting: TextShadowSetting, page: GuestShadow? = nil) -> some View {
+        let shadow: GuestShadow? = switch setting {
+        case .page: page
+        case .off: nil
+        case .custom(let custom):
+            GuestShadow(
+                color: Color(guestHex: custom.color).opacity(Double(custom.opacity) / 100),
+                radius: CGFloat(custom.blur) / 2, x: CGFloat(custom.x), y: CGFloat(custom.y))
+        }
+        let drawn = shadow ?? GuestShadow(color: .clear, radius: 0, x: 0, y: 0)
+        return self.shadow(color: drawn.color, radius: drawn.radius, x: drawn.x, y: drawn.y)
+    }
+}
+
+/// A shadow under text.
+struct GuestShadow {
+    var color: Color
+    var radius: CGFloat
+    var x: CGFloat = 0
+    var y: CGFloat = 0
 }
 
 /// The face a field is set in when its author has not chosen one.
